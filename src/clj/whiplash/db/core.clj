@@ -21,9 +21,6 @@
                conn (d/connect database-url)]
            (install-schema conn)
            conn)
-          #_(do (println (:database-url env))
-           (-> env :database-url d/create-database)
-             (-> env :database-url d/connect))
   :stop (-> conn .release))
 
 
