@@ -79,8 +79,8 @@
                    :where [?e ?attr ?val]]
                  db attr val)))
 
-(defn find-user [db id]
-  (d/touch (find-one-by db :user/id id)))
+(defn find-user [db uuid]
+  (d/touch (find-one-by db :user/id uuid)))
 
 (comment
   (def test-uuid #uuid"c0e83a90-8d64-441c-863b-43dbc9369277")
