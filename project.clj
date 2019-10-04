@@ -38,6 +38,7 @@
 
                  ;; manually added from here below
                  [clj-http "3.10.0"]
+                 [danlentz/clj-uuid "0.1.9"]
                  ]
 
   :min-lein-version "2.0.0"

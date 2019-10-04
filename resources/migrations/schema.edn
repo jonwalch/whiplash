@@ -2,7 +2,7 @@
  :project-name/norm1 {:txes [[
    {:db/doc                "User ID"
     :db/ident              :user/id
-    :db/valueType          :db.type/string
+    :db/valueType          :db.type/uuid
     :db/cardinality        :db.cardinality/one
     :db/id                 #db/id [:db.part/db]
     :db.install/_attribute :db.part/db}
@@ -33,12 +33,12 @@
 
  ;; norm2 installs certain user init data into Datomic for testing purpose
  :project-name/norm2 {:txes [[
-   {:user/id     "abc"
+   {:user/id     #uuid"f1a1bc27-d7c2-46f1-baa5-b81b7579300a"
     :user/name   "Good Name A"
     :user/email  "abc@example.com"
     :user/status :user.status/active}
 
-   {:user/id     "efg"
+   {:user/id     #uuid"57384665-6a9d-45e6-b736-d6d12903eea4"
     :user/name   "Good Name B"
     :user/email  "efg@example.com"
     :user/status :user.status/active}]]}

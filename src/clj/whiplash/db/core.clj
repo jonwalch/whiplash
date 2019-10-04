@@ -3,21 +3,29 @@
     [datomic.api :as d]
     [io.rkn.conformity :as c]
     [mount.core :refer [defstate]]
-    [whiplash.config :refer [env]]))
-
-(defstate conn
-  :start (do (-> env :database-url d/create-database)
-             (-> env :database-url d/connect))
-  :stop (-> conn .release))
+    [whiplash.config :refer [env]]
+    [clj-uuid :as uuid]))
 
 (defn install-schema
   "This function expected to be called at system start up.
 
-  Datomic schema migraitons or db preinstalled data can be put into 'migrations/schema.edn'
+  Datomic schema migrations or db preinstalled data can be put into 'migrations/schema.edn'
   Every txes will be executed exactly once no matter how many times system restart."
   [conn]
   (let [norms-map (c/read-resource "migrations/schema.edn")]
     (c/ensure-conforms conn norms-map (keys norms-map))))
+
+(defstate conn
+  :start (let [database-url (:database-url env)
+               created? (d/create-database database-url)
+               conn (d/connect database-url)]
+           (install-schema conn)
+           conn)
+          #_(do (println (:database-url env))
+           (-> env :database-url d/create-database)
+             (-> env :database-url d/connect))
+  :stop (-> conn .release))
+
 
 (defn show-schema
   "Show currenly installed schema"
@@ -71,6 +79,14 @@
                    :where [?e ?attr ?val]]
                  db attr val)))
 
-
 (defn find-user [db id]
   (d/touch (find-one-by db :user/id id)))
+
+(comment
+  (def test-uuid #uuid"c0e83a90-8d64-441c-863b-43dbc9369277")
+  (add-user conn {:id  test-uuid
+                  :screen-name "Damn Daniel"
+                  :status :user.status/active
+                  :email "dankmemes420@gmail.com"})
+  (find-user (d/db conn) test-uuid))
+
