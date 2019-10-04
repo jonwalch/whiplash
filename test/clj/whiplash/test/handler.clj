@@ -17,6 +17,9 @@
                  #'whiplash.handler/app-routes)
     (f)))
 
+;; TODO: Setup running these tests automatically in AWS CodeBuild
+;; Planning on going with AWS because Datomic support is very good
+
 (deftest test-app
   (testing "main route"
     (let [response ((handler/app) (mock/request :get "/"))]

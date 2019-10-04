@@ -6,7 +6,8 @@
     [whiplash.config :refer [env]]))
 
 (defstate conn
-  :start (do (-> env :database-url d/create-database) (-> env :database-url d/connect))
+  :start (do (-> env :database-url d/create-database)
+             (-> env :database-url d/connect))
   :stop (-> conn .release))
 
 (defn install-schema

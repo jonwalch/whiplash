@@ -6,7 +6,8 @@
     [whiplash.config :refer [env]]
     [clojure.tools.cli :refer [parse-opts]]
     [clojure.tools.logging :as log]
-    [mount.core :as mount])
+    [mount.core :as mount]
+    [clj-http.client :as client])
   (:gen-class))
 
 ;; log uncaught exceptions in threads
@@ -58,6 +59,20 @@
   (start-app args))
 
 (comment
-  (println "hi")
   (start-app nil)
   (stop-app))
+
+(comment
+  (def farts
+    (do
+      ;; This will only actually work when the server is running
+      (println (:pandascore-token env))                     ;; will print nil
+      (client/get "https://api.pandascore.co/csgo/matches"
+                  {:headers {"Authorization" (:pandascore-token env)}})))
+  (-> farts
+      :body
+      (json/read-str :key-fn keyword)
+      first
+      )
+  )
+

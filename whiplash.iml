@@ -28,7 +28,7 @@
     <orderEntry type="library" name="Leiningen: cheshire:5.8.1" level="project" />
     <orderEntry type="library" name="Leiningen: clj-antlr:0.2.4" level="project" />
     <orderEntry type="library" name="Leiningen: clj-commons/clj-yaml:0.7.0" level="project" />
-    <orderEntry type="library" name="Leiningen: clj-http:2.0.1" level="project" />
+    <orderEntry type="library" name="Leiningen: clj-http:3.10.0" level="project" />
     <orderEntry type="library" name="Leiningen: clj-oauth:1.5.5" level="project" />
     <orderEntry type="library" name="Leiningen: clj-stacktrace:0.2.8" level="project" />
     <orderEntry type="library" name="Leiningen: clj-time:0.14.3" level="project" />
@@ -140,9 +140,12 @@
     <orderEntry type="library" name="Leiningen: org.apache.commons/commons-compress:1.18" level="project" />
     <orderEntry type="library" name="Leiningen: org.apache.commons/commons-lang3:3.8.1" level="project" />
     <orderEntry type="library" name="Leiningen: org.apache.geronimo.specs/geronimo-json_1.0_spec:1.0-alpha-1" level="project" />
-    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpclient:4.5" level="project" />
-    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpcore:4.4.1" level="project" />
-    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpmime:4.5" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpasyncclient:4.1.4" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpclient-cache:4.5.8" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpclient:4.5.8" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpcore-nio:4.4.10" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpcore:4.4.11" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpmime:4.5.8" level="project" />
     <orderEntry type="library" name="Leiningen: org.apache.johnzon/johnzon-core:0.9.4" level="project" />
     <orderEntry type="library" name="Leiningen: org.apache.tomcat/tomcat-jdbc:7.0.27" level="project" />
     <orderEntry type="library" name="Leiningen: org.apache.tomcat/tomcat-juli:7.0.27" level="project" />
