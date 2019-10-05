@@ -23,9 +23,8 @@
 (defn get-user
   [{:keys [params] :as req}]
   ;; TODO sanitize email
-  (let [entity (-> (d/db db/conn)
-                   (db/find-user-by-email (:email params))
-                   d/touch)]
+  (if-let [entity (-> (d/db db/conn)
+                      (db/find-user-by-email (:email params)))]
     (ok (select-keys entity
-                     [:user/first-name :user/last-name :user/email :user/status])))
-  )
+                     [:user/first-name :user/last-name :user/email :user/status]))
+    (not-found)))

@@ -73,13 +73,19 @@
     (let [response ((handler/app) (mock/request :get "/api/v1/user"))]
       (is (= 400 (:status response)))))
 
+
+  (testing "get user doesn't exist"
+    (let [response ((handler/app) (-> (mock/request :get "/api/v1/user")
+                                      (mock/query-string {:email "kanye@west.com"})))]
+      (is (= 404 (:status response)))))
+
   (testing "post create user failure"
     (let [{:keys [status] :as response}
           ((handler/app) (-> (mock/request :post "/api/v1/user")
                              (mock/json-body {:shit "yas"})))]
       (is (= 400 status))))
 
-  (testing "create user success"
+  (testing "create and get user success "
     (let [email "butt@cheek.com"
           first-name "yas"
           last-name "queen"
