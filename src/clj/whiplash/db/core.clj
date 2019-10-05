@@ -46,17 +46,15 @@
   [conn]
   (seq (d/tx-range (d/log conn) nil nil)))
 
+;; TODO validate args
 (defn add-user
-  "e.g.
-    (add-user conn {:id \"aaa\"
-                    :screen-name \"AAA\"
-                    :status :user.status/active
-                    :email \"aaa@example.com\" })"
-  [conn {:keys [id screen-name status email]}]
+  [conn {:keys [id first-name last-name status email password]}]
   @(d/transact conn [{:user/id         id
-                      :user/name       screen-name
+                      :user/first-name first-name
+                      :user/last-name  last-name
                       :user/status     status
-                      :user/email      email}]))
+                      :user/email      email
+                      :user/password   password}]))
 
 (defn find-one-by
   "Given db value and an (attr/val), return the user as EntityMap (datomic.query.EntityMap)
@@ -80,9 +78,5 @@
 
 (comment
   (def test-uuid #uuid"c0e83a90-8d64-441c-863b-43dbc9369277")
-  (add-user conn {:id  test-uuid
-                  :screen-name "Damn Daniel"
-                  :status :user.status/active
-                  :email "dankmemes420@gmail.com"})
   (find-user (d/db conn) test-uuid))
 

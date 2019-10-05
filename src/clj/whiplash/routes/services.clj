@@ -10,6 +10,7 @@
     [whiplash.routes.services.graphql :as graphql]
     [whiplash.middleware.formats :as formats]
     [whiplash.middleware.exception :as exception]
+    [whiplash.routes.services.user :as user]
     [ring.util.http-response :refer :all]
     [clojure.java.io :as io]))
 
@@ -48,10 +49,23 @@
              {:url "/api/swagger.json"
               :config {:validator-url nil}})}]]
 
-   ["/ping"
-    {:get (constantly (ok {:message "pong"}))}]
-   
-   ["/graphql" {:post (fn [req] (ok (graphql/execute-request (-> req :body slurp))))}]
+   ["/graphql" {:post (fn [req]
+                        (ok (graphql/execute-request (-> req :body slurp))))}]
+
+   ["/v1"
+    {:swagger {:tags ["API"]}}
+
+    ["/user"
+     {:swagger {:tags ["User"]}}
+
+     ["/create"
+      {:post {:summary "create a user"
+              :parameters {:body {:first-name string?
+                                  :last-name string?
+                                  :email string?
+                                  :password string?}}
+              :handler (fn [req]
+                         (user/create-user req))}}]]]
 
    ["/math"
     {:swagger {:tags ["math"]}}

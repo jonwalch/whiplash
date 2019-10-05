@@ -4,8 +4,10 @@
     [ring.mock.request :as mock]
     [whiplash.handler :as handler]
     [whiplash.middleware.formats :as formats]
+    [whiplash.db.core :as db]
     [muuntaja.core :as m]
-    [mount.core :as mount]))
+    [mount.core :as mount]
+    [datomic.api :as d]))
 
 (defn parse-json [body]
   (m/decode formats/instance "application/json" body))
@@ -16,6 +18,13 @@
     (mount/start #'whiplash.config/env
                  #'whiplash.handler/app-routes)
     (f)))
+
+(use-fixtures
+  :each
+  (fn [f]
+    (mount/start #'whiplash.db.core/conn)
+    (f)
+    (mount/stop #'whiplash.db.core/conn)))
 
 ;; TODO: Setup running these tests automatically in AWS CodeBuild
 ;; Planning on going with AWS because Datomic support is very good
@@ -28,28 +37,58 @@
   (testing "not-found route"
     (let [response ((handler/app) (mock/request :get "/invalid"))]
       (is (= 404 (:status response)))))
-  (testing "services"
 
+  (testing "services"
     (testing "success"
       (let [response ((handler/app) (-> (mock/request :post "/api/math/plus")
-                                        (json-body {:x 10, :y 6})))]
+                                        (mock/json-body {:x 10, :y 6})))]
         (is (= 200 (:status response)))
         (is (= {:total 16} (m/decode-response-body response)))))
 
     (testing "parameter coercion error, stack trace expected"
       (let [response ((handler/app) (-> (mock/request :post "/api/math/plus")
-                                        (json-body {:x 10, :y "invalid"})))]
+                                        (mock/json-body {:x 10, :y "invalid"})))]
         (is (= 400 (:status response)))))
 
     (testing "response coercion error"
       (let [response ((handler/app) (-> (mock/request :post "/api/math/plus")
-                                        (json-body {:x -10, :y 6})))]
+                                        (mock/json-body {:x -10, :y 6})))]
         (is (= 500 (:status response)))))
 
     (testing "content negotiation"
       (let [response ((handler/app) (-> (mock/request :post "/api/math/plus")
-                                        (body (pr-str {:x 10, :y 6}))
-                                        (content-type "application/edn")
-                                        (header "accept" "application/transit+json")))]
+                                        (mock/body (pr-str {:x 10, :y 6}))
+                                        (mock/content-type "application/edn")
+                                        (mock/header "accept" "application/transit+json")))]
         (is (= 200 (:status response)))
         (is (= {:total 16} (m/decode-response-body response)))))))
+
+(deftest test-user
+  (testing "create user get not allowed"
+    (let [response ((handler/app) (mock/request :get "/api/v1/user/create"))]
+      (is (= 405 (:status response)))))
+
+  (testing "create user failure"
+    (let [{:keys [status body] :as response}
+          ((handler/app) (-> (mock/request :post "/api/v1/user/create")
+                             (mock/json-body {:shit "yas"})))
+          body (parse-json body)]
+      (is (= 400 status))
+      (is (= body {:message "Request missing required parameters."}))))
+
+  (testing "create user success"
+    (let [email "butt@cheek.com"
+          {:keys [body status] :as response}
+          ((handler/app) (-> (mock/request :post "/api/v1/user/create")
+                             (mock/json-body {:first-name "yas"
+                                              :last-name "queen"
+                                              :email email
+                                              :password "foobar"})))
+          body (parse-json body)
+          db-entity (-> (d/db db/conn)
+                        (db/find-one-by :user/email email)
+                        d/touch)]
+      (is (= 200 status))
+      (is (nil? body))
+      ;; TODO assert on the rest of the map
+      (is (= email (:user/email db-entity))))))
