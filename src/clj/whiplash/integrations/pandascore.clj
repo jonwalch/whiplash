@@ -51,7 +51,7 @@
         start (-> (time/days-ago 1) time/date-iso-string)
         end (-> (time/days-in-future 1) time/date-iso-string)
         date-range (format "%s,%s" start end)]
-    (get-all-matches url api-key date-range))
+    (flatten (get-all-matches url api-key date-range)))
   )
 
 (comment
@@ -66,5 +66,3 @@
       #_(select-keys [:status :name :winner :results :begin-at :end-at])
       )
   )
-
-
