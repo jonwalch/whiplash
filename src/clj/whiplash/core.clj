@@ -62,17 +62,3 @@
   (start-app nil)
   (stop-app))
 
-(comment
-  (def farts
-    (do
-      ;; This will only actually work when the server is running
-      (println (:pandascore-token env))                     ;; will print nil
-      (client/get "https://api.pandascore.co/csgo/matches"
-                  {:headers {"Authorization" (:pandascore-token env)}})))
-  (-> farts
-      :body
-      (json/read-str :key-fn keyword)
-      first
-      )
-  )
-

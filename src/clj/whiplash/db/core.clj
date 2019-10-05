@@ -23,7 +23,6 @@
            conn)
   :stop (-> conn .release))
 
-
 (defn show-schema
   "Show currenly installed schema"
   [conn]
