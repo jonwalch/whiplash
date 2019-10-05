@@ -55,6 +55,11 @@
                                         (mock/json-body {:x -10, :y 6})))]
         (is (= 500 (:status response)))))
 
+    (testing "fail spec"
+      (let [response ((handler/app) (-> (mock/request :post "/api/math/plus")
+                                        (mock/json-body {:piss "fart"})))]
+        (is (= 400 (:status response)))))
+
     (testing "content negotiation"
       (let [response ((handler/app) (-> (mock/request :post "/api/math/plus")
                                         (mock/body (pr-str {:x 10, :y 6}))
@@ -64,31 +69,40 @@
         (is (= {:total 16} (m/decode-response-body response)))))))
 
 (deftest test-user
-  (testing "create user get not allowed"
-    (let [response ((handler/app) (mock/request :get "/api/v1/user/create"))]
-      (is (= 405 (:status response)))))
+  (testing "get fail spec"
+    (let [response ((handler/app) (mock/request :get "/api/v1/user"))]
+      (is (= 400 (:status response)))))
 
-  (testing "create user failure"
-    (let [{:keys [status body] :as response}
-          ((handler/app) (-> (mock/request :post "/api/v1/user/create")
-                             (mock/json-body {:shit "yas"})))
-          body (parse-json body)]
-      (is (= 400 status))
-      (is (= body {:message "Request missing required parameters."}))))
+  (testing "post create user failure"
+    (let [{:keys [status] :as response}
+          ((handler/app) (-> (mock/request :post "/api/v1/user")
+                             (mock/json-body {:shit "yas"})))]
+      (is (= 400 status))))
 
   (testing "create user success"
     (let [email "butt@cheek.com"
+          first-name "yas"
+          last-name "queen"
           {:keys [body status] :as response}
-          ((handler/app) (-> (mock/request :post "/api/v1/user/create")
-                             (mock/json-body {:first-name "yas"
-                                              :last-name "queen"
+          ((handler/app) (-> (mock/request :post "/api/v1/user")
+                             (mock/json-body {:first-name first-name
+                                              :last-name last-name
                                               :email email
                                               :password "foobar"})))
           body (parse-json body)
           db-entity (-> (d/db db/conn)
-                        (db/find-one-by :user/email email)
-                        d/touch)]
+                        (db/find-user-by-email email)
+                        d/touch)
+          get-response ((handler/app) (-> (mock/request :get "/api/v1/user")
+                                          (mock/query-string {:email email})))]
       (is (= 200 status))
       (is (nil? body))
       ;; TODO assert on the rest of the map
-      (is (= email (:user/email db-entity))))))
+      (is (= email (:user/email db-entity)))
+
+      (is (= 200 (:status get-response)))
+      (is (= #:user{:email      email
+                    :first-name first-name
+                    :last-name  last-name
+                    :status "user.status/pending"}
+             (parse-json (:body get-response)))))))

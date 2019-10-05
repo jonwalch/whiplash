@@ -76,6 +76,9 @@
 (defn find-user [db uuid]
   (d/touch (find-one-by db :user/id uuid)))
 
+(defn find-user-by-email [db email]
+  (d/touch (find-one-by db :user/email email)))
+
 (comment
   (def test-uuid #uuid"c0e83a90-8d64-441c-863b-43dbc9369277")
   (find-user (d/db conn) test-uuid))

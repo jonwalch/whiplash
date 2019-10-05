@@ -56,16 +56,19 @@
     {:swagger {:tags ["API"]}}
 
     ["/user"
-     {:swagger {:tags ["User"]}}
-
-     ["/create"
-      {:post {:summary "create a user"
-              :parameters {:body {:first-name string?
-                                  :last-name string?
-                                  :email string?
-                                  :password string?}}
-              :handler (fn [req]
-                         (user/create-user req))}}]]]
+     {:swagger {:tags ["User"]}
+      :post    {:summary    "create a user"
+                :parameters {:body {:first-name string?
+                                    :last-name  string?
+                                    :email      string?
+                                    :password   string?}}
+                :handler    (fn [req]
+                              (user/create-user req))}
+      :get     {:summary    "get a user"
+                ;; TODO figure out how we want to get a user, by uuid?
+                :parameters {:query {:email string?}}
+                :handler    (fn [req]
+                              (user/get-user req))}}]]
 
    ["/math"
     {:swagger {:tags ["math"]}}
