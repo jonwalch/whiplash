@@ -84,4 +84,3 @@
 (comment
   (def test-uuid #uuid"c0e83a90-8d64-441c-863b-43dbc9369277")
   (find-user (d/db conn) test-uuid))
-
