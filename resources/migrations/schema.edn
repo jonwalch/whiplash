@@ -1,42 +1,35 @@
 {;; norm1 installs the user table schema into Datomic
  :whiplash/norm1
- {:txes [[
-          {:db/doc                "User first name"
+ {:txes [[{:db/doc                "User first name"
            :db/ident              :user/first-name
            :db/valueType          :db.type/string
            :db/cardinality        :db.cardinality/one
-           :db/id                 #db/id [:db.part/db]
-           :db.install/_attribute :db.part/db}
+           }
           {:db/doc                "User last name"
            :db/ident              :user/last-name
            :db/valueType          :db.type/string
            :db/cardinality        :db.cardinality/one
-           :db/id                 #db/id [:db.part/db]
-           :db.install/_attribute :db.part/db}
+           }
           {:db/doc                "User email address"
            :db/ident              :user/email
            :db/valueType          :db.type/string
            :db/cardinality        :db.cardinality/one
            :db/unique             :db.unique/identity
-           :db/id                 #db/id [:db.part/db]
-           :db.install/_attribute :db.part/db}
+           }
           {:db/doc                "User password"
            :db/ident              :user/password
            :db/valueType          :db.type/string
            :db/cardinality        :db.cardinality/one
-           :db/id                 #db/id [:db.part/db]
-           :db.install/_attribute :db.part/db}
+           }
           {:db/doc                "User status"
            :db/ident              :user/status
            :db/valueType          :db.type/ref
            :db/cardinality        :db.cardinality/one
-           :db/id                 #db/id [:db.part/db]
-           :db.install/_attribute :db.part/db}
+           }
           ;; example of enumeration in Datomic
           [:db/add #db/id [:db.part/user] :db/ident :user.status/pending]
           [:db/add #db/id [:db.part/user] :db/ident :user.status/active]
           [:db/add #db/id [:db.part/user] :db/ident :user.status/inactive]
-          ;;[:db/add #db/id [:db.part/user] :db/ident :user.status/cancelled]
           ]]}
 
  ;; norm2 installs certain user init data into Datomic for testing purpose
