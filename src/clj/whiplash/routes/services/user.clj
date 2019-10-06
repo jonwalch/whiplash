@@ -1,7 +1,6 @@
 (ns whiplash.routes.services.user
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
-            [clj-uuid :as uuid]
             [buddy.hashers :as hashers]
             [datomic.api :as d]))
 
@@ -12,8 +11,8 @@
         #_(println (hashers/check "foobar" encrypted-password))
         ]
     ;; TODO sanitize fields
-    (db/add-user db/conn {:id         (uuid/v4)
-                          :first-name first-name
+    ;; TODO check if user already exists for this email
+    (db/add-user db/conn {:first-name first-name
                           :last-name  last-name
                           :status     :user.status/pending
                           :email      email
