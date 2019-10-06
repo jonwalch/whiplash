@@ -89,6 +89,12 @@
                              (mock/json-body {:shit "yas"})))]
       (is (= 400 status))))
 
+  (testing "can't login as nonexistent user"
+    (let [login-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
+                                        (mock/json-body {:email    (:email dummy-user)
+                                                         :password (:email dummy-user)})))]
+      (is (= 401 (:status login-resp)))))
+
   (testing "create and get user success "
     (let [{:keys [email first-name last-name password]} dummy-user
           create-user-resp ((handler/app) (-> (mock/request :post "/v1/user/create")
@@ -96,6 +102,10 @@
           login-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
                                         (mock/json-body {:email email
                                                          :password password})))
+          login-fail-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
+                                             (mock/json-body {:email email
+                                                              :password "wrong_password"})))
+
           get-resp ((handler/app) (-> (mock/request :get "/v1/user/login")
                                       (mock/query-string {:email email})))]
       (is (= 200 (:status create-user-resp)))
@@ -104,6 +114,8 @@
       (is (= 200 (:status login-resp)))
       (is (= {:auth-token "token"}
              (parse-json-body login-resp)))
+
+      (is (= 401 (:status login-fail-resp)))
 
       (is (= 200 (:status get-resp)))
       (is (= #:user{:email      email
