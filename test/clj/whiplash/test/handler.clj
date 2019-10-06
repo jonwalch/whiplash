@@ -91,24 +91,23 @@
 
   (testing "create and get user success "
     (let [{:keys [email first-name last-name password]} dummy-user
-          {:keys [status] :as response}
-          ((handler/app) (-> (mock/request :post "/v1/user/create")
-                             (mock/json-body dummy-user)))
-          login-response ((handler/app) (-> (mock/request :post "/v1/user/login")
-                                            (mock/json-body {:email email
-                                                             :password password})))
-          get-response ((handler/app) (-> (mock/request :get "/v1/user/login")
-                                          (mock/query-string {:email email})))]
-      (is (= 200 status))
-      (is (nil? (parse-json-body response)))
+          create-user-resp ((handler/app) (-> (mock/request :post "/v1/user/create")
+                                              (mock/json-body dummy-user)))
+          login-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
+                                        (mock/json-body {:email email
+                                                         :password password})))
+          get-resp ((handler/app) (-> (mock/request :get "/v1/user/login")
+                                      (mock/query-string {:email email})))]
+      (is (= 200 (:status create-user-resp)))
+      (is (nil? (parse-json-body create-user-resp)))
 
-      (is (= 200 (:status login-response)))
+      (is (= 200 (:status login-resp)))
       (is (= {:auth-token "token"}
-             (parse-json-body login-response)))
+             (parse-json-body login-resp)))
 
-      (is (= 200 (:status get-response)))
+      (is (= 200 (:status get-resp)))
       (is (= #:user{:email      email
                     :first-name first-name
                     :last-name  last-name
                     :status "user.status/pending"}
-             (parse-json-body get-response))))))
+             (parse-json-body get-resp))))))
