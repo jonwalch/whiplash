@@ -48,9 +48,8 @@
 
 ;; TODO validate args
 (defn add-user
-  [conn {:keys [id first-name last-name status email password]}]
-  @(d/transact conn [{:user/id         id
-                      :user/first-name first-name
+  [conn {:keys [first-name last-name status email password]}]
+  @(d/transact conn [{:user/first-name first-name
                       :user/last-name  last-name
                       :user/status     status
                       :user/email      email
@@ -73,8 +72,8 @@
                    :where [?e ?attr ?val]]
                  db attr val)))
 
-(defn find-user [db uuid]
-  (when-let [user (find-one-by db :user/id uuid)]
+(defn find-user [db id]
+  (when-let [user (find-one-by db :db/id id)]
     (d/touch user)))
 
 (defn find-user-by-email [db email]
