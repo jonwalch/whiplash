@@ -15,7 +15,7 @@
     [clojure.java.io :as io]))
 
 (defn service-routes []
-  ["/api"
+  ["/v1"
    {:coercion spec-coercion/coercion
     :muuntaja formats/instance
     :swagger {:id ::api}
@@ -46,26 +46,32 @@
 
     ["/api-docs/*"
      {:get (swagger-ui/create-swagger-ui-handler
-             {:url "/api/swagger.json"
+             {:url "/v1/swagger.json"
               :config {:validator-url nil}})}]]
 
-   ["/graphql" {:post (fn [req]
-                        (ok (graphql/execute-request (-> req :body slurp))))}]
+   ;["/graphql" {:post (fn [req]
+   ;                     (ok (graphql/execute-request (-> req :body slurp))))}]
 
-   ["/v1"
-    {:swagger {:tags ["API"]}}
+   ["/user"
+    {:swagger {:tags ["User"]}}
 
-    ["/user"
-     {:swagger {:tags ["User"]}
-      :post    {:summary    "create a user"
+    ["/create"
+     {:post    {:summary    "create a user"
                 :parameters {:body {:first-name string?
                                     :last-name  string?
                                     :email      string?
                                     :password   string?}}
                 :handler    (fn [req]
-                              (user/create-user req))}
+                              (user/create-user req))}}]
+
+    ["/login"
+     {:post    {:summary    "login as user"
+                :parameters {:body {:email      string?
+                                    :password   string?}}
+                :handler    (fn [req]
+                              (user/login req))}
       :get     {:summary    "get a user"
-                ;; TODO figure out how we want to get a user, by uuid?
+                ;; TODO figure out how we want to get a user, by db/id?
                 :parameters {:query {:email string?}}
                 :handler    (fn [req]
                               (user/get-user req))}}]]

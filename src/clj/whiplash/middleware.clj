@@ -56,6 +56,7 @@
   (restrict handler {:handler authenticated?
                      :on-error on-error}))
 
+;; TODO: read this from env
 (def secret (random-bytes 32))
 
 (def token-backend

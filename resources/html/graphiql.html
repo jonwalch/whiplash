@@ -85,7 +85,7 @@
       // Defines a GraphQL fetcher using the fetch API.
       function graphQLFetcher(graphQLParams) {
         console.log(graphQLParams);
-        return fetch(window.location.origin + '/api/graphql' + computeParams(), {
+        return fetch(window.location.origin + '/v1/graphql' + computeParams(), {
           method: 'post',
           headers: {
             'Content-Type': 'application/graphql',

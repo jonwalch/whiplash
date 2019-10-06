@@ -22,8 +22,23 @@
 (defn get-user
   [{:keys [params] :as req}]
   ;; TODO sanitize email
-  (if-let [entity (-> (d/db db/conn)
-                      (db/find-user-by-email (:email params)))]
-    (ok (select-keys entity
+  ;; TODO only able to do this for self
+  (if-let [user (-> (d/db db/conn)
+                    (db/find-user-by-email (:email params)))]
+    (ok (select-keys user
                      [:user/first-name :user/last-name :user/email :user/status]))
     (not-found)))
+
+(defn login
+  [{:keys [body-params] :as req}]
+  (let [{:keys [email password]} body-params
+        user (-> (d/db db/conn)
+                 (db/find-user-by-email email))
+        ;; TODO maybe return not-found if can't find user, right now just return 401
+        valid-password (hashers/check password (:user/password user))]
+    (if valid-password
+      (ok {:auth-token "token"})
+      (unauthorized))))
+
+(comment
+  (hashers/check "farts" nil))
