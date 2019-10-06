@@ -73,15 +73,15 @@
    :email "butt@cheek.com"
    :password "foobar"})
 
-(deftest test-user
+(deftest test-user-400s
   (testing "get fail spec"
     (let [response ((handler/app) (mock/request :get "/v1/user/login"))]
       (is (= 400 (:status response)))))
 
-  (testing "get user doesn't exist"
+  (testing "cant get user, not logged in"
     (let [response ((handler/app) (-> (mock/request :get "/v1/user/login")
                                       (mock/query-string {:email "kanye@west.com"})))]
-      (is (= 404 (:status response)))))
+      (is (= 403 (:status response)))))
 
   (testing "post create user failure"
     (let [{:keys [status] :as response}
@@ -93,8 +93,9 @@
     (let [login-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
                                         (mock/json-body {:email    (:email dummy-user)
                                                          :password (:email dummy-user)})))]
-      (is (= 401 (:status login-resp)))))
+      (is (= 401 (:status login-resp))))))
 
+(deftest test-user
   (testing "create and get user success "
     (let [{:keys [email first-name last-name password]} dummy-user
           create-user-resp ((handler/app) (-> (mock/request :post "/v1/user/create")
@@ -102,24 +103,29 @@
           login-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
                                         (mock/json-body {:email email
                                                          :password password})))
+          auth-token (some->> login-resp parse-json-body :auth-token (str "Bearer "))
           login-fail-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
                                              (mock/json-body {:email email
                                                               :password "wrong_password"})))
+          get-fail-resp ((handler/app) (-> (mock/request :get "/v1/user/login")
+                                           (mock/query-string {:email email})))
 
-          get-resp ((handler/app) (-> (mock/request :get "/v1/user/login")
-                                      (mock/query-string {:email email})))]
+          get-success-resp ((handler/app) (-> (mock/request :get "/v1/user/login")
+                                              (mock/query-string {:email email})
+                                              (mock/header "Authorization" auth-token)))]
       (is (= 200 (:status create-user-resp)))
       (is (nil? (parse-json-body create-user-resp)))
 
       (is (= 200 (:status login-resp)))
-      (is (= {:auth-token "token"}
-             (parse-json-body login-resp)))
+      (is (string? auth-token))
 
       (is (= 401 (:status login-fail-resp)))
 
-      (is (= 200 (:status get-resp)))
+      (is (= 403 (:status get-fail-resp)))
+
+      (is (= 200 (:status get-success-resp)))
       (is (= #:user{:email      email
                     :first-name first-name
                     :last-name  last-name
                     :status "user.status/pending"}
-             (parse-json-body get-resp))))))
+             (parse-json-body get-success-resp))))))

@@ -59,4 +59,24 @@
       first
       #_(select-keys [:status :name :winner :results :begin-at :end-at])
       )
+
+  (client/post "http://localhost:3000/v1/user/create"
+               {:headers {}
+                :content-type :json
+                :body (json/write-str {:first-name "yas"
+                                       :last-name "queen"
+                                       :email "butt@cheek.com"
+                                       :password "foobar"})})
+  ;; user in this token is "this is sensitive data"
+  (client/get "http://localhost:3000/v1/user/login"
+               {:headers {"Authorization" "Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..RnACCMH5c16aVFt2iXNUUA.FAEJlhNX7liXRGGLoLlgE8VxZB8MRGUS8OOj0nm2n429-tk-HjtUBbdOsdv5JIG33oMINIXSNozNqpSlWdrydA._jNulwPYy85OR4J7X-88aw"}
+                :content-type :json
+                :query-params {:email "butt@cheek.com"}})
+
+  ;; user in this token is "butt@cheek.com", doesnt fail auth
+  (client/get "http://localhost:3000/v1/user/login"
+              {:headers {"Authorization" "Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..JNa6IucFsGKR5NNoQqKyHQ.VlohPbdhqwJ2fifC_ebIkIohm-pHt9suaeik6VPLDFZF5Z6Go4cCB5vVzhIKUKQG.y3jYmbbF1zyHNbLnEA9iWA"}
+               :content-type :json
+               :query-params {:email "butt@cheek.com"}})
+
   )

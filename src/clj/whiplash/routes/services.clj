@@ -12,7 +12,8 @@
     [whiplash.middleware.exception :as exception]
     [whiplash.routes.services.user :as user]
     [ring.util.http-response :refer :all]
-    [clojure.java.io :as io]))
+    [clojure.java.io :as io]
+    [whiplash.middleware :as middleware]))
 
 (defn service-routes []
   ["/v1"
@@ -65,16 +66,17 @@
                               (user/create-user req))}}]
 
     ["/login"
-     {:post    {:summary    "login as user"
-                :parameters {:body {:email      string?
-                                    :password   string?}}
-                :handler    (fn [req]
-                              (user/login req))}
-      :get     {:summary    "get a user"
-                ;; TODO figure out how we want to get a user, by db/id?
-                :parameters {:query {:email string?}}
-                :handler    (fn [req]
-                              (user/get-user req))}}]]
+     {:post {:summary    "login as user"
+             :parameters {:body {:email    string?
+                                 :password string?}}
+             :handler    (fn [req]
+                           (user/login req))}
+      :get  {:summary    "get a user"
+             :middleware [middleware/wrap-restricted]
+             ;; TODO figure out how we want to get a user, by db/id?
+             :parameters {:query {:email string?}}
+             :handler    (fn [req]
+                           (user/get-user req))}}]]
 
    ["/math"
     {:swagger {:tags ["math"]}}
@@ -93,7 +95,7 @@
                         {:status 200
                          :body {:total (+ x y)}})}}]]
 
-   ["/files"
+   #_["/files"
     {:swagger {:tags ["files"]}}
 
     ["/upload"

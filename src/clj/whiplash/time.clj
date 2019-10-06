@@ -9,28 +9,34 @@
 
 (defn days-ago
   ([days]
-   (time/minus (now) (time/days days)))
+   (days-ago (now) days))
   ([start days]
    (time/minus start (time/days days))))
 
 (defn days-ago-trunc
   ([days]
-   (time/truncate-to (days-ago days) :days))
+   (days-ago-trunc (now) days))
   ([start days]
    (time/truncate-to (days-ago start days) :days)))
 
 (defn days-in-future
   ([days]
-   (time/plus (now) (time/days days)))
+   (days-in-future (now) days))
   ([start days]
    (time/plus start (time/days days))))
 
 (defn days-in-future-trunc
   ([days]
-   (time/truncate-to (days-in-future days) :days))
+   (days-in-future-trunc (now) days))
   ([start days]
    (time/truncate-to (days-in-future start days) :days)))
 
 (defn date-iso-string
   [date]
   (time/format (time/formatter :iso-instant) date))
+
+(defn to-millis
+  ([] (to-millis (now)))
+  ([date] (time/to-millis-from-epoch date)))
+
+(comment (-> (days-in-future 7) time/to-millis-from-epoch))

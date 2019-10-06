@@ -2,7 +2,8 @@
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
             [buddy.hashers :as hashers]
-            [datomic.api :as d]))
+            [datomic.api :as d]
+            [whiplash.middleware :as middleware]))
 
 (defn create-user
   [{:keys [body-params] :as req}]
@@ -22,9 +23,7 @@
 (defn get-user
   [{:keys [params] :as req}]
   ;; TODO sanitize email
-  ;; TODO only able to do this for self
-  (if-let [user (-> (d/db db/conn)
-                    (db/find-user-by-email (:email params)))]
+  (if-let [user (db/find-user-by-email (:email params))]
     (ok (select-keys user
                      [:user/first-name :user/last-name :user/email :user/status]))
     (not-found)))
@@ -32,13 +31,13 @@
 (defn login
   [{:keys [body-params] :as req}]
   (let [{:keys [email password]} body-params
-        user (-> (d/db db/conn)
-                 (db/find-user-by-email email))
+        user (db/find-user-by-email email)
         ;; TODO maybe return not-found if can't find user, right now just return 401
         valid-password (hashers/check password (:user/password user))]
     (if valid-password
-      (ok {:auth-token "token"})
+      (ok {:auth-token (middleware/token (:user/email user))})
       (unauthorized))))
 
 (comment
-  (hashers/check "farts" nil))
+  (hashers/check "farts" nil)
+  (-> poop :identity))

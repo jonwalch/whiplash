@@ -11,15 +11,15 @@
     [whiplash.config :refer [env]]
     [ring-ttl-session.core :refer [ttl-memory-store]]
     [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
-    [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
-            [buddy.auth.accessrules :refer [restrict]]
-            [buddy.auth :refer [authenticated?]]
+    [buddy.auth.middleware :as buddy-middleware]
+    [buddy.auth.accessrules :refer [restrict]]
+    [buddy.auth :refer [authenticated?]]
     [buddy.auth.backends.token :refer [jwe-backend]]
-            [buddy.sign.jwt :refer [encrypt]]
-            [buddy.core.nonce :refer [random-bytes]]
-            [clj-time.core :refer [plus now minutes]])
-  (:import 
-           ))
+    [buddy.sign.jwt :as jwt]
+    [clj-time.core :refer [plus now days]]
+    [buddy.core.hash :as hash]
+    [whiplash.time :as time]
+    [whiplash.db.core :as db]))
 
 (defn wrap-internal-error [handler]
   (fn [req]
@@ -39,7 +39,6 @@
        {:status 403
         :title "Invalid anti-forgery token"})}))
 
-
 (defn wrap-formats [handler]
   (let [wrapped (-> handler wrap-params (wrap-format formats/instance))]
     (fn [request]
@@ -47,39 +46,73 @@
       ;; since they're not compatible with this middleware
       ((if (:websocket? request) handler wrapped) request))))
 
+;; TODO: read this from env var and set in K8S config
+(def secret (hash/sha256 "HIILWUUQBSCCICRMTJSQXIRYUIJIJRRL"))
+
+(defn authfn
+  [token]
+  #_(println token)
+  token)
+
+(defn jwe-on-error
+  [request e]
+  (log/info request e))
+
+;; TODO revisit :alg and :enc
+(def token-backend
+  (jwe-backend {:secret secret
+                :token-name "Bearer"
+                :authfn authfn
+                :on-error jwe-on-error
+                #_#_:options {:alg :a256kw
+                          :enc :a128gcm}}))
+
+(defn token [email]
+  (let [claims {:user email
+                :exp  (time/to-millis (time/days-in-future 30))}]
+    (jwt/encrypt claims secret #_{:alg :a256kw :enc :a128gcm})))
+
+(defn valid-auth?
+  [{:keys [identity] :as req}]
+  (let [{:keys [user exp]} identity]
+    (boolean (and (string? user)
+                  (int? exp)
+                  (< (time/to-millis) exp)
+                  (db/find-user-by-email user)))))
+
 (defn on-error [request response]
   (error-page
     {:status 403
      :title (str "Access to " (:uri request) " is not authorized")}))
 
+;; Add on a per route basis
 (defn wrap-restricted [handler]
-  (restrict handler {:handler authenticated?
+  (restrict handler {:handler valid-auth?
                      :on-error on-error}))
 
-;; TODO: read this from env
-(def secret (random-bytes 32))
-
-(def token-backend
-  (jwe-backend {:secret secret
-                :options {:alg :a256kw
-                          :enc :a128gcm}}))
-
-(defn token [username]
-  (let [claims {:user (keyword username)
-                :exp (plus (now) (minutes 60))}]
-    (encrypt claims secret {:alg :a256kw :enc :a128gcm})))
-
+;; Will add :identity to request if passed in as properly formatted Authorization Header
 (defn wrap-auth [handler]
   (let [backend token-backend]
     (-> handler
-        (wrap-authentication backend)
-        (wrap-authorization backend))))
+        (buddy-middleware/wrap-authentication backend)
+        (buddy-middleware/wrap-authorization backend))))
 
+;; These are applied in reverse order, how intuitive
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
       wrap-auth
       (wrap-defaults
         (-> site-defaults
+            ;;TODO Double check home routes implement CSRF protection
             (assoc-in [:security :anti-forgery] false)
-            (assoc-in  [:session :store] (ttl-memory-store (* 60 30)))))
+            #_(assoc-in  [:session :store] (ttl-memory-store (* 60 30))))) ;;seconds
       wrap-internal-error))
+
+(comment
+  (let [token (token "butt@cheek.com")]
+    (jwt/decrypt token secret))
+
+  (defn rand-str [len]
+    (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
+  (rand-str 32)
+  )

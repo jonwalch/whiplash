@@ -72,14 +72,14 @@
                    :where [?e ?attr ?val]]
                  db attr val)))
 
-(defn find-user [db id]
-  (when-let [user (find-one-by db :db/id id)]
+(defn find-user [id]
+  (when-let [user (find-one-by (d/db conn) :db/id id)]
     (d/touch user)))
 
-(defn find-user-by-email [db email]
-  (when-let [user (find-one-by db :user/email email)]
+(defn find-user-by-email [email]
+  (when-let [user (find-one-by (d/db conn) :user/email email)]
     (d/touch user)))
 
 (comment
   (def test-uuid #uuid"c0e83a90-8d64-441c-863b-43dbc9369277")
-  (find-user (d/db conn) test-uuid))
+  (find-user test-uuid))
