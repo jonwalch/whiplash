@@ -5,7 +5,9 @@
     [clojure.data.json :as json]
     [whiplash.time :as time]))
 
-(def base-url "https://api.pandascore.co/%s/matches?")
+(def base-url "https://api.pandascore.co/%s/")
+(def matches-url (str base-url "matches"))
+(def tournaments-url (str base-url "tournaments"))
 
 (def game-lookup
   {:csgo "csgo"
@@ -27,6 +29,19 @@
                                   "page[number]" (str page-number)}
                    :debug        true}))
 
+(comment
+  (def ts
+    (->
+      (get-matches-request (format tournaments-url "csgo")
+                           "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4"
+                           0
+                           "2019-10-07T03:04:10.041741Z,2019-10-15T03:04:34.123614Z")
+      :body
+      (json/read-str :key-fn keyword)
+      ))
+  (-> ts first)
+  )
+
 (defn get-all-matches
   [url api-key date-range]
   (let [resp (get-matches-request url api-key 0 date-range)
@@ -43,20 +58,20 @@
   [api-key game]
   (assert (contains? game-lookup game))
   (let [game-string (get game-lookup game)
-        url (format base-url game-string)
-        start (-> (time/days-ago 1) time/date-iso-string)
-        end (-> (time/days-in-future 1) time/date-iso-string)
+        url (format matches-url game-string)
+        start (time/date-iso-string (time/days-delta -1))
+        end (time/date-iso-string (time/days-delta 7))
         date-range (format "%s,%s" start end)]
     (flatten (get-all-matches url api-key date-range))))
 
 (comment
   (def foo
-    (get-matches "token" :csgo))
+    (get-matches "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4" :csgo))
   foo
   (-> foo
       :body
-      (json/read-str :key-fn keyword)
-      first
+      #_(json/read-str :key-fn keyword)
+      #_first
       #_(select-keys [:status :name :winner :results :begin-at :end-at])
       )
 

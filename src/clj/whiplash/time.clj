@@ -1,5 +1,6 @@
 (ns whiplash.time
-  (:require [java-time :as time]))
+  (:require [java-time :as time]
+            [java-time.repl :as repl]))
 
 ;; TODO unit tests
 
@@ -11,29 +12,18 @@
   ([] (to-millis (now)))
   ([date] (time/to-millis-from-epoch date)))
 
-(defn days-ago
+(defn days-delta
   ([days]
-   (days-ago (now) days))
-  ([start days]
-   (time/minus start (time/days days))))
-
-(defn days-ago-trunc
-  ([days]
-   (days-ago-trunc (now) days))
-  ([start days]
-   (time/truncate-to (days-ago start days) :days)))
-
-(defn days-in-future
-  ([days]
-   (days-in-future (now) days))
+   (days-delta (now) days))
   ([start days]
    (time/plus start (time/days days))))
 
-(defn days-in-future-trunc
+(defn days-delta-trunc
+  "Returns ZonedDateTime truncated to the day. i.e. 2019-10-07T00:00Z[UTC]"
   ([days]
-   (days-in-future-trunc (now) days))
+   (days-delta-trunc (now) days))
   ([start days]
-   (time/truncate-to (days-in-future start days) :days)))
+   (time/truncate-to (days-delta start days) :days)))
 
 (defn date-iso-string
   [date]
@@ -43,5 +33,13 @@
   [date]
   (time/format (time/formatter :rfc-1123-date-time) date))
 
-(comment (-> (days-in-future 7) time/to-millis-from-epoch)
-         (http-date-str (now)))
+(defn last-monday
+  "Returns truncated ZonedDateTime of the previous monday. Returns today if it is monday."
+  []
+  (.with (days-delta-trunc 0) (time/day-of-week :monday)))
+
+(defn next-monday
+  "Returns truncated ZonedDateTime of next monday."
+  []
+  (.with (days-delta-trunc 7) (time/day-of-week :monday)))
+

@@ -70,7 +70,7 @@
 
 ;; TODO revisit :alg and :enc
 (defn token [email]
-  (let [exp (time/days-in-future 30)
+  (let [exp (time/days-delta 30)
         claims {:user email
                 :exp  (time/to-millis exp)}]
     {:token (jwt/encrypt claims secret #_{:alg :a256kw :enc :a128gcm})
