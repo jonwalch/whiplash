@@ -6,8 +6,7 @@
     [whiplash.config :refer [env]]
     [clojure.tools.cli :refer [parse-opts]]
     [clojure.tools.logging :as log]
-    [mount.core :as mount]
-    [clj-http.client :as client])
+    [mount.core :as mount])
   (:gen-class))
 
 ;; log uncaught exceptions in threads

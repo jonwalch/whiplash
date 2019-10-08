@@ -7,6 +7,10 @@
   []
   (time/with-zone-same-instant (time/zoned-date-time) "UTC"))
 
+(defn to-millis
+  ([] (to-millis (now)))
+  ([date] (time/to-millis-from-epoch date)))
+
 (defn days-ago
   ([days]
    (days-ago (now) days))
@@ -35,8 +39,9 @@
   [date]
   (time/format (time/formatter :iso-instant) date))
 
-(defn to-millis
-  ([] (to-millis (now)))
-  ([date] (time/to-millis-from-epoch date)))
+(defn http-date-str
+  [date]
+  (time/format (time/formatter :rfc-1123-date-time) date))
 
-(comment (-> (days-in-future 7) time/to-millis-from-epoch))
+(comment (-> (days-in-future 7) time/to-millis-from-epoch)
+         (http-date-str (now)))

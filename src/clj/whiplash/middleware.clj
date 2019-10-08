@@ -11,6 +11,7 @@
     [whiplash.config :refer [env]]
     [ring-ttl-session.core :refer [ttl-memory-store]]
     [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
+    [ring.middleware.cookies :as cookies]
     [buddy.auth.middleware :as buddy-middleware]
     [buddy.auth.accessrules :refer [restrict]]
     [buddy.auth :refer [authenticated?]]
@@ -67,14 +68,25 @@
                 #_#_:options {:alg :a256kw
                           :enc :a128gcm}}))
 
+;; TODO revisit :alg and :enc
 (defn token [email]
-  (let [claims {:user email
-                :exp  (time/to-millis (time/days-in-future 30))}]
-    (jwt/encrypt claims secret #_{:alg :a256kw :enc :a128gcm})))
+  (let [exp (time/days-in-future 30)
+        claims {:user email
+                :exp  (time/to-millis exp)}]
+    {:token (jwt/encrypt claims secret #_{:alg :a256kw :enc :a128gcm})
+     :exp-str (time/http-date-str exp)}))
 
-(defn valid-auth?
+(defn valid-token-auth?
   [{:keys [identity] :as req}]
   (let [{:keys [user exp]} identity]
+    (boolean (and (string? user)
+                  (int? exp)
+                  (< (time/to-millis) exp)
+                  (db/find-user-by-email user)))))
+
+(defn valid-cookie-auth?
+  [{:keys [cookies] :as req}]
+  (let [{:keys [user exp]} (some-> cookies (get "value") :value (jwt/decrypt secret))]
     (boolean (and (string? user)
                   (int? exp)
                   (< (time/to-millis) exp)
@@ -87,7 +99,7 @@
 
 ;; Add on a per route basis
 (defn wrap-restricted [handler]
-  (restrict handler {:handler valid-auth?
+  (restrict handler {:handler valid-cookie-auth?
                      :on-error on-error}))
 
 ;; Will add :identity to request if passed in as properly formatted Authorization Header
@@ -100,6 +112,7 @@
 ;; These are applied in reverse order, how intuitive
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
+      (cookies/wrap-cookies)
       wrap-auth
       (wrap-defaults
         (-> site-defaults
@@ -109,9 +122,6 @@
       wrap-internal-error))
 
 (comment
-  (let [token (token "butt@cheek.com")]
-    (jwt/decrypt token secret))
-
   (defn rand-str [len]
     (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
   (rand-str 32)

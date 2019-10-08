@@ -12,7 +12,6 @@
     [whiplash.middleware.exception :as exception]
     [whiplash.routes.services.user :as user]
     [ring.util.http-response :refer :all]
-    [clojure.java.io :as io]
     [whiplash.middleware :as middleware]))
 
 (defn service-routes []

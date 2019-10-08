@@ -5,7 +5,8 @@
     [whiplash.handler :as handler]
     [whiplash.middleware.formats :as formats]
     [muuntaja.core :as m]
-    [mount.core :as mount]))
+    [mount.core :as mount]
+    [clojure.string :as string]))
 
 (defn parse-json-body
   [{:keys [body] :as req}]
@@ -95,6 +96,14 @@
                                                          :password (:email dummy-user)})))]
       (is (= 401 (:status login-resp))))))
 
+(defn get-token-from-headers
+  [headers]
+  (->> (get headers "Set-Cookie")
+       (filter #(string/includes? % "value="))
+       first
+       (re-find #"^value=(.*)$")
+       second))
+
 (deftest test-user
   (testing "create and get user success "
     (let [{:keys [email first-name last-name password]} dummy-user
@@ -103,7 +112,9 @@
           login-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
                                         (mock/json-body {:email email
                                                          :password password})))
-          auth-token (some->> login-resp parse-json-body :auth-token (str "Bearer "))
+          auth-token (-> login-resp :headers get-token-from-headers)
+          ;auth-token (some->> login-resp parse-json-body :auth-token (str "Bearer "))
+
           login-fail-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
                                              (mock/json-body {:email email
                                                               :password "wrong_password"})))
@@ -112,7 +123,8 @@
 
           get-success-resp ((handler/app) (-> (mock/request :get "/v1/user/login")
                                               (mock/query-string {:email email})
-                                              (mock/header "Authorization" auth-token)))]
+                                              (mock/cookie :value auth-token)
+                                              #_(mock/header "Authorization" (str "Bearer " auth-token))))]
       (is (= 200 (:status create-user-resp)))
       (is (nil? (parse-json-body create-user-resp)))
 
