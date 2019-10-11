@@ -6,7 +6,8 @@
     [ring.util.http-response :as response]))
 
 (defn home-page [request]
-  (layout/render request "home.html" {:docs (-> "docs/docs.md" io/resource slurp)}))
+  (layout/render request "index.html")
+  #_(layout/render request "home.html" {:docs (-> "docs/docs.md" io/resource slurp)}))
 
 (defn about-page [request]
   (layout/render request "about.html"))
@@ -19,4 +20,3 @@
    ["/graphiql" {:get (fn [request]
                         (layout/render request "graphiql.html"))}]
    ["/about" {:get about-page}]])
-

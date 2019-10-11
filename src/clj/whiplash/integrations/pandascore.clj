@@ -26,8 +26,9 @@
   (client/get url {:headers      {"Authorization" api-key}
                    :query-params {"range[begin_at]" date-range
                                   "page[size]"   "100"
-                                  "page[number]" (str page-number)}
-                   :debug        true}))
+                                  "page[number]" (str page-number)
+                                  "sort" "begin_at"}
+                   #_#_:debug        true}))
 
 (comment
   (def ts
@@ -35,11 +36,14 @@
       (get-matches-request (format tournaments-url "csgo")
                            "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4"
                            0
-                           "2019-10-07T03:04:10.041741Z,2019-10-15T03:04:34.123614Z")
+                           (str (time/date-iso-string (time/last-monday))
+                                ","
+                                (time/date-iso-string (time/next-monday)))
+                           #_"2019-10-07T03:04:10.041741Z,2019-10-15T03:04:34.123614Z")
       :body
       (json/read-str :key-fn keyword)
       ))
-  (-> ts first)
+  (->> ts (map :begin_at))
   )
 
 (defn get-all-matches

@@ -11,7 +11,6 @@
     [whiplash.config :refer [env]]
     [ring-ttl-session.core :refer [ttl-memory-store]]
     [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
-    [ring.middleware.cookies :as cookies]
     [buddy.auth.middleware :as buddy-middleware]
     [buddy.auth.accessrules :refer [restrict]]
     [buddy.auth :refer [authenticated?]]
@@ -19,8 +18,7 @@
     [buddy.sign.jwt :as jwt]
     [clj-time.core :refer [plus now days]]
     [buddy.core.hash :as hash]
-    [whiplash.time :as time]
-    [whiplash.db.core :as db]))
+    [whiplash.time :as time]))
 
 (defn wrap-internal-error [handler]
   (fn [req]
@@ -76,7 +74,7 @@
     {:token (jwt/encrypt claims secret #_{:alg :a256kw :enc :a128gcm})
      :exp-str (time/http-date-str exp)}))
 
-(defn valid-token-auth?
+#_(defn valid-token-auth?
   [{:keys [identity] :as req}]
   (let [{:keys [user exp]} identity]
     (boolean (and (string? user)
@@ -89,8 +87,7 @@
   (let [{:keys [user exp]} (some-> cookies (get "value") :value (jwt/decrypt secret))]
     (boolean (and (string? user)
                   (int? exp)
-                  (< (time/to-millis) exp)
-                  (db/find-user-by-email user)))))
+                  (< (time/to-millis) exp)))))
 
 (defn on-error [request response]
   (error-page
@@ -112,7 +109,6 @@
 ;; These are applied in reverse order, how intuitive
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
-      (cookies/wrap-cookies)
       wrap-auth
       (wrap-defaults
         (-> site-defaults

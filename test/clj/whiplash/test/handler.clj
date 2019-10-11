@@ -141,3 +141,11 @@
                     :last-name  last-name
                     :status "user.status/pending"}
              (parse-json-body get-success-resp))))))
+
+(deftest static-content
+  (testing "can get static content"
+    (let [{:keys [status] :as response}
+          ((handler/app) (mock/request :get "/dist/bundle.js"))]
+      (is (= 200 status)))
+    )
+  )

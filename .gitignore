@@ -16,4 +16,5 @@ profiles.clj
 /log
 
 #Manually added below here
-.idea
+/.idea
+/resources/public/dist
