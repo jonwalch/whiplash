@@ -2,15 +2,21 @@ const path = require("path");
 const webpack = require("webpack");
 
 module.exports = {
-      entry: "./resources/public/js/index.js",
+      entry: "./resources/public/js/index.tsx",
       mode: "development",
       module: {
               rules: [
                         {
-                                    test: /\.(js|jsx)$/,
+                                    test:  /\.ts(x?)$/,
                                     exclude: /(node_modules|bower_components)/,
-                                    loader: "babel-loader",
-                                    options: { presets: ["@babel/env"] }
+                                    loader: "ts-loader"
+                                   // loader: "babel-loader",
+                                    //options: { presets: ["@babel/env"] }
+                                  },
+                        {
+                                    enforce: "pre",
+                                    test: /\.js$/,
+                                    loader: "source-map-loader"
                                   },
                         {
                                     test: /\.css$/,
@@ -18,17 +24,22 @@ module.exports = {
                                   }
                       ]
             },
-      resolve: { extensions: ["*", ".js", ".jsx"] },
+      devtool: "source-map",
+      resolve: { extensions: ["*", ".js", ".jsx", ".ts", ".tsx"] },
       output: {
               path: path.resolve(__dirname, "resources/public/dist/"),
-              publicPath: "/public/dist/",
+              publicPath: "/dist/",
               filename: "bundle.js"
             },
       devServer: {
               contentBase: path.join(__dirname, "resources/html/"),
-              port: 3000,
-              publicPath: "http://localhost:3000/public/dist/",
+              port: 3001,
+              publicPath: "http://localhost:3000/dist/",
               hotOnly: true
             },
-      plugins: [new webpack.HotModuleReplacementPlugin()]
+      plugins: [new webpack.HotModuleReplacementPlugin()],
+//      externals: {
+//          "react": "React",
+//          "react-dom": "ReactDOM"
+//      }
 };

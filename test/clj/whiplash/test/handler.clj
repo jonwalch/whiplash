@@ -145,7 +145,5 @@
 (deftest static-content
   (testing "can get static content"
     (let [{:keys [status] :as response}
-          ((handler/app) (mock/request :get "/dist/bundle.js"))]
-      (is (= 200 status)))
-    )
-  )
+          ((handler/app) (mock/request :get "/js/index.js"))]
+      (is (= 200 status)))))
