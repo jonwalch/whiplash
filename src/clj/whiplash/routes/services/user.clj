@@ -2,7 +2,8 @@
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
             [buddy.hashers :as hashers]
-            [whiplash.middleware :as middleware]))
+            [whiplash.middleware :as middleware]
+            [datomic.api :as d]))
 
 (defn create-user
   [{:keys [body-params] :as req}]
@@ -62,3 +63,20 @@
                                         :team-id   team-id})
         (ok))
       (not-found {:message (format "User %s not found" screen-name)}))))
+
+;; TODO assert on screen-anme and game-id
+(defn get-guess
+  [{:keys [params] :as req}]
+  (let [{:keys [screen-name game-id]} params
+        ;; TODO figur eout why this isnt getting casted by middleware
+        game-id (Integer/parseInt game-id)]
+    (if-let [guess (db/find-guess-for-game-id (d/db db/conn) screen-name game-id)]
+      (ok (select-keys guess
+                     [:team/name :team/id :game/id :game/name :guess/time :guess/score :game/type]))
+      (not-found {:message (format "guess for user %s, game-id %s not found"
+                                   screen-name
+                                   game-id)}))))
+
+(comment (Integer/parseInt "123"))
+#_(select-keys guess
+               [:team/name :team/id :game/id :game/name :guess/time :guess/score :game/type])

@@ -4,7 +4,7 @@
     [io.rkn.conformity :as c]
     [mount.core :refer [defstate]]
     [whiplash.config :refer [env]]
-    [clj-uuid :as uuid]))
+    [whiplash.time :as time]))
 
 (defn install-schema
   "This function expected to be called at system start up.
@@ -49,6 +49,7 @@
 ;; TODO validate args
 (defn add-user
   [conn {:keys [first-name last-name status email password screen-name]}]
+  ;; TODO :user/signup-time
   @(d/transact conn [{:user/first-name first-name
                       :user/last-name  last-name
                       :user/screen-name screen-name
@@ -57,14 +58,15 @@
                       :user/password   password}]))
 
 (defn add-guess-for-user
-  "purposely leaving out score, will be added by another piece of code later"
+  "purposely leaving out :guess/score, will be added by another piece of code later"
   [conn {:keys [db/id game-type game-name game-id team-name team-id]}]
-  @(d/transact conn [{:db/id id
-                      :user/guesses [{:game/type game-type
-                                      :game/name game-name
-                                      :game/id game-id
-                                      :team/name team-name
-                                      :team/id team-id}]}]))
+  @(d/transact conn [{:db/id        id
+                      :user/guesses [{:guess/time (time/to-date)
+                                      :game/type  game-type
+                                      :game/name  game-name
+                                      :game/id    game-id
+                                      :team/name  team-name
+                                      :team/id    team-id}]}]))
 
 (defn find-one-by
   "Given db value and an (attr/val), return the user as EntityMap (datomic.query.EntityMap)
@@ -83,6 +85,7 @@
                    :where [?e ?attr ?val]]
                  db attr val)))
 
+;; TODO don't touch these unless necessary, we're pulling in all of :user/guesses too
 (defn find-user [id]
   (when-let [user (find-one-by (d/db conn) :db/id id)]
     (d/touch user)))
@@ -95,6 +98,22 @@
   (when-let [user (find-one-by (d/db conn) :user/screen-name screen-name)]
     (d/touch user)))
 
-(comment
-  (def test-uuid #uuid"c0e83a90-8d64-441c-863b-43dbc9369277")
-  (find-user test-uuid))
+(defn find-newest-guess
+  [screen-name]
+  (when-let [user (find-user-by-screen-name screen-name)]
+    (->> user
+        :user/guesses
+        (sort-by :guess/time #(compare %2 %1))
+        first)))
+
+(defn find-guess-for-game-id
+  [db screen-name game-id]
+  (when-let [guess (d/entity db
+                             (d/q
+                               '[:find ?guess .
+                                 :in $ ?screen-name ?game-id
+                                 :where [?user :user/screen-name ?screen-name]
+                                 [?user :user/guesses ?guess]
+                                 [?guess :game/id ?game-id]]
+                               db screen-name game-id))]
+    (d/touch guess)))

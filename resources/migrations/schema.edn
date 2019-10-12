@@ -75,7 +75,13 @@
            :db/ident       :guess/score
            :db/valueType   :db.type/long
            :db/cardinality :db.cardinality/one
-           }]
+           }
+          {:db/doc         "Time of guess"
+           :db/ident       :guess/time
+           :db/valueType   :db.type/instant
+           :db/cardinality :db.cardinality/one
+           }
+          ]
          [{:db/doc         "User guesses"
            :db/ident       :user/guesses
            :db/valueType   :db.type/ref

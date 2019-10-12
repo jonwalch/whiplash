@@ -10,6 +10,7 @@
 
 (defn parse-json-body
   [{:keys [body] :as req}]
+  ;(assert body)
   (m/decode formats/instance "application/json" body))
 
 (use-fixtures
@@ -38,7 +39,7 @@
     (let [response ((handler/app) (mock/request :get "/invalid"))]
       (is (= 404 (:status response)))))
 
-  #_(testing "services"
+  (testing "services"
     (testing "success"
       (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
                                         (mock/json-body {:x 10, :y 6})))]
@@ -48,6 +49,11 @@
     (testing "parameter coercion error, stack trace expected"
       (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
                                         (mock/json-body {:x 10, :y "invalid"})))]
+        (is (= 400 (:status response)))))
+
+    (testing "parameter coercion error, stack trace expected"
+      (let [response ((handler/app) (-> (mock/request :get "/v1/math/plus")
+                                        (mock/query-string {:x 10, :y "invalid"})))]
         (is (= 400 (:status response)))))
 
     (testing "response coercion error"
@@ -67,6 +73,12 @@
                                         (mock/header "accept" "application/transit+json")))]
         (is (= 200 (:status response)))
         (is (= {:total 16} (m/decode-response-body response)))))))
+
+(deftest static-content
+  (testing "can get static content"
+    (let [{:keys [status] :as response}
+          ((handler/app) (mock/request :get "/js/index.tsx"))]
+      (is (= 200 status)))))
 
 (def dummy-user
   {:first-name "yas"
@@ -168,7 +180,6 @@
 (deftest test-user
   (testing "create and get user success "
     (let [{:keys [email]} dummy-user
-          ;create-user-resp (create-user)
           {:keys [auth-token] login-resp :response} (create-user-and-login)
           login-fail-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
                                              (mock/json-body {:email email
@@ -191,24 +202,74 @@
      :team-id   2}
     :screen-name (:screen-name user)))
 
+(defn dummy-guess-2
+  [user]
+  (assoc
+    {:game-type "csgo"
+     :game-name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters Game 4"
+     :game-id   124
+     :team-name "Peter's Pumpkin Eaters"
+     :team-id   2}
+    :screen-name (:screen-name user)))
+
+(defn- create-guess
+  ([auth-token guess]
+   (create-guess dummy-user auth-token guess))
+  ([user auth-token guess]
+   (let [resp ((handler/app) (-> (mock/request :post "/v1/user/guess")
+                                 (mock/json-body guess)
+                                 (mock/cookie :value auth-token)))
+         parsed-body (parse-json-body resp)]
+     (is (= 200 (:status resp)))
+
+     (assoc resp :body parsed-body))))
+
+
+(defn- get-guess
+  ([auth-token screen-name game-id]
+   (get-guess dummy-user auth-token screen-name game-id))
+  ([user auth-token screen-name game-id]
+   (let [resp ((handler/app) (-> (mock/request :get "/v1/user/guess")
+                                 (mock/query-string {:screen-name screen-name
+                                                     :game-id game-id})
+                                 (mock/cookie :value auth-token)))
+         parsed-body (parse-json-body resp)]
+     (is (= 200 (:status resp)))
+
+     (assoc resp :body parsed-body))))
+
 ;; TODO check db that it exists how we expect
 ;; TODO add test to check fialure when not authed
-(deftest add-guess
-  (testing "We can add a guess for a user"
+(deftest add-guesses
+  (testing "We can add and get guesses for a user"
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
-          guess-resp ((handler/app) (-> (mock/request :post "/v1/user/create-guess")
-                                        (mock/json-body (dummy-guess dummy-user))
-                                        (mock/cookie :value auth-token)))]
-      (is (= 200 (:status guess-resp)))))
+          {:keys [screen-name game-id] :as dummy-guess} (dummy-guess dummy-user)
+          dummy-guess2 (dummy-guess-2 dummy-user)
+          create-guess-resp (create-guess auth-token dummy-guess)
+          create-guess-resp2 (create-guess auth-token dummy-guess2)
+          {:keys [body] :as get-guess-resp} (get-guess auth-token screen-name game-id)
+          get-guess-resp2 (get-guess auth-token
+                                     (:screen-name dummy-guess2)
+                                     (:game-id dummy-guess2))]
+      (is (= {;;:guess/time "2019-10-12T21:23:47Z"
+              :game/id 123
+              :team/name "Peter's Pumpkin Eaters"
+              :team/id 2
+              :game/type "game.type/csgo"
+              :game/name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters Game 3"}
+             (select-keys body
+                          [:game/id :team/name :team/id :game/type :game/name])))
+      (is (= {;;:guess/time "2019-10-12T21:23:47Z"
+              :game/id 124
+              :team/name "Peter's Pumpkin Eaters"
+              :team/id 2
+              :game/type "game.type/csgo"
+              :game/name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters Game 4"}
+             (select-keys (:body get-guess-resp2)
+                          [:game/id :team/name :team/id :game/type :game/name])))))
 
-  (testing "Fail to auth"
+  (testing "Fail to auth because no cookie"
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
-          guess-resp ((handler/app) (-> (mock/request :post "/v1/user/create-guess")
+          guess-resp ((handler/app) (-> (mock/request :post "/v1/user/guess")
                                         (mock/json-body (dummy-guess dummy-user))))]
       (is (= 403 (:status guess-resp))))))
-
-(deftest static-content
-  (testing "can get static content"
-    (let [{:keys [status] :as response}
-          ((handler/app) (mock/request :get "/js/index.tsx"))]
-      (is (= 200 status)))))

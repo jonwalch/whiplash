@@ -66,30 +66,37 @@
                               (user/create-user req))}}]
 
     ["/login"
-     {:post {:summary    "login as user"
+     {:get  {:summary    "get a user"
+             :parameters {:query {:email string?}}
+             :middleware [middleware/wrap-restricted]
+             :handler    (fn [req]
+                           (user/get-user req))}
+
+      :post {:summary    "login as user"
              :parameters {:body {:email    string?
                                  :password string?}}
              :handler    (fn [req]
-                           (user/login req))}
-      :get  {:summary    "get a user"
-             :middleware [middleware/wrap-restricted]
-             ;; TODO figure out how we want to get a user, by db/id?
-             :parameters {:query {:email string?}}
-             :handler    (fn [req]
-                           (user/get-user req))}}]
-    ["/create-guess"
-     {:post {:summary    "create a guess for a user"
-             :middleware [middleware/wrap-restricted]
+                           (user/login req))}}]
+    ["/guess"
+     {:get {:summary    "get a guess for a user/game-id"
+            :parameters {:query {:screen-name string?
+                                 :game-id int?}}
+            :middleware [middleware/wrap-restricted]
+            :handler    (fn [req]
+                          (user/get-guess req))}
+
+      :post {:summary    "create a guess for a user"
              :parameters {:body {:screen-name    string?
                                  :game-type string?
                                  :game-name string?
                                  :game-id int?
                                  :team-name string?
                                  :team-id int?}}
+             :middleware [middleware/wrap-restricted]
              :handler    (fn [req]
                            (user/create-guess req))}}]]
 
-   #_["/math"
+   ["/math"
     {:swagger {:tags ["math"]}}
 
     ["/plus"

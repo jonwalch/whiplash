@@ -43,3 +43,14 @@
   []
   (.with (days-delta-trunc 7) (time/day-of-week :monday)))
 
+(defn to-date
+  "Takes a zoned date time and turns it into a java.util.Date"
+  ([]
+   (to-date (now)))
+  ([start]
+   (time/java-date start)))
+
+(comment
+  (inst?
+    (time/java-date (now))))
+
