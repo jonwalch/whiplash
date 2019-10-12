@@ -57,7 +57,7 @@
   [request e]
   (log/info request e))
 
-;; TODO revisit :alg and :enc
+;; TODO revisit :alg and :enc, maybe add unauthorized-handler
 (def token-backend
   (jwe-backend {:secret secret
                 :token-name "Bearer"

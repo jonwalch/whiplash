@@ -41,10 +41,10 @@
         :swagger {:info {:title "my-api"
                          :description "https://cljdoc.org/d/metosin/reitit"}}}
 
-    ["/swagger.json"
+    #_["/swagger.json"
      {:get (swagger/create-swagger-handler)}]
 
-    ["/api-docs/*"
+    #_["/api-docs/*"
      {:get (swagger-ui/create-swagger-ui-handler
              {:url "/v1/swagger.json"
               :config {:validator-url nil}})}]]
@@ -76,9 +76,20 @@
              ;; TODO figure out how we want to get a user, by db/id?
              :parameters {:query {:email string?}}
              :handler    (fn [req]
-                           (user/get-user req))}}]]
+                           (user/get-user req))}}]
+    ["/create-guess"
+     {:post {:summary    "create a guess for a user"
+             :middleware [middleware/wrap-restricted]
+             :parameters {:body {:screen-name    string?
+                                 :game-type string?
+                                 :game-name string?
+                                 :game-id int?
+                                 :team-name string?
+                                 :team-id int?}}
+             :handler    (fn [req]
+                           (user/create-guess req))}}]]
 
-   ["/math"
+   #_["/math"
     {:swagger {:tags ["math"]}}
 
     ["/plus"

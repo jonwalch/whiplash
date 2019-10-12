@@ -56,6 +56,16 @@
                       :user/email      email
                       :user/password   password}]))
 
+(defn add-guess-for-user
+  "purposely leaving out score, will be added by another piece of code later"
+  [conn {:keys [db/id game-type game-name game-id team-name team-id]}]
+  @(d/transact conn [{:db/id id
+                      :user/guesses [{:game/type game-type
+                                      :game/name game-name
+                                      :game/id game-id
+                                      :team/name team-name
+                                      :team/id team-id}]}]))
+
 (defn find-one-by
   "Given db value and an (attr/val), return the user as EntityMap (datomic.query.EntityMap)
    If there is no result, return nil.
@@ -79,6 +89,10 @@
 
 (defn find-user-by-email [email]
   (when-let [user (find-one-by (d/db conn) :user/email email)]
+    (d/touch user)))
+
+(defn find-user-by-screen-name [screen-name]
+  (when-let [user (find-one-by (d/db conn) :user/screen-name screen-name)]
     (d/touch user)))
 
 (comment

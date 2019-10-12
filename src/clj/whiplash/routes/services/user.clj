@@ -2,7 +2,6 @@
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
             [buddy.hashers :as hashers]
-            [datomic.api :as d]
             [whiplash.middleware :as middleware]))
 
 (defn create-user
@@ -26,7 +25,7 @@
     (ok (select-keys user
                      [:user/first-name :user/last-name :user/email :user/status
                       :user/screen-name]))
-    (not-found)))
+    (not-found {:message (format "User %s not found" (:email params))})))
 
 (defn login
   [{:keys [body-params] :as req}]
@@ -45,3 +44,21 @@
                  :http-only true
                  :expire exp-str}}
       (unauthorized))))
+
+;; TODO lookup if they already have a guess for this combo
+;; TODO actually use game-type
+;; TODO validation
+(defn create-guess
+  [{:keys [body-params] :as req}]
+  (let [{:keys [screen-name game-type game-name game-id team-name team-id]} body-params
+        user (db/find-user-by-screen-name screen-name)]
+    (if user
+      (do
+        (db/add-guess-for-user db/conn {:db/id     (:db/id user)
+                                        :game-id   game-id
+                                        :game-name game-name
+                                        :game-type :game.type/csgo
+                                        :team-name team-name
+                                        :team-id   team-id})
+        (ok))
+      (not-found {:message (format "User %s not found" screen-name)}))))
