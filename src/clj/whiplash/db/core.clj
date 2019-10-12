@@ -48,9 +48,10 @@
 
 ;; TODO validate args
 (defn add-user
-  [conn {:keys [first-name last-name status email password]}]
+  [conn {:keys [first-name last-name status email password screen-name]}]
   @(d/transact conn [{:user/first-name first-name
                       :user/last-name  last-name
+                      :user/screen-name screen-name
                       :user/status     status
                       :user/email      email
                       :user/password   password}]))

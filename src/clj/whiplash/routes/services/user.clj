@@ -7,13 +7,14 @@
 
 (defn create-user
   [{:keys [body-params] :as req}]
-  (let [{:keys [first-name last-name email password]} body-params
+  (let [{:keys [first-name last-name email password screen-name]} body-params
         encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})]
     ;; TODO sanitize fields
-    ;; TODO check if user already exists for this email
+    ;; TODO check if user already exists for this email or screen-name
     (db/add-user db/conn {:first-name first-name
                           :last-name  last-name
                           :status     :user.status/pending
+                          :screen-name screen-name
                           :email      email
                           :password   encrypted-password})
     (ok)))
@@ -23,7 +24,8 @@
   ;; TODO sanitize email
   (if-let [user (db/find-user-by-email (:email params))]
     (ok (select-keys user
-                     [:user/first-name :user/last-name :user/email :user/status]))
+                     [:user/first-name :user/last-name :user/email :user/status
+                      :user/screen-name]))
     (not-found)))
 
 (defn login

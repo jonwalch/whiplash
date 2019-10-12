@@ -60,7 +60,8 @@
                 :parameters {:body {:first-name string?
                                     :last-name  string?
                                     :email      string?
-                                    :password   string?}}
+                                    :password   string?
+                                    :screen-name string?}}
                 :handler    (fn [req]
                               (user/create-user req))}}]
 

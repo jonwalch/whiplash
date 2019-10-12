@@ -72,7 +72,8 @@
   {:first-name "yas"
    :last-name "queen"
    :email "butt@cheek.com"
-   :password "foobar"})
+   :password "foobar"
+   :screen-name "queefburglar"})
 
 (deftest test-user-400s
   (testing "get fail spec"
@@ -106,7 +107,7 @@
 
 (deftest test-user
   (testing "create and get user success "
-    (let [{:keys [email first-name last-name password]} dummy-user
+    (let [{:keys [email first-name last-name password screen-name]} dummy-user
           create-user-resp ((handler/app) (-> (mock/request :post "/v1/user/create")
                                               (mock/json-body dummy-user)))
           login-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
@@ -139,11 +140,12 @@
       (is (= #:user{:email      email
                     :first-name first-name
                     :last-name  last-name
-                    :status "user.status/pending"}
+                    :status "user.status/pending"
+                    :screen-name screen-name}
              (parse-json-body get-success-resp))))))
 
 (deftest static-content
   (testing "can get static content"
     (let [{:keys [status] :as response}
-          ((handler/app) (mock/request :get "/js/index.js"))]
+          ((handler/app) (mock/request :get "/js/index.tsx"))]
       (is (= 200 status)))))
