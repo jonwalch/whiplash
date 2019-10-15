@@ -1,7 +1,8 @@
 (ns whiplash.integrations.twitch
   (:require [clj-http.client :as client]
             [clojure.string :as string]
-            [whiplash.integrations.common :as common]))
+            [whiplash.integrations.common :as common]
+            [clojure.tools.logging :as log]))
 
 (defn- get-streams
   [client-id usernames]
@@ -19,13 +20,13 @@
                                   :live_url
                                   (re-find twitch-regex))]
              ;; Second or third will not be nil for each vector of regex matches
-             (assoc match :twitch_username (or (second regex-match)
+             (assoc match :twitch/username (or (second regex-match)
                                                (nth regex-match 2)))))
          matches)))
 
 (defn- views-per-twitch-stream
   [matches]
-  (let [usernames (keep :twitch_username matches)]
+  (let [usernames (keep :twitch/username matches)]
     (->> (get-streams "lcqp3mnqxolecsk3e3tvqcueb2sx8x" usernames)
          common/resp->body
          :data
@@ -43,8 +44,9 @@
   [matches]
   (let [matches (add-twitch-usernames-from-urls matches)
         views-lookup (views-per-twitch-stream matches)]
+    (log/info "Twitch view lookup: " views-lookup)
     (->> matches
          (map
-           (fn [{:keys [twitch_username] :as match}]
-             (let [live-viewers (get views-lookup twitch_username 0)]
-               (assoc match :live_viewers live-viewers)))))))
+           (fn [{:keys [twitch/username] :as match}]
+             (let [live-viewers (get views-lookup username 0)]
+               (assoc match :twitch/live-viewers live-viewers)))))))

@@ -58,5 +58,7 @@
   (time/zoned-date-time "2019-10-12T07:47:11Z" "UTC")
   (time/with-zone-same-instant (time/zoned-date-time "2019-10-12T07:47:11Z") "UTC")
   (inst?
-    (time/java-date (now))))
+    (time/java-date (now)))
+  (time/before? (now) (days-delta 1))
+  )
 

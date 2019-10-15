@@ -5,7 +5,8 @@
     [whiplash.time :as time]
     [whiplash.integrations.twitch :as twitch]
     [whiplash.integrations.common :as common]
-    [clojure.string :as string]))
+    [clojure.string :as string]
+    [java-time :as java-time]))
 
 (def base-url "https://api.pandascore.co/%s/")
 (def matches-url (str base-url "matches"))
@@ -88,6 +89,25 @@
                  (or (= "running" status)
                      (= "not_started" status))))))
 
+(defn by-viewers-and-scheduled
+  [x y]
+  ;; Sort by largest view count
+  (let [c (compare (:twitch/live-viewers y) (:twitch/live-viewers x))]
+    (if (not= c 0)
+      c
+      ;; if same view count, sort by which one starts sooner
+      (compare (:scheduled_at x) (:scheduled_at y)))))
+
+(defn best-stream-candidate
+  []
+  (->> (get-matches "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4" :csgo)
+       twitch-matches
+       running-matches
+       transform-timestamps
+       twitch/add-live-viewer-count
+       (sort by-viewers-and-scheduled)
+       first))
+
 (comment
   (def foo
     (get-matches "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4" :csgo))
@@ -100,9 +120,15 @@
                              transform-timestamps
                              running-matches
                              twitch/add-live-viewer-count
+                             (sort by-viewers-and-scheduled)
+                             #_(filter (fn [m]
+                                       (= (:twitch/username m) "beyondthesummit_pt")))
+                             (map #(select-keys % [:twitch/live-viewers :live_url :twitch/username :slug :scheduled_at #_:end_at]))
                              ;(group-by :status)
                              )]
     running-matches)
+
+  (best-stream-candidate)
 
   (-> (client/get "https://api.twitch.tv/helix/streams"
                   {:headers      {"Client-ID" "lcqp3mnqxolecsk3e3tvqcueb2sx8x"}
