@@ -141,7 +141,6 @@
                                                         :password password})))
          parsed-body (parse-json-body resp)
          auth-token (-> resp :headers get-token-from-headers)]
-
      ;auth-token (some->> login-resp parse-json-body :auth-token (str "Bearer "))
 
      (is (= 200 (:status resp)))
@@ -238,8 +237,6 @@
 
      (assoc resp :body parsed-body))))
 
-;; TODO check db that it exists how we expect
-;; TODO add test to check fialure when not authed
 (deftest add-guesses
   (testing "We can add and get guesses for a user"
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login)

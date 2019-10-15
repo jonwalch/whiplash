@@ -8,6 +8,10 @@
   []
   (time/with-zone-same-instant (time/zoned-date-time) "UTC"))
 
+(defn timestamp-to-zdt
+  [timestamp-str]
+  (time/with-zone-same-instant (time/zoned-date-time timestamp-str) "UTC"))
+
 (defn to-millis
   ([] (to-millis (now)))
   ([date] (time/to-millis-from-epoch date)))
@@ -51,6 +55,8 @@
    (time/java-date start)))
 
 (comment
+  (time/zoned-date-time "2019-10-12T07:47:11Z" "UTC")
+  (time/with-zone-same-instant (time/zoned-date-time "2019-10-12T07:47:11Z") "UTC")
   (inst?
     (time/java-date (now))))
 
