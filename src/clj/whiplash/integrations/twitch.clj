@@ -15,7 +15,7 @@
                :query-params {:first      "100"
                               :user_login usernames}}))
 
-(defn- add-twitch-usernames-from-urls
+(defn- add-twitch-usernames-and-url
   [matches]
   (let [twitch-regex #"^https://player.twitch.tv/\?channel=(.*)$|^https://www.twitch.tv/(.*)$"]
     (map (fn [{:keys [live_url] :as match}]
@@ -25,7 +25,8 @@
              ;; Second or third will not be nil for each vector of regex matches
              (when-not username
                (log/info (format "couldn't parse twitch username from pandascore live_url %s" live_url)))
-             (assoc match :twitch/username username)))
+             (assoc match :twitch/username username
+                          :live_url (format "https://player.twitch.tv/?channel=%s" username))))
          matches)))
 
 (defn- views-per-twitch-stream
@@ -46,7 +47,7 @@
 
 (defn add-live-viewer-count
   [matches]
-  (let [matches (add-twitch-usernames-from-urls matches)
+  (let [matches (add-twitch-usernames-and-url matches)
         views-lookup (views-per-twitch-stream matches)]
     (log/info "Twitch view lookup: " views-lookup)
     (->> matches

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState, useEffect } from "react";
 
 //export interface HelloProps { compiler: string; framework: string; }
 
@@ -10,30 +10,52 @@ import React, {useState} from "react";
 //     }
 // }
 
-
 export function Hello(props: any) {
+  const [team, setTeam] = useState("");
+  const [streamURL, setURL] = useState("");
+  useEffect(() => {
+    getStream();
+  }, []); // run this only on creation
+  // can re render if given prop args in the []
 
-    const handleClick = (team : string) => {
-        setTeam(team)
-    }
-    const [on, setOn] = useState(false)
-    const [team, setTeam] = useState("")
-    //setOn(true)
-    //TODO size video based on web browser size
-    return (<div>
+  const getStream = async () => {
+    const response = await fetch("http://localhost:3000/v1/stream", {
+      headers: { "Content-Type": "application/json" }
+    });
+    const resp = await response.json();
+    const url = resp["live_url"];
+    setURL(url);
+  };
+
+  const handleClick = (team: string) => {
+    setTeam(team);
+  };
+
+  //TODO size video based on web browser size
+  return (
+    <>
+      <div>
         <h2>Whiplash - Win While Watching</h2>
-        <iframe
-            src="https://player.twitch.tv/?channel=ramee&muted=false"
-            height="576"
-            width="1024"
-            frameBorder="0"
-            scrolling="no"
-            allowFullScreen={true}>
-        </iframe>
-        <div>
-            <button onClick={() => handleClick("Red Team")}>Red Team</button>
-            <button onClick={() => handleClick("Blue Team")}>Blue Team</button>
-        </div>
-        <h1> You selected {team}</h1>
-    </div>)
+        {streamURL && (
+          <div>
+            <iframe
+              src={streamURL + "&muted=false"} //"https://player.twitch.tv/?channel=ramee&muted=false"
+              height="576"
+              width="1024"
+              frameBorder="0"
+              scrolling="no"
+              allowFullScreen={true}
+            ></iframe>
+            <div>
+              <button onClick={() => handleClick("Red Team")}>Red Team</button>
+              <button onClick={() => handleClick("Blue Team")}>
+                Blue Team
+              </button>
+            </div>
+            <h1> You selected {team}</h1>
+          </div>
+        )}
+      </div>
+    </>
+  );
 }
