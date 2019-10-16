@@ -3,29 +3,12 @@
     [clojure.test :refer :all]
     [ring.mock.request :as mock]
     [whiplash.handler :as handler]
-    [whiplash.middleware.formats :as formats]
     [muuntaja.core :as m]
-    [mount.core :as mount]
-    [clojure.string :as string]))
+    [clojure.string :as string]
+    [whiplash.test.common :as common]))
 
-(defn parse-json-body
-  [{:keys [body] :as req}]
-  ;(assert body)
-  (m/decode formats/instance "application/json" body))
-
-(use-fixtures
-  :once
-  (fn [f]
-    (mount/start #'whiplash.config/env
-                 #'whiplash.handler/app-routes)
-    (f)))
-
-(use-fixtures
-  :each
-  (fn [f]
-    (mount/start #'whiplash.db.core/conn)
-    (f)
-    (mount/stop #'whiplash.db.core/conn)))
+(common/app-fixtures)
+(common/db-fixtures)
 
 ;; TODO: Setup running these tests automatically in AWS CodeBuild
 ;; Planning on going with AWS because Datomic support is very good
@@ -124,7 +107,7 @@
    (assert user)
    (let [resp ((handler/app) (-> (mock/request :post "/v1/user/create")
                                              (mock/json-body dummy-user)))
-         parsed-body (parse-json-body resp)]
+         parsed-body (common/parse-json-body resp)]
 
      (is (= 200 (:status resp)))
      (is (nil? parsed-body))
@@ -139,9 +122,9 @@
    (let [resp ((handler/app) (-> (mock/request :post "/v1/user/login")
                                        (mock/json-body {:email    email
                                                         :password password})))
-         parsed-body (parse-json-body resp)
+         parsed-body (common/parse-json-body resp)
          auth-token (-> resp :headers get-token-from-headers)]
-     ;auth-token (some->> login-resp parse-json-body :auth-token (str "Bearer "))
+     ;auth-token (some->> login-resp common/parse-json-body :auth-token (str "Bearer "))
 
      (is (= 200 (:status resp)))
      (is (string? auth-token))
@@ -164,7 +147,7 @@
                                  (mock/query-string {:email email})
                                  (mock/cookie :value auth-token)
                                  #_(mock/header "Authorization" (str "Bearer " auth-token))))
-         parsed-body (parse-json-body resp)]
+         parsed-body (common/parse-json-body resp)]
 
      (is (= 200 (:status resp)))
      (is (= #:user{:email      email
@@ -218,11 +201,10 @@
    (let [resp ((handler/app) (-> (mock/request :post "/v1/user/guess")
                                  (mock/json-body guess)
                                  (mock/cookie :value auth-token)))
-         parsed-body (parse-json-body resp)]
+         parsed-body (common/parse-json-body resp)]
      (is (= 200 (:status resp)))
 
      (assoc resp :body parsed-body))))
-
 
 (defn- get-guess
   ([auth-token screen-name game-id]
@@ -232,7 +214,7 @@
                                  (mock/query-string {:screen-name screen-name
                                                      :game-id game-id})
                                  (mock/cookie :value auth-token)))
-         parsed-body (parse-json-body resp)]
+         parsed-body (common/parse-json-body resp)]
      (is (= 200 (:status resp)))
 
      (assoc resp :body parsed-body))))

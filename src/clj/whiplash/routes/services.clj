@@ -11,6 +11,7 @@
     [whiplash.middleware.formats :as formats]
     [whiplash.middleware.exception :as exception]
     [whiplash.routes.services.user :as user]
+    [whiplash.routes.services.stream :as stream]
     [ring.util.http-response :refer :all]
     [whiplash.middleware :as middleware]))
 
@@ -51,6 +52,13 @@
 
    ;["/graphql" {:post (fn [req]
    ;                     (ok (graphql/execute-request (-> req :body slurp))))}]
+   ["/stream"
+    {:get  {:summary    "get the current best stream candidate"
+            ;:parameters {:query {:email string?}}
+            ;:middleware [middleware/wrap-restricted]
+            :handler    (fn [req]
+                          (stream/get-stream req))}}
+    ]
 
    ["/user"
     {:swagger {:tags ["User"]}}

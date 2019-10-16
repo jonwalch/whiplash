@@ -17,11 +17,13 @@
                           :screen-name screen-name
                           :email      email
                           :password   encrypted-password})
+    ;;TODO dont always return 200
     (ok)))
 
 (defn get-user
   [{:keys [params] :as req}]
   ;; TODO sanitize email
+  ;; TODO do this lookup from the cookie instead for proper authz
   (if-let [user (db/find-user-by-email (:email params))]
     (ok (select-keys user
                      [:user/first-name :user/last-name :user/email :user/status
@@ -49,6 +51,7 @@
 ;; TODO lookup if they already have a guess for this combo
 ;; TODO actually use game-type
 ;; TODO validation
+;; TODO do this lookup from the cookie instead for proper authz
 (defn create-guess
   [{:keys [body-params] :as req}]
   (let [{:keys [screen-name game-type game-name game-id team-name team-id]} body-params
@@ -64,7 +67,8 @@
         (ok))
       (not-found {:message (format "User %s not found" screen-name)}))))
 
-;; TODO assert on screen-anme and game-id
+;; TODO assert on screen-name and game-id
+;; TODO do this lookup from the cookie instead for proper authz
 (defn get-guess
   [{:keys [params] :as req}]
   (let [{:keys [screen-name game-id]} params
@@ -77,6 +81,5 @@
                                    screen-name
                                    game-id)}))))
 
-(comment (Integer/parseInt "123"))
 #_(select-keys guess
                [:team/name :team/id :game/id :game/name :guess/time :guess/score :game/type])

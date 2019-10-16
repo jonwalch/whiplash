@@ -6,7 +6,7 @@
     [whiplash.integrations.twitch :as twitch]
     [whiplash.integrations.common :as common]
     [clojure.string :as string]
-    [java-time :as java-time]))
+    [clojure.tools.logging :as log]))
 
 (def base-url "https://api.pandascore.co/%s/")
 (def matches-url (str base-url "matches"))
@@ -22,6 +22,7 @@
 (def pandascore-page-size 100)
 
 ;; TODO use a request pool
+;; TODO make this an interface and serve a fixture for tests
 (defn get-matches-request
   [url api-key page-number date-range]
   (client/get url {:headers      {"Authorization" api-key}
@@ -38,7 +39,11 @@
         total-items (-> resp :headers (get "X-Total") Integer/parseInt)
         total-pages (if (pos-int? (rem total-items pandascore-page-size))
                       (+ 1 (quot total-items pandascore-page-size))
-                      (quot total-items pandascore-page-size))]
+                      (quot total-items pandascore-page-size))
+        limit (-> resp :headers (get "X-Rate-Limit-Remaining") Integer/parseInt)]
+    ;;TODO put this logging in a more accurate place
+    (when (< limit 100)
+      (log/warn (format "only %s pandscore requests left this hour" limit)))
     (if (= total-pages 1)
       (seq resp-body)
       (conj
@@ -65,14 +70,15 @@
                          (-> val
                              (update :begin_at update-fn)
                              (update :end_at update-fn)
-                             (update :scheduled_at update-fn)))]
+                             (update :scheduled_at update-fn)
+                             (update :modified_at update-fn)))]
     (map
       #(let [updated-games (mapv also-update-fn (:games %))
              updated-match (also-update-fn %)]
          (assoc updated-match :games updated-games))
       matches)))
 
-(def match-keys
+#_(def match-keys
   [:id :live_url :begin_at :end_at :games :name :opponents :scheduled_at :status])
 
 (defn twitch-matches
@@ -98,15 +104,18 @@
       ;; if same view count, sort by which one starts sooner
       (compare (:scheduled_at x) (:scheduled_at y)))))
 
+;; TODO centralize this so there is one source of truth
+;; currently different users could be watching different streams because each
 (defn best-stream-candidate
-  []
-  (->> (get-matches "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4" :csgo)
-       twitch-matches
-       running-matches
-       transform-timestamps
-       twitch/add-live-viewer-count
-       (sort by-viewers-and-scheduled)
-       first))
+  [pandascore-matches]
+  (->> #_(get-matches "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4" :csgo)
+    pandascore-matches
+    twitch-matches
+    running-matches
+    transform-timestamps
+    twitch/add-live-viewer-count
+    (sort by-viewers-and-scheduled)
+    first))
 
 (comment
   (def foo
@@ -128,7 +137,8 @@
                              )]
     running-matches)
 
-  (best-stream-candidate)
+  foo
+  (best-stream-candidate foo)
 
   (-> (client/get "https://api.twitch.tv/helix/streams"
                   {:headers      {"Client-ID" "lcqp3mnqxolecsk3e3tvqcueb2sx8x"}

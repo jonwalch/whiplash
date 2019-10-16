@@ -4,6 +4,9 @@
             [whiplash.integrations.common :as common]
             [clojure.tools.logging :as log]))
 
+;; TODO potentially get all pages like in pandascore
+;; TODO add rate limit logging
+;; TODO make this an interface and serve a fixture for tests
 (defn- get-streams
   [client-id usernames]
   (client/get "https://api.twitch.tv/helix/streams"
@@ -15,13 +18,14 @@
 (defn- add-twitch-usernames-from-urls
   [matches]
   (let [twitch-regex #"^https://player.twitch.tv/\?channel=(.*)$|^https://www.twitch.tv/(.*)$"]
-    (map (fn [match]
-           (let [regex-match (->> match
-                                  :live_url
-                                  (re-find twitch-regex))]
+    (map (fn [{:keys [live_url] :as match}]
+           (let [regex-match (re-find twitch-regex live_url)
+                 username (or (second regex-match)
+                              (nth regex-match 2))]
              ;; Second or third will not be nil for each vector of regex matches
-             (assoc match :twitch/username (or (second regex-match)
-                                               (nth regex-match 2)))))
+             (when-not username
+               (log/info (format "couldn't parse twitch username from pandascore live_url %s" live_url)))
+             (assoc match :twitch/username username)))
          matches)))
 
 (defn- views-per-twitch-stream
@@ -49,4 +53,6 @@
          (map
            (fn [{:keys [twitch/username] :as match}]
              (let [live-viewers (get views-lookup username 0)]
+               (when (= 0 live-viewers)
+                 (log/info (format "couldn't get view count for parsed twitch user %s" username)))
                (assoc match :twitch/live-viewers live-viewers)))))))

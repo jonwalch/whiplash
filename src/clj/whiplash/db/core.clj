@@ -107,6 +107,7 @@
         (sort-by :guess/time #(compare %2 %1))
         first)))
 
+;; TODO need for find for game-id match-id pair
 (defn find-guess-for-game-id
   [db screen-name game-id]
   (when-let [guess (d/entity db
