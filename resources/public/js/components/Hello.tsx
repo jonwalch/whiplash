@@ -44,6 +44,7 @@ export function Hello(props: any) {
               width="1024"
               frameBorder="0"
               scrolling="no"
+              allow="autoplay"
               allowFullScreen={true}
             ></iframe>
             <div>

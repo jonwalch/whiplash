@@ -23,17 +23,19 @@
 
 ;; TODO use a request pool
 ;; TODO make this an interface and serve a fixture for tests
+;; TODO get access key from KMS
 (defn get-matches-request
-  [url api-key page-number date-range]
-  (client/get url {:headers      {"Authorization" api-key}
-                   :query-params {"range[begin_at]" date-range
-                                  "page[size]"   (str pandascore-page-size)
-                                  "page[number]" (str page-number)
-                                  "sort" "begin_at"}}))
+  [url page-number date-range]
+  (let [api-key "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4"]
+    (client/get url {:headers      {"Authorization" api-key}
+                     :query-params {"range[begin_at]" date-range
+                                    "page[size]"      (str pandascore-page-size)
+                                    "page[number]"    (str page-number)
+                                    "sort"            "begin_at"}})))
 
 (defn get-all-matches
-  [url api-key date-range]
-  (let [resp (get-matches-request url api-key 0 date-range)
+  [url date-range]
+  (let [resp (get-matches-request url 0 date-range)
         resp-body (common/resp->body resp)
         ;; TODO: catch and log potential parsInt error if called with nil
         total-items (-> resp :headers (get "X-Total") Integer/parseInt)
@@ -48,33 +50,33 @@
       (seq resp-body)
       (conj
         (pmap #(common/resp->body
-                 (get-matches-request url api-key % date-range))
+                 (get-matches-request url % date-range))
               (range 1 (inc total-pages)))
         resp-body))))
 
 (defn get-matches
-  [api-key game]
+  [game]
   (assert (contains? game-lookup game))
   (let [game-string (get game-lookup game)
         url (format matches-url game-string)
         start (time/date-iso-string (time/days-delta -1))
         end (time/date-iso-string (time/days-delta 1))
         date-range (format "%s,%s" start end)]
-    (flatten (get-all-matches url api-key date-range))))
+    (flatten (get-all-matches url date-range))))
 
 (defn transform-timestamps
   [matches]
   (let [update-fn #(when %
                      (time/timestamp-to-zdt %))
-        also-update-fn (fn [val]
-                         (-> val
-                             (update :begin_at update-fn)
-                             (update :end_at update-fn)
-                             (update :scheduled_at update-fn)
-                             (update :modified_at update-fn)))]
+        update-timestamps-fn (fn [val]
+                               (-> val
+                                   (update :begin_at update-fn)
+                                   (update :end_at update-fn)
+                                   (update :scheduled_at update-fn)
+                                   (update :modified_at update-fn)))]
     (map
-      #(let [updated-games (mapv also-update-fn (:games %))
-             updated-match (also-update-fn %)]
+      #(let [updated-games (mapv update-timestamps-fn (:games %))
+             updated-match (update-timestamps-fn %)]
          (assoc updated-match :games updated-games))
       matches)))
 
@@ -106,20 +108,18 @@
 
 ;; TODO centralize this so there is one source of truth
 ;; currently different users could be watching different streams because each
-(defn best-stream-candidate
+(defn sort-and-transform-stream-candidates
   [pandascore-matches]
-  (->> #_(get-matches "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4" :csgo)
-    pandascore-matches
-    twitch-matches
-    running-matches
-    transform-timestamps
-    twitch/add-live-viewer-count
-    (sort by-viewers-and-scheduled)
-    first))
+  (->> pandascore-matches
+       twitch-matches
+       running-matches
+       transform-timestamps
+       twitch/add-live-viewer-count
+       (sort by-viewers-and-scheduled)))
 
 (comment
   (def foo
-    (get-matches "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4" :csgo))
+    (get-matches :csgo))
   foo
   (let [running-matches (->> foo
                              twitch-matches
@@ -138,7 +138,7 @@
     running-matches)
 
   foo
-  (best-stream-candidate foo)
+  (sort-and-transform-stream-candidates foo)
 
   (-> (client/get "https://api.twitch.tv/helix/streams"
                   {:headers      {"Client-ID" "lcqp3mnqxolecsk3e3tvqcueb2sx8x"}

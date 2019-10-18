@@ -9,6 +9,7 @@
     [mount.core :as mount])
   (:gen-class))
 
+;; TODO maybe bring the whole server down if this happens instead of logging
 ;; log uncaught exceptions in threads
 (Thread/setDefaultUncaughtExceptionHandler
   (reify Thread$UncaughtExceptionHandler

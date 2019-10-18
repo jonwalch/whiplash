@@ -4,6 +4,8 @@
             [whiplash.integrations.common :as common]
             [clojure.tools.logging :as log]))
 
+(def twitch-page-size 100)
+
 ;; TODO potentially get all pages like in pandascore
 ;; TODO add rate limit logging
 ;; TODO make this an interface and serve a fixture for tests
@@ -12,7 +14,7 @@
   (client/get "https://api.twitch.tv/helix/streams"
               {:headers      {"Client-ID" client-id}
                :content-type :json
-               :query-params {:first      "100"
+               :query-params {:first      (str twitch-page-size)
                               :user_login usernames}}))
 
 (defn- add-twitch-usernames-and-url

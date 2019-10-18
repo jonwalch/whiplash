@@ -29,6 +29,12 @@
   ([start days]
    (time/truncate-to (days-delta start days) :days)))
 
+(defn minutes-delta
+  ([minutes]
+   (minutes-delta (now) minutes))
+  ([start minutes]
+   (time/plus start (time/minutes minutes))))
+
 (defn date-iso-string
   [date]
   (time/format (time/formatter :iso-instant) date))
@@ -55,6 +61,7 @@
    (time/java-date start)))
 
 (comment
+  (minutes-delta 1)
   (time/zoned-date-time "2019-10-12T07:47:11Z" "UTC")
   (time/with-zone-same-instant (time/zoned-date-time "2019-10-12T07:47:11Z") "UTC")
   (inst?
