@@ -88,16 +88,18 @@
     ["/guess"
      {:get {:summary    "get a guess for a user/game-id"
             :parameters {:query {:screen-name string?
-                                 :game-id int?}}
+                                 :game-id int?
+                                 :match-id int?}}
             :middleware [middleware/wrap-restricted]
             :handler    (fn [req]
                           (user/get-guess req))}
 
       :post {:summary    "create a guess for a user"
              :parameters {:body {:screen-name    string?
-                                 :game-type string?
+                                 ;:game-type string?
                                  :game-name string?
                                  :game-id int?
+                                 :match-id int?
                                  :team-name string?
                                  :team-id int?}}
              :middleware [middleware/wrap-restricted]

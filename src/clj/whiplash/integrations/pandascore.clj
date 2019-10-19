@@ -92,10 +92,16 @@
 (defn running-matches
   "Will also return soon to be running matches"
   [matches]
-  (->> matches
-       (filter (fn [{:keys [status]}]
-                 (or (= "running" status)
-                     (= "not_started" status))))))
+  (filter (fn [{:keys [status]}]
+            (or (= "running" status)
+                (= "not_started" status)))
+          matches))
+
+(defn add-current-game
+  [matches]
+  (map (fn [{:keys [games] :as match}]
+         (assoc match :whiplash/current-game (first (running-matches games))))
+       matches))
 
 (defn by-viewers-and-scheduled
   [x y]
@@ -115,9 +121,15 @@
        running-matches
        transform-timestamps
        twitch/add-live-viewer-count
+       add-current-game
        (sort by-viewers-and-scheduled)))
 
 (comment
+  (->> current
+       ;twitch-matches
+       running-matches
+       first
+       #_(map :scheduled_at))
   (def foo
     (get-matches :csgo))
   foo
