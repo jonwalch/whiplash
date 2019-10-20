@@ -65,17 +65,16 @@
 
     ["/create"
      {:post    {:summary    "create a user"
-                :parameters {:body {:first-name string?
-                                    :last-name  string?
+                :parameters {:body {:first_name string?
+                                    :last_name  string?
                                     :email      string?
                                     :password   string?
-                                    :screen-name string?}}
+                                    :screen_name string?}}
                 :handler    (fn [req]
                               (user/create-user req))}}]
 
     ["/login"
      {:get  {:summary    "get a user"
-             :parameters {:query {:email string?}}
              :middleware [middleware/wrap-restricted]
              :handler    (fn [req]
                            (user/get-user req))}
@@ -87,21 +86,18 @@
                            (user/login req))}}]
     ["/guess"
      {:get {:summary    "get a guess for a user/game-id"
-            :parameters {:query {:screen-name string?
-                                 :game-id int?
-                                 :match-id int?}}
+            :parameters {:query {:game_id int?
+                                 :match_id int?}}
             :middleware [middleware/wrap-restricted]
             :handler    (fn [req]
                           (user/get-guess req))}
 
       :post {:summary    "create a guess for a user"
-             :parameters {:body {:screen-name    string?
-                                 ;:game-type string?
-                                 :game-name string?
-                                 :game-id int?
-                                 :match-id int?
-                                 :team-name string?
-                                 :team-id int?}}
+             :parameters {:body {:game_name string?
+                                 :game_id int?
+                                 :match_id int?
+                                 :team_name string?
+                                 :team_id int?}}
              :middleware [middleware/wrap-restricted]
              :handler    (fn [req]
                            (user/create-guess req))}}]]

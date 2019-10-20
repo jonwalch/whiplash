@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-declare const Twitch:any;
+declare const Twitch: any;
 
-interface Opponent{
-  teamName: string,
-  teamID: number,
+interface Opponent {
+  teamName: string;
+  teamID: number;
 }
 
 export function Hello(props: any) {
-  const [team, setTeam] = useState<Opponent>({teamName: "", teamID: -1});
+  const [team, setTeam] = useState<Opponent>({ teamName: "", teamID: -1 });
   const [streamURL, setURL] = useState("");
   const [twitchUsername, setTwitchUsername] = useState("");
   const [matchName, setMatchName] = useState("");
@@ -19,7 +19,7 @@ export function Hello(props: any) {
 
   useEffect(() => {
     getStream();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     if (twitchUsername) {
@@ -40,13 +40,62 @@ export function Hello(props: any) {
     setScheduledAt(resp["scheduled_at"]);
     setMatchID(resp["id"]);
     setCurrentGame(resp["whiplash/current-game"]);
-    console.log()
 
-    let parsedOpponents : Opponent[] = [];
+    let parsedOpponents: Opponent[] = [];
     resp["opponents"].forEach((element: any) => {
-      parsedOpponents.push({ "teamID": element.opponent.id, "teamName": element.opponent.name });
+      parsedOpponents.push({
+        teamID: element.opponent.id,
+        teamName: element.opponent.name
+      });
     });
     setOpponents(parsedOpponents);
+  };
+
+  const makeGuess = async () => {
+    const response = await fetch("http://localhost:3000/v1/user/guess", {
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      mode: "same-origin",
+      redirect: "error",
+      body: JSON.stringify({
+        game_name: "poops",
+        game_id: 1,
+        match_id: 1,
+        team_name: "dads",
+        team_id: 1
+      })
+    });
+    const resp = await response.json();
+    console.log(resp);
+    console.log(response.status);
+  };
+
+  const createUser = async () => {
+    const response = await fetch("http://localhost:3000/v1/user/create", {
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      mode: "same-origin",
+      redirect: "error",
+      body: JSON.stringify(
+        {first_name: "Jon", last_name: "Walch", screen_name: "djjdubs", password: "farts", email: "bigdick@boy.com"})
+    });
+    const resp = await response.json();
+    console.log(resp);
+    console.log(response.status);
+  };
+
+  const login = async () => {
+    const response = await fetch("http://localhost:3000/v1/user/login", {
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      mode: "same-origin",
+      redirect: "error",
+      body: JSON.stringify(
+        {password: "farts", email: "bigdick@boy.com"})
+    });
+    const resp = await response.json();
+    console.log(resp);
+    console.log(response.status);
   };
 
   const handleClick = (team: Opponent) => {
@@ -81,20 +130,21 @@ export function Hello(props: any) {
               allowFullScreen={true}
             ></iframe> */}
           <div>
-              {opponents.map(opponent => {
-                return (
-                  <button
-                    key = {opponent.teamID}
-                    onClick={() =>
-                      handleClick(opponent)
-                    }
-                  >
-                    {opponent.teamName}
-                  </button>
-                );
-              })}
-            </div>
+            {opponents.map(opponent => {
+              return (
+                <button
+                  key={opponent.teamID}
+                  onClick={() => handleClick(opponent)}
+                >
+                  {opponent.teamName}
+                </button>
+              );
+            })}
+          </div>
           <h1> You selected {team.teamName}</h1>
+          <button onClick={() => createUser()}>Create a user</button>
+          <button onClick={() => login()}>Login</button>
+          <button onClick={() => makeGuess()}>Make Guess</button>
         </div>
       )}
     </div>

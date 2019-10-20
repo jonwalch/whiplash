@@ -55,6 +55,11 @@
            :db/valueType   :db.type/ref
            :db/cardinality :db.cardinality/one
            }
+          {:db/doc         "Match id (from pandascore)"
+           :db/ident       :match/id
+           :db/valueType   :db.type/long
+           :db/cardinality :db.cardinality/one
+           }
           {:db/doc         "Game id (from pandascore)"
            :db/ident       :game/id
            :db/valueType   :db.type/long

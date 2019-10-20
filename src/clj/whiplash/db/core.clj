@@ -59,7 +59,7 @@
 
 (defn add-guess-for-user
   "purposely leaving out :guess/score, will be added by another piece of code later"
-  [conn {:keys [db/id game-type game-name game-id team-name team-id]}]
+  [conn {:keys [db/id game-type game-name game-id team-name team-id match-id]}]
   ;; TODO, need match/id as well
   @(d/transact conn [{:db/id        id
                       :user/guesses [{:guess/time (time/to-date)
@@ -67,7 +67,8 @@
                                       :game/name  game-name
                                       :game/id    game-id
                                       :team/name  team-name
-                                      :team/id    team-id}]}]))
+                                      :team/id    team-id
+                                      :match/id match-id}]}]))
 
 (defn find-one-by
   "Given db value and an (attr/val), return the user as EntityMap (datomic.query.EntityMap)
@@ -107,15 +108,15 @@
         (sort-by :guess/time #(compare %2 %1))
         first)))
 
-;; TODO need for find for game-id match-id pair
-(defn find-guess-for-game-id
-  [db screen-name game-id]
+(defn find-guess
+  [db email game-id match-id]
   (when-let [guess (d/entity db
                              (d/q
                                '[:find ?guess .
-                                 :in $ ?screen-name ?game-id
-                                 :where [?user :user/screen-name ?screen-name]
+                                 :in $ ?email ?game-id ?match-id
+                                 :where [?user :user/email ?email]
                                  [?user :user/guesses ?guess]
-                                 [?guess :game/id ?game-id]]
-                               db screen-name game-id))]
+                                 [?guess :game/id ?game-id]
+                                 [?guess :match/id ?match-id]]
+                               db email game-id match-id))]
     (d/touch guess)))

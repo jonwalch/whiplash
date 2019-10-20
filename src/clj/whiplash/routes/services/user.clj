@@ -5,30 +5,38 @@
             [whiplash.middleware :as middleware]
             [datomic.api :as d]))
 
+;; TODO sanitize fields
 (defn create-user
   [{:keys [body-params] :as req}]
-  (let [{:keys [first-name last-name email password screen-name]} body-params
+  (let [{:keys [first_name last_name email password screen_name]} body-params
         encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})]
-    ;; TODO sanitize fields
-    ;; TODO check if user already exists for this email or screen-name
-    (db/add-user db/conn {:first-name first-name
-                          :last-name  last-name
-                          :status     :user.status/pending
-                          :screen-name screen-name
-                          :email      email
-                          :password   encrypted-password})
-    ;;TODO dont always return 200
-    (ok)))
+    (cond
+      (some? (db/find-user-by-email email))
+      (conflict {:message "email taken"})
+
+      (some? (db/find-user-by-screen-name screen_name))
+      (conflict {:message "screen name taken"})
+
+      :else
+      (do
+        (db/add-user db/conn {:first-name first_name
+                              :last-name  last_name
+                              :status     :user.status/pending
+                              :screen-name screen_name
+                              :email      email
+                              :password   encrypted-password})
+        ;;TODO dont return 200 if db/add-user fails
+        (ok {})))))
 
 (defn get-user
   [{:keys [params] :as req}]
-  ;; TODO sanitize email
-  ;; TODO do this lookup from the cookie instead for proper authz
-  (if-let [user (db/find-user-by-email (:email params))]
-    (ok (select-keys user
-                     [:user/first-name :user/last-name :user/email :user/status
-                      :user/screen-name]))
-    (not-found {:message (format "User %s not found" (:email params))})))
+  (let [{:keys [user exp]} (middleware/req->token req)
+        user-entity (db/find-user-by-email user)]
+    (if (some? user-entity)
+      (ok (select-keys user-entity
+                       [:user/first-name :user/last-name :user/email :user/status
+                        :user/screen-name]))
+      (not-found {:message (format "User %s not found" user)}))))
 
 (defn login
   [{:keys [body-params] :as req}]
@@ -37,49 +45,62 @@
         ;; TODO maybe return not-found if can't find user, right now just return 401
         valid-password (hashers/check password (:user/password user))
         {:keys [exp-str token]} (when valid-password
-                                 (middleware/token (:user/email user)))]
+                                  (middleware/token (:user/email user)))]
     (if valid-password
       {:status  200
        :headers {}
-       :body    {:auth-token token}
+       :body {}
+       ;:body    {:auth-token token}
        ;; TODO :domain, maybe :path, maybe :secure
        :cookies {:value     token
                  :http-only true
                  :expire exp-str}}
       (unauthorized))))
 
-;; TODO lookup if they already have a guess for this combo
-;; TODO actually use game-type
 ;; TODO validation
-;; TODO do this lookup from the cookie instead for proper authz
 (defn create-guess
   [{:keys [body-params] :as req}]
-  (let [{:keys [screen-name game-type game-name game-id team-name team-id]} body-params
-        user (db/find-user-by-screen-name screen-name)]
-    (if user
-      (do
-        (db/add-guess-for-user db/conn {:db/id     (:db/id user)
-                                        :game-id   game-id
-                                        :game-name game-name
-                                        :game-type :game.type/csgo
-                                        :team-name team-name
-                                        :team-id   team-id})
-        (ok))
-      (not-found {:message (format "User %s not found" screen-name)}))))
+  (let [{:keys [game_name game_id team_name team_id match_id]} body-params
+        {:keys [user exp]} (middleware/req->token req)
+        {:keys [user/email] :as user-entity} (db/find-user-by-email user)
+        existing-guess (db/find-guess (d/db db/conn) email game_id match_id)
+        ]
+    (cond
+      (some? existing-guess)
+      (conflict {:message "Already made a guess."})
 
-;; TODO assert on screen-name and game-id
-;; TODO do this lookup from the cookie instead for proper authz
+      (some? user-entity)
+      (do
+        (db/add-guess-for-user db/conn {:db/id     (:db/id user-entity)
+                                        :game-id   game_id
+                                        :game-name game_name
+                                        :game-type :game.type/csgo
+                                        :team-name team_name
+                                        :match-id  match_id
+                                        :team-id   team_id})
+        (ok {}))
+
+      :else
+      (not-found {:message (format "User not found")}))))
+
+(comment
+  (let [{:keys [user exp]} (middleware/req->token sheet)]
+    user))
+
+;; TODO assert on match-id and game-id
 (defn get-guess
   [{:keys [params] :as req}]
-  (let [{:keys [screen-name game-id]} params
-        ;; TODO figur eout why this isnt getting casted by middleware
-        game-id (Integer/parseInt game-id)]
-    (if-let [guess (db/find-guess-for-game-id (d/db db/conn) screen-name game-id)]
-      (ok (select-keys guess
+  (let [{:keys [game_id match_id]} params
+        ;; TODO figure out why this isnt getting casted by middleware
+        game-id (Integer/parseInt game_id)
+        match-id (Integer/parseInt match_id)
+        {:keys [user exp]} (middleware/req->token req)
+        {:keys [user/email] :as user-entity} (db/find-user-by-email user)
+        existing-guess (db/find-guess (d/db db/conn) email game-id match-id)]
+    (if (some? existing-guess)
+      (ok (select-keys existing-guess
                      [:team/name :team/id :game/id :game/name :guess/time :guess/score :game/type]))
-      (not-found {:message (format "guess for user %s, game-id %s not found"
-                                   screen-name
-                                   game-id)}))))
-
-#_(select-keys guess
-               [:team/name :team/id :game/id :game/name :guess/time :guess/score :game/type])
+      (not-found {:message (format "guess for user %s, game-id %s, match-id %s not found"
+                                   email
+                                   game-id
+                                   match-id)}))))

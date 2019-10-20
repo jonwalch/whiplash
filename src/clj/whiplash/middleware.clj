@@ -82,9 +82,13 @@
                   (< (time/to-millis) exp)
                   (db/find-user-by-email user)))))
 
+(defn req->token
+  [req]
+  (some-> req :cookies (get "value") :value (jwt/decrypt secret)))
+
 (defn valid-cookie-auth?
   [{:keys [cookies] :as req}]
-  (let [{:keys [user exp]} (some-> cookies (get "value") :value (jwt/decrypt secret))]
+  (let [{:keys [user exp]} (req->token req)]
     (boolean (and (string? user)
                   (int? exp)
                   (< (time/to-millis) exp)))))
