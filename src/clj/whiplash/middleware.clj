@@ -50,7 +50,6 @@
 
 (defn authfn
   [token]
-  #_(println token)
   token)
 
 (defn jwe-on-error

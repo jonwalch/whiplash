@@ -83,7 +83,7 @@
 
   (testing "can't login as nonexistent user"
     (let [login-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
-                                        (mock/json-body {:email    (:email dummy-user)
+                                        (mock/json-body {:screen_name (:screen_name dummy-user)
                                                          :password (:password dummy-user)})))]
       (is (= 401 (:status login-resp))))))
 
@@ -112,10 +112,10 @@
 (defn- login
   ([]
    (login dummy-user))
-  ([{:keys [email password] :as user}]
-   (assert (and email password))
+  ([{:keys [screen_name password] :as user}]
+   (assert (and screen_name password))
    (let [resp ((handler/app) (-> (mock/request :post "/v1/user/login")
-                                 (mock/json-body {:email    email
+                                 (mock/json-body {:screen_name   screen_name
                                                   :password password})))
          parsed-body (common/parse-json-body resp)
          auth-token (-> resp :headers get-token-from-headers)]
@@ -153,10 +153,10 @@
 
 (deftest test-user
   (testing "create and get user success "
-    (let [{:keys [email]} dummy-user
+    (let [{:keys [screen_name]} dummy-user
           {:keys [auth-token] login-resp :response} (create-user-and-login)
           login-fail-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
-                                             (mock/json-body {:email email
+                                             (mock/json-body {:screen_name screen_name
                                                               :password "wrong_password"})))
           get-success-resp (get-user auth-token)
           create-again-fail ((handler/app) (-> (mock/request :post "/v1/user/create")

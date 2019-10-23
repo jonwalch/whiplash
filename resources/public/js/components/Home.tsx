@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import {Login} from "./Login"
 declare const Twitch: any;
 
 interface Opponent {
@@ -6,7 +7,7 @@ interface Opponent {
   teamID: number;
 }
 
-export function Hello(props: any) {
+export function Home(props: any) {
   const [team, setTeam] = useState<Opponent>({ teamName: "", teamID: -1 });
   const [streamURL, setURL] = useState("");
   const [twitchUsername, setTwitchUsername] = useState("");
@@ -70,34 +71,6 @@ export function Hello(props: any) {
     console.log(response.status);
   };
 
-  const createUser = async () => {
-    const response = await fetch("http://localhost:3000/v1/user/create", {
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-      mode: "same-origin",
-      redirect: "error",
-      body: JSON.stringify(
-        {first_name: "Jon", last_name: "Walch", screen_name: "djjdubs", password: "farts", email: "bigdick@boy.com"})
-    });
-    const resp = await response.json();
-    console.log(resp);
-    console.log(response.status);
-  };
-
-  const login = async () => {
-    const response = await fetch("http://localhost:3000/v1/user/login", {
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-      mode: "same-origin",
-      redirect: "error",
-      body: JSON.stringify(
-        {password: "farts", email: "bigdick@boy.com"})
-    });
-    const resp = await response.json();
-    console.log(resp);
-    console.log(response.status);
-  };
-
   const handleClick = (team: Opponent) => {
     setTeam(team);
   };
@@ -114,6 +87,7 @@ export function Hello(props: any) {
   return (
     <div>
       <h2>Whiplash - Win While Watching</h2>
+      <Login/>
       {streamURL && (
         <div>
           <h3>{matchName}</h3>
@@ -142,8 +116,6 @@ export function Hello(props: any) {
             })}
           </div>
           <h1> You selected {team.teamName}</h1>
-          <button onClick={() => createUser()}>Create a user</button>
-          <button onClick={() => login()}>Login</button>
           <button onClick={() => makeGuess()}>Make Guess</button>
         </div>
       )}

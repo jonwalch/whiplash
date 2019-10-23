@@ -80,7 +80,7 @@
                            (user/get-user req))}
 
       :post {:summary    "login as user"
-             :parameters {:body {:email    string?
+             :parameters {:body {:screen_name    string?
                                  :password string?}}
              :handler    (fn [req]
                            (user/login req))}}]

@@ -40,8 +40,8 @@
 
 (defn login
   [{:keys [body-params] :as req}]
-  (let [{:keys [email password]} body-params
-        user (db/find-user-by-email email)
+  (let [{:keys [screen_name password]} body-params
+        user (db/find-user-by-screen-name screen_name)
         ;; TODO maybe return not-found if can't find user, right now just return 401
         valid-password (hashers/check password (:user/password user))
         {:keys [exp-str token]} (when valid-password
@@ -50,7 +50,6 @@
       {:status  200
        :headers {}
        :body {}
-       ;:body    {:auth-token token}
        ;; TODO :domain, maybe :path, maybe :secure
        :cookies {:value     token
                  :http-only true
@@ -81,7 +80,7 @@
         (ok {}))
 
       :else
-      (not-found {:message (format "User not found")}))))
+      (not-found {:message (format "User not found.")}))))
 
 (comment
   (let [{:keys [user exp]} (middleware/req->token sheet)]
