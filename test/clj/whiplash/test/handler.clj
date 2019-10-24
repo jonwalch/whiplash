@@ -248,3 +248,16 @@
           guess-resp ((handler/app) (-> (mock/request :post "/v1/user/guess")
                                         (mock/json-body dummy-guess)))]
       (is (= 403 (:status guess-resp))))))
+
+(deftest logout
+  (testing "not logged in"
+    (let [resp ((handler/app) (-> (mock/request :post "/v1/user/logout")))]
+      (is (= 403 (:status resp)))))
+
+  (testing "logging out returns cookie set to deleted, can log in after logging out"
+    (let [{:keys [auth-token] :as login-resp} (create-user-and-login)
+          resp ((handler/app) (-> (mock/request :post "/v1/user/logout")
+                                  (mock/cookie :value auth-token)))
+          login-again-resp (login)]
+      (is (= "deleted" (get-token-from-headers (:headers resp))))
+      (is (= 200 (:status resp))))))
