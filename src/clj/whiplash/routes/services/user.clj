@@ -54,7 +54,17 @@
        :cookies {:value     token
                  :http-only true
                  :expire exp-str}}
-      (unauthorized))))
+      (unauthorized {:message "Login failed"}))))
+
+(defn logout
+  [{:keys [body-params] :as req}]
+  {:status  200
+   :headers {}
+   :body    {}
+   ;; TODO :domain, maybe :path, maybe :secure
+   :cookies {:value     "deleted"
+             :http-only true
+             :expire    "Thu, 01 Jan 1970 00:00:00 GMT"}})
 
 ;; TODO validation
 (defn create-guess

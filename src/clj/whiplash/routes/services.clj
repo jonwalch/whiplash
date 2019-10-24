@@ -38,7 +38,7 @@
                  multipart/multipart-middleware]}
 
    ;; swagger documentation
-   ["" {:no-doc true
+   ["" #_{:no-doc true
         :swagger {:info {:title "my-api"
                          :description "https://cljdoc.org/d/metosin/reitit"}}}
 
@@ -52,16 +52,38 @@
 
    ;["/graphql" {:post (fn [req]
    ;                     (ok (graphql/execute-request (-> req :body slurp))))}]
+
    ["/stream"
     {:get  {:summary    "get the current best stream candidate"
-            ;:parameters {:query {:email string?}}
-            ;:middleware [middleware/wrap-restricted]
             :handler    (fn [req]
-                          (stream/get-stream req))}}
-    ]
+                          (stream/get-stream req))}}]
 
    ["/user"
-    {:swagger {:tags ["User"]}}
+
+    ;;Defined for "/user"
+    [""
+     {:get  {:summary    "get a user"
+             :middleware [middleware/wrap-restricted]
+             :handler    (fn [req]
+                           (user/get-user req))}}]
+
+    ["/login"
+     {:get  {:summary    "is the user's cookie valid?"
+             :middleware [middleware/wrap-restricted]
+             ;; wrap-restricted will return unauthorized if the cookie is no longer valid
+             :handler    (constantly (ok {}))}
+
+      :post {:summary    "login as user"
+             :parameters {:body {:screen_name    string?
+                                 :password string?}}
+             :handler    (fn [req]
+                           (user/login req))}}]
+
+    ["/logout"
+     {:post {:summary    "logout"
+             :middleware [middleware/wrap-restricted]
+             :handler    (fn [req]
+                           (user/logout req))}}]
 
     ["/create"
      {:post    {:summary    "create a user"
@@ -73,17 +95,7 @@
                 :handler    (fn [req]
                               (user/create-user req))}}]
 
-    ["/login"
-     {:get  {:summary    "get a user"
-             :middleware [middleware/wrap-restricted]
-             :handler    (fn [req]
-                           (user/get-user req))}
 
-      :post {:summary    "login as user"
-             :parameters {:body {:screen_name    string?
-                                 :password string?}}
-             :handler    (fn [req]
-                           (user/login req))}}]
     ["/guess"
      {:get {:summary    "get a guess for a user/game-id"
             :parameters {:query {:game_id int?

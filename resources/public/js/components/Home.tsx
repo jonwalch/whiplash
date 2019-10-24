@@ -22,11 +22,11 @@ export function Home(props: any) {
     getStream();
   }, []);
 
-  useEffect(() => {
-    if (twitchUsername) {
-      twitchEmbed();
-    }
-  }, [twitchUsername]);
+  // useEffect(() => {
+  //   if (twitchUsername) {
+  //     twitchEmbed();
+  //   }
+  // }, [twitchUsername]);
 
   const getStream = async () => {
     const response = await fetch("http://localhost:3000/v1/stream", {
@@ -91,10 +91,8 @@ export function Home(props: any) {
       {streamURL && (
         <div>
           <h3>{matchName}</h3>
-          <div id="twitch-embed"></div>
-
-          {/* <!-- Create a Twitch.Embed object that will render within the "twitch-embed" root element. --> */}
-          {/* <iframe
+          {/* <div id="twitch-embed"></div> */}
+          <iframe
               src={streamURL + "&muted=false"} //"https://player.twitch.tv/?channel=ramee&muted=false"
               height="576"
               width="1024"
@@ -102,11 +100,12 @@ export function Home(props: any) {
               scrolling="no"
               allow="autoplay"
               allowFullScreen={true}
-            ></iframe> */}
+            ></iframe>
           <div>
             {opponents.map(opponent => {
               return (
                 <button
+                  type = "button"
                   key={opponent.teamID}
                   onClick={() => handleClick(opponent)}
                 >
@@ -116,7 +115,7 @@ export function Home(props: any) {
             })}
           </div>
           <h1> You selected {team.teamName}</h1>
-          <button onClick={() => makeGuess()}>Make Guess</button>
+          <button type="button" onClick={() => makeGuess()}>Make Guess</button>
         </div>
       )}
     </div>

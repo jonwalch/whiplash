@@ -72,7 +72,7 @@
 
 (deftest test-user-400s
   (testing "cant get user, not logged in"
-    (let [response ((handler/app) (-> (mock/request :get "/v1/user/login")))]
+    (let [response ((handler/app) (-> (mock/request :get "/v1/user")))]
       (is (= 403 (:status response)))))
 
   (testing "post create user failure"
@@ -85,7 +85,11 @@
     (let [login-resp ((handler/app) (-> (mock/request :post "/v1/user/login")
                                         (mock/json-body {:screen_name (:screen_name dummy-user)
                                                          :password (:password dummy-user)})))]
-      (is (= 401 (:status login-resp))))))
+      (is (= 401 (:status login-resp)))))
+
+  (testing "not authed"
+    (let [response ((handler/app) (-> (mock/request :get "/v1/user/login")))]
+      (is (= 403 (:status response))))))
 
 (defn get-token-from-headers
   [headers]
@@ -118,10 +122,15 @@
                                  (mock/json-body {:screen_name   screen_name
                                                   :password password})))
          parsed-body (common/parse-json-body resp)
-         auth-token (-> resp :headers get-token-from-headers)]
+         auth-token (-> resp :headers get-token-from-headers)
+
+         authed-resp ((handler/app) (-> (mock/request :get "/v1/user/login")
+                                        (mock/cookie :value auth-token)))]
 
      (is (= 200 (:status resp)))
      (is (string? auth-token))
+
+     (is (= 200 (:status authed-resp)))
 
      {:auth-token auth-token
       :response (assoc resp :body parsed-body)})))
@@ -137,7 +146,7 @@
   ([auth-token]
    (get-user dummy-user auth-token))
   ([{:keys [email first_name last_name screen_name] :as user} auth-token]
-   (let [resp ((handler/app) (-> (mock/request :get "/v1/user/login")
+   (let [resp ((handler/app) (-> (mock/request :get "/v1/user")
                                  (mock/cookie :value auth-token)))
          parsed-body (common/parse-json-body resp)]
 

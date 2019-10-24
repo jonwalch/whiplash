@@ -30,17 +30,16 @@ export function Signup(props: any) {
     console.log(resp);
     console.log(response.status);
     if (response.status == 200) {
-        props.history.push("/")
-    }
-    else {
-        alert(resp.message)
+      props.history.push("/");
+    } else {
+      alert(resp.message);
     }
   };
 
   return (
     <div>
       <h2>Sign the fuck up ya filthy animal</h2>
-      <div>
+      <div className="signup">
         <input
           placeholder="Email"
           value={email}
@@ -48,6 +47,7 @@ export function Signup(props: any) {
             setEmail(e.currentTarget.value);
           }}
           type="text"
+          maxLength={30}
         />
         <input
           placeholder="Screen Name"
@@ -56,6 +56,7 @@ export function Signup(props: any) {
             setScreenName(e.currentTarget.value);
           }}
           type="text"
+          maxLength={15}
         />
         <input
           placeholder="Password"
@@ -64,6 +65,7 @@ export function Signup(props: any) {
             setPassword(e.currentTarget.value);
           }}
           type="password"
+          maxLength={100}
         />
         <input
           placeholder="First Name"
@@ -72,6 +74,7 @@ export function Signup(props: any) {
             setFirstName(e.currentTarget.value);
           }}
           type="text"
+          maxLength={30}
         />
         <input
           placeholder="Last Name"
@@ -80,8 +83,11 @@ export function Signup(props: any) {
             setLastName(e.currentTarget.value);
           }}
           type="text"
+          maxLength={30}
         />
-        <button onClick={createUser} disabled={toggleValid()}>Fucking click it</button>
+        <button type="button" onClick={createUser} disabled={toggleValid()}>
+          Sign up
+        </button>
       </div>
     </div>
   );

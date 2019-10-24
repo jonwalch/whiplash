@@ -93,7 +93,9 @@
                   (< (time/to-millis) exp)))))
 
 (defn on-error [request response]
-  (error-page
+  {:status 403
+   :body   {:message (str "Access to " (:uri request) " is not authorized")}}
+  #_(error-page
     {:status 403
      :title (str "Access to " (:uri request) " is not authorized")}))
 
