@@ -83,7 +83,10 @@
 
 (defn req->token
   [req]
-  (some-> req :cookies (get "value") :value (jwt/decrypt secret)))
+  (when-let [cookie-value (some-> req :cookies (get "value") :value)]
+    ;; logout sets the cookie value to "deleted"
+    (when (not= "deleted" cookie-value)
+      (jwt/decrypt cookie-value secret))))
 
 (defn valid-cookie-auth?
   [{:keys [cookies] :as req}]

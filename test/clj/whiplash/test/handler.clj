@@ -261,3 +261,11 @@
           login-again-resp (login)]
       (is (= "deleted" (get-token-from-headers (:headers resp))))
       (is (= 200 (:status resp))))))
+
+(deftest logout-get
+  (testing "doing a get to login after logging out doesn't 500"
+    (let [{:keys [auth-token] :as login-resp} (create-user-and-login)
+          resp ((handler/app) (-> (mock/request :post "/v1/user/logout")
+                                  (mock/cookie :value auth-token)))
+          get-login-resp ((handler/app) (-> (mock/request :get "/v1/user/login")))]
+      (is (= 403 (:status get-login-resp))))))
