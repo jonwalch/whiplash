@@ -8,7 +8,7 @@ export function Signup(props: any) {
   const [email, setEmail] = useState("");
 
   const toggleValid = () => {
-    //TODO: add length constraints to all of these
+    //TODO: add validation
     return !(firstName && lastName && screenName && password && email);
   };
 

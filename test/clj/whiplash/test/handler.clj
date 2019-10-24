@@ -175,7 +175,7 @@
 
 (def dummy-guess
   {;;:game-type "csgo"
-   :game_name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters Game 3"
+   :match_name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters"
    :game_id   123
    :match_id 1
    :team_name "Peter's Pumpkin Eaters"
@@ -183,7 +183,7 @@
 
 (def dummy-guess-2
   {;;:game-type "csgo"
-   :game_name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters Game 4"
+   :match_name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters"
    :game_id   124
    :match_id 1
    :team_name "Peter's Pumpkin Eaters"
@@ -227,16 +227,16 @@
               :team/name "Peter's Pumpkin Eaters"
               :team/id   2
               :game/type "game.type/csgo"
-              :game/name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters Game 3"}
+              :match/name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters"}
              (select-keys body
-                          [:game/id :team/name :team/id :game/type :game/name])))
+                          [:game/id :team/name :team/id :game/type :match/name])))
       (is (= {:game/id   124
               :team/name "Peter's Pumpkin Eaters"
               :team/id   2
               :game/type "game.type/csgo"
-              :game/name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters Game 4"}
+              :match/name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters"}
              (select-keys (:body get-guess-resp2)
-                          [:game/id :team/name :team/id :game/type :game/name])))
+                          [:game/id :team/name :team/id :game/type :match/name])))
       (is (not= (:guess/time body)
                 (:guess/time get-guess-resp2)))
 

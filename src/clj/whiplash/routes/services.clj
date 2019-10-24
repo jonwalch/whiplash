@@ -105,7 +105,7 @@
                           (user/get-guess req))}
 
       :post {:summary    "create a guess for a user"
-             :parameters {:body {:game_name string?
+             :parameters {:body {:match_name string?
                                  :game_id int?
                                  :match_id int?
                                  :team_name string?

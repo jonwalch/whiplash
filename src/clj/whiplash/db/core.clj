@@ -59,12 +59,12 @@
 
 (defn add-guess-for-user
   "purposely leaving out :guess/score, will be added by another piece of code later"
-  [conn {:keys [db/id game-type game-name game-id team-name team-id match-id]}]
+  [conn {:keys [db/id game-type match-name game-id team-name team-id match-id]}]
   ;; TODO, need match/id as well
   @(d/transact conn [{:db/id        id
                       :user/guesses [{:guess/time (time/to-date)
                                       :game/type  game-type
-                                      :game/name  game-name
+                                      :match/name  match-name
                                       :game/id    game-id
                                       :team/name  team-name
                                       :team/id    team-id

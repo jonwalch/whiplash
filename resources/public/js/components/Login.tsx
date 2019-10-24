@@ -1,18 +1,19 @@
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, useContext } from "react";
 import { Link } from "react-router-dom";
 import "../../css/App.css";
+import { LoginContext } from "../contexts/LoginContext";
 
 export function Login(props: any) {
   const [screenName, setScreenName] = useState("");
   const [password, setPassword] = useState("");
-  const [userLoggedIn, setUserLoggedIn] = useState<boolean | null>(null);
+  const { state, setState } = useContext(LoginContext);
 
   useEffect(() => {
     loggedIn();
   }, []);
 
   const toggleValid = () => {
-    //TODO: add length constraints to all of these
+    //TODO: add validation
     return !(screenName && password);
   };
 
@@ -28,7 +29,7 @@ export function Login(props: any) {
     console.log(resp);
     console.log(response.status);
     if (response.status == 200) {
-      setUserLoggedIn(true);
+      setState({ userLoggedIn: true });
     } else {
       alert(resp.message);
     }
@@ -44,7 +45,8 @@ export function Login(props: any) {
     const resp = await response.json();
     console.log(resp);
     console.log(response.status);
-    setUserLoggedIn(response.status == 200);
+
+    setState({ userLoggedIn: response.status == 200 });
   };
 
   const logout = async () => {
@@ -58,20 +60,19 @@ export function Login(props: any) {
     console.log(resp);
     console.log(response.status);
     if (response.status == 200) {
-      setUserLoggedIn(false);
+      setState({ userLoggedIn: false });
     } else {
       alert("Failed to hit server to logout");
     }
   };
 
   const renderContent = () => {
-    console.log("render conetent " + userLoggedIn);
-    if (userLoggedIn === null) {
+    if (state.userLoggedIn === null) {
       return <div>Loading</div>;
-    } else if (userLoggedIn) {
+    } else if (state.userLoggedIn) {
       return (
         <>
-        <button type="button" onClick={logout}>
+          <button type="button" onClick={logout}>
             Sign out
           </button>
         </>

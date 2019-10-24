@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {Login} from "./Login"
+import { Login } from "./Login";
+import { Vote } from "./Vote";
 declare const Twitch: any;
 
-interface Opponent {
+export interface Opponent {
   teamName: string;
   teamID: number;
 }
@@ -52,29 +53,6 @@ export function Home(props: any) {
     setOpponents(parsedOpponents);
   };
 
-  const makeGuess = async () => {
-    const response = await fetch("http://localhost:3000/v1/user/guess", {
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-      mode: "same-origin",
-      redirect: "error",
-      body: JSON.stringify({
-        game_name: "poops",
-        game_id: 1,
-        match_id: 1,
-        team_name: "dads",
-        team_id: 1
-      })
-    });
-    const resp = await response.json();
-    console.log(resp);
-    console.log(response.status);
-  };
-
-  const handleClick = (team: Opponent) => {
-    setTeam(team);
-  };
-
   const twitchEmbed = () => {
     new Twitch.Embed("twitch-embed", {
       width: 1024,
@@ -87,35 +65,28 @@ export function Home(props: any) {
   return (
     <div>
       <h2>Whiplash - Win While Watching</h2>
-      <Login/>
+      <Login />
       {streamURL && (
         <div>
           <h3>{matchName}</h3>
           {/* <div id="twitch-embed"></div> */}
           <iframe
-              src={streamURL + "&muted=false"} //"https://player.twitch.tv/?channel=ramee&muted=false"
-              height="576"
-              width="1024"
-              frameBorder="0"
-              scrolling="no"
-              allow="autoplay"
-              allowFullScreen={true}
-            ></iframe>
-          <div>
-            {opponents.map(opponent => {
-              return (
-                <button
-                  type = "button"
-                  key={opponent.teamID}
-                  onClick={() => handleClick(opponent)}
-                >
-                  {opponent.teamName}
-                </button>
-              );
-            })}
-          </div>
-          <h1> You selected {team.teamName}</h1>
-          <button type="button" onClick={() => makeGuess()}>Make Guess</button>
+            src={streamURL + "&muted=false"} //"https://player.twitch.tv/?channel=ramee&muted=false"
+            height="576"
+            width="1024"
+            frameBorder="0"
+            scrolling="no"
+            allow="autoplay"
+            allowFullScreen={true}
+          ></iframe>
+          <Vote
+            opponents={opponents}
+            team={team}
+            setTeam={setTeam}
+            matchID={matchID}
+            matchName={matchName}
+            currentGame={currentGame}
+          />
         </div>
       )}
     </div>
