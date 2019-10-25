@@ -5,7 +5,8 @@
     [whiplash.handler :as handler]
     [muuntaja.core :as m]
     [clojure.string :as string]
-    [whiplash.test.common :as common]))
+    [whiplash.test.common :as common]
+    [whiplash.guess-processor :as guess-processor]))
 
 (common/app-fixtures)
 (common/db-fixtures)
@@ -175,19 +176,19 @@
 
 (def dummy-guess
   {;;:game-type "csgo"
-   :match_name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters"
-   :game_id   123
-   :match_id 1
-   :team_name "Peter's Pumpkin Eaters"
-   :team_id   2})
+   :match_name "Grand Final: Liquid vs ATK"
+   :game_id   9388
+   :match_id 549829
+   :team_name "Liquid"
+   :team_id   3213})
 
 (def dummy-guess-2
   {;;:game-type "csgo"
-   :match_name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters"
-   :game_id   124
-   :match_id 1
-   :team_name "Peter's Pumpkin Eaters"
-   :team_id   2})
+   :match_name "Grand Final: Liquid vs ATK"
+   :game_id   9389
+   :match_id 549829
+   :team_name "Liquid"
+   :team_id   3213})
 
 (defn- create-guess
   [auth-token guess]
@@ -212,7 +213,8 @@
 
 (deftest add-guesses
   (testing "We can add and get guesses for a user"
-    (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
+    (let [keys-to-select [:game/id :team/name :team/id :game/type :match/name :guess/processed? :guess/score]
+          {:keys [auth-token] login-resp :response} (create-user-and-login)
           {:keys [game_id match_id]} dummy-guess
           create-guess-resp (create-guess auth-token dummy-guess)
           create-guess-resp2 (create-guess auth-token dummy-guess-2)
@@ -223,24 +225,60 @@
           fail-create-same-guess-resp ((handler/app) (-> (mock/request :post "/v1/user/guess")
                                                          (mock/json-body dummy-guess)
                                                          (mock/cookie :value auth-token)))]
-      (is (= {:game/id   123
-              :team/name "Peter's Pumpkin Eaters"
-              :team/id   2
+      (is (= {:game/id   (:game_id dummy-guess)
+              :team/name (:team_name dummy-guess)
+              :team/id   (:team_id dummy-guess)
               :game/type "game.type/csgo"
-              :match/name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters"}
-             (select-keys body
-                          [:game/id :team/name :team/id :game/type :match/name])))
-      (is (= {:game/id   124
-              :team/name "Peter's Pumpkin Eaters"
-              :team/id   2
+              :match/name (:match_name dummy-guess)
+              :guess/processed? false}
+             (select-keys body keys-to-select)))
+
+      (is (= {:game/id   (:game_id dummy-guess-2)
+              :team/name (:team_name dummy-guess-2)
+              :team/id   (:team_id dummy-guess-2)
               :game/type "game.type/csgo"
-              :match/name "Jon's Dangus Squad Vs. Peter's Pumpkin Eaters"}
-             (select-keys (:body get-guess-resp2)
-                          [:game/id :team/name :team/id :game/type :match/name])))
+              :match/name (:match_name dummy-guess-2)
+              :guess/processed? false}
+             (select-keys (:body get-guess-resp2) keys-to-select)))
+
       (is (not= (:guess/time body)
                 (:guess/time get-guess-resp2)))
 
-      (is (= 409 (:status fail-create-same-guess-resp))))))
+      (is (= nil
+             (:guess/processed-time body)
+             (:guess/processed-time get-guess-resp2)))
+
+      (is (= 409 (:status fail-create-same-guess-resp)))
+
+      (testing "Guess success processing works"
+        (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake
+                      whiplash.integrations.twitch/views-per-twitch-stream common/twitch-view-fake]
+          (let [_ (guess-processor/process-guesses)
+                {:keys [body] :as get-guess-resp} (get-guess auth-token game_id match_id)
+                get-guess-resp2 (get-guess auth-token
+                                           (:game_id dummy-guess-2)
+                                           (:match_id dummy-guess-2))]
+
+            (is (= {:game/id          (:game_id dummy-guess)
+                    :team/name        (:team_name dummy-guess)
+                    :team/id          (:team_id dummy-guess)
+                    :game/type        "game.type/csgo"
+                    :match/name       (:match_name dummy-guess)
+                    :guess/processed? true
+                    :guess/score      0}
+                   (select-keys body keys-to-select)))
+
+            (is (= {:game/id          (:game_id dummy-guess-2)
+                    :team/name        (:team_name dummy-guess-2)
+                    :team/id          (:team_id dummy-guess-2)
+                    :game/type        "game.type/csgo"
+                    :match/name       (:match_name dummy-guess-2)
+                    :guess/processed? true
+                    :guess/score      100}
+                   (select-keys (:body get-guess-resp2) keys-to-select)))
+
+            (is (not= (:guess/processed-time body)
+                      (:guess/processed-time get-guess-resp2)))))))))
 
 (deftest fail-add-guess
   (testing "Fail to auth because no cookie"

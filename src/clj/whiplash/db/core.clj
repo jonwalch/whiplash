@@ -21,7 +21,7 @@
                conn (d/connect database-url)]
            (install-schema conn)
            conn)
-  :stop (-> conn .release))
+  :stop (some-> conn .release))
 
 (defn show-schema
   "Show currenly installed schema"
@@ -63,6 +63,7 @@
   ;; TODO, need match/id as well
   @(d/transact conn [{:db/id        id
                       :user/guesses [{:guess/time (time/to-date)
+                                      :guess/processed? false
                                       :game/type  game-type
                                       :match/name  match-name
                                       :game/id    game-id
@@ -100,14 +101,14 @@
   (when-let [user (find-one-by (d/db conn) :user/screen-name screen-name)]
     (d/touch user)))
 
-(defn find-newest-guess
-  [screen-name]
-  (when-let [user (find-user-by-screen-name screen-name)]
-    (->> user
-        :user/guesses
-        (sort-by :guess/time #(compare %2 %1))
-        first)))
-
+;(defn find-newest-guess
+;  [screen-name]
+;  (when-let [user (find-user-by-screen-name screen-name)]
+;    (->> user
+;        :user/guesses
+;        (sort-by :guess/time #(compare %2 %1))
+;        first)))
+;
 (defn find-guess
   [db email game-id match-id]
   (when-let [guess (d/entity db
@@ -120,3 +121,14 @@
                                  [?guess :match/id ?match-id]]
                                db email game-id match-id))]
     (d/touch guess)))
+
+(defn find-all-unprocessed-guesses
+  []
+  (let [db (d/db conn)]
+    (->> db
+         (d/q
+           '[:find [?guess ...]
+             :where [?guess :guess/processed? false]])
+         (mapv (fn [id]
+                (d/touch
+                  (d/entity db id)))))))

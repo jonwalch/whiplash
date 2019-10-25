@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Opponent } from "./Home";
+import { Opponent, defaultTeam } from "./Home";
 import { LoginContext } from "../contexts/LoginContext";
 
-//TODO don't allow voting if one exists already
 export function Vote(props: any) {
   const { state, setState } = useContext(LoginContext);
   const [canGuess, setCanGuess] = useState(false);
@@ -14,16 +13,17 @@ export function Vote(props: any) {
   }, [props.currentGame.id, props.matchID, state.userLoggedIn]);
 
   const getGuess = async () => {
-    // const params = {
-    //     match_id: props.matchID,
-    //     game_id: props.currentGame.id
-    //   }
-    const url = "http://localhost:3000/v1/user/guess" + "?match_id=" + props.matchID + "&game_id=" + props.currentGame.id
+    const url =
+      "http://localhost:3000/v1/user/guess" +
+      "?match_id=" +
+      props.matchID +
+      "&game_id=" +
+      props.currentGame.id;
     const response = await fetch(url, {
       headers: { "Content-Type": "application/json" },
       method: "GET",
       mode: "same-origin",
-      redirect: "error",
+      redirect: "error"
     });
     if (response.status == 200) {
       setCanGuess(false);
@@ -56,6 +56,8 @@ export function Vote(props: any) {
       const resp = await response.json();
       console.log(resp);
       setCanGuess(false);
+      // reset local state to no longer have a selected team
+      props.setTeam(defaultTeam);
     }
   };
 
@@ -64,8 +66,8 @@ export function Vote(props: any) {
   };
 
   const toggleValid = () => {
-    // -1 means the user hasn't select a team yet
-    return props.team.teamID == -1;
+    // means the user hasn't select a team yet
+    return props.team == defaultTeam;
   };
 
   const renderContent = () => {

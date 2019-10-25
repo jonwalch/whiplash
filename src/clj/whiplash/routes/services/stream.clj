@@ -8,8 +8,11 @@
 
 ;;TODO this will not work when (count webservers) > 1
 (mount/defstate ^{:on-reload :noop} cached-streams
-          :start
-          (atom {}))
+                :start
+                (atom {})
+
+                :stop
+                (atom {}))
 
 (defn get-stream
   [{:keys [params] :as req}]

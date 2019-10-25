@@ -72,8 +72,7 @@
   (let [{:keys [match_name game_id team_name team_id match_id]} body-params
         {:keys [user exp]} (middleware/req->token req)
         {:keys [user/email] :as user-entity} (db/find-user-by-email user)
-        existing-guess (db/find-guess (d/db db/conn) email game_id match_id)
-        ]
+        existing-guess (db/find-guess (d/db db/conn) email game_id match_id)]
     (cond
       (some? existing-guess)
       (conflict {:message "Already made a guess."})
@@ -92,11 +91,6 @@
       :else
       (not-found {:message (format "User not found.")}))))
 
-(comment
-  (let [{:keys [user exp]} (middleware/req->token sheet)]
-    user))
-
-;; TODO assert on match-id and game-id
 (defn get-guess
   [{:keys [params] :as req}]
   (let [{:keys [game_id match_id]} params
@@ -104,13 +98,13 @@
         game-id (Integer/parseInt game_id)
         match-id (Integer/parseInt match_id)
         {:keys [user exp]} (middleware/req->token req)
-        {:keys [user/email] :as user-entity} (db/find-user-by-email user)
-        _ (println email game-id match-id)
-        existing-guess (db/find-guess (d/db db/conn) email game-id match-id)]
+        existing-guess (when user
+                         (db/find-guess (d/db db/conn) user game-id match-id))]
     (if (some? existing-guess)
       (ok (select-keys existing-guess
-                     [:team/name :team/id :game/id :match/name :guess/time :guess/score :game/type]))
+                     [:team/name :team/id :game/id :match/name :guess/time :guess/score :game/type
+                      :guess/processed? :guess/processed-time]))
       (not-found {:message (format "guess for user %s, game-id %s, match-id %s not found"
-                                   email
+                                   user
                                    game-id
                                    match-id)}))))

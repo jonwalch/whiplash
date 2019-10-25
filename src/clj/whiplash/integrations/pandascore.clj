@@ -6,11 +6,19 @@
     [whiplash.integrations.twitch :as twitch]
     [whiplash.integrations.common :as common]
     [clojure.string :as string]
-    [clojure.tools.logging :as log]))
+    [clojure.tools.logging :as log]
+    [whiplash.db.core :as db]
+    [datomic.api :as d]
+    [clojure.edn :as edn]
+    [clojure.java.io :as io]))
 
 (def base-url "https://api.pandascore.co/%s/")
 (def matches-url (str base-url "matches"))
+(def game-url (str base-url "games"))
 (def tournaments-url (str base-url "tournaments"))
+
+(def pandascore-api-key "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4")
+(def pandascore-page-size 100)
 
 (def game-lookup
   {:csgo "csgo"
@@ -19,24 +27,24 @@
    :overwatch "ow"
    :pubg "pubg"})
 
-(def pandascore-page-size 100)
-
 ;; TODO use a request pool
 ;; TODO make this an interface and serve a fixture for tests
 ;; TODO get access key from KMS
 (defn get-matches-request
   [url page-number date-range]
-  (let [api-key "rPMcxOQ-nPbL4rKOeZ8O8PBkZy6-0Ib4EAkHqxw2Gj16AvXuaJ4"]
-    (client/get url {:headers      {"Authorization" api-key}
-                     :query-params {"range[begin_at]" date-range
-                                    "page[size]"      (str pandascore-page-size)
-                                    "page[number]"    (str page-number)
-                                    "sort"            "begin_at"}})))
+  (let [{:keys [body] :as resp}
+        (client/get url {:headers      {"Authorization" pandascore-api-key}
+                         :query-params {"range[begin_at]" date-range
+                                        "page[size]"      (str pandascore-page-size)
+                                        "page[number]"    (str page-number)
+                                        "sort"            "begin_at"}})]
+    (if (some? body)
+      (assoc resp :body (common/resp->body resp))
+      resp)))
 
 (defn get-all-matches
   [url date-range]
-  (let [resp (get-matches-request url 0 date-range)
-        resp-body (common/resp->body resp)
+  (let [{:keys [body] :as resp} (get-matches-request url 0 date-range)
         ;; TODO: catch and log potential parsInt error if called with nil
         total-items (-> resp :headers (get "X-Total") Integer/parseInt)
         total-pages (if (pos-int? (rem total-items pandascore-page-size))
@@ -47,18 +55,17 @@
     (when (< limit 100)
       (log/warn (format "only %s pandscore requests left this hour" limit)))
     (if (= total-pages 1)
-      (seq resp-body)
+      (seq body)
       (conj
         (pmap #(common/resp->body
                  (get-matches-request url % date-range))
               (range 1 (inc total-pages)))
-        resp-body))))
+        body))))
 
 (defn get-matches
   [game]
   (assert (contains? game-lookup game))
-  (let [game-string (get game-lookup game)
-        url (format matches-url game-string)
+  (let [url (format matches-url (get game-lookup game))
         start (time/date-iso-string (time/days-delta -1))
         end (time/date-iso-string (time/days-delta 1))
         date-range (format "%s,%s" start end)]
@@ -133,6 +140,35 @@
   (def foo
     (get-matches :csgo))
   foo
+  ;; TODO jonwalch pick up from here tomorrow
+  (let [match->game-lookup (->> foo
+                                (filter #(= "finished" (:status %)))
+                                ;transform-timestamps
+                                (map :games)
+                                flatten
+                                (group-by :match_id))
+        update-txs (->> (db/find-all-unprocessed-guesses)
+                        (keep
+                          (fn [guess]
+                            (let [games-in-match (get match->game-lookup (:match/id guess))
+                                  result {:db/id            (:db/id guess)
+                                          :guess/score      0
+                                          :guess/processed? true}]
+                              (if (some? games-in-match)
+                                (keep
+                                  (fn [game]
+                                    (when (= (:id game) (:game/id guess))
+                                      (if (= (get-in game [:winner :id]) (:team/id guess))
+                                        (assoc result :guess/score 100)
+                                        result)))
+                                  games-in-match)
+                                (log/info (format "Match id %s not found in finished game lookup." (:match/id guess)))))))
+                        flatten
+                        vec)]
+    (println update-txs)
+    (when (not-empty update-txs)
+      @(d/transact db/conn update-txs)))
+
   (let [running-matches (->> foo
                              twitch-matches
                              ;; TODO make sure its a twitch url too
@@ -143,7 +179,7 @@
                              twitch/add-live-viewer-count
                              (sort by-viewers-and-scheduled)
                              #_(filter (fn [m]
-                                       (= (:twitch/username m) "beyondthesummit_pt")))
+                                         (= (:twitch/username m) "beyondthesummit_pt")))
                              (map #(select-keys % [:twitch/live-viewers :live_url :twitch/username :slug :scheduled_at #_:end_at]))
                              ;(group-by :status)
                              )]

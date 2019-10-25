@@ -1,0 +1,147 @@
+{:cached nil
+ :request-time 936
+ :repeatable? false
+ :protocol-version {:name "HTTP" :major 1 :minor 1}
+ :streaming? true
+ ;:http-client
+ ;#object[org.apache.http.impl.client.InternalHttpClient 0x3cda0052 "org.apache.http.impl.client.InternalHttpClient@3cda0052"]
+ :chunked? false
+ :reason-phrase "OK"
+ :headers
+ {"X-Rate-Limit-Used" "4"
+  "Server" "nginx/1.16.1"
+  "X-Total" "17"
+  "Content-Type" "application/json; charset=utf-8"
+  "Content-Length" "43568"
+  "X-Runtime" "0.025111"
+  "Connection" "close"
+  "Date" "Fri 25 Oct 2019 19:23:03 GMT"
+  "X-Page" "1"
+  "X-Panda-Route" "/csgo/matches"
+  "X-Panda-Account" "jon@whiplashesports.com"
+  "X-Rate-Limit-Remaining" "996"
+  "X-Request-Id" "FdD6NulvlmA4a3oAbsKC"
+  "X-Per-Page" "100"
+  "Cache-Control" "max-age=0 private must-revalidate"}
+ :orig-content-encoding nil
+ :status 200
+ :length 43568
+ :body [{:modified_at "2019-10-25T02:21:56Z"
+         :slug "liquid-2019-10-24"
+         :serie {:modified_at "2019-09-15T21:39:54Z"
+                 :description nil
+                 :slug "cs-go-ecs-north-america-8-2019"
+                 :league_id 4153
+                 :name "North America"
+                 :begin_at "2019-09-16T22:00:00Z"
+                 :winner_id nil
+                 :end_at nil
+                 :prizepool nil
+                 :year 2019
+                 :season "8"
+                 :winner_type nil
+                 :id 1849
+                 :full_name "North america season 8 2019"}
+         :league_id 4153
+         :opponents [{:opponent
+                            {:acronym nil
+                             :id 3213
+                             :image_url
+                                      "https://cdn.pandascore.co/images/team/image/3213/liquid-cs-go.png"
+                             :name "Liquid"
+                             :slug "liquid-cs-go"}
+                      :type "Team"}
+                     {:opponent
+                            {:acronym nil
+                             :id 125859
+                             :image_url
+                                      "https://cdn.pandascore.co/images/team/image/125859/9943.png"
+                             :name "ATK"
+                             :slug "atk"}
+                      :type "Team"}]
+         :forfeit false
+         :serie_id 1849
+         :winner {:acronym nil
+                  :id 3213
+                  :image_url
+                           "https://cdn.pandascore.co/images/team/image/3213/liquid-cs-go.png"
+                  :name "Liquid"
+                  :slug "liquid-cs-go"}
+         :videogame {:id 3 :name "CS:GO" :slug "cs-go"}
+         :name "Grand Final: Liquid vs ATK"
+         :match_type "best_of"
+         :number_of_games 3
+         :begin_at "2019-10-24T21:30:04Z"
+         :winner_id 3213
+         :end_at "2019-10-25T02:21:56Z"
+         :tournament {:modified_at "2019-10-24T21:33:38Z"
+                      :slug "cs-go-ecs-north-america-8-2019-week-4"
+                      :league_id 4153
+                      :serie_id 1849
+                      :name "Week 4"
+                      :begin_at "2019-10-21T22:00:00Z"
+                      :winner_id nil
+                      :end_at "2019-10-25T02:00:00Z"
+                      :prizepool "25000 United States Dollar"
+                      :winner_type nil
+                      :id 2652}
+         :live_url "https://player.twitch.tv/?channel=faceittv"
+         :scheduled_at "2019-10-24T21:15:00Z"
+         :status "finished"
+         :id 549829
+         :tournament_id 2652
+         :videogame_version nil
+         :live {:opens_at "2019-10-24T21:15:04Z"
+                :supported true
+                :url "wss://live.pandascore.co/matches/549829"}
+         :draw false
+         :league {:id 4153
+                  :image_url
+                      "https://cdn.pandascore.co/images/league/image/4153/600px-Esports_Championship_Series.png"
+                  :live_supported true
+                  :modified_at "2019-03-05T22:14:33Z"
+                  :name "ECS"
+                  :slug "cs-go-ecs"
+                  :url nil}
+         :detailed_stats true
+         :games [{:forfeit false
+                  :winner {:id 125859 :type "Team"}
+                  :begin_at "2019-10-24T21:32:20Z"
+                  :end_at "2019-10-24T22:51:23Z"
+                  :video_url nil
+                  :finished true
+                  :winner_type "Team"
+                  :status "finished"
+                  :id 9388
+                  :length 4742
+                  :match_id 549829
+                  :position 1
+                  :detailed_stats true}
+                 {:forfeit false
+                  :winner {:id 3213 :type "Team"}
+                  :begin_at "2019-10-24T23:03:16Z"
+                  :end_at "2019-10-25T00:02:44Z"
+                  :video_url nil
+                  :finished true
+                  :winner_type "Team"
+                  :status "finished"
+                  :id 9389
+                  :length 3567
+                  :match_id 549829
+                  :position 2
+                  :detailed_stats true}
+                 {:forfeit false
+                  :winner {:id 3213 :type "Team"}
+                  :begin_at "2019-10-25T00:13:09Z"
+                  :end_at "2019-10-25T02:21:56Z"
+                  :video_url nil
+                  :finished true
+                  :winner_type "Team"
+                  :status "finished"
+                  :id 9390
+                  :length 7727
+                  :match_id 549829
+                  :position 3
+                  :detailed_stats true}]
+         :results [{:score 2 :team_id 3213} {:score 1 :team_id 125859}]}]
+ :trace-redirects []}

@@ -8,6 +8,8 @@ export interface Opponent {
   teamID: number;
 }
 
+export const defaultTeam : Opponent = { teamName: "", teamID: -1 }
+
 const failedToFetch : string = "failed to fetch stream"
 
 function useInterval(callback: () => void, delay: number) {
@@ -31,7 +33,7 @@ function useInterval(callback: () => void, delay: number) {
 }
 
 export function Home(props: any) {
-  const [team, setTeam] = useState<Opponent>({ teamName: "", teamID: -1 });
+  const [team, setTeam] = useState<Opponent>(defaultTeam);
   const [streamURL, setURL] = useState("");
   const [twitchUsername, setTwitchUsername] = useState("");
   const [matchName, setMatchName] = useState("");

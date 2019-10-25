@@ -40,6 +40,7 @@
                  [clj-http "3.10.0"]
                  [danlentz/clj-uuid "0.1.9"]
                  [buddy/buddy-hashers "1.4.0"]
+                 [org.clojure/core.async "0.4.500"]
                  ]
 
   :min-lein-version "2.0.0"
