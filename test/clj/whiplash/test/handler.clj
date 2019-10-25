@@ -6,7 +6,10 @@
     [muuntaja.core :as m]
     [clojure.string :as string]
     [whiplash.test.common :as common]
-    [whiplash.guess-processor :as guess-processor]))
+    [whiplash.guess-processor :as guess-processor]
+    [whiplash.db.core :as db]
+    [whiplash.time :as time]
+    [datomic.api :as d]))
 
 (common/app-fixtures)
 (common/db-fixtures)
@@ -106,7 +109,7 @@
   ([user]
    (assert user)
    (let [resp ((handler/app) (-> (mock/request :post "/v1/user/create")
-                                             (mock/json-body dummy-user)))
+                                 (mock/json-body dummy-user)))
          parsed-body (common/parse-json-body resp)]
 
      (is (= 200 (:status resp)))
@@ -257,7 +260,8 @@
                 {:keys [body] :as get-guess-resp} (get-guess auth-token game_id match_id)
                 get-guess-resp2 (get-guess auth-token
                                            (:game_id dummy-guess-2)
-                                           (:match_id dummy-guess-2))]
+                                           (:match_id dummy-guess-2))
+                leaderboard-resp ((handler/app) (-> (mock/request :get "/v1/leaderboard/weekly")))]
 
             (is (= {:game/id          (:game_id dummy-guess)
                     :team/name        (:team_name dummy-guess)
@@ -278,7 +282,11 @@
                    (select-keys (:body get-guess-resp2) keys-to-select)))
 
             (is (not= (:guess/processed-time body)
-                      (:guess/processed-time get-guess-resp2)))))))))
+                      (:guess/processed-time get-guess-resp2)))
+
+            (is (= 200 (:status leaderboard-resp)))
+            (is (= [#:user{:screen-name "queefburglar" :score 100}]
+                   (common/parse-json-body leaderboard-resp)))))))))
 
 (deftest fail-add-guess
   (testing "Fail to auth because no cookie"

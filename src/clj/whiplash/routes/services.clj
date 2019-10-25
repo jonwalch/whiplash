@@ -12,6 +12,7 @@
     [whiplash.middleware.exception :as exception]
     [whiplash.routes.services.user :as user]
     [whiplash.routes.services.stream :as stream]
+    [whiplash.routes.services.leaderboard :as leaderboard]
     [ring.util.http-response :refer :all]
     [whiplash.middleware :as middleware]))
 
@@ -57,6 +58,12 @@
     {:get  {:summary    "get the current best stream candidate"
             :handler    (fn [req]
                           (stream/get-stream req))}}]
+
+   ["/leaderboard"
+    ["/weekly"
+     {:get  {:summary    "return this week's leaderboard"
+             :handler    (fn [req]
+                           (leaderboard/weekly-leaderboard req))}}]]
 
    ["/user"
 

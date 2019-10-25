@@ -132,3 +132,19 @@
          (mapv (fn [id]
                 (d/touch
                   (d/entity db id)))))))
+
+(defn find-this-week-leaderboard-calc
+  [lower-bound]
+  (let [db (d/db conn)]
+    (->> (d/q
+           '[:find [?guess ...]
+             :in $ ?lower-bound
+             :where [?guess :guess/time ?time]
+             [?guess :guess/score ?score]
+             [(>= ?time ?lower-bound)]
+             [?guess :guess/processed? true]
+             [(> ?score 0)]]
+           db lower-bound)
+         (mapv (fn [id]
+                 (d/touch
+                   (d/entity db id)))))))
