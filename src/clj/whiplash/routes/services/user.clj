@@ -105,6 +105,7 @@
         match-id (Integer/parseInt match_id)
         {:keys [user exp]} (middleware/req->token req)
         {:keys [user/email] :as user-entity} (db/find-user-by-email user)
+        _ (println email game-id match-id)
         existing-guess (db/find-guess (d/db db/conn) email game-id match-id)]
     (if (some? existing-guess)
       (ok (select-keys existing-guess

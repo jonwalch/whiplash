@@ -5,6 +5,36 @@ import { LoginContext } from "../contexts/LoginContext";
 //TODO don't allow voting if one exists already
 export function Vote(props: any) {
   const { state, setState } = useContext(LoginContext);
+  const [canGuess, setCanGuess] = useState(false);
+
+  useEffect(() => {
+    if (props.currentGame.id && props.matchID && state.userLoggedIn) {
+      getGuess();
+    }
+  }, [props.currentGame.id, props.matchID, state.userLoggedIn]);
+
+  const getGuess = async () => {
+    // const params = {
+    //     match_id: props.matchID,
+    //     game_id: props.currentGame.id
+    //   }
+    const url = "http://localhost:3000/v1/user/guess" + "?match_id=" + props.matchID + "&game_id=" + props.currentGame.id
+    const response = await fetch(url, {
+      headers: { "Content-Type": "application/json" },
+      method: "GET",
+      mode: "same-origin",
+      redirect: "error",
+    });
+    if (response.status == 200) {
+      setCanGuess(false);
+
+      const resp = await response.json();
+      console.log(resp);
+      console.log(response.status);
+    } else if (response.status == 404) {
+      setCanGuess(true);
+    }
+  };
 
   const makeGuess = async () => {
     const response = await fetch("http://localhost:3000/v1/user/guess", {
@@ -20,9 +50,13 @@ export function Vote(props: any) {
         team_id: props.team.teamID
       })
     });
-    const resp = await response.json();
-    console.log(resp);
     console.log(response.status);
+
+    if (response.status == 200) {
+      const resp = await response.json();
+      console.log(resp);
+      setCanGuess(false);
+    }
   };
 
   const handleClick = (team: Opponent) => {
@@ -35,7 +69,7 @@ export function Vote(props: any) {
   };
 
   const renderContent = () => {
-    if (state.userLoggedIn) {
+    if (state.userLoggedIn && canGuess) {
       return (
         <>
           <div>
@@ -61,6 +95,8 @@ export function Vote(props: any) {
           </button>
         </>
       );
+    } else if (state.userLoggedIn) {
+      return <h3>Guess submitted for this game!</h3>;
     } else {
       return <h3>Login to guess!</h3>;
     }

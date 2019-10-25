@@ -95,7 +95,6 @@
                 :handler    (fn [req]
                               (user/create-user req))}}]
 
-
     ["/guess"
      {:get {:summary    "get a guess for a user/game-id"
             :parameters {:query {:game_id int?

@@ -13,7 +13,6 @@ const defaultShitState: shitState = {
 
 export interface shit {
   userLoggedIn: boolean | null;
-//   teamID: number;
 }
 const LoginContext = createContext<shitState>(defaultShitState);
 

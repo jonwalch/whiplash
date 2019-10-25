@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Login } from "./Login";
 import { Vote } from "./Vote";
 declare const Twitch: any;
@@ -6,6 +6,28 @@ declare const Twitch: any;
 export interface Opponent {
   teamName: string;
   teamID: number;
+}
+
+const failedToFetch : string = "failed to fetch stream"
+
+function useInterval(callback: () => void, delay: number) {
+  const savedCallback = useRef(callback);
+
+  // Remember the latest callback.
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  // Set up the interval.
+  useEffect(() => {
+    function tick() {
+      savedCallback.current();
+    }
+    if (delay !== null) {
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
 }
 
 export function Home(props: any) {
@@ -23,6 +45,12 @@ export function Home(props: any) {
     getStream();
   }, []);
 
+  useInterval(() => {
+    if (streamURL != "") {
+      getStream();
+    }
+  }, 10000);
+
   // useEffect(() => {
   //   if (twitchUsername) {
   //     twitchEmbed();
@@ -33,24 +61,29 @@ export function Home(props: any) {
     const response = await fetch("http://localhost:3000/v1/stream", {
       headers: { "Content-Type": "application/json" }
     });
-    const resp = await response.json();
-    console.log(resp);
-    setURL(resp["live_url"]);
-    setTwitchUsername(resp["twitch/username"]);
-    setMatchName(resp["name"]);
-    setBeginAt(resp["begin_at"]);
-    setScheduledAt(resp["scheduled_at"]);
-    setMatchID(resp["id"]);
-    setCurrentGame(resp["whiplash/current-game"]);
+    if (response.status == 200) {
+      const resp = await response.json();
+      console.log(resp);
+      setURL(resp["live_url"]);
+      setTwitchUsername(resp["twitch/username"]);
+      setMatchName(resp["name"]);
+      setBeginAt(resp["begin_at"]);
+      setScheduledAt(resp["scheduled_at"]);
+      setMatchID(resp["id"]);
+      setCurrentGame(resp["whiplash/current-game"]);
 
-    let parsedOpponents: Opponent[] = [];
-    resp["opponents"].forEach((element: any) => {
-      parsedOpponents.push({
-        teamID: element.opponent.id,
-        teamName: element.opponent.name
+      let parsedOpponents: Opponent[] = [];
+      resp["opponents"].forEach((element: any) => {
+        parsedOpponents.push({
+          teamID: element.opponent.id,
+          teamName: element.opponent.name
+        });
       });
-    });
-    setOpponents(parsedOpponents);
+      setOpponents(parsedOpponents);
+    } else {
+      //right now would be a 204
+      setURL(failedToFetch)
+    }
   };
 
   const twitchEmbed = () => {
@@ -61,12 +94,18 @@ export function Home(props: any) {
     });
   };
 
-  //TODO size video based on web browser size
-  return (
-    <div>
-      <h2>Whiplash - Win While Watching</h2>
-      <Login />
-      {streamURL && (
+  const renderContent = () => {
+    if (streamURL == "") {
+      return <h3>Loading</h3>;
+    } else if (streamURL == failedToFetch) {
+      return (
+        <h3>
+          Whiplash is taking a nap, hang tight, we'll find a CS:GO match for you
+          soon.
+        </h3>
+      );
+    } else {
+      return (
         <div>
           <h3>{matchName}</h3>
           {/* <div id="twitch-embed"></div> */}
@@ -88,7 +127,16 @@ export function Home(props: any) {
             currentGame={currentGame}
           />
         </div>
-      )}
+      );
+    }
+  };
+
+  //TODO size video based on web browser size
+  return (
+    <div>
+      <h2>Whiplash - Win While Watching</h2>
+      <Login />
+      {renderContent()}
     </div>
   );
 }
