@@ -18,6 +18,7 @@
                  middleware/wrap-formats]}
    ["/" {:get home-page}]
    ["/signup" {:get home-page}]
+   ["/leaderboard" {:get home-page}]
    #_["/graphiql" {:get (fn [request]
                         (layout/render request "graphiql.html"))}]
    #_["/about" {:get about-page}]])

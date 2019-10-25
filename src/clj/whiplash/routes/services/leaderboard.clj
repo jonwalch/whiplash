@@ -10,10 +10,10 @@
                                 (group-by (fn [guess]
                                             (-> guess :user/_guesses :user/screen-name)))
                                 (map (fn [[k v]]
-                                       (hash-map :user/screen-name k
-                                                 :user/score (->> v
+                                       (hash-map :screen_name k
+                                                 :score (->> v
                                                                   (map :guess/score)
                                                                   (apply +)))))
-                                (sort-by :user/score #(compare %2 %1))
+                                (sort-by :score #(compare %2 %1))
                                 vec)]
     (ok weekly-leaderboard)))

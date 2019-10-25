@@ -285,7 +285,7 @@
                       (:guess/processed-time get-guess-resp2)))
 
             (is (= 200 (:status leaderboard-resp)))
-            (is (= [#:user{:screen-name "queefburglar" :score 100}]
+            (is (= [{:screen_name "queefburglar" :score 100}]
                    (common/parse-json-body leaderboard-resp)))))))))
 
 (deftest fail-add-guess

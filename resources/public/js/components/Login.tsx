@@ -75,6 +75,7 @@ export function Login(props: any) {
           <button type="button" onClick={logout}>
             Sign out
           </button>
+          <Link to="/leaderboard">Weekly Leaderboard</Link>
         </>
       );
     } else {
@@ -103,6 +104,7 @@ export function Login(props: any) {
             Log In
           </button>
           <Link to="/signup">Sign Up Now!</Link>
+          <Link to="/leaderboard">Weekly Leaderboard</Link>
         </>
       );
     }
