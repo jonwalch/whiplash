@@ -12,7 +12,7 @@ export const defaultTeam : Opponent = { teamName: "", teamID: -1 }
 
 const failedToFetch : string = "failed to fetch stream"
 
-function useInterval(callback: () => void, delay: number) {
+export function useInterval(callback: () => void, delay: number) {
   const savedCallback = useRef(callback);
 
   // Remember the latest callback.
@@ -88,13 +88,13 @@ export function Home(props: any) {
     }
   };
 
-  const twitchEmbed = () => {
-    new Twitch.Embed("twitch-embed", {
-      width: 1024,
-      height: 576,
-      channel: twitchUsername
-    });
-  };
+  // const twitchEmbed = () => {
+  //   new Twitch.Embed("twitch-embed", {
+  //     width: 1024,
+  //     height: 576,
+  //     channel: twitchUsername
+  //   });
+  // };
 
   const renderContent = () => {
     if (streamURL == "") {

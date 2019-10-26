@@ -5,51 +5,47 @@
             [whiplash.integrations.pandascore :as pandascore]
             [whiplash.time :as time]
             [clojure.core.async :as async]
-            [mount.core :as mount]))
+            [mount.core :as mount]
+            [whiplash.db.core :refer [conn]]))
 
 (defn- pandascore-match->game-lookup
   [game]
-  (def shit (pandascore/get-matches game))
   (->> (pandascore/get-matches game)
        (filter #(= "finished" (:status %)))
-       ;transform-timestamps
        (map :games)
        flatten
        (group-by :match_id)))
 
 (defn process-guesses
   []
-  (if (some? db/conn)
-    (do
-      (log/info "Processing guesses")
-      (let [unprocessed-guesses (db/find-all-unprocessed-guesses)
-            match->game-lookup (when (not-empty unprocessed-guesses)
-                                 (log/info (format "Found guesses to process %s" unprocessed-guesses))
-                                 (pandascore-match->game-lookup :csgo))
-            update-txs (->> unprocessed-guesses
-                            (keep
-                              (fn [guess]
-                                (let [games-in-match (get match->game-lookup (:match/id guess))
-                                      result {:db/id                (:db/id guess)
-                                              :guess/score          0
-                                              :guess/processed?     true
-                                              :guess/processed-time (time/to-date)}]
-                                  (if (some? games-in-match)
-                                    (keep
-                                      (fn [game]
-                                        (when (= (:id game) (:game/id guess))
-                                          (if (= (get-in game [:winner :id]) (:team/id guess))
-                                            (assoc result :guess/score 100)
-                                            result)))
-                                      games-in-match)
-                                    (log/info (format "Match id %s not found in finished game lookup."
-                                                      (:match/id guess)))))))
-                            flatten
-                            vec)]
-        (when (not-empty update-txs)
-          (do (log/info "Transacting processed guess updates %s" update-txs)
-              @(d/transact db/conn update-txs)))))
-    (log/info "No db connection yet, not processing guesses")))
+  (log/info "Processing guesses")
+  (let [unprocessed-guesses (db/find-all-unprocessed-guesses)
+        match->game-lookup (when (not-empty unprocessed-guesses)
+                             (log/info (format "Found guesses to process %s" unprocessed-guesses))
+                             (pandascore-match->game-lookup :csgo))
+        update-txs (->> unprocessed-guesses
+                        (keep
+                          (fn [guess]
+                            (let [games-in-match (get match->game-lookup (:match/id guess))
+                                  result {:db/id                (:db/id guess)
+                                          :guess/score          0
+                                          :guess/processed?     true
+                                          :guess/processed-time (time/to-date)}]
+                              (if (some? games-in-match)
+                                (keep
+                                  (fn [game]
+                                    (when (= (:id game) (:game/id guess))
+                                      (if (= (get-in game [:winner :id]) (:team/id guess))
+                                        (assoc result :guess/score 100)
+                                        result)))
+                                  games-in-match)
+                                (log/info (format "Match id %s not found in finished game lookup."
+                                                  (:match/id guess)))))))
+                        flatten
+                        vec)]
+    (when (not-empty update-txs)
+      (do (log/info "Transacting processed guess updates %s" update-txs)
+          @(d/transact db/conn update-txs)))))
 
 (defn set-interval
   [f time-in-ms]
@@ -67,8 +63,7 @@
 
 (def one-minute (* 1000 60 1))
 
-;; TODO make depend on datomic db
-(mount/defstate ^{:on-reload :noop} guess-processor
+(mount/defstate guess-processor
                 :start
                 (set-interval process-guesses one-minute)
 

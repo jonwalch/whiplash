@@ -34,18 +34,21 @@
 (defn- views-per-twitch-stream
   [matches]
   (let [usernames (keep :twitch/username matches)]
-    (->> (get-streams "lcqp3mnqxolecsk3e3tvqcueb2sx8x" usernames)
-         common/resp->body
-         :data
-         (map (fn [stream-info]
-                (let [relevant-info (-> stream-info
-                                        (select-keys [:viewer_count :user_name])
-                                        (update :user_name (fn [val]
-                                                             (-> val
-                                                                 string/lower-case
-                                                                 (string/replace #" " "")))))]
-                  (hash-map (:user_name relevant-info) (:viewer_count relevant-info)))))
-         (apply conj))))
+    (if (not-empty usernames)
+      (->> usernames
+           (get-streams "lcqp3mnqxolecsk3e3tvqcueb2sx8x")
+           common/resp->body
+           :data
+           (map (fn [stream-info]
+                  (let [relevant-info (-> stream-info
+                                          (select-keys [:viewer_count :user_name])
+                                          (update :user_name (fn [val]
+                                                               (-> val
+                                                                   string/lower-case
+                                                                   (string/replace #" " "")))))]
+                    (hash-map (:user_name relevant-info) (:viewer_count relevant-info)))))
+           (apply conj))
+      {})))
 
 (defn add-live-viewer-count
   [matches]

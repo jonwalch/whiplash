@@ -4,7 +4,10 @@
     [whiplash.nrepl :as nrepl]
     [luminus.http-server :as http]
     [whiplash.config :refer [env]]
+    [whiplash.guess-processor :refer [guess-processor]]
+    [whiplash.routes.services.stream :refer [cached-streams]]
     [clojure.tools.cli :refer [parse-opts]]
+    [whiplash.db.core :refer [conn]]
     [clojure.tools.logging :as log]
     [mount.core :as mount])
   (:gen-class))
@@ -47,7 +50,7 @@
   (shutdown-agents))
 
 (defn start-app [args]
-  (doseq [component (-> args
+  (doseq [component #_(mount/start) (-> args
                         (parse-opts cli-options)
                         mount/start-with-args
                         :started)]
@@ -59,5 +62,5 @@
 
 (comment
   (start-app nil)
-  (stop-app))
-
+  (stop-app)
+  )

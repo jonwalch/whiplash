@@ -7,7 +7,7 @@
             [clojure.tools.logging :as log]))
 
 ;;TODO this will not work when (count webservers) > 1
-(mount/defstate ^{:on-reload :noop} cached-streams
+(mount/defstate cached-streams
                 :start
                 (atom {})
 
@@ -37,8 +37,3 @@
       (do
         (log/info "Serving cached stream")
         (return-fn (first ordered-candidates))))))
-
-(comment
-  (def farts (atom {}))
-  (deref farts)
-  )

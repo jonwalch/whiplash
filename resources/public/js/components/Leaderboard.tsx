@@ -48,7 +48,8 @@ export function Leaderboard(props: any) {
     } else {
       return (
         <div>
-          <Link to="/">Back to match</Link>
+          <h3>User, score</h3>
+        <div>
           {leaderboard.map((leader: Leader) => {
             return (
               <div key={leader.screen_name}>
@@ -57,12 +58,14 @@ export function Leaderboard(props: any) {
             );
           })}
         </div>
+        </div>
       );
     }
   };
 
   return (
     <div>
+      <h3>This week's Leaderboard</h3>
       <Link to="/">Back to stream</Link>
       {renderContent()}
     </div>

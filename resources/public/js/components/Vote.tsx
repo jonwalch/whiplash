@@ -1,16 +1,27 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Opponent, defaultTeam } from "./Home";
+import { Opponent, defaultTeam, useInterval } from "./Home";
 import { LoginContext } from "../contexts/LoginContext";
 
 export function Vote(props: any) {
   const { state, setState } = useContext(LoginContext);
-  const [canGuess, setCanGuess] = useState(false);
+  const [hasGuessed, setHasGuessed] = useState(false);
+  const [passedGuessingPeriod, setPastGuessingPeriod] = useState(false);
 
   useEffect(() => {
     if (props.currentGame.id && props.matchID && state.userLoggedIn) {
       getGuess();
     }
   }, [props.currentGame.id, props.matchID, state.userLoggedIn]);
+
+  const threeMinutes = 1000 * 60 * 3
+  useInterval(() => {
+    //TODO: case where begin_at is nil, just allow
+    const beginAt: number = Date.parse(props.currentGame["begin_at"])
+    console.log(beginAt)
+    if (beginAt + threeMinutes <= Date.now()) {
+      setPastGuessingPeriod(true);
+    }
+  }, 1000);
 
   const getGuess = async () => {
     const url =
@@ -26,13 +37,13 @@ export function Vote(props: any) {
       redirect: "error"
     });
     if (response.status == 200) {
-      setCanGuess(false);
+      setHasGuessed(true);
 
       const resp = await response.json();
       console.log(resp);
       console.log(response.status);
     } else if (response.status == 404) {
-      setCanGuess(true);
+      setHasGuessed(false);
     }
   };
 
@@ -55,7 +66,7 @@ export function Vote(props: any) {
     if (response.status == 200) {
       const resp = await response.json();
       console.log(resp);
-      setCanGuess(false);
+      setHasGuessed(true);
       // reset local state to no longer have a selected team
       props.setTeam(defaultTeam);
     }
@@ -71,7 +82,7 @@ export function Vote(props: any) {
   };
 
   const renderContent = () => {
-    if (state.userLoggedIn && canGuess) {
+    if (state.userLoggedIn && !hasGuessed && !passedGuessingPeriod) {
       return (
         <>
           <div>
@@ -97,7 +108,14 @@ export function Vote(props: any) {
           </button>
         </>
       );
-    } else if (state.userLoggedIn) {
+    } else if (state.userLoggedIn && !hasGuessed && passedGuessingPeriod) {
+      return (
+        <h3>
+          Sorry! You missed guessing for this game. Stick around for the next
+          one!
+        </h3>
+      );
+    } else if (state.userLoggedIn && hasGuessed) {
       return <h3>Guess submitted for this game!</h3>;
     } else {
       return <h3>Login to guess!</h3>;
