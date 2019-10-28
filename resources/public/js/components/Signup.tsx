@@ -1,4 +1,5 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
+import { baseUrl } from "../config/const";
 
 export function Signup(props: any) {
   const [firstName, setFirstName] = useState("");
@@ -13,7 +14,7 @@ export function Signup(props: any) {
   };
 
   const createUser = async () => {
-    const response = await fetch("http://localhost:3000/v1/user/create", {
+    const response = await fetch(baseUrl + "v1/user/create", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       mode: "same-origin",

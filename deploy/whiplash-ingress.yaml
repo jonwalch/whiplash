@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+    #    ingress.kubernetes.io/rewrite-target: /
+#    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+#    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - whiplashesports.com
+  rules:
+    - host: whiplashesports.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: whiplash-service
+              servicePort: 3000

@@ -120,7 +120,6 @@
       (compare (:scheduled_at x) (:scheduled_at y)))))
 
 ;; TODO centralize this so there is one source of truth
-;; currently different users could be watching different streams because each
 (defn sort-and-transform-stream-candidates
   [pandascore-matches]
   (->> pandascore-matches

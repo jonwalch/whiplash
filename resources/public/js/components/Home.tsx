@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Login } from "./Login";
 import { Vote } from "./Vote";
+import { baseUrl } from "../config/const";
+
 declare const Twitch: any;
 
 export interface Opponent {
@@ -60,7 +62,7 @@ export function Home(props: any) {
   // }, [twitchUsername]);
 
   const getStream = async () => {
-    const response = await fetch("http://localhost:3000/v1/stream", {
+    const response = await fetch( baseUrl + "v1/stream", {
       headers: { "Content-Type": "application/json" }
     });
     if (response.status == 200) {

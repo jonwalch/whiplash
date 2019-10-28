@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Opponent, defaultTeam, useInterval } from "./Home";
 import { LoginContext } from "../contexts/LoginContext";
+import { baseUrl } from "../config/const";
 
 export function Vote(props: any) {
   const { state, setState } = useContext(LoginContext);
@@ -17,7 +18,6 @@ export function Vote(props: any) {
   useInterval(() => {
     //TODO: case where begin_at is nil, just allow
     const beginAt: number = Date.parse(props.currentGame["begin_at"])
-    console.log(beginAt)
     if (beginAt + threeMinutes <= Date.now()) {
       setPastGuessingPeriod(true);
     }
@@ -25,7 +25,8 @@ export function Vote(props: any) {
 
   const getGuess = async () => {
     const url =
-      "http://localhost:3000/v1/user/guess" +
+      baseUrl +
+      "v1/user/guess" +
       "?match_id=" +
       props.matchID +
       "&game_id=" +
@@ -48,7 +49,7 @@ export function Vote(props: any) {
   };
 
   const makeGuess = async () => {
-    const response = await fetch("http://localhost:3000/v1/user/guess", {
+    const response = await fetch(baseUrl + "v1/user/guess", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       mode: "same-origin",

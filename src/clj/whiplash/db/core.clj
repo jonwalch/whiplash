@@ -17,6 +17,7 @@
 
 (defstate conn
   :start (let [database-url (:database-url env)
+               _ (assert (some? database-url))
                created? (d/create-database database-url)
                conn (d/connect database-url)]
            (install-schema conn)

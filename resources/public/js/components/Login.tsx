@@ -2,6 +2,7 @@ import React, { useState, useEffect, ChangeEvent, useContext } from "react";
 import { Link } from "react-router-dom";
 import "../../css/App.css";
 import { LoginContext } from "../contexts/LoginContext";
+import { baseUrl } from "../config/const"
 
 export function Login(props: any) {
   const [screenName, setScreenName] = useState("");
@@ -18,7 +19,7 @@ export function Login(props: any) {
   };
 
   const login = async () => {
-    const response = await fetch("http://localhost:3000/v1/user/login", {
+    const response = await fetch(baseUrl + "v1/user/login", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       mode: "same-origin",
@@ -36,7 +37,7 @@ export function Login(props: any) {
   };
 
   const loggedIn = async () => {
-    const response = await fetch("http://localhost:3000/v1/user/login", {
+    const response = await fetch(baseUrl + "v1/user/login", {
       headers: { "Content-Type": "application/json" },
       method: "GET",
       mode: "same-origin",
@@ -50,7 +51,7 @@ export function Login(props: any) {
   };
 
   const logout = async () => {
-    const response = await fetch("http://localhost:3000/v1/user/logout", {
+    const response = await fetch(baseUrl + "v1/user/logout", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       mode: "same-origin",

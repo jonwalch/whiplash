@@ -18,3 +18,4 @@ profiles.clj
 #Manually added below here
 /.idea
 /resources/public/dist
+get-pip.py

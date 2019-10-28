@@ -2,6 +2,7 @@ import React, { useState, useEffect, ChangeEvent, useContext } from "react";
 import "../../css/App.css";
 import { Link } from "react-router-dom";
 import { LoginContext } from "../contexts/LoginContext";
+import { baseUrl } from "../config/const"
 
 export interface Leader {
   screen_name: string;
@@ -17,8 +18,7 @@ export function Leaderboard(props: any) {
   }, []);
 
   const getLeaderboard = async () => {
-    const response = await fetch(
-      "http://localhost:3000/v1/leaderboard/weekly",
+    const response = await fetch(baseUrl + "v1/leaderboard/weekly",
       {
         headers: { "Content-Type": "application/json" },
         method: "GET",

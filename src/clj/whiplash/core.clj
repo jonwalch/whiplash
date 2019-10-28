@@ -50,7 +50,7 @@
   (shutdown-agents))
 
 (defn start-app [args]
-  (doseq [component #_(mount/start) (-> args
+  (doseq [component (-> args
                         (parse-opts cli-options)
                         mount/start-with-args
                         :started)]

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whiplash-web
+  labels:
+    app: whiplash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whiplash
+  template:
+    metadata:
+      labels:
+        app: whiplash
+    spec:
+      containers:
+        - name: whiplash
+          image: 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000

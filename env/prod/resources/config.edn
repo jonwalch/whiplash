@@ -1,2 +1,6 @@
 {:prod true
- :port 3000}
+ :port 3000
+ ;;TODO jonwalch give a URI to a real datomic instance
+ :database-url "datomic:mem://whiplash_datomic_prod"
+
+ }
