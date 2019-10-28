@@ -26,7 +26,9 @@
       (handler req)
       (catch Throwable t
         (log/error t (.getMessage t))
-        (error-page {:status 500
+        {:status 500
+         :body   {:message "We've dispatched a team of highly trained gnomes to take care of the problem."}}
+        #_(error-page {:status 500
                      :title "Something very bad has happened!"
                      :message "We've dispatched a team of highly trained gnomes to take care of the problem."})))))
 
@@ -34,7 +36,9 @@
   (wrap-anti-forgery
     handler
     {:error-response
-     (error-page
+     {:status 403
+      :body   {:message "Invalid anti-forgery token"}}
+     #_(error-page
        {:status 403
         :title "Invalid anti-forgery token"})}))
 

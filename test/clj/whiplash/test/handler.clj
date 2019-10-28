@@ -6,10 +6,7 @@
     [muuntaja.core :as m]
     [clojure.string :as string]
     [whiplash.test.common :as common]
-    [whiplash.guess-processor :as guess-processor]
-    [whiplash.db.core :as db]
-    [whiplash.time :as time]
-    [datomic.api :as d]))
+    [whiplash.guess-processor :as guess-processor]))
 
 (common/app-fixtures)
 (common/db-fixtures)
