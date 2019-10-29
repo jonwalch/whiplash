@@ -1,6 +1,5 @@
 (ns whiplash.test.stream
   (:require [clojure.test :refer :all]
-            [whiplash.handler :as handler]
             [ring.mock.request :as mock]
             [whiplash.test.common :as common]))
 
