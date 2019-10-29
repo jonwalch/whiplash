@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Login } from "./Login";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
+import { Leaderboard } from "./Leaderboard";
 
 declare const Twitch: any;
 
@@ -137,6 +138,7 @@ export function Home(props: any) {
       <h2>Whiplash - Win While Watching</h2>
       <Login />
       {renderContent()}
+      <Leaderboard/>
     </div>
   );
 }

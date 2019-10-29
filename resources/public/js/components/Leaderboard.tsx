@@ -64,9 +64,8 @@ export function Leaderboard(props: any) {
   };
 
   return (
-    <div>
-      <h3>This week's Leaderboard</h3>
-      <Link to="/">Back to stream</Link>
+    <div className="leaderboard">
+      <h3>Weekly Leaderboard</h3>
       {renderContent()}
     </div>
   );

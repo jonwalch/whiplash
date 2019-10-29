@@ -4,10 +4,12 @@ import "../../css/App.css";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const"
 import { getCSRFToken } from "../common";
+import { Signup } from "./Signup";
 
 export function Login(props: any) {
   const [screenName, setScreenName] = useState("");
   const [password, setPassword] = useState("");
+  const [showSignup, setShowSignup] = useState(false);
   const { state, setState } = useContext(LoginContext);
 
   useEffect(() => {
@@ -74,6 +76,16 @@ export function Login(props: any) {
     }
   };
 
+  const renderSignup = () => {
+    if (showSignup) {
+      return (
+        <>
+          <Signup setShowSignup={setShowSignup}/>
+        </>
+      );
+    }
+  };
+
   const renderContent = () => {
     if (state.userLoggedIn === null) {
       return <div>Loading</div>;
@@ -83,7 +95,6 @@ export function Login(props: any) {
           <button type="button" onClick={logout}>
             Sign out
           </button>
-          <Link to="/leaderboard">Weekly Leaderboard</Link>
         </>
       );
     } else {
@@ -111,12 +122,19 @@ export function Login(props: any) {
           <button type="button" onClick={login} disabled={toggleValid()}>
             Log In
           </button>
-          <Link to="/signup">Sign Up Now!</Link>
-          <Link to="/leaderboard">Weekly Leaderboard</Link>
+          <button type="button" onClick={() => {setShowSignup(!showSignup)}}>
+            Show Sign Up
+          </button>
+          {/* <Link to="/signup">Sign Up Now!</Link> */}
         </>
       );
     }
   };
 
-  return <div className="login-bar">{renderContent()}</div>;
+  return (
+    <div className="login-bar">
+      {renderContent()}
+      {renderSignup()}
+    </div>
+  );
 }

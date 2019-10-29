@@ -10,14 +10,14 @@ export const App = () => {
     <LoginProvider>
       <BrowserRouter>
         <Route exact path="/" component={Home} />
-        <Route
+        {/* <Route
           path="/signup"
           render={({ match, history }) => (
             <Signup match={match} history={history} />
           )}
-        />
+        /> */}
 
-        <Route exact path="/leaderboard" component={Leaderboard} />
+        {/* <Route exact path="/leaderboard" component={Leaderboard} /> */}
       </BrowserRouter>
     </LoginProvider>
   );

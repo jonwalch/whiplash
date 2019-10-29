@@ -35,7 +35,8 @@ export function Signup(props: any) {
     console.log(resp);
     console.log(response.status);
     if (response.status == 200) {
-      props.history.push("/");
+      // props.history.push("/");
+      props.setShowSignup(false)
     } else {
       alert(resp.message);
     }

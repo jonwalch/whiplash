@@ -47,8 +47,6 @@
                  middleware/wrap-formats]}
    ;; user pages
    ["/" {:get home-page}]
-   ["/signup" {:get home-page}]
-   ["/leaderboard" {:get home-page}]
 
    ;;endpoints client talks to
    ["/stream"
