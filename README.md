@@ -33,3 +33,6 @@ To start a web server for the application, run:
 Copyright © 2019 FIXME
 
 eksctl create cluster --name whiplash --version 1.14 --nodegroup-name standard-workers --node-type t3.medium --nodes 1 --nodes-min 1 --nodes-max 1 --node-ami auto
+
+## IF cloudFront isn't serving your newest content
+aws cloudfront create-invalidation --distribution-id E451IY44F3ERG --paths "/*"

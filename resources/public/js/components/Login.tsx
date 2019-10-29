@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "../../css/App.css";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const"
+import { getCSRFToken } from "../common";
 
 export function Login(props: any) {
   const [screenName, setScreenName] = useState("");
@@ -19,25 +20,28 @@ export function Login(props: any) {
   };
 
   const login = async () => {
-    const response = await fetch(baseUrl + "v1/user/login", {
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(baseUrl + "user/login", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCSRFToken()
+      },
       method: "POST",
       mode: "same-origin",
       redirect: "error",
       body: JSON.stringify({ password: password, screen_name: screenName })
     });
-    const resp = await response.json();
-    console.log(resp);
     console.log(response.status);
     if (response.status == 200) {
       setState({ userLoggedIn: true });
     } else {
-      alert(resp.message);
+      const resp = await response.text();
+      console.log(resp);
+      alert(resp);
     }
   };
 
   const loggedIn = async () => {
-    const response = await fetch(baseUrl + "v1/user/login", {
+    const response = await fetch(baseUrl + "user/login", {
       headers: { "Content-Type": "application/json" },
       method: "GET",
       mode: "same-origin",
@@ -51,8 +55,11 @@ export function Login(props: any) {
   };
 
   const logout = async () => {
-    const response = await fetch(baseUrl + "v1/user/logout", {
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(baseUrl + "user/logout", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCSRFToken()
+      },
       method: "POST",
       mode: "same-origin",
       redirect: "error"
@@ -82,7 +89,7 @@ export function Login(props: any) {
     } else {
       return (
         <>
-          <h3>Log in ya fuck</h3>
+          <h3>Log in</h3>
           <input
             placeholder="Screen Name"
             value={screenName}

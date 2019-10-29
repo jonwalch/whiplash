@@ -21,10 +21,10 @@
   (ring/ring-handler
     (ring/router
       [(home-routes)
-       (service-routes)
+       #_(service-routes)
        #_(oauth-routes)])
     (ring/routes
-      (swagger-ui/create-swagger-ui-handler
+      #_(swagger-ui/create-swagger-ui-handler
         {:path   "/swagger-ui"
          :url    "/v1/swagger.json"
          :config {:validator-url nil}})

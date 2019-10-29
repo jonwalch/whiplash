@@ -52,6 +52,11 @@
 ;; TODO: read this from env var and set in K8S config
 (def secret (hash/sha256 "HIILWUUQBSCCICRMTJSQXIRYUIJIJRRL"))
 
+(comment
+  (defn rand-str [len]
+    (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
+  (rand-str 32))
+
 (defn authfn
   [token]
   token)
@@ -88,9 +93,9 @@
 (defn req->token
   [req]
   (when-let [cookie-value (some-> req :cookies (get "value") :value)]
-    ;; logout sets the cookie value to "deleted"
-    (when (not= "deleted" cookie-value)
-      (jwt/decrypt cookie-value secret))))
+    (try
+      (jwt/decrypt cookie-value secret)
+      (catch Throwable t (log/error "Failed to decrypt JWT: " t)))))
 
 (defn valid-cookie-auth?
   [{:keys [cookies] :as req}]
@@ -119,18 +124,12 @@
         (buddy-middleware/wrap-authorization backend))))
 
 ;; These are applied in reverse order, how intuitive
+;; IF YOU CHANGE THIS MIRROR IT IN test-wrap-base
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
       wrap-auth
       (wrap-defaults
         (-> site-defaults
-            ;;TODO Double check home routes implement CSRF protection
-            (assoc-in [:security :anti-forgery] false)
-            #_(assoc-in  [:session :store] (ttl-memory-store (* 60 30))))) ;;seconds
+            #_(assoc-in [:security :anti-forgery] false)
+            (assoc-in  [:session :store] (ttl-memory-store (* 60 30))))) ;;seconds
       wrap-internal-error))
-
-(comment
-  (defn rand-str [len]
-    (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
-  (rand-str 32)
-  )

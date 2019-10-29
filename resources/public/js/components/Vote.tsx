@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Opponent, defaultTeam, useInterval } from "./Home";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
+import { getCSRFToken } from "../common";
 
 export function Vote(props: any) {
   const { state, setState } = useContext(LoginContext);
@@ -26,7 +27,7 @@ export function Vote(props: any) {
   const getGuess = async () => {
     const url =
       baseUrl +
-      "v1/user/guess" +
+      "user/guess" +
       "?match_id=" +
       props.matchID +
       "&game_id=" +
@@ -49,8 +50,11 @@ export function Vote(props: any) {
   };
 
   const makeGuess = async () => {
-    const response = await fetch(baseUrl + "v1/user/guess", {
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(baseUrl + "user/guess", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCSRFToken()
+      },
       method: "POST",
       mode: "same-origin",
       redirect: "error",

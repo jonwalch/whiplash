@@ -18,7 +18,7 @@ export function Leaderboard(props: any) {
   }, []);
 
   const getLeaderboard = async () => {
-    const response = await fetch(baseUrl + "v1/leaderboard/weekly",
+    const response = await fetch(baseUrl + "leaderboard/weekly",
       {
         headers: { "Content-Type": "application/json" },
         method: "GET",

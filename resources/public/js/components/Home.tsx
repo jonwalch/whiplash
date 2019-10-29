@@ -39,8 +39,6 @@ export function Home(props: any) {
   const [streamURL, setURL] = useState("");
   const [twitchUsername, setTwitchUsername] = useState("");
   const [matchName, setMatchName] = useState("");
-  const [beginAt, setBeginAt] = useState("");
-  const [scheduledAt, setScheduledAt] = useState("");
   const [matchID, setMatchID] = useState(0);
   const [currentGame, setCurrentGame] = useState({});
   const [opponents, setOpponents] = useState<Opponent[]>([]);
@@ -62,7 +60,7 @@ export function Home(props: any) {
   // }, [twitchUsername]);
 
   const getStream = async () => {
-    const response = await fetch( baseUrl + "v1/stream", {
+    const response = await fetch( baseUrl + "stream", {
       headers: { "Content-Type": "application/json" }
     });
     if (response.status == 200) {
@@ -71,8 +69,6 @@ export function Home(props: any) {
       setURL(resp["live_url"]);
       setTwitchUsername(resp["twitch/username"]);
       setMatchName(resp["name"]);
-      setBeginAt(resp["begin_at"]);
-      setScheduledAt(resp["scheduled_at"]);
       setMatchID(resp["id"]);
       setCurrentGame(resp["whiplash/current-game"]);
 

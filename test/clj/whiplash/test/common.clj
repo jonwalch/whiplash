@@ -4,7 +4,11 @@
             [whiplash.middleware.formats :as formats]
             [mount.core :as mount]
             [clojure.java.io :as io]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [whiplash.handler :as handler]
+            [ring-ttl-session.core :refer [ttl-memory-store]]
+            [whiplash.env :refer [defaults]]
+            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
 
 (defn app-fixtures
   []
@@ -27,6 +31,10 @@
       (mount/start #'whiplash.db.core/conn)
       (f)
       (mount/stop #'whiplash.db.core/conn))))
+
+(defn test-app []
+  (with-redefs [whiplash.middleware/wrap-csrf (fn [handler] (println "fake") handler)]
+    (handler/app)))
 
 (defn parse-json-body
   [{:keys [body] :as req}]
@@ -52,3 +60,16 @@
          #(hash-map (:twitch/username %) 100))
        (apply conj)))
 
+(defn test-wrap-base [handler]
+  (-> ((:middleware defaults) handler)
+      whiplash.middleware/wrap-auth
+      (wrap-defaults
+        (-> site-defaults
+            ;; This is commented out in the real version
+            (assoc-in [:security :anti-forgery] false)
+            (assoc-in  [:session :store] (ttl-memory-store (* 60 30))))) ;;seconds
+      whiplash.middleware/wrap-internal-error))
+
+(defn test-app []
+  "This version has CSRF disabled for testing purposes."
+  (test-wrap-base #'whiplash.handler/app-routes))

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { baseUrl } from "../config/const";
+import { getCSRFToken } from "../common";
 
 export function Signup(props: any) {
   const [firstName, setFirstName] = useState("");
@@ -14,8 +15,11 @@ export function Signup(props: any) {
   };
 
   const createUser = async () => {
-    const response = await fetch(baseUrl + "v1/user/create", {
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(baseUrl + "user/create", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCSRFToken()
+      },
       method: "POST",
       mode: "same-origin",
       redirect: "error",
@@ -39,7 +43,7 @@ export function Signup(props: any) {
 
   return (
     <div>
-      <h2>Sign the fuck up ya filthy animal</h2>
+      <h2>Sign up ya filthy animal</h2>
       <div className="signup">
         <input
           placeholder="Email"
