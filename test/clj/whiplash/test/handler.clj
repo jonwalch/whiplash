@@ -66,7 +66,7 @@
   {:first_name "yas"
    :last_name "queen"
    :email "butt@cheek.com"
-   :password "foobar"
+   :password "foobar2000"
    :screen_name "queefburglar"})
 
 (deftest test-user-400s
@@ -105,7 +105,7 @@
   ([user]
    (assert user)
    (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
-                                 (mock/json-body dummy-user)))
+                                 (mock/json-body user)))
          parsed-body (common/parse-json-body resp)]
 
      (is (= 200 (:status resp)))
@@ -311,3 +311,45 @@
                                   (mock/cookie :value auth-token)))
           get-login-resp ((common/test-app) (-> (mock/request :get "/user/login")))]
       (is (= 403 (:status get-login-resp))))))
+
+(defn- create-user-failure
+  ([]
+   (create-user dummy-user))
+  ([user]
+   (assert user)
+   (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
+                                     (mock/json-body user)))
+         parsed-body (common/parse-json-body resp)]
+
+     (is (= 409 (:status resp)))
+     (is (some? parsed-body))
+
+     (assoc resp :body parsed-body))))
+
+(deftest bad-create-user-inputs
+  (is (= "First name invalid"
+         (-> (create-user-failure (assoc dummy-user :first_name "1"))
+             :body
+             :message)))
+  (is (= "Last name invalid"
+         (-> (create-user-failure (assoc dummy-user :last_name "1"))
+             :body
+             :message)))
+  (is (= "Screen name invalid"
+         (-> (create-user-failure (assoc dummy-user :screen_name ""))
+             :body
+             :message)))
+  (is (= "Password invalid"
+         (-> (create-user-failure (assoc dummy-user :password "1234567"))
+             :body
+             :message)))
+
+  (is (= "Email invalid"
+         (-> (create-user-failure (assoc dummy-user :email "1234567"))
+             :body
+             :message)))
+
+  (is (= "Email invalid"
+         (-> (create-user-failure (assoc dummy-user :email "1@2.c"))
+             :body
+             :message))))

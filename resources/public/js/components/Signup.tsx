@@ -53,7 +53,8 @@ export function Signup(props: any) {
             setEmail(e.currentTarget.value);
           }}
           type="text"
-          maxLength={30}
+          maxLength={100}
+          minLength={5}
         />
         <input
           placeholder="Screen Name"
@@ -62,7 +63,8 @@ export function Signup(props: any) {
             setScreenName(e.currentTarget.value);
           }}
           type="text"
-          maxLength={15}
+          maxLength={50}
+          minLength={1}
         />
         <input
           placeholder="Password"
@@ -72,6 +74,7 @@ export function Signup(props: any) {
           }}
           type="password"
           maxLength={100}
+          minLength= {8}
         />
         <input
           placeholder="First Name"
@@ -81,6 +84,7 @@ export function Signup(props: any) {
           }}
           type="text"
           maxLength={30}
+          minLength={2}
         />
         <input
           placeholder="Last Name"
@@ -90,6 +94,7 @@ export function Signup(props: any) {
           }}
           type="text"
           maxLength={30}
+          minLength={2}
         />
         <button type="button" onClick={createUser} disabled={toggleValid()}>
           Sign up

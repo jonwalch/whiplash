@@ -5,17 +5,52 @@
             [whiplash.middleware :as middleware]
             [datomic.api :as d]))
 
+;; https://www.regular-expressions.info/email.html
+(def valid-email #"\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b")
+;; at least 8 characters or digits, max 100
+(def valid-password #"^.{8,100}$")
+;; at least 2 characters, max 100
+(def valid-name #"^[a-zA-Z]{2,100}$")
+;; anything 1 - 50
+(def valid-screen-name #"^.{1,50}$")
+
+(defn validate-user-inputs
+  [{:keys [first-name last-name email password screen-name]}]
+  (cond
+    (not (re-matches valid-name first-name))
+    "First name invalid"
+
+    (not (re-matches valid-name last-name))
+    "Last name invalid"
+
+    (not (re-matches valid-email email))
+    "Email invalid"
+
+    (not (re-matches valid-password password))
+    "Password invalid"
+
+    (not (re-matches valid-screen-name screen-name))
+    "Screen name invalid"))
+
 ;; TODO sanitize fields
 (defn create-user
   [{:keys [body-params] :as req}]
   (let [{:keys [first_name last_name email password screen_name]} body-params
-        encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})]
+        encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})
+        invalid-input (validate-user-inputs {:first-name first_name
+                                             :last-name last_name
+                                             :email email
+                                             :password password
+                                             :screen-name screen_name})]
     (cond
+      (some? invalid-input)
+      (conflict {:message invalid-input})
+
       (some? (db/find-user-by-email email))
-      (conflict {:message "email taken"})
+      (conflict {:message "Email taken"})
 
       (some? (db/find-user-by-screen-name screen_name))
-      (conflict {:message "screen name taken"})
+      (conflict {:message "Screen name taken"})
 
       :else
       (do
