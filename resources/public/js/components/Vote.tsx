@@ -7,7 +7,7 @@ import { getCSRFToken } from "../common";
 export function Vote(props: any) {
   const { state, setState } = useContext(LoginContext);
   const [hasGuessed, setHasGuessed] = useState(false);
-  const [passedGuessingPeriod, setPastGuessingPeriod] = useState(false);
+  const [passedGuessingPeriod, setPastGuessingPeriod] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (props.currentGame.id && props.matchID && state.userLoggedIn) {
@@ -87,7 +87,10 @@ export function Vote(props: any) {
   };
 
   const renderContent = () => {
-    if (state.userLoggedIn && !hasGuessed && !passedGuessingPeriod) {
+    if (passedGuessingPeriod === null){
+      return <div>Loading</div>
+    }
+    else if (state.userLoggedIn && !hasGuessed && !passedGuessingPeriod) {
       return (
         <>
           <div>
