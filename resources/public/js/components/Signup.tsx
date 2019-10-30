@@ -63,7 +63,7 @@ export function Signup(props: any) {
             setScreenName(e.currentTarget.value);
           }}
           type="text"
-          maxLength={50}
+          maxLength={100}
           minLength={1}
         />
         <input

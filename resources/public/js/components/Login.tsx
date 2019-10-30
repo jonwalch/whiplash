@@ -108,7 +108,7 @@ export function Login(props: any) {
               setScreenName(e.currentTarget.value);
             }}
             type="text"
-            maxLength={20}
+            maxLength={100}
           />
           <input
             placeholder="Password"
