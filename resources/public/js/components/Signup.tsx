@@ -44,7 +44,7 @@ export function Signup(props: any) {
 
   return (
     <form className="signup" name="signUp">
-      <h2>Sign up ya filthy animal</h2>
+      <h2>Sign up</h2>
       <label for="email">Email</label>
       <input
         value={email}
