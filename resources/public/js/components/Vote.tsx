@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Opponent, defaultTeam, useInterval } from "./Home";
+import { Opponent, defaultTeam } from "./Home";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
-import { getCSRFToken } from "../common";
+import { getCSRFToken, useInterval } from "../common";
 
 export function Vote(props: any) {
   const { state, setState } = useContext(LoginContext);
@@ -17,7 +17,7 @@ export function Vote(props: any) {
 
   const threeMinutes = 1000 * 60 * 3
   useInterval(() => {
-    //TODO: case where begin_at is nil, just allow
+    //Allows if begin_at is null
     const beginAt: number = Date.parse(props.currentGame["begin_at"])
     if (beginAt + threeMinutes <= Date.now()) {
       setPastGuessingPeriod(true);

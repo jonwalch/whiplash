@@ -3,6 +3,7 @@ import "../../css/App.css";
 import { Link } from "react-router-dom";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const"
+import { useInterval } from "../common";
 
 export interface Leader {
   screen_name: string;
@@ -16,6 +17,13 @@ export function Leaderboard(props: any) {
   useEffect(() => {
     getLeaderboard();
   }, []);
+
+  //every 5 minutes
+  useInterval(() => {
+    if (leaderboard != []) {
+      getLeaderboard();
+    }
+  }, 300000);
 
   const getLeaderboard = async () => {
     const response = await fetch(baseUrl + "leaderboard/weekly",
@@ -35,11 +43,6 @@ export function Leaderboard(props: any) {
     //   { screen_name: "you", score: 100 }
     // ]);
 
-    // if (response.status == 200) {
-    //   setState({ userLoggedIn: true });
-    // } else {
-    //   alert(resp.message);
-    // }
   };
 
   const renderContent = () => {

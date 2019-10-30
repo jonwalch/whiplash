@@ -3,6 +3,7 @@ import { Login } from "./Login";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
+import { useInterval } from "../common";
 
 declare const Twitch: any;
 
@@ -14,26 +15,6 @@ export interface Opponent {
 export const defaultTeam : Opponent = { teamName: "", teamID: -1 }
 
 const failedToFetch : string = "failed to fetch stream"
-
-export function useInterval(callback: () => void, delay: number) {
-  const savedCallback = useRef(callback);
-
-  // Remember the latest callback.
-  useEffect(() => {
-    savedCallback.current = callback;
-  }, [callback]);
-
-  // Set up the interval.
-  useEffect(() => {
-    function tick() {
-      savedCallback.current();
-    }
-    if (delay !== null) {
-      let id = setInterval(tick, delay);
-      return () => clearInterval(id);
-    }
-  }, [delay]);
-}
 
 export function Home(props: any) {
   const [team, setTeam] = useState<Opponent>(defaultTeam);
@@ -66,7 +47,7 @@ export function Home(props: any) {
     });
     if (response.status == 200) {
       const resp = await response.json();
-      console.log(resp);
+      //console.log(resp);
       setURL(resp["live_url"]);
       setTwitchUsername(resp["twitch/username"]);
       setMatchName(resp["name"]);

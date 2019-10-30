@@ -13,9 +13,15 @@ You will need [Leiningen][1] 2.0 or above installed.
 
 [1]: https://github.com/technomancy/leiningen
 
+
+## Backend tests
+Run from repl or:
+
+    lein test
+
 ## Building prod docker images
 
-    /scripts/push-prod-dockerimage.sh x.x.x
+    ./scripts/push-prod-dockerimage.sh x.x.x
     
 #Deploying
 
