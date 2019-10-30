@@ -108,7 +108,11 @@
 (defn add-current-game
   [matches]
   (map (fn [{:keys [games] :as match}]
-         (assoc match :whiplash/current-game (first (running-matches games))))
+         (let [match (assoc match :whiplash/current-game (first (running-matches games)))]
+           ;; Added to fix shitty pandascore bug
+           (if (= 1 (count games))
+             (assoc-in match [:whiplash/current-game :begin_at] (:begin_at match))
+             match)))
        matches))
 
 (defn by-viewers-and-scheduled

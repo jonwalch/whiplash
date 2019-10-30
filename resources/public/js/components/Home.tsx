@@ -66,7 +66,7 @@ export function Home(props: any) {
     });
     if (response.status == 200) {
       const resp = await response.json();
-      // console.log(resp);
+      console.log(resp);
       setURL(resp["live_url"]);
       setTwitchUsername(resp["twitch/username"]);
       setMatchName(resp["name"]);
