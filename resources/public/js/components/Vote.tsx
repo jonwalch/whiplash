@@ -46,6 +46,9 @@ export function Vote(props: any) {
       console.log(response.status);
     } else if (response.status == 404) {
       setHasGuessed(false);
+    } else {
+      console.log(response.status)
+      console.log(response.text())
     }
   };
 
