@@ -146,6 +146,7 @@ export function Home(props: any) {
     </main>
     <footer role="contentinfo" className="site-footer">
       <p className="copyright">&copy; Whiplash. All Rights Reserved.</p>
+      <p><strong>Need help?</strong> Contact us at <a href="mailto:help@whiplashesports.com" target="_blank" rel="noreferrer">help@whiplashesports.com</a></p>
     </footer>
   );
 }
