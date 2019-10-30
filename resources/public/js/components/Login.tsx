@@ -93,37 +93,37 @@ export function Login(props: any) {
       return (
         <>
           <button type="button" onClick={logout}>
-            Sign out
+            Sign Out
           </button>
         </>
       );
     } else {
       return (
         <>
-          <h3>Log in</h3>
+          <label for="screenName">Screen Name</label>
           <input
-            placeholder="Screen Name"
             value={screenName}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setScreenName(e.currentTarget.value);
             }}
             type="text"
             maxLength={100}
+            name="screenName"
+            id="screenName"
           />
+          <label for="password">Password</label>
           <input
-            placeholder="Password"
             value={password}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setPassword(e.currentTarget.value);
             }}
             type="password"
             maxLength={100}
+            name="password"
+            id="password"
           />
           <button type="button" onClick={login} disabled={toggleValid()}>
             Log In
-          </button>
-          <button type="button" onClick={() => {setShowSignup(!showSignup)}}>
-            Show Sign Up
           </button>
           {/* <Link to="/signup">Sign Up Now!</Link> */}
         </>
@@ -132,9 +132,12 @@ export function Login(props: any) {
   };
 
   return (
-    <div className="login-bar">
+    <form className="login" name="login">
       {renderContent()}
-      {renderSignup()}
-    </div>
+    </form><!-- .login -->
+    <button type="button" onClick={() => {setShowSignup(!showSignup)}}>
+      Sign Up
+    </button>
+    {renderSignup()}
   );
 }

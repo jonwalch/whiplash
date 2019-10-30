@@ -90,25 +90,23 @@ export function Vote(props: any) {
 
   const renderContent = () => {
     if (state.userLoggedIn && passedGuessingPeriod === null){
-      return <div>Loading</div>
+      return <p>Loading...</p>
     }
     else if (state.userLoggedIn && !hasGuessed && !passedGuessingPeriod) {
       return (
         <>
-          <div>
-            {props.opponents.map((opponent: Opponent) => {
-              return (
-                <button
-                  type="button"
-                  key={opponent.teamID}
-                  onClick={() => handleClick(opponent)}
-                >
-                  {opponent.teamName}
-                </button>
-              );
-            })}
-          </div>
-          <h1> You selected {props.team.teamName}</h1>
+          {props.opponents.map((opponent: Opponent) => {
+            return (
+              <button
+                type="button"
+                key={opponent.teamID}
+                onClick={() => handleClick(opponent)}
+              >
+                {opponent.teamName}
+              </button>
+            );
+          })}
+          <p> You selected {props.team.teamName}</p>
           <button
             type="button"
             disabled={toggleValid()}
@@ -120,15 +118,13 @@ export function Vote(props: any) {
       );
     } else if (state.userLoggedIn && !hasGuessed && passedGuessingPeriod) {
       return (
-        <h3>
-          Sorry! You missed guessing for this game. Stick around for the next
-          one!
-        </h3>
+        <p>Sorry! You missed guessing for this game. Stick around for the next
+          one!</p>
       );
     } else if (state.userLoggedIn && hasGuessed) {
-      return <h3>Guess submitted for this game!</h3>;
+      return <p>Guess submitted for this game!</p>;
     } else {
-      return <h3>Login to guess!</h3>;
+      return <p>Login to guess!</p>;
     }
   };
 

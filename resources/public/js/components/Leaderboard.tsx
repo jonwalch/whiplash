@@ -44,29 +44,35 @@ export function Leaderboard(props: any) {
 
   const renderContent = () => {
     if (leaderboard.length == 0) {
-      return <div>No scores yet for this week!</div>;
+      return <p>No scores yet for this week!</p>;
     } else {
       return (
-        <div>
-          <h3>User, score</h3>
-        <div>
-          {leaderboard.map((leader: Leader) => {
-            return (
-              <div key={leader.screen_name}>
-                {leader.screen_name} {leader.score}
-              </div>
-            );
-          })}
-        </div>
-        </div>
+        <table className="leaderboard">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leaderboard.map((leader: Leader) => {
+              return (
+                <tr key={leader.screen_name}>
+                  <td>{leader.screen_name}</td>
+                  <td>{leader.score}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table><!-- .leaderboard -->
       );
     }
   };
 
   return (
-    <div className="leaderboard">
-      <h3>Weekly Leaderboard</h3>
+    <section>
+      <h2>Weekly Leaderboard</h3>
       {renderContent()}
-    </div>
+    </section>
   );
 }
