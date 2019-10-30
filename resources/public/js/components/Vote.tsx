@@ -21,6 +21,8 @@ export function Vote(props: any) {
     const beginAt: number = Date.parse(props.currentGame["begin_at"])
     if (beginAt + threeMinutes <= Date.now()) {
       setPastGuessingPeriod(true);
+    } else {
+      setPastGuessingPeriod(false);
     }
   }, 1000);
 
@@ -46,9 +48,6 @@ export function Vote(props: any) {
       console.log(response.status);
     } else if (response.status == 404) {
       setHasGuessed(false);
-    } else {
-      console.log(response.status)
-      console.log(response.text())
     }
   };
 
@@ -90,7 +89,7 @@ export function Vote(props: any) {
   };
 
   const renderContent = () => {
-    if (passedGuessingPeriod === null){
+    if (state.userLoggedIn && passedGuessingPeriod === null){
       return <div>Loading</div>
     }
     else if (state.userLoggedIn && !hasGuessed && !passedGuessingPeriod) {

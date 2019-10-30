@@ -32,12 +32,14 @@
 ;; TODO get access key from KMS
 (defn get-matches-request
   [url page-number date-range]
-  (let [{:keys [body] :as resp}
+  (let [{:keys [body status] :as resp}
         (client/get url {:headers      {"Authorization" pandascore-api-key}
                          :query-params {"range[begin_at]" date-range
                                         "page[size]"      (str pandascore-page-size)
                                         "page[number]"    (str page-number)
                                         "sort"            "begin_at"}})]
+    (when-not (= 200 status)
+      (log/error "Pandascore failure" resp))
     (if (some? body)
       (assoc resp :body (common/resp->body resp))
       resp)))
