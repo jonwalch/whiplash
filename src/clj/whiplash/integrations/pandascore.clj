@@ -28,7 +28,6 @@
    :pubg "pubg"})
 
 ;; TODO use a request pool
-;; TODO make this an interface and serve a fixture for tests
 ;; TODO get access key from KMS
 (defn get-matches-request
   [url page-number date-range]

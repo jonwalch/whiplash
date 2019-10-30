@@ -1,7 +1,6 @@
 (ns whiplash.routes.home
   (:require
     [whiplash.layout :as layout]
-    [clojure.java.io :as io]
     [whiplash.middleware :as middleware]
     [ring.util.http-response :as response]
     [whiplash.routes.services.stream :as stream]

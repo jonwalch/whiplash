@@ -19,7 +19,7 @@
 
 (defn- add-twitch-usernames-and-url
   [matches]
-  (let [twitch-regex #"^https://player.twitch.tv/\?channel=(.*)$|^https://www.twitch.tv/(.*)$"]
+  (let [twitch-regex #"^https:\/\/player\.twitch\.tv\/\?channel=(.+?)(?=&|$).*$|^https:\/\/www\.twitch\.tv\/(.+?)(?=&|$).*$"]
     (map (fn [{:keys [live_url] :as match}]
            (let [regex-match (re-find twitch-regex live_url)
                  username (or (second regex-match)
