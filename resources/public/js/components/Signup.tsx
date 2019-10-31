@@ -37,8 +37,16 @@ export function Signup(props: any) {
     if (response.status == 200) {
       // props.history.push("/");
       props.setShowSignup(false)
+      alert("Successful Signup!");
     } else {
       alert(resp.message);
+    }
+  };
+  
+  const signupOnKeyPress = (e: any) => {
+    const key = e.key;
+    if (key == "Enter" && !toggleValid()) {
+      createUser();
     }
   };
 
@@ -52,6 +60,7 @@ export function Signup(props: any) {
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             setEmail(e.currentTarget.value);
           }}
+          onKeyPress={(e) => {signupOnKeyPress(e)}}
           type="text"
           maxLength={100}
           minLength={5}
@@ -62,6 +71,7 @@ export function Signup(props: any) {
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             setScreenName(e.currentTarget.value);
           }}
+          onKeyPress={(e) => {signupOnKeyPress(e)}}
           type="text"
           maxLength={100}
           minLength={1}
@@ -72,6 +82,7 @@ export function Signup(props: any) {
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             setPassword(e.currentTarget.value);
           }}
+          onKeyPress={(e) => {signupOnKeyPress(e)}}
           type="password"
           maxLength={100}
           minLength= {8}
@@ -82,6 +93,7 @@ export function Signup(props: any) {
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             setFirstName(e.currentTarget.value);
           }}
+          onKeyPress={(e) => {signupOnKeyPress(e)}}
           type="text"
           maxLength={30}
           minLength={2}
@@ -92,6 +104,7 @@ export function Signup(props: any) {
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             setLastName(e.currentTarget.value);
           }}
+          onKeyPress={(e) => {signupOnKeyPress(e)}}
           type="text"
           maxLength={30}
           minLength={2}

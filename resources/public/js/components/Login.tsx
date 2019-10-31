@@ -82,6 +82,13 @@ export function Login(props: any) {
     }
   };
 
+  const loginOnKeyPress = (e: any) => {
+    const key = e.key;
+    if (key == "Enter" && !toggleValid()) {
+      login();
+    }
+  };
+
   const renderContent = () => {
     if (loggedInState.userName === null) {
       return <div>Loading</div>;
@@ -104,6 +111,7 @@ export function Login(props: any) {
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setScreenName(e.currentTarget.value);
             }}
+            onKeyPress={(e) => {loginOnKeyPress(e)}}
             type="text"
             maxLength={100}
           />
@@ -113,13 +121,19 @@ export function Login(props: any) {
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setPassword(e.currentTarget.value);
             }}
+            onKeyPress={(e) => {loginOnKeyPress(e)}}
             type="password"
             maxLength={100}
           />
           <button type="button" onClick={login} disabled={toggleValid()}>
             Log In
           </button>
-          <button type="button" onClick={() => {setShowSignup(!showSignup)}}>
+          <button
+            type="button"
+            onClick={() => {
+              setShowSignup(!showSignup);
+            }}
+          >
             Show Sign Up
           </button>
         </>
