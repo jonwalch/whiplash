@@ -111,16 +111,16 @@
 ;        first)))
 ;
 (defn find-guess
-  [db email game-id match-id]
+  [db screen-name game-id match-id]
   (when-let [guess (d/entity db
                              (d/q
                                '[:find ?guess .
-                                 :in $ ?email ?game-id ?match-id
-                                 :where [?user :user/email ?email]
+                                 :in $ ?screen-name ?game-id ?match-id
+                                 :where [?user :user/screen-name ?screen-name]
                                  [?user :user/guesses ?guess]
                                  [?guess :game/id ?game-id]
                                  [?guess :match/id ?match-id]]
-                               db email game-id match-id))]
+                               db screen-name game-id match-id))]
     (d/touch guess)))
 
 (defn find-all-unprocessed-guesses

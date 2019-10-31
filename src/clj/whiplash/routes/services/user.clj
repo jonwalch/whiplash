@@ -106,8 +106,8 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [match_name game_id team_name team_id match_id]} body-params
         {:keys [user exp]} (middleware/req->token req)
-        {:keys [user/email] :as user-entity} (db/find-user-by-screen-name user)
-        existing-guess (db/find-guess (d/db db/conn) email game_id match_id)]
+        {:keys [user/screen-name] :as user-entity} (db/find-user-by-screen-name user)
+        existing-guess (db/find-guess (d/db db/conn) screen-name game_id match_id)]
     (cond
       (some? existing-guess)
       (conflict {:message "Already made a guess."})
