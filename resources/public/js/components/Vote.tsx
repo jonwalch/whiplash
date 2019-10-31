@@ -6,8 +6,8 @@ import { getCSRFToken, useInterval } from "../common";
 
 export function Vote(props: any) {
   const { state, setState } = useContext(LoginContext);
-  const [hasGuessed, setHasGuessed] = useState(false);
   const [passedGuessingPeriod, setPastGuessingPeriod] = useState<boolean | null>(null);
+  const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
 
   useEffect(() => {
     if (props.currentGame.id && props.matchID && state.userLoggedIn) {
@@ -41,13 +41,11 @@ export function Vote(props: any) {
       redirect: "error"
     });
     if (response.status == 200) {
-      setHasGuessed(true);
-
       const resp = await response.json();
-      console.log(resp);
-      console.log(response.status);
+      // console.log(resp);
+      setGuessedTeamName(resp["team/name"])
     } else if (response.status == 404) {
-      setHasGuessed(false);
+      setGuessedTeamName("");
     }
   };
 
@@ -73,7 +71,7 @@ export function Vote(props: any) {
     if (response.status == 200) {
       const resp = await response.json();
       console.log(resp);
-      setHasGuessed(true);
+      setGuessedTeamName(props.team.teamName);
       // reset local state to no longer have a selected team
       props.setTeam(defaultTeam);
     }
@@ -92,7 +90,7 @@ export function Vote(props: any) {
     if (state.userLoggedIn && passedGuessingPeriod === null){
       return <div>Loading</div>
     }
-    else if (state.userLoggedIn && !hasGuessed && !passedGuessingPeriod) {
+    else if (state.userLoggedIn && !guessedTeamName && !passedGuessingPeriod) {
       return (
         <>
           <div>
@@ -118,15 +116,15 @@ export function Vote(props: any) {
           </button>
         </>
       );
-    } else if (state.userLoggedIn && !hasGuessed && passedGuessingPeriod) {
+    } else if (state.userLoggedIn && !guessedTeamName && passedGuessingPeriod) {
       return (
         <h3>
           Sorry! You missed guessing for this game. Stick around for the next
           one!
         </h3>
       );
-    } else if (state.userLoggedIn && hasGuessed) {
-      return <h3>Guess submitted for this game!</h3>;
+    } else if (state.userLoggedIn && guessedTeamName) {
+      return <h3>You guessed {guessedTeamName} for this game!</h3>;
     } else {
       return <h3>Login to guess!</h3>;
     }
