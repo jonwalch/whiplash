@@ -35,6 +35,7 @@ export function Login(props: any) {
     console.log(response.status);
     if (response.status == 200) {
       setLoggedInState({ userName: screenName});
+      setShowSignup(false);
     } else {
       const resp = await response.text();
       console.log(resp);
@@ -55,6 +56,7 @@ export function Login(props: any) {
       console.log(resp);
       console.log(response.status);
       setLoggedInState({ userName: resp["whiplash/screen-name"]});
+      setShowSignup(false);
     } else {
       setLoggedInState({ userName: ""})
     }
@@ -77,16 +79,6 @@ export function Login(props: any) {
       setLoggedInState({userName: ""});
     } else {
       alert("Failed to hit server to logout");
-    }
-  };
-
-  const renderSignup = () => {
-    if (showSignup) {
-      return (
-        <>
-          <Signup setShowSignup={setShowSignup}/>
-        </>
-      );
     }
   };
 
@@ -130,6 +122,16 @@ export function Login(props: any) {
           <button type="button" onClick={() => {setShowSignup(!showSignup)}}>
             Show Sign Up
           </button>
+        </>
+      );
+    }
+  };
+
+  const renderSignup = () => {
+    if (showSignup) {
+      return (
+        <>
+          <Signup setShowSignup={setShowSignup}/>
         </>
       );
     }
