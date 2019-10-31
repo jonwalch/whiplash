@@ -30,9 +30,7 @@ export function Home(props: any) {
   }, []);
 
   useInterval(() => {
-    if (streamURL != "") {
-      getStream();
-    }
+    getStream();
   }, 10000);
 
   // useEffect(() => {

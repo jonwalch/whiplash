@@ -20,9 +20,7 @@ export function Leaderboard(props: any) {
 
   //every 5 minutes
   useInterval(() => {
-    if (leaderboard != []) {
       getLeaderboard();
-    }
   }, 300000);
 
   const getLeaderboard = async () => {

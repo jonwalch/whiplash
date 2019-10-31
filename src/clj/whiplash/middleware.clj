@@ -95,7 +95,9 @@
   (when-let [cookie-value (some-> req :cookies (get "value") :value)]
     (try
       (jwt/decrypt cookie-value secret)
-      (catch Throwable t (log/error "Failed to decrypt JWT: " t)))))
+      (catch Throwable t (log/error (format "Failed to decrypt JWT %s "
+                                            cookie-value)
+                                    t)))))
 
 (defn valid-cookie-auth?
   [{:keys [cookies] :as req}]
