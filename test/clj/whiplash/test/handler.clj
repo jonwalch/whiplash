@@ -131,6 +131,8 @@
      (is (string? auth-token))
 
      (is (= 200 (:status authed-resp)))
+     (is (= #:user{:name user_name}
+            (common/parse-json-body authed-resp)))
 
      {:auth-token auth-token
       :response (assoc resp :body parsed-body)})))
@@ -353,5 +355,3 @@
          (-> (create-user-failure (assoc dummy-user :email "1@2.c"))
              :body
              :message))))
-
-;; TODO login get test
