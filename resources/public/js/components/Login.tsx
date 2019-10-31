@@ -56,7 +56,6 @@ export function Login(props: any) {
       console.log(response.status);
       setLoggedInState({ userName: resp["whiplash/screen-name"]});
     } else {
-      console.log
       setLoggedInState({ userName: ""})
     }
   };
@@ -75,7 +74,7 @@ export function Login(props: any) {
     console.log(resp);
     console.log(response.status);
     if (response.status == 200) {
-      setLoggedInState(defaultLoggedIn);
+      setLoggedInState({userName: ""});
     } else {
       alert("Failed to hit server to logout");
     }
@@ -131,7 +130,6 @@ export function Login(props: any) {
           <button type="button" onClick={() => {setShowSignup(!showSignup)}}>
             Show Sign Up
           </button>
-          {/* <Link to="/signup">Sign Up Now!</Link> */}
         </>
       );
     }
