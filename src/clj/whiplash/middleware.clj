@@ -75,9 +75,9 @@
                           :enc :a128gcm}}))
 
 ;; TODO revisit :alg and :enc
-(defn token [screen-name]
+(defn token [user-name]
   (let [exp (time/days-delta 30)
-        claims {:user screen-name
+        claims {:user user-name
                 :exp  (time/to-millis exp)}]
     {:token (jwt/encrypt claims secret #_{:alg :a256kw :enc :a128gcm})
      :exp-str (time/http-date-str exp)}))
@@ -107,7 +107,7 @@
                   (int? exp)
                   (< (time/to-millis) exp)))))
 
-(defn authed-req->screen-name
+(defn authed-req->user-name
   "Only use this if the endpoint is also wrap-restricted"
   [{:keys [cookies] :as req}]
   (when-let [{:keys [user exp]} (req->token req)]

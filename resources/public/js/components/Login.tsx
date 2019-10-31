@@ -7,7 +7,7 @@ import { getCSRFToken } from "../common";
 import { Signup } from "./Signup";
 
 export function Login(props: any) {
-  const [screenName, setScreenName] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [showSignup, setShowSignup] = useState(false);
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
@@ -18,7 +18,7 @@ export function Login(props: any) {
 
   const toggleValid = () => {
     //TODO: add validation
-    return !(screenName && password);
+    return !(userName && password);
   };
 
   const login = async () => {
@@ -30,11 +30,11 @@ export function Login(props: any) {
       method: "POST",
       mode: "same-origin",
       redirect: "error",
-      body: JSON.stringify({ password: password, screen_name: screenName })
+      body: JSON.stringify({ password: password, user_name: userName })
     });
     console.log(response.status);
     if (response.status == 200) {
-      setLoggedInState({ userName: screenName});
+      setLoggedInState({ userName: userName});
       setShowSignup(false);
     } else {
       const resp = await response.text();
@@ -55,7 +55,7 @@ export function Login(props: any) {
       const resp = await response.json();
       console.log(resp);
       console.log(response.status);
-      setLoggedInState({ userName: resp["whiplash/screen-name"]});
+      setLoggedInState({ userName: resp["user/name"]});
       setShowSignup(false);
     } else {
       setLoggedInState({ userName: ""})
@@ -106,10 +106,10 @@ export function Login(props: any) {
         <>
           <h3>Log in</h3>
           <input
-            placeholder="Screen Name"
-            value={screenName}
+            placeholder="User Name"
+            value={userName}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setScreenName(e.currentTarget.value);
+              setUserName(e.currentTarget.value);
             }}
             onKeyPress={(e) => {loginOnKeyPress(e)}}
             type="text"

@@ -5,13 +5,13 @@ import { getCSRFToken } from "../common";
 export function Signup(props: any) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [screenName, setScreenName] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
 
   const toggleValid = () => {
     //TODO: add validation
-    return !(firstName && lastName && screenName && password && email);
+    return !(firstName && lastName && userName && password && email);
   };
 
   const createUser = async () => {
@@ -26,7 +26,7 @@ export function Signup(props: any) {
       body: JSON.stringify({
         first_name: firstName,
         last_name: lastName,
-        screen_name: screenName,
+        user_name: userName,
         password: password,
         email: email
       })
@@ -66,10 +66,10 @@ export function Signup(props: any) {
           minLength={5}
         />
         <input
-          placeholder="Screen Name"
-          value={screenName}
+          placeholder="User Name"
+          value={userName}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            setScreenName(e.currentTarget.value);
+            setUserName(e.currentTarget.value);
           }}
           onKeyPress={(e) => {signupOnKeyPress(e)}}
           type="text"

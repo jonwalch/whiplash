@@ -49,11 +49,11 @@
 
 ;; TODO validate args
 (defn add-user
-  [conn {:keys [first-name last-name status email password screen-name]}]
+  [conn {:keys [first-name last-name status email password user-name]}]
   ;; TODO :user/signup-time
   @(d/transact conn [{:user/first-name first-name
                       :user/last-name  last-name
-                      :user/screen-name screen-name
+                      :user/name user-name
                       :user/status     status
                       :user/email      email
                       :user/password   password}]))
@@ -98,29 +98,29 @@
   (when-let [user (find-one-by (d/db conn) :user/email email)]
     (d/touch user)))
 
-(defn find-user-by-screen-name [screen-name]
-  (when-let [user (find-one-by (d/db conn) :user/screen-name screen-name)]
+(defn find-user-by-user-name [user-name]
+  (when-let [user (find-one-by (d/db conn) :user/name user-name)]
     (d/touch user)))
 
 ;(defn find-newest-guess
-;  [screen-name]
-;  (when-let [user (find-user-by-screen-name screen-name)]
+;  [user-name]
+;  (when-let [user (find-user-by-user-name user-name)]
 ;    (->> user
 ;        :user/guesses
 ;        (sort-by :guess/time #(compare %2 %1))
 ;        first)))
 ;
 (defn find-guess
-  [db screen-name game-id match-id]
+  [db user-name game-id match-id]
   (when-let [guess (d/entity db
                              (d/q
                                '[:find ?guess .
-                                 :in $ ?screen-name ?game-id ?match-id
-                                 :where [?user :user/screen-name ?screen-name]
+                                 :in $ ?user-name ?game-id ?match-id
+                                 :where [?user :user/name ?user-name]
                                  [?user :user/guesses ?guess]
                                  [?guess :game/id ?game-id]
                                  [?guess :match/id ?match-id]]
-                               db screen-name game-id match-id))]
+                               db user-name game-id match-id))]
     (d/touch guess)))
 
 (defn find-all-unprocessed-guesses

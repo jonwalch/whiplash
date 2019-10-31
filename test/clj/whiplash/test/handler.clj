@@ -67,7 +67,7 @@
    :last_name "queen"
    :email "butt@cheek.com"
    :password "foobar2000"
-   :screen_name "queefburglar"})
+   :user_name "queefburglar"})
 
 (deftest test-user-400s
   (testing "cant get user, not logged in"
@@ -82,7 +82,7 @@
 
   (testing "can't login as nonexistent user"
     (let [login-resp ((common/test-app) (-> (mock/request :post "/user/login")
-                                        (mock/json-body {:screen_name (:screen_name dummy-user)
+                                        (mock/json-body {:user_name (:user_name dummy-user)
                                                          :password (:password dummy-user)})))]
 
       (is (= 401 (:status login-resp)))))
@@ -116,10 +116,10 @@
 (defn- login
   ([]
    (login dummy-user))
-  ([{:keys [screen_name password] :as user}]
-   (assert (and screen_name password))
+  ([{:keys [user_name password] :as user}]
+   (assert (and user_name password))
    (let [resp ((common/test-app) (-> (mock/request :post "/user/login")
-                                 (mock/json-body {:screen_name   screen_name
+                                 (mock/json-body {:user_name   user_name
                                                   :password password})))
          parsed-body (common/parse-json-body resp)
          auth-token (-> resp :headers get-token-from-headers)
@@ -145,7 +145,7 @@
 (defn- get-user
   ([auth-token]
    (get-user dummy-user auth-token))
-  ([{:keys [email first_name last_name screen_name] :as user} auth-token]
+  ([{:keys [email first_name last_name user_name] :as user} auth-token]
    (let [resp ((common/test-app) (-> (mock/request :get "/user")
                                  (mock/cookie :value auth-token)))
          parsed-body (common/parse-json-body resp)]
@@ -155,17 +155,17 @@
                    :first-name first_name
                    :last-name  last_name
                    :status "user.status/pending"
-                   :screen-name screen_name}
+                   :name user_name}
             parsed-body))
 
      (assoc resp :body parsed-body))))
 
 (deftest test-user
   (testing "create and get user success "
-    (let [{:keys [screen_name]} dummy-user
+    (let [{:keys [user_name]} dummy-user
           {:keys [auth-token] login-resp :response} (create-user-and-login)
           login-fail-resp ((common/test-app) (-> (mock/request :post "/user/login")
-                                             (mock/json-body {:screen_name screen_name
+                                             (mock/json-body {:user_name user_name
                                                               :password "wrong_password"})))
           get-success-resp (get-user auth-token)
           create-again-fail ((common/test-app) (-> (mock/request :post "/user/create")
@@ -281,7 +281,7 @@
                       (:guess/processed-time get-guess-resp2)))
 
             (is (= 200 (:status leaderboard-resp)))
-            (is (= [{:screen_name "queefburglar" :score 100}]
+            (is (= [{:user_name "queefburglar" :score 100}]
                    (common/parse-json-body leaderboard-resp)))))))))
 
 (deftest fail-add-guess
@@ -335,8 +335,8 @@
          (-> (create-user-failure (assoc dummy-user :last_name "1"))
              :body
              :message)))
-  (is (= "Screen name invalid"
-         (-> (create-user-failure (assoc dummy-user :screen_name ""))
+  (is (= "User name invalid"
+         (-> (create-user-failure (assoc dummy-user :user_name ""))
              :body
              :message)))
   (is (= "Password invalid"
@@ -353,3 +353,5 @@
          (-> (create-user-failure (assoc dummy-user :email "1@2.c"))
              :body
              :message))))
+
+;; TODO login get test

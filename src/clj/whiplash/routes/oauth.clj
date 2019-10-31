@@ -21,11 +21,11 @@
     (-> (found "/")
         (assoc :flash {:denied true}))
     ; fetch the request token and do anything else you wanna do if not denied.
-    (let [{:keys [user_id screen_name]} (oauth/fetch-access-token params)]
-      (log/info "successfully authenticated as" user_id screen_name)
+    (let [{:keys [user_id user_name]} (oauth/fetch-access-token params)]
+      (log/info "successfully authenticated as" user_id user_name)
       (-> (found "/")
           (assoc :session
-            (assoc session :user-id user_id :screen-name screen_name))))))
+            (assoc session :user-id user_id :user-name user_name))))))
 
 (defn oauth-routes []
   ["/oauth"

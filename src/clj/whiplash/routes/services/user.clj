@@ -12,10 +12,10 @@
 ;; at least 2 characters, max 100
 (def valid-name #"^[a-zA-Z]{2,100}$")
 ;; anything 1 - 50
-(def valid-screen-name #"^.{1,50}$")
+(def valid-user-name #"^.{1,50}$")
 
 (defn validate-user-inputs
-  [{:keys [first-name last-name email password screen-name]}]
+  [{:keys [first-name last-name email password user-name]}]
   (cond
     (not (re-matches valid-name first-name))
     "First name invalid"
@@ -29,19 +29,19 @@
     (not (re-matches valid-password password))
     "Password invalid"
 
-    (not (re-matches valid-screen-name screen-name))
-    "Screen name invalid"))
+    (not (re-matches valid-user-name user-name))
+    "User name invalid"))
 
 ;; TODO sanitize fields
 (defn create-user
   [{:keys [body-params] :as req}]
-  (let [{:keys [first_name last_name email password screen_name]} body-params
+  (let [{:keys [first_name last_name email password user_name]} body-params
         encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})
         invalid-input (validate-user-inputs {:first-name first_name
                                              :last-name last_name
                                              :email email
                                              :password password
-                                             :screen-name screen_name})]
+                                             :user-name user_name})]
     (cond
       (some? invalid-input)
       (conflict {:message invalid-input})
@@ -49,15 +49,15 @@
       (some? (db/find-user-by-email email))
       (conflict {:message "Email taken"})
 
-      (some? (db/find-user-by-screen-name screen_name))
-      (conflict {:message "Screen name taken"})
+      (some? (db/find-user-by-user-name user_name))
+      (conflict {:message "User name taken"})
 
       :else
       (do
         (db/add-user db/conn {:first-name first_name
                               :last-name  last_name
                               :status     :user.status/pending
-                              :screen-name screen_name
+                              :user-name user_name
                               :email      email
                               :password   encrypted-password})
         ;;TODO dont return 200 if db/add-user fails
@@ -66,21 +66,21 @@
 (defn get-user
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
-        user-entity (db/find-user-by-screen-name user)]
+        user-entity (db/find-user-by-user-name user)]
     (if (some? user-entity)
       (ok (select-keys user-entity
                        [:user/first-name :user/last-name :user/email :user/status
-                        :user/screen-name]))
+                        :user/name]))
       (not-found {:message (format "User %s not found" user)}))))
 
 (defn login
   [{:keys [body-params] :as req}]
-  (let [{:keys [screen_name password]} body-params
-        user (db/find-user-by-screen-name screen_name)
+  (let [{:keys [user_name password]} body-params
+        user (db/find-user-by-user-name user_name)
         ;; TODO maybe return not-found if can't find user, right now just return 401
         valid-password (hashers/check password (:user/password user))
         {:keys [exp-str token]} (when valid-password
-                                  (middleware/token (:user/screen-name user)))]
+                                  (middleware/token (:user/name user)))]
     (if valid-password
       {:status  200
        :headers {}
@@ -106,8 +106,8 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [match_name game_id team_name team_id match_id]} body-params
         {:keys [user exp]} (middleware/req->token req)
-        {:keys [user/screen-name] :as user-entity} (db/find-user-by-screen-name user)
-        existing-guess (db/find-guess (d/db db/conn) screen-name game_id match_id)]
+        {:keys [user/name] :as user-entity} (db/find-user-by-user-name user)
+        existing-guess (db/find-guess (d/db db/conn) name game_id match_id)]
     (cond
       (some? existing-guess)
       (conflict {:message "Already made a guess."})

@@ -8,9 +8,9 @@
   [{:keys [body-params] :as req}]
   (let [weekly-leaderboard (->> (db/find-this-week-leaderboard-calc (time/to-date (time/last-monday)))
                                 (group-by (fn [guess]
-                                            (-> guess :user/_guesses :user/screen-name)))
+                                            (-> guess :user/_guesses :user/name)))
                                 (map (fn [[k v]]
-                                       (hash-map :screen_name k
+                                       (hash-map :user_name k
                                                  :score (->> v
                                                                   (map :guess/score)
                                                                   (apply +)))))

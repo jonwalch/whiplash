@@ -6,7 +6,7 @@ import { baseUrl } from "../config/const"
 import { useInterval } from "../common";
 
 export interface Leader {
-  screen_name: string;
+  user_name: string;
   score: number;
 }
 
@@ -37,8 +37,8 @@ export function Leaderboard(props: any) {
     console.log(response.status);
     setLeaderboard(resp);
     // setLeaderboard([
-    //   { screen_name: "fuck", score: 300 },
-    //   { screen_name: "you", score: 100 }
+    //   { user_name: "fuck", score: 300 },
+    //   { user_name: "you", score: 100 }
     // ]);
 
   };
@@ -53,8 +53,8 @@ export function Leaderboard(props: any) {
         <div>
           {leaderboard.map((leader: Leader) => {
             return (
-              <div key={leader.screen_name}>
-                {leader.screen_name} {leader.score}
+              <div key={leader.user_name}>
+                {leader.user_name} {leader.score}
               </div>
             );
           })}
