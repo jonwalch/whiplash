@@ -66,7 +66,7 @@
 (defn get-user
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
-        user-entity (db/find-user-by-email user)]
+        user-entity (db/find-user-by-screen-name user)]
     (if (some? user-entity)
       (ok (select-keys user-entity
                        [:user/first-name :user/last-name :user/email :user/status
@@ -80,7 +80,7 @@
         ;; TODO maybe return not-found if can't find user, right now just return 401
         valid-password (hashers/check password (:user/password user))
         {:keys [exp-str token]} (when valid-password
-                                  (middleware/token (:user/email user)))]
+                                  (middleware/token (:user/screen-name user)))]
     (if valid-password
       {:status  200
        :headers {}
@@ -106,7 +106,7 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [match_name game_id team_name team_id match_id]} body-params
         {:keys [user exp]} (middleware/req->token req)
-        {:keys [user/email] :as user-entity} (db/find-user-by-email user)
+        {:keys [user/email] :as user-entity} (db/find-user-by-screen-name user)
         existing-guess (db/find-guess (d/db db/conn) email game_id match_id)]
     (cond
       (some? existing-guess)

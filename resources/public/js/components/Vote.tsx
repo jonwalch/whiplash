@@ -5,15 +5,15 @@ import { baseUrl } from "../config/const";
 import { getCSRFToken, useInterval } from "../common";
 
 export function Vote(props: any) {
-  const { state, setState } = useContext(LoginContext);
+  const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [passedGuessingPeriod, setPastGuessingPeriod] = useState<boolean | null>(null);
   const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
 
   useEffect(() => {
-    if (props.currentGame.id && props.matchID && state.userLoggedIn) {
+    if (props.currentGame.id && props.matchID && loggedInState.userName) {
       getGuess();
     }
-  }, [props.currentGame.id, props.matchID, state.userLoggedIn]);
+  }, [props.currentGame.id, props.matchID, loggedInState.userName]);
 
   const threeMinutes = 1000 * 60 * 3
   useInterval(() => {
@@ -87,10 +87,10 @@ export function Vote(props: any) {
   };
 
   const renderContent = () => {
-    if (state.userLoggedIn && passedGuessingPeriod === null){
+    if (loggedInState.userName && passedGuessingPeriod === null){
       return <div>Loading</div>
     }
-    else if (state.userLoggedIn && !guessedTeamName && !passedGuessingPeriod) {
+    else if (loggedInState.userName && !guessedTeamName && !passedGuessingPeriod) {
       return (
         <>
           <div>
@@ -116,14 +116,14 @@ export function Vote(props: any) {
           </button>
         </>
       );
-    } else if (state.userLoggedIn && !guessedTeamName && passedGuessingPeriod) {
+    } else if (loggedInState.userName && !guessedTeamName && passedGuessingPeriod) {
       return (
         <h3>
           Sorry! You missed guessing for this game. Stick around for the next
           one!
         </h3>
       );
-    } else if (state.userLoggedIn && guessedTeamName) {
+    } else if (loggedInState.userName && guessedTeamName) {
       return <h3>You guessed {guessedTeamName} for this game!</h3>;
     } else {
       return <h3>Login to guess!</h3>;

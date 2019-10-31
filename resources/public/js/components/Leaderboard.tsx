@@ -11,7 +11,7 @@ export interface Leader {
 }
 
 export function Leaderboard(props: any) {
-  const { state, setState } = useContext(LoginContext);
+  const { loggedInState, setLoggedInState} = useContext(LoginContext);
   const [leaderboard, setLeaderboard] = useState<Leader[]>([]);
 
   useEffect(() => {

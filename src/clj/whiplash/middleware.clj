@@ -75,9 +75,9 @@
                           :enc :a128gcm}}))
 
 ;; TODO revisit :alg and :enc
-(defn token [email]
+(defn token [screen-name]
   (let [exp (time/days-delta 30)
-        claims {:user email
+        claims {:user screen-name
                 :exp  (time/to-millis exp)}]
     {:token (jwt/encrypt claims secret #_{:alg :a256kw :enc :a128gcm})
      :exp-str (time/http-date-str exp)}))
@@ -91,8 +91,8 @@
                   (db/find-user-by-email user)))))
 
 (defn req->token
-  [req]
-  (when-let [cookie-value (some-> req :cookies (get "value") :value)]
+  [{:keys [cookies] :as req}]
+  (when-let [cookie-value (some-> cookies (get "value") :value)]
     (try
       (jwt/decrypt cookie-value secret)
       (catch Throwable t (log/error (format "Failed to decrypt JWT %s "
@@ -105,6 +105,12 @@
     (boolean (and (string? user)
                   (int? exp)
                   (< (time/to-millis) exp)))))
+
+(defn authed-req->screen-name
+  "Only use this if the endpoint is also wrap-restricted"
+  [{:keys [cookies] :as req}]
+  (when-let [{:keys [user exp]} (req->token req)]
+    user))
 
 (defn on-error [request response]
   {:status 403

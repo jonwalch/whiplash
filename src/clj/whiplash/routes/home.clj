@@ -72,11 +72,13 @@
      {:get  {:summary    "is the user's cookie valid?"
              :middleware [middleware/wrap-restricted]
              ;; wrap-restricted will return unauthorized if the cookie is no longer valid
-             :handler    (constantly (response/ok {}))}
+             :handler    (fn [req]
+                           (response/ok {:whiplash/screen-name
+                                         (middleware/authed-req->screen-name req)}))}
 
       :post {:summary    "login as user"
-             :parameters {:body {:screen_name    string?
-                                 :password string?}}
+             :parameters {:body {:screen_name string?
+                                 :password    string?}}
              :handler    (fn [req]
                            (user/login req))}}]
 

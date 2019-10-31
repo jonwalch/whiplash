@@ -1,25 +1,25 @@
 import React, { createContext, useState } from "react";
 
-const defaultLoggedIn: shit = {userLoggedIn: null}
-interface shitState {
-  state: shit;
-  setState: React.Dispatch<React.SetStateAction<shit>>;
+export const defaultLoggedIn: loggedIn = { userName: null };
+interface loggedInState {
+  loggedInState: loggedIn;
+  setLoggedInState: React.Dispatch<React.SetStateAction<loggedIn>>;
 }
 
-const defaultShitState: shitState = {
-  state: defaultLoggedIn,
-  setState: (): void => {},
+const defaultShitState: loggedInState = {
+  loggedInState: defaultLoggedIn,
+  setLoggedInState: (): void => {},
 };
 
-export interface shit {
-  userLoggedIn: boolean | null;
+export interface loggedIn {
+  userName: string | null;
 }
-const LoginContext = createContext<shitState>(defaultShitState);
+const LoginContext = createContext<loggedInState>(defaultShitState);
 
 const LoginProvider = (props: any) => {
-  const [state, setState] = useState(defaultLoggedIn);
+  const [loggedInState, setLoggedInState] = useState(defaultLoggedIn);
   return (
-    <LoginContext.Provider value={{state, setState}}>
+    <LoginContext.Provider value={{loggedInState: loggedInState, setLoggedInState: setLoggedInState}}>
       {props.children}
     </LoginContext.Provider>
   );
