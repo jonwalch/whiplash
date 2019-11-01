@@ -2,8 +2,6 @@
   (:require
     [clojure.test :refer :all]
     [ring.mock.request :as mock]
-    [whiplash.handler :as handler]
-    [muuntaja.core :as m]
     [clojure.string :as string]
     [whiplash.test.common :as common]
     [whiplash.guess-processor :as guess-processor]))
@@ -22,39 +20,39 @@
       (is (= 404 (:status response)))))
 
   #_(testing "services"
-    (testing "success"
-      (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                        (mock/json-body {:x 10, :y 6})))]
-        (is (= 200 (:status response)))
-        (is (= {:total 16} (m/decode-response-body response)))))
+      (testing "success"
+        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
+                                          (mock/json-body {:x 10, :y 6})))]
+          (is (= 200 (:status response)))
+          (is (= {:total 16} (m/decode-response-body response)))))
 
-    (testing "parameter coercion error, stack trace expected"
-      (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                        (mock/json-body {:x 10, :y "invalid"})))]
-        (is (= 400 (:status response)))))
+      (testing "parameter coercion error, stack trace expected"
+        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
+                                          (mock/json-body {:x 10, :y "invalid"})))]
+          (is (= 400 (:status response)))))
 
-    (testing "parameter coercion error, stack trace expected"
-      (let [response ((handler/app) (-> (mock/request :get "/v1/math/plus")
-                                        (mock/query-string {:x 10, :y "invalid"})))]
-        (is (= 400 (:status response)))))
+      (testing "parameter coercion error, stack trace expected"
+        (let [response ((handler/app) (-> (mock/request :get "/v1/math/plus")
+                                          (mock/query-string {:x 10, :y "invalid"})))]
+          (is (= 400 (:status response)))))
 
-    (testing "response coercion error"
-      (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                        (mock/json-body {:x -10, :y 6})))]
-        (is (= 500 (:status response)))))
+      (testing "response coercion error"
+        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
+                                          (mock/json-body {:x -10, :y 6})))]
+          (is (= 500 (:status response)))))
 
-    (testing "fail spec"
-      (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                        (mock/json-body {:piss "fart"})))]
-        (is (= 400 (:status response)))))
+      (testing "fail spec"
+        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
+                                          (mock/json-body {:piss "fart"})))]
+          (is (= 400 (:status response)))))
 
-    (testing "content negotiation"
-      (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                        (mock/body (pr-str {:x 10, :y 6}))
-                                        (mock/content-type "application/edn")
-                                        (mock/header "accept" "application/transit+json")))]
-        (is (= 200 (:status response)))
-        (is (= {:total 16} (m/decode-response-body response)))))))
+      (testing "content negotiation"
+        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
+                                          (mock/body (pr-str {:x 10, :y 6}))
+                                          (mock/content-type "application/edn")
+                                          (mock/header "accept" "application/transit+json")))]
+          (is (= 200 (:status response)))
+          (is (= {:total 16} (m/decode-response-body response)))))))
 
 (deftest static-content
   (testing "can get static content"
@@ -82,8 +80,8 @@
 
   (testing "can't login as nonexistent user"
     (let [login-resp ((common/test-app) (-> (mock/request :post "/user/login")
-                                        (mock/json-body {:user_name (:user_name dummy-user)
-                                                         :password (:password dummy-user)})))]
+                                            (mock/json-body {:user_name (:user_name dummy-user)
+                                                             :password (:password dummy-user)})))]
 
       (is (= 401 (:status login-resp)))))
 
@@ -105,7 +103,7 @@
   ([user]
    (assert user)
    (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
-                                 (mock/json-body user)))
+                                     (mock/json-body user)))
          parsed-body (common/parse-json-body resp)]
 
      (is (= 200 (:status resp)))
@@ -119,13 +117,13 @@
   ([{:keys [user_name password] :as user}]
    (assert (and user_name password))
    (let [resp ((common/test-app) (-> (mock/request :post "/user/login")
-                                 (mock/json-body {:user_name   user_name
-                                                  :password password})))
+                                     (mock/json-body {:user_name   user_name
+                                                      :password password})))
          parsed-body (common/parse-json-body resp)
          auth-token (-> resp :headers get-token-from-headers)
 
          authed-resp ((common/test-app) (-> (mock/request :get "/user/login")
-                                        (mock/cookie :value auth-token)))]
+                                            (mock/cookie :value auth-token)))]
 
      (is (= 200 (:status resp)))
      (is (string? auth-token))
@@ -146,32 +144,34 @@
 
 (defn- get-user
   ([auth-token]
-   (get-user dummy-user auth-token))
-  ([{:keys [email first_name last_name user_name] :as user} auth-token]
+   (get-user auth-token dummy-user))
+  ([auth-token {:keys [email first_name last_name user_name] :as user}]
    (let [resp ((common/test-app) (-> (mock/request :get "/user")
-                                 (mock/cookie :value auth-token)))
+                                     (mock/cookie :value auth-token)))
          parsed-body (common/parse-json-body resp)]
 
      (is (= 200 (:status resp)))
-     (is (= #:user{:email      email
-                   :first-name first_name
-                   :last-name  last_name
-                   :status "user.status/pending"
-                   :name user_name}
-            parsed-body))
 
      (assoc resp :body parsed-body))))
 
 (deftest test-user
   (testing "create and get user success "
-    (let [{:keys [user_name]} dummy-user
+    (let [{:keys [email first_name last_name user_name]} dummy-user
           {:keys [auth-token] login-resp :response} (create-user-and-login)
           login-fail-resp ((common/test-app) (-> (mock/request :post "/user/login")
-                                             (mock/json-body {:user_name user_name
-                                                              :password "wrong_password"})))
+                                                 (mock/json-body {:user_name user_name
+                                                                  :password "wrong_password"})))
           get-success-resp (get-user auth-token)
           create-again-fail ((common/test-app) (-> (mock/request :post "/user/create")
-                                               (mock/json-body dummy-user)))]
+                                                   (mock/json-body dummy-user)))]
+
+      (is (= #:user{:email      email
+                    :first-name first_name
+                    :last-name  last_name
+                    :status "user.status/pending"
+                    :name user_name
+                    :verify-token ""}
+             (:body get-success-resp)))
       (is (= 401 (:status login-fail-resp)))
       (is (= 409 (:status create-again-fail))))))
 
@@ -194,8 +194,8 @@
 (defn- create-guess
   [auth-token guess]
   (let [resp ((common/test-app) (-> (mock/request :post "/user/guess")
-                                (mock/json-body guess)
-                                (mock/cookie :value auth-token)))
+                                    (mock/json-body guess)
+                                    (mock/cookie :value auth-token)))
         parsed-body (common/parse-json-body resp)]
     (is (= 200 (:status resp)))
 
@@ -204,9 +204,9 @@
 (defn- get-guess
   [auth-token game-id match-id]
   (let [resp ((common/test-app) (-> (mock/request :get "/user/guess")
-                                (mock/query-string {:match_id match-id
-                                                    :game_id  game-id})
-                                (mock/cookie :value auth-token)))
+                                    (mock/query-string {:match_id match-id
+                                                        :game_id  game-id})
+                                    (mock/cookie :value auth-token)))
         parsed-body (common/parse-json-body resp)]
     (is (= 200 (:status resp)))
 
@@ -224,8 +224,8 @@
                                      (:game_id dummy-guess-2)
                                      (:match_id dummy-guess-2))
           fail-create-same-guess-resp ((common/test-app) (-> (mock/request :post "/user/guess")
-                                                         (mock/json-body dummy-guess)
-                                                         (mock/cookie :value auth-token)))]
+                                                             (mock/json-body dummy-guess)
+                                                             (mock/cookie :value auth-token)))]
       (is (= {:game/id   (:game_id dummy-guess)
               :team/name (:team_name dummy-guess)
               :team/id   (:team_id dummy-guess)
@@ -290,7 +290,7 @@
   (testing "Fail to auth because no cookie"
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
           guess-resp ((common/test-app) (-> (mock/request :post "/user/guess")
-                                        (mock/json-body dummy-guess)))]
+                                            (mock/json-body dummy-guess)))]
       (is (= 403 (:status guess-resp))))))
 
 (deftest logout
@@ -301,7 +301,7 @@
   (testing "logging out returns cookie set to deleted, can log in after logging out"
     (let [{:keys [auth-token] :as login-resp} (create-user-and-login)
           resp ((common/test-app) (-> (mock/request :post "/user/logout")
-                                  (mock/cookie :value auth-token)))
+                                      (mock/cookie :value auth-token)))
           login-again-resp (login)]
       (is (= "deleted" (get-token-from-headers (:headers resp))))
       (is (= 200 (:status resp))))))
@@ -310,7 +310,7 @@
   (testing "doing a get to login after logging out doesn't 500"
     (let [{:keys [auth-token] :as login-resp} (create-user-and-login)
           resp ((common/test-app) (-> (mock/request :post "/user/logout")
-                                  (mock/cookie :value auth-token)))
+                                      (mock/cookie :value auth-token)))
           get-login-resp ((common/test-app) (-> (mock/request :get "/user/login")))]
       (is (= 403 (:status get-login-resp))))))
 
@@ -355,3 +355,46 @@
          (-> (create-user-failure (assoc dummy-user :email "1@2.c"))
              :body
              :message))))
+
+(deftest verify-email
+  (testing "verify get"
+    (let [response ((common/test-app) (mock/request :get "/user/verify"))]
+      (is (= 200 (:status response)))))
+
+  (testing "verify email post"
+    (let [{:keys [user_name email first_name last_name]} dummy-user
+          {:keys [auth-token] login-resp :response} (create-user-and-login)
+          {:keys [body] :as get-success-resp} (get-user auth-token)
+          {:keys [user/verify-token user/email]} body
+          verify-resp ((common/test-app) (-> (mock/request :post "/user/verify")
+                                             (mock/json-body {:email email
+                                                              :token verify-token})))
+          try-verify-again-resp ((common/test-app) (-> (mock/request :post "/user/verify")
+                                                       (mock/json-body {:email email
+                                                                        :token verify-token})))
+          failed-verify-resp ((common/test-app) (-> (mock/request :post "/user/verify")
+                                                    (mock/json-body {:email email
+                                                                     :token "you only yolo once"})))
+          get-verified-user (get-user auth-token)]
+      (is (= 200 (:status verify-resp)))
+      (is (= {:message (format "Successfully verified %s" email)}
+             (common/parse-json-body verify-resp)))
+
+
+      (is (= 200 (:status try-verify-again-resp)))
+      (is (= {:message (format "Already verified %s" email)}
+             (common/parse-json-body try-verify-again-resp)))
+
+      (is (= 404 (:status failed-verify-resp)))
+      (is (= {:message (format "Couldn't verify %s" email)}
+             (common/parse-json-body failed-verify-resp)))
+
+      (is (not (string/blank? (-> get-verified-user :body :user/verify-token))))
+
+      (is (= #:user{:email      email
+                    :first-name first_name
+                    :last-name  last_name
+                    :status "user.status/active"
+                    :name user_name}
+             (select-keys (:body get-verified-user)
+                          [:user/email :user/first-name :user/last-name :user/status :user/name]))))))

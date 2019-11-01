@@ -3,7 +3,8 @@
             [whiplash.db.core :as db]
             [buddy.hashers :as hashers]
             [whiplash.middleware :as middleware]
-            [datomic.api :as d]))
+            [datomic.api :as d])
+  (:import (java.security MessageDigest)))
 
 ;; https://www.regular-expressions.info/email.html
 (def valid-email #"\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b")
@@ -32,6 +33,19 @@
     (not (re-matches valid-user-name user-name))
     "User name invalid"))
 
+
+(defn md5 [^String s]
+  (let [algorithm (MessageDigest/getInstance "MD5")
+        raw (.digest algorithm (.getBytes s))]
+    (format "%032x" (BigInteger. 1 raw))))
+
+(defn rand-str [len]
+  (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
+
+(defn verify-email-token
+  []
+  (md5 (rand-str 100)))
+
 ;; TODO sanitize fields
 (defn create-user
   [{:keys [body-params] :as req}]
@@ -57,6 +71,7 @@
         (db/add-user db/conn {:first-name first_name
                               :last-name  last_name
                               :status     :user.status/pending
+                              :verify-token (verify-email-token)
                               :user-name user_name
                               :email      email
                               :password   encrypted-password})
@@ -70,7 +85,7 @@
     (if (some? user-entity)
       (ok (select-keys user-entity
                        [:user/first-name :user/last-name :user/email :user/status
-                        :user/name]))
+                        :user/name :user/verify-token]))
       (not-found {:message (format "User %s not found" user)}))))
 
 (defn login
@@ -143,3 +158,21 @@
                                    user
                                    game-id
                                    match-id)}))))
+
+(defn verify-email
+  [{:keys [body-params] :as req}]
+  (let [{:keys [email token]} body-params
+        {:keys [db/id user/verify-token user/status] :as user} (db/find-user-by-email email)]
+    (cond
+      (and (= token verify-token)
+           (= :user.status/pending status))
+      ;;TODO dont return 200 if db/verify-email fails
+      (do
+        (db/verify-email db/conn {:db/id id})
+        (ok {:message (format "Successfully verified %s" email)}))
+
+      (= token verify-token)
+      (ok {:message (format "Already verified %s" email)})
+
+      :else
+      (not-found {:message (format "Couldn't verify %s" email)}))))

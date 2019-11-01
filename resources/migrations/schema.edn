@@ -33,6 +33,11 @@
            :db/valueType   :db.type/ref
            :db/cardinality :db.cardinality/one
            }
+          {:db/doc         "User verify email token"
+           :db/ident       :user/verify-token
+           :db/valueType   :db.type/string
+           :db/cardinality :db.cardinality/one
+           }
           ;; example of enumeration in Datomic
           [:db/add #db/id [:db.part/user] :db/ident :user.status/pending]
           [:db/add #db/id [:db.part/user] :db/ident :user.status/active]

@@ -26,7 +26,6 @@
     <orderEntry type="library" name="Leiningen: ch.qos.logback/logback-classic:1.2.3" level="project" />
     <orderEntry type="library" name="Leiningen: ch.qos.logback/logback-core:1.2.3" level="project" />
     <orderEntry type="library" name="Leiningen: cheshire:5.8.1" level="project" />
-    <orderEntry type="library" name="Leiningen: clj-antlr:0.2.4" level="project" />
     <orderEntry type="library" name="Leiningen: clj-commons/clj-yaml:0.7.0" level="project" />
     <orderEntry type="library" name="Leiningen: clj-http:3.10.0" level="project" />
     <orderEntry type="library" name="Leiningen: clj-oauth:1.5.5" level="project" />
@@ -45,6 +44,7 @@
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-js:0.8.846" level="project" />
     <orderEntry type="library" name="Leiningen: com.datomic/datomic-free:0.9.5697" level="project" />
     <orderEntry type="library" name="Leiningen: com.datomic/datomic-lucene-core:3.3.0" level="project" />
+    <orderEntry type="library" name="Leiningen: com.draines/postal:2.0.3" level="project" />
     <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-annotations:2.9.0" level="project" />
     <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-core:2.9.6" level="project" />
     <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-databind:2.9.8" level="project" />
@@ -63,7 +63,7 @@
     <orderEntry type="library" name="Leiningen: com.googlecode.json-simple/json-simple:1.1.1" level="project" />
     <orderEntry type="library" name="Leiningen: com.h2database/h2:1.3.171" level="project" />
     <orderEntry type="library" name="Leiningen: com.lambdaworks/scrypt:1.4.0" level="project" />
-    <orderEntry type="library" name="Leiningen: com.walmartlabs/lacinia:0.32.0" level="project" />
+    <orderEntry type="library" name="Leiningen: com.sun.mail/javax.mail:1.5.5" level="project" />
     <orderEntry type="library" name="Leiningen: commons-beanutils:1.9.2" level="project" />
     <orderEntry type="library" name="Leiningen: commons-codec:1.8" level="project" />
     <orderEntry type="library" name="Leiningen: commons-collections:3.2.1" level="project" />
@@ -97,6 +97,8 @@
     <orderEntry type="library" name="Leiningen: io.netty/netty-transport-native-unix-common:4.1.25.Final" level="project" />
     <orderEntry type="library" name="Leiningen: io.netty/netty-transport:4.1.25.Final" level="project" />
     <orderEntry type="library" name="Leiningen: io.rkn/conformity:0.5.1" level="project" />
+    <orderEntry type="library" name="Leiningen: javax.activation/activation:1.1" level="project" />
+    <orderEntry type="library" name="Leiningen: javax.mail/javax.mail-api:1.5.5" level="project" />
     <orderEntry type="library" name="Leiningen: javax.servlet/javax.servlet-api:3.1.0" level="project" />
     <orderEntry type="library" name="Leiningen: javax.xml.bind/jaxb-api:2.3.0" level="project" />
     <orderEntry type="library" name="Leiningen: joda-time:2.9.9" level="project" />
@@ -134,8 +136,6 @@
     <orderEntry type="library" name="Leiningen: net.jodah/expiringmap:0.5.9" level="project" />
     <orderEntry type="library" name="Leiningen: nrepl:0.6.0" level="project" />
     <orderEntry type="library" name="Leiningen: ns-tracker:0.3.1" level="project" />
-    <orderEntry type="library" name="Leiningen: org.antlr/antlr4-runtime:4.5.3" level="project" />
-    <orderEntry type="library" name="Leiningen: org.antlr/antlr4:4.5.3" level="project" />
     <orderEntry type="library" name="Leiningen: org.apache.activemq/artemis-commons:1.4.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.apache.activemq/artemis-core-client:1.4.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.apache.commons/commons-compress:1.18" level="project" />

@@ -10,7 +10,7 @@
                  [clojure.java-time "0.3.2"]
                  [com.datomic/datomic-free "0.9.5697" :exclusions [org.slf4j/log4j-over-slf4j org.slf4j/slf4j-nop com.google.guava/guava]]
                  [com.google.guava/guava "25.1-jre"]
-                 [com.walmartlabs/lacinia "0.32.0"]
+                 ;[com.walmartlabs/lacinia "0.32.0"]
                  [cprop "0.1.14"]
                  [expound "0.7.2"]
                  [funcool/struct "1.4.0"]
@@ -41,6 +41,7 @@
                  [danlentz/clj-uuid "0.1.9"]
                  [buddy/buddy-hashers "1.4.0"]
                  [org.clojure/core.async "0.4.500"]
+                 [com.draines/postal "2.0.3"]
                  ]
 
   :min-lein-version "2.0.0"

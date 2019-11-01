@@ -49,19 +49,19 @@
 
 ;; TODO validate args
 (defn add-user
-  [conn {:keys [first-name last-name status email password user-name]}]
+  [conn {:keys [first-name last-name status email password user-name verify-token]}]
   ;; TODO :user/signup-time
   @(d/transact conn [{:user/first-name first-name
                       :user/last-name  last-name
                       :user/name user-name
                       :user/status     status
+                      :user/verify-token verify-token
                       :user/email      email
                       :user/password   password}]))
 
 (defn add-guess-for-user
   "purposely leaving out :guess/score, will be added by another piece of code later"
   [conn {:keys [db/id game-type match-name game-id team-name team-id match-id]}]
-  ;; TODO, need match/id as well
   @(d/transact conn [{:db/id        id
                       :user/guesses [{:guess/time (time/to-date)
                                       :guess/processed? false
@@ -71,6 +71,11 @@
                                       :team/name  team-name
                                       :team/id    team-id
                                       :match/id match-id}]}]))
+
+(defn verify-email
+  [conn {:keys [db/id]}]
+  @(d/transact conn [{:db/id        id
+                      :user/status :user.status/active}]))
 
 (defn find-one-by
   "Given db value and an (attr/val), return the user as EntityMap (datomic.query.EntityMap)

@@ -88,6 +88,16 @@
              :handler    (fn [req]
                            (user/logout req))}}]
 
+    ["/verify"
+     ;; get routing handled in react
+     {:get home-page
+
+      :post {:summary    "verify email"
+             :parameters {:body {:email string?
+                                 :token    string?}}
+             :handler    (fn [req]
+                           (user/verify-email req))}}]
+
     ["/create"
      {:post    {:summary    "create a user"
                 :parameters {:body {:first_name string?

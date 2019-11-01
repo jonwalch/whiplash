@@ -12,8 +12,8 @@
                                 (map (fn [[k v]]
                                        (hash-map :user_name k
                                                  :score (->> v
-                                                                  (map :guess/score)
-                                                                  (apply +)))))
+                                                             (map :guess/score)
+                                                             (apply +)))))
                                 (sort-by :score #(compare %2 %1))
                                 vec)]
     (ok weekly-leaderboard)))

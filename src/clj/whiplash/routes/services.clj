@@ -7,7 +7,6 @@
     [reitit.ring.middleware.muuntaja :as muuntaja]
     [reitit.ring.middleware.multipart :as multipart]
     [reitit.ring.middleware.parameters :as parameters]
-    [whiplash.routes.services.graphql :as graphql]
     [whiplash.middleware.formats :as formats]
     [whiplash.middleware.exception :as exception]
     [ring.util.http-response :refer :all]))
