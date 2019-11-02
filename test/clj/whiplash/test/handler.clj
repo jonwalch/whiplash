@@ -100,16 +100,28 @@
 (defn- create-user
   ([]
    (create-user dummy-user))
-  ([user]
+  ([{:keys [first_name email] :as user}]
    (assert user)
-   (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
-                                     (mock/json-body user)))
-         parsed-body (common/parse-json-body resp)]
+   (with-redefs [whiplash.integrations.amazon-ses/internal-send-verification-email
+                 common/internal-send-verification-email-fake]
+     (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
+                                       (mock/json-body user)))
+           parsed-body (common/parse-json-body resp)
+           sent-emails (-> common/test-state deref :emails)
+           {:keys [body subject] :as sent-email} (first sent-emails)]
 
-     (is (= 200 (:status resp)))
-     (is (empty? parsed-body))
+       (is (= 200 (:status resp)))
+       (is (empty? parsed-body))
 
-     (assoc resp :body parsed-body))))
+       (is (= 1 (count sent-emails)))
+       (is (= #:user{:first-name first_name
+                     :email email}
+              (select-keys sent-email [:user/first-name :user/email])))
+       (is (= "Whiplash: Please verify your email!" subject))
+       (is (some? (re-find #"https:\/\/www\.whiplashesports\.com\/user\/verify\?email=.*&token=.{32}" body)))
+       (is (not (string/blank? (:user/verify-token sent-email))))
+
+       (assoc resp :body parsed-body)))))
 
 (defn- login
   ([]
@@ -160,18 +172,20 @@
           {:keys [auth-token] login-resp :response} (create-user-and-login)
           login-fail-resp ((common/test-app) (-> (mock/request :post "/user/login")
                                                  (mock/json-body {:user_name user_name
-                                                                  :password "wrong_password"})))
+                                                                  :password  "wrong_password"})))
           get-success-resp (get-user auth-token)
           create-again-fail ((common/test-app) (-> (mock/request :post "/user/create")
                                                    (mock/json-body dummy-user)))]
 
+      (is (not (string/blank? (-> get-success-resp :body :user/verify-token))))
       (is (= #:user{:email      email
                     :first-name first_name
                     :last-name  last_name
-                    :status "user.status/pending"
-                    :name user_name
-                    :verify-token ""}
-             (:body get-success-resp)))
+                    :status     "user.status/pending"
+                    :name       user_name}
+             (select-keys (:body get-success-resp)
+                          [:user/email :user/first-name :user/last-name :user/status :user/name])))
+
       (is (= 401 (:status login-fail-resp)))
       (is (= 409 (:status create-again-fail))))))
 
@@ -252,8 +266,7 @@
       (is (= 409 (:status fail-create-same-guess-resp)))
 
       (testing "Guess success processing works"
-        (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake
-                      whiplash.integrations.twitch/views-per-twitch-stream common/twitch-view-fake]
+        (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
           (let [_ (guess-processor/process-guesses)
                 {:keys [body] :as get-guess-resp} (get-guess auth-token game_id match_id)
                 get-guess-resp2 (get-guess auth-token

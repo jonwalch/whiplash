@@ -3,7 +3,8 @@
             [whiplash.db.core :as db]
             [buddy.hashers :as hashers]
             [whiplash.middleware :as middleware]
-            [datomic.api :as d])
+            [datomic.api :as d]
+            [whiplash.integrations.amazon-ses :as ses])
   (:import (java.security MessageDigest)))
 
 ;; https://www.regular-expressions.info/email.html
@@ -33,7 +34,6 @@
     (not (re-matches valid-user-name user-name))
     "User name invalid"))
 
-
 (defn md5 [^String s]
   (let [algorithm (MessageDigest/getInstance "MD5")
         raw (.digest algorithm (.getBytes s))]
@@ -55,7 +55,8 @@
                                              :last-name last_name
                                              :email email
                                              :password password
-                                             :user-name user_name})]
+                                             :user-name user_name})
+        email-token (verify-email-token)]
     (cond
       (some? invalid-input)
       (conflict {:message invalid-input})
@@ -71,10 +72,13 @@
         (db/add-user db/conn {:first-name first_name
                               :last-name  last_name
                               :status     :user.status/pending
-                              :verify-token (verify-email-token)
+                              :verify-token email-token
                               :user-name user_name
                               :email      email
                               :password   encrypted-password})
+        (ses/send-verification-email {:user/first-name first_name
+                                     :user/verify-token email-token
+                                     :user/email email})
         ;;TODO dont return 200 if db/add-user fails
         (ok {})))))
 
@@ -83,6 +87,9 @@
   (let [{:keys [user exp]} (middleware/req->token req)
         user-entity (db/find-user-by-user-name user)]
     (if (some? user-entity)
+      ;; TODO don't return verify-token, currently only exposing it for testing purposes
+      ;; A user could falsely verify their email if they poked around and reconstructed the
+      ;; correct route and query params
       (ok (select-keys user-entity
                        [:user/first-name :user/last-name :user/email :user/status
                         :user/name :user/verify-token]))

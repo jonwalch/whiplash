@@ -1,8 +1,7 @@
 import React from "react";
 import { BrowserRouter, Route } from "react-router-dom";
 import { Home } from "./components/Home";
-import { Signup } from "./components/Signup";
-import { Leaderboard } from "./components/Leaderboard";
+import { Verify } from "./components/Verify";
 import { LoginProvider } from "./contexts/LoginContext";
 
 export const App = () => {
@@ -17,6 +16,12 @@ export const App = () => {
           )}
         /> */}
 
+        <Route
+          path="/user/verify"
+          render={({ match, history, location }) => (
+            <Verify match={match} history={history} location={location}/>
+          )}
+        />
         {/* <Route exact path="/leaderboard" component={Leaderboard} /> */}
       </BrowserRouter>
     </LoginProvider>
