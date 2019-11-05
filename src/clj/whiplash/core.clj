@@ -7,7 +7,7 @@
     [whiplash.guess-processor :refer [guess-processor]]
     [whiplash.routes.services.stream :refer [cached-streams]]
     [clojure.tools.cli :refer [parse-opts]]
-    [whiplash.db.core :refer [conn]]
+    [whiplash.db.core :refer [datomic-cloud]]
     [clojure.tools.logging :as log]
     [mount.core :as mount])
   (:gen-class))

@@ -36,14 +36,28 @@
     <orderEntry type="library" name="Leiningen: clojure.java-time:0.3.2" level="project" />
     <orderEntry type="library" name="Leiningen: clojurewerkz/scrypt:1.2.0" level="project" />
     <orderEntry type="library" name="Leiningen: clout:2.1.2" level="project" />
+    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-core:1.11.210" level="project" />
+    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-kms:1.11.210" level="project" />
+    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-s3:1.11.210" level="project" />
+    <orderEntry type="library" name="Leiningen: com.amazonaws/jmespath-java:1.11.210" level="project" />
     <orderEntry type="library" name="Leiningen: com.andrewmcveigh/cljs-time:0.5.2" level="project" />
     <orderEntry type="library" name="Leiningen: com.bhauman/spell-spec:0.1.1" level="project" />
+    <orderEntry type="library" name="Leiningen: com.cognitect/anomalies:0.1.12" level="project" />
+    <orderEntry type="library" name="Leiningen: com.cognitect/hmac-authn:0.1.195" level="project" />
+    <orderEntry type="library" name="Leiningen: com.cognitect/http-client:0.1.99" level="project" />
+    <orderEntry type="library" name="Leiningen: com.cognitect/s3-creds:0.1.22" level="project" />
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-clj:0.8.313" level="project" />
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-cljs:0.8.256" level="project" />
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-java:0.8.337" level="project" />
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-js:0.8.846" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/client-api:0.8.31" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/client-cloud:0.8.78" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/client-impl-shared:0.8.67" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/client:0.8.81" level="project" />
     <orderEntry type="library" name="Leiningen: com.datomic/datomic-free:0.9.5697" level="project" />
     <orderEntry type="library" name="Leiningen: com.datomic/datomic-lucene-core:3.3.0" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/query-support:0.8.16" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/s3-access-keys:0.1.6" level="project" />
     <orderEntry type="library" name="Leiningen: com.draines/postal:2.0.3" level="project" />
     <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-annotations:2.9.0" level="project" />
     <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-core:2.9.6" level="project" />
@@ -74,6 +88,7 @@
     <orderEntry type="library" name="Leiningen: crypto-equality:1.0.0" level="project" />
     <orderEntry type="library" name="Leiningen: crypto-random:1.2.0" level="project" />
     <orderEntry type="library" name="Leiningen: danlentz/clj-uuid:0.1.9" level="project" />
+    <orderEntry type="library" name="Leiningen: datomic-client-memdb:0.2.0" level="project" />
     <orderEntry type="library" name="Leiningen: expiring-map:0.1.9" level="project" />
     <orderEntry type="library" name="Leiningen: expound:0.7.2" level="project" />
     <orderEntry type="library" name="Leiningen: fipp:0.6.18" level="project" />
@@ -96,7 +111,6 @@
     <orderEntry type="library" name="Leiningen: io.netty/netty-transport-native-epoll:4.1.25.Final" level="project" />
     <orderEntry type="library" name="Leiningen: io.netty/netty-transport-native-unix-common:4.1.25.Final" level="project" />
     <orderEntry type="library" name="Leiningen: io.netty/netty-transport:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.rkn/conformity:0.5.1" level="project" />
     <orderEntry type="library" name="Leiningen: javax.activation/activation:1.1" level="project" />
     <orderEntry type="library" name="Leiningen: javax.mail/javax.mail-api:1.5.5" level="project" />
     <orderEntry type="library" name="Leiningen: javax.servlet/javax.servlet-api:3.1.0" level="project" />
@@ -177,6 +191,10 @@
     <orderEntry type="library" name="Leiningen: org.codehaus.janino/commons-compiler-jdk:2.6.1" level="project" />
     <orderEntry type="library" name="Leiningen: org.codehaus.janino/commons-compiler:2.6.1" level="project" />
     <orderEntry type="library" name="Leiningen: org.codehaus.mojo/animal-sniffer-annotations:1.14" level="project" />
+    <orderEntry type="library" name="Leiningen: org.eclipse.jetty/jetty-client:9.4.15.v20190215" level="project" />
+    <orderEntry type="library" name="Leiningen: org.eclipse.jetty/jetty-http:9.4.15.v20190215" level="project" />
+    <orderEntry type="library" name="Leiningen: org.eclipse.jetty/jetty-io:9.4.15.v20190215" level="project" />
+    <orderEntry type="library" name="Leiningen: org.eclipse.jetty/jetty-util:9.4.15.v20190215" level="project" />
     <orderEntry type="library" name="Leiningen: org.flatland/ordered:1.5.7" level="project" />
     <orderEntry type="library" name="Leiningen: org.flatland/useful:0.11.6" level="project" />
     <orderEntry type="library" name="Leiningen: org.fressian/fressian:0.6.5" level="project" />
@@ -213,6 +231,7 @@
     <orderEntry type="library" name="Leiningen: ring/ring-ssl:0.3.0" level="project" />
     <orderEntry type="library" name="Leiningen: selmer:1.12.14" level="project" />
     <orderEntry type="library" name="Leiningen: slingshot:0.12.2" level="project" />
+    <orderEntry type="library" name="Leiningen: software.amazon.ion/ion-java:1.0.2" level="project" />
     <orderEntry type="library" name="Leiningen: tech.droit/clj-diff:1.0.1" level="project" />
     <orderEntry type="library" name="Leiningen: tigris:0.1.1" level="project" />
     <orderEntry type="library" name="Leiningen: virgil:0.1.6" level="project" />

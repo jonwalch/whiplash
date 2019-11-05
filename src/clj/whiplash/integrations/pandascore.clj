@@ -8,9 +8,7 @@
     [clojure.string :as string]
     [clojure.tools.logging :as log]
     [whiplash.db.core :as db]
-    [datomic.api :as d]
-    [clojure.edn :as edn]
-    [clojure.java.io :as io]))
+    [datomic.client.api :as d]))
 
 (def base-url "https://api.pandascore.co/%s/")
 (def matches-url (str base-url "matches"))
@@ -135,7 +133,7 @@
        add-current-game
        (sort by-viewers-and-scheduled)))
 
-(comment
+#_(comment
   (->> current
        ;twitch-matches
        running-matches
@@ -171,7 +169,7 @@
                         vec)]
     (println update-txs)
     (when (not-empty update-txs)
-      @(d/transact db/conn update-txs)))
+      (d/transact (:conn db/datomic-cloud) {:tx-data update-txs})))
 
   (let [running-matches (->> foo
                              twitch-matches

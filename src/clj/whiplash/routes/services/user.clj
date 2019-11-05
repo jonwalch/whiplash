@@ -3,7 +3,7 @@
             [whiplash.db.core :as db]
             [buddy.hashers :as hashers]
             [whiplash.middleware :as middleware]
-            [datomic.api :as d]
+            [datomic.client.api :as d]
             [whiplash.integrations.amazon-ses :as ses])
   (:import (java.security MessageDigest)))
 
@@ -68,41 +68,44 @@
       (conflict {:message "User name taken"})
 
       :else
-      (do
-        (db/add-user db/conn {:first-name first_name
-                              :last-name  last_name
-                              :status     :user.status/pending
-                              :verify-token email-token
-                              :user-name user_name
-                              :email      email
-                              :password   encrypted-password})
+      (let [tx-result (db/add-user (:conn db/datomic-cloud) {:first-name   first_name
+                                            :last-name    last_name
+                                            :status       :user.status/pending
+                                            :verify-token email-token
+                                            :user-name    user_name
+                                            :email        email
+                                            :password     encrypted-password})]
         (ses/send-verification-email {:user/first-name first_name
-                                     :user/verify-token email-token
-                                     :user/email email})
+                                      :user/verify-token email-token
+                                      :user/email email})
         ;;TODO dont return 200 if db/add-user fails
         (ok {})))))
 
 (defn get-user
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
-        user-entity (db/find-user-by-user-name user)]
+        user-entity (-> (d/pull (d/db (:conn db/datomic-cloud))
+                                '[:user/first-name :user/last-name :user/email :user/status
+                                  :user/name :user/verify-token]
+                                (db/find-user-by-user-name user))
+                        (db/resolve-enum :user/status))]
     (if (some? user-entity)
       ;; TODO don't return verify-token, currently only exposing it for testing purposes
       ;; A user could falsely verify their email if they poked around and reconstructed the
       ;; correct route and query params
-      (ok (select-keys user-entity
-                       [:user/first-name :user/last-name :user/email :user/status
-                        :user/name :user/verify-token]))
+      (ok user-entity)
       (not-found {:message (format "User %s not found" user)}))))
 
 (defn login
   [{:keys [body-params] :as req}]
   (let [{:keys [user_name password]} body-params
-        user (db/find-user-by-user-name user_name)
+        user-entity (d/pull (d/db (:conn db/datomic-cloud))
+                     '[:user/password :user/name]
+                     (db/find-user-by-user-name user_name))
         ;; TODO maybe return not-found if can't find user, right now just return 401
-        valid-password (hashers/check password (:user/password user))
+        valid-password (hashers/check password (:user/password user-entity))
         {:keys [exp-str token]} (when valid-password
-                                  (middleware/token (:user/name user)))]
+                                  (middleware/token (:user/name user-entity)))]
     (if valid-password
       {:status  200
        :headers {}
@@ -128,21 +131,25 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [match_name game_id team_name team_id match_id]} body-params
         {:keys [user exp]} (middleware/req->token req)
-        {:keys [user/name] :as user-entity} (db/find-user-by-user-name user)
-        existing-guess (db/find-guess (d/db db/conn) name game_id match_id)]
+        user-db-id (db/find-user-by-user-name user)
+        existing-guess (when user-db-id
+                         (d/pull (d/db (:conn db/datomic-cloud))
+                                 '[:guess/time]
+                                 (db/find-guess (d/db (:conn db/datomic-cloud)) user game_id match_id)))]
     (cond
       (some? existing-guess)
       (conflict {:message "Already made a guess."})
 
-      (some? user-entity)
+      (some? user-db-id)
       (do
-        (db/add-guess-for-user db/conn {:db/id     (:db/id user-entity)
-                                        :game-id   game_id
-                                        :match-name match_name
-                                        :game-type :game.type/csgo
-                                        :team-name team_name
-                                        :match-id  match_id
-                                        :team-id   team_id})
+        (db/add-guess-for-user (:conn db/datomic-cloud)
+                               {:db/id      user-db-id
+                                :game-id    game_id
+                                :match-name match_name
+                                :game-type  :game.type/csgo
+                                :team-name  team_name
+                                :match-id   match_id
+                                :team-id    team_id})
         (ok {}))
 
       :else
@@ -156,11 +163,14 @@
         match-id (Integer/parseInt match_id)
         {:keys [user exp]} (middleware/req->token req)
         existing-guess (when user
-                         (db/find-guess (d/db db/conn) user game-id match-id))]
+                         (-> (d/pull (d/db (:conn db/datomic-cloud))
+                                     '[:team/name :team/id :game/id :match/name :guess/time :guess/score :game/type
+                                       :guess/processed? :guess/processed-time]
+                                     (db/find-guess (d/db (:conn db/datomic-cloud))
+                                                    user game-id match-id))
+                             (db/resolve-enum :game/type)))]
     (if (some? existing-guess)
-      (ok (select-keys existing-guess
-                     [:team/name :team/id :game/id :match/name :guess/time :guess/score :game/type
-                      :guess/processed? :guess/processed-time]))
+      (ok existing-guess)
       (not-found {:message (format "guess for user %s, game-id %s, match-id %s not found"
                                    user
                                    game-id
@@ -169,13 +179,16 @@
 (defn verify-email
   [{:keys [body-params] :as req}]
   (let [{:keys [email token]} body-params
-        {:keys [db/id user/verify-token user/status] :as user} (db/find-user-by-email email)]
+        {:keys [db/id user/verify-token user/status] :as user} (-> (d/pull (d/db (:conn db/datomic-cloud))
+                                                                           '[:db/id :user/status :user/verify-token]
+                                                                           (db/find-user-by-email email))
+                                                                   (db/resolve-enum :user/status))]
     (cond
       (and (= token verify-token)
            (= :user.status/pending status))
       ;;TODO dont return 200 if db/verify-email fails
       (do
-        (db/verify-email db/conn {:db/id id})
+        (db/verify-email (:conn db/datomic-cloud) {:db/id id})
         (ok {:message (format "Successfully verified %s" email)}))
 
       (= token verify-token)

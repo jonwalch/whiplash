@@ -6,9 +6,9 @@
 ;; TODO maybe cache this every 10 minutes or so if it takes too long
 (defn weekly-leaderboard
   [{:keys [body-params] :as req}]
-  (let [weekly-leaderboard (->> (db/find-this-week-leaderboard-calc (time/to-date (time/last-monday)))
-                                (group-by (fn [guess]
-                                            (-> guess :user/_guesses :user/name)))
+
+  (let [weekly-leaderboard (->> (db/find-this-week-leaderboard (time/to-date (time/last-monday)))
+                                (group-by :user/name)
                                 (map (fn [[k v]]
                                        (hash-map :user_name k
                                                  :score (->> v

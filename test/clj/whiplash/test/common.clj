@@ -32,9 +32,9 @@
     :each
     (fn [f]
       (reset! test-state {})
-      (mount/start #'whiplash.db.core/conn)
+      (mount/start #'whiplash.db.core/datomic-cloud)
       (f)
-      (mount/stop #'whiplash.db.core/conn))))
+      (mount/stop #'whiplash.db.core/datomic-cloud))))
 
 (defn twitch-view-fake
   [matches]
