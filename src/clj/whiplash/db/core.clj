@@ -5,7 +5,8 @@
     [whiplash.config :refer [env]]
     [whiplash.time :as time]
     [clojure.edn :as edn]
-    [clojure.java.io :as io]))
+    [clojure.java.io :as io]
+    [clojure.tools.logging :as log]))
 
 ;; DO NOT USE DATOMIC ON PREM SCALAR OR COLLECTION FIND SYNTAX, IT'LL WORK LOCALLY BUT NOT IN PRODUCTION
 ;; https://github.com/ComputeSoftware/datomic-client-memdb#caveats
@@ -13,16 +14,19 @@
 (def ^:private cloud-config
   {:server-type :cloud
    :region "us-west-2"
-   :system "whiplash-datomic"
+   :system "whiplash"
    #_#_:creds-profile "<your_aws_profile_if_not_using_the_default>"
-   :endpoint "http://entry.whiplash-datomic.us-west-2.datomic.net:8182/"
+   :endpoint "http://entry.whiplash.us-west-2.datomic.net:8182/"
    :proxy-port 8182})
 
 (defn create-client
   [datomic-config]
   (if (:prod env)
-    (d/client datomic-config)
     (do
+      (log/info "using prod client with config: %s" cloud-config)
+      (d/client datomic-config))
+    (do
+      (log/info "using dev memdb client")
       (require 'compute.datomic-client-memdb.core)
       (if-let [v (resolve 'compute.datomic-client-memdb.core/client)]
         (@v datomic-config)
@@ -179,9 +183,9 @@
                                             (-> guess :user/_guesses :db/id))))))))))
 
 (comment
-  (def create-client (d/client cloud-config))
-  (d/create-database create-client {:db-name "whiplash"})
-  (def conn (d/connect create-client {:db-name "whiplash"}))
+  (def test-client (d/client cloud-config))
+  (d/create-database test-client {:db-name "test"})
+  (def conn (d/connect test-client {:db-name "test"}))
   ;(install-schema conn)
 
 
@@ -191,4 +195,4 @@
                                :user/last-name "testerino"
                                :user/guesses   []}]})
 
-  (d/delete-database create-client {:db-name "whiplash"}))
+  (d/delete-database test-client {:db-name "foo"}))
