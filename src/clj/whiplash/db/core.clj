@@ -17,7 +17,8 @@
    :system "whiplash"
    #_#_:creds-profile "<your_aws_profile_if_not_using_the_default>"
    :endpoint "http://entry.whiplash.us-west-2.datomic.net:8182/"
-   :proxy-port 8182})
+   ;; :proxy-port is only for local tunnel my guy
+   #_#_:proxy-port 8182})
 
 (defn create-client
   [datomic-config]
