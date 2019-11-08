@@ -64,7 +64,7 @@
    :dev           [:project/dev :profiles/dev]
    :test          [:project/dev :project/test :profiles/test]
 
-   :project/dev   {:jvm-opts       ["-Dconf=dev-config.edn" "-Xmx2g"]
+   :project/dev   {:jvm-opts       ["-Dconf=dev-config.edn" "-Xmx1g"]
                    :dependencies   [
                                     ;;[pjstadig/humane-test-output "0.9.0"]
                                     [prone "2019-07-08"]
