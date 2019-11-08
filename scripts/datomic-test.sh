@@ -1,4 +1,4 @@
-export DATOMIC_SYSTEM=whiplash
+export DATOMIC_SYSTEM=prod-whiplash-datomic
 export DATOMIC_REGION=us-west-2
 export DATOMIC_SOCKS_PORT=8182
 

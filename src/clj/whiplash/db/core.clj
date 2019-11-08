@@ -14,9 +14,9 @@
 (def ^:private cloud-config
   {:server-type :cloud
    :region "us-west-2"
-   :system "whiplash"
+   :system "prod-whiplash-datomic"
    #_#_:creds-profile "<your_aws_profile_if_not_using_the_default>"
-   :endpoint "http://entry.whiplash.us-west-2.datomic.net:8182/"
+   :endpoint "http://vpce-083453c598589f6ba-s7g7d18a.vpce-svc-079c04a696f355e37.us-west-2.vpce.amazonaws.com:8182"
    ;; :proxy-port is only for local tunnel my guy
    #_#_:proxy-port 8182})
 
