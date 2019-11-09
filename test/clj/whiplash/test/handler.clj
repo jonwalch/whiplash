@@ -411,3 +411,13 @@
                     :name user_name}
              (select-keys (:body get-verified-user)
                           [:user/email :user/first-name :user/last-name :user/status :user/name]))))))
+
+(deftest get-stream
+  (testing "Test getting stream works, hits fixtures"
+    (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-running-fake
+                  whiplash.integrations.twitch/views-per-twitch-stream common/twitch-view-fake]
+      (let [resp ((common/test-app) (-> (mock/request :get "/stream")))
+            body (common/parse-json-body resp)]
+        (is (= 200 (:status resp)))
+        (is (every? #(contains? body %) [:live_url :status :id :games :opponents]))
+        (is (= (:live_url body) "https://player.twitch.tv/?channel=faceittv"))))))

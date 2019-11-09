@@ -4,9 +4,8 @@
     [mount.core :refer [defstate]]
     [whiplash.config :refer [env]]
     [whiplash.time :as time]
-    [clojure.edn :as edn]
-    [clojure.java.io :as io]
-    [clojure.tools.logging :as log]))
+    [clojure.tools.logging :as log]
+    [whiplash.db.schemas :as schemas]))
 
 ;; DO NOT USE DATOMIC ON PREM SCALAR OR COLLECTION FIND SYNTAX, IT'LL WORK LOCALLY BUT NOT IN PRODUCTION
 ;; https://github.com/ComputeSoftware/datomic-client-memdb#caveats
@@ -17,6 +16,8 @@
    :system "prod-whiplash-datomic"
    #_#_:creds-profile "<your_aws_profile_if_not_using_the_default>"
    :endpoint "http://vpce-083453c598589f6ba-s7g7d18a.vpce-svc-079c04a696f355e37.us-west-2.vpce.amazonaws.com:8182"
+   ;; for local tunnel
+   #_#_:endpoint "http://entry.prod-whiplash-datomic.us-west-2.datomic.net:8182"
    ;; :proxy-port is only for local tunnel my guy
    #_#_:proxy-port 8182})
 
@@ -33,21 +34,14 @@
         (@v datomic-config)
         (throw (ex-info "compute.datomic-client-memdb.core is not on the classpath." {}))))))
 
-(defn- migration-files->txes
-  []
-  (->> (io/file "./resources/migrations")
-       (file-seq)
-       (filter #(.isFile %))
-       (mapv (comp edn/read-string slurp))
-       flatten
-       vec))
-
 (defn create-datomic-cloud
   []
   (let [client (create-client cloud-config)
         created? (d/create-database client {:db-name "whiplash"})
         conn (d/connect client {:db-name "whiplash"})
-        schema-tx-result (d/transact conn {:tx-data (migration-files->txes)})]
+        schema-tx-result (d/transact conn {:tx-data (schemas/migrations->schema-tx)})]
+    (log/debug "Migration to transact " (schemas/migrations->schema-tx))
+    (log/debug "Schema transaction result " schema-tx-result)
     {:client client
      :conn conn}))
 
@@ -167,14 +161,14 @@
   [lower-bound]
   (let [db (d/db (:conn datomic-cloud))]
     (->> (d/q
-        {:query '[:find ?guess
-                  :in $ ?lower-bound
-                  :where [?guess :guess/time ?time]
-                  [?guess :guess/score ?score]
-                  [(>= ?time ?lower-bound)]
-                  [?guess :guess/processed? true]
-                  [(> ?score 0)]]
-         :args  [db lower-bound]})
+           {:query '[:find ?guess
+                     :in $ ?lower-bound
+                     :where [?guess :guess/time ?time]
+                     [?guess :guess/score ?score]
+                     [(>= ?time ?lower-bound)]
+                     [?guess :guess/processed? true]
+                     [(> ?score 0)]]
+            :args  [db lower-bound]})
       (map #(d/pull db '[:guess/score :user/_guesses] (first %)))
       (mapv (fn [guess]
              (-> guess
@@ -187,10 +181,8 @@
   (def test-client (d/client cloud-config))
   (d/create-database test-client {:db-name "test"})
   (def conn (d/connect test-client {:db-name "test"}))
-  ;(install-schema conn)
 
-
-  (d/transact conn {:tx-data (migration-files->txes)})
+  ;(d/transact conn {:tx-data (migration-files->txes)})
 
   (d/transact conn {:tx-data [{:user/first-name  "testy"
                                :user/last-name "testerino"

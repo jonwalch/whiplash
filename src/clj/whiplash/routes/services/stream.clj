@@ -16,12 +16,12 @@
 
 (defn get-stream
   [{:keys [params] :as req}]
-  ;; TODO check atom if too old get again
   (let [{:keys [streams/last-fetch streams/ordered-candidates]} (deref cached-streams)
-        return-fn (fn [stream]
+        return-fn (fn [{:keys [stream cached?]}]
                     (if (nil? stream)
                       (do
-                        (log/info "Couldn't find a stream candidate")
+                        (when-not cached?
+                          (log/info "Couldn't find a stream candidate"))
                         (no-content))
                       (ok stream)))]
     (if (or (nil? last-fetch)
@@ -33,7 +33,9 @@
                               pandascore/sort-and-transform-stream-candidates)]
           (reset! cached-streams {:streams/last-fetch (time/now)
                                   :streams/ordered-candidates    all-streams})
-          (return-fn (first all-streams))))
+          (return-fn {:stream (first all-streams)
+                      :cached? false})))
       (do
         (log/info "Serving cached stream")
-        (return-fn (first ordered-candidates))))))
+        (return-fn {:stream (first ordered-candidates)
+                    :cached? true})))))

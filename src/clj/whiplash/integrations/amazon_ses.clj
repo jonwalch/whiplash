@@ -12,7 +12,7 @@
 
 (defn- internal-send-verification-email
   [{:keys [user/email body subject]}]
-  ;; On success save this email information to the user
+  ;; TODO: On success save this email information to the user
   (if (:prod env)
     (future
       (try (postal/send-message aws-ses-config

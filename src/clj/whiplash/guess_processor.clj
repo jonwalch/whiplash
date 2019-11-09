@@ -19,13 +19,7 @@
 (defn process-guesses
   []
   (log/info "Processing guesses")
-  (let [unprocessed-guesses (db/find-all-unprocessed-guesses) #_(mapv
-                              ;;each guess is a vector with 1 element
-                              (fn [guess]
-                                (d/pull (d/db (:conn db/datomic-cloud))
-                                       '[*]
-                                        (first guess)))
-                              (db/find-all-unprocessed-guesses))
+  (let [unprocessed-guesses (db/find-all-unprocessed-guesses)
         match->game-lookup (when (not-empty unprocessed-guesses)
                              (log/info (format "Found guesses to process %s" unprocessed-guesses))
                              (pandascore-match->game-lookup :csgo))
