@@ -9,7 +9,7 @@
   "scripts": {
     "start": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx webpack --mode development"
+    "build": "npx webpack -w"
   },
   "repository": {
     "type": "git",
