@@ -33,11 +33,11 @@ export function Home(props: any) {
     getStream();
   }, 10000);
 
-  // useEffect(() => {
-  //   if (twitchUsername) {
-  //     twitchEmbed();
-  //   }
-  // }, [twitchUsername]);
+  useEffect(() => {
+    if (twitchUsername) {
+      twitchEmbed();
+    }
+  }, [twitchUsername]);
 
   const getStream = async () => {
     const response = await fetch( baseUrl + "stream", {
@@ -66,13 +66,15 @@ export function Home(props: any) {
     }
   };
 
-  // const twitchEmbed = () => {
-  //   new Twitch.Embed("twitch-embed", {
-  //     width: 1024,
-  //     height: 576,
-  //     channel: twitchUsername
-  //   });
-  // };
+  const twitchEmbed = () => {
+    new Twitch.Embed("twitch-embed", {
+      width: 1024,
+      height: 576,
+      channel: twitchUsername,
+      autoplay: true,
+      layout: "video-with-chat"
+    });
+  };
 
   const renderContent = () => {
     if (streamURL == "") {
@@ -88,16 +90,7 @@ export function Home(props: any) {
       return (
         <div>
           <h3>{matchName}</h3>
-          {/* <div id="twitch-embed"></div> */}
-          <iframe
-            src={streamURL + "&muted=false"} //"https://player.twitch.tv/?channel=ramee&muted=false"
-            height="576"
-            width="1024"
-            frameBorder="0"
-            scrolling="no"
-            allow="autoplay"
-            allowFullScreen={true}
-          ></iframe>
+          <div id="twitch-embed"></div>
           <Vote
             opponents={opponents}
             team={team}
