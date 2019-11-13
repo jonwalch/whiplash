@@ -109,22 +109,23 @@
                               (user/create-user req))}}]
 
     ["/guess"
-     {:get {:summary    "get a guess for a user/game-id"
-            :parameters {:query {:game_id int?
-                                 :match_id int?}}
-            :middleware [middleware/wrap-restricted]
-            :handler    (fn [req]
-                          (user/get-guess req))}
+     {:get  {:summary    "get a guess for a user/game-id"
+             :parameters {:query {:game_id  int?
+                                  :match_id int?}}
+             :middleware [middleware/wrap-restricted]
+             :handler    (fn [req]
+                           (user/get-bet req))}
 
       :post {:summary    "create a guess for a user"
              :parameters {:body {:match_name string?
-                                 :game_id int?
-                                 :match_id int?
-                                 :team_name string?
-                                 :team_id int?}}
+                                 :game_id    int?
+                                 :match_id   int?
+                                 :team_name  string?
+                                 :team_id    int?
+                                 :bet_amount int?}}
              :middleware [middleware/wrap-restricted]
              :handler    (fn [req]
-                           (user/create-guess req))}}]]
+                           (user/create-bet req))}}]]
 
    #_["/graphiql" {:get (fn [request]
                         (layout/render request "graphiql.html"))}]

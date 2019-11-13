@@ -94,20 +94,23 @@
                                :user/status       status
                                :user/verify-token verify-token
                                :user/email        email
-                               :user/password     password}]}))
+                               :user/password     password
+                               :user/cash         (bigint 500)}]}))
 
 (defn add-guess-for-user
   "purposely leaving out :guess/score, will be added by another piece of code later"
-  [conn {:keys [db/id game-type match-name game-id team-name team-id match-id]}]
-  (d/transact conn {:tx-data [{:db/id        id
-                               :user/guesses [{:guess/time       (time/to-date)
-                                               :guess/processed? false
-                                               :game/type        game-type
-                                               :match/name       match-name
-                                               :game/id          game-id
-                                               :team/name        team-name
-                                               :team/id          team-id
-                                               :match/id         match-id}]}]}))
+  [conn {:keys [db/id game-type match-name game-id team-name team-id match-id bet-amount cash]}]
+  (d/transact conn {:tx-data [[:db/cas id :user/cash cash (bigint (- cash bet-amount))]
+                              {:db/id     id
+                               :user/bets [{:bet/time       (time/to-date)
+                                            :bet/processed? false
+                                            :game/type      game-type
+                                            :game/id        game-id
+                                            :match/name     match-name
+                                            :match/id       match-id
+                                            :team/name      team-name
+                                            :team/id        team-id
+                                            :bet/amount     (bigint bet-amount)}]}]}))
 
 (defn verify-email
   [conn {:keys [db/id]}]
@@ -134,48 +137,59 @@
     (when-let [user (ffirst (find-one-by db :user/name user-name))]
       user)))
 
-(defn find-guess
+(defn find-bet
   [db user-name game-id match-id]
-  (ffirst (d/q {:query '[:find ?guess
+  (ffirst (d/q {:query '[:find ?bet
                          :in $ ?user-name ?game-id ?match-id
                          :where [?user :user/name ?user-name]
-                         [?user :user/guesses ?guess]
-                         [?guess :game/id ?game-id]
-                         [?guess :match/id ?match-id]]
+                         [?user :user/bets ?bet]
+                         [?bet :game/id ?game-id]
+                         [?bet :match/id ?match-id]]
                 :args [db user-name game-id match-id]})))
 
-(defn find-all-unprocessed-guesses
-  []
-  (let [db (d/db (:conn datomic-cloud))]
-    (->> (d/q {:query '[:find ?guess
-                        :where [?guess :guess/processed? false]]
-               :args  [db]})
-         (mapv
-           ;;each guess is a vector with 1 element
-           (fn [guess]
-             (d/pull db
-                     '[*]
-                     (first guess)))))))
+;;; TODO resolve :game/type
+;(defn find-all-unprocessed-bets-for-game
+;  [db game-id match-id]
+;  (->> (d/q
+;         {:query '[:find ?bet
+;                   :in $ ?game-id ?match-id
+;                   :where [?bet :bet/processed? false]
+;                   [?bet :match/id ?match-id]
+;                   [?bet :game/id ?game-id]]
+;          :args  [db game-id match-id]})
+;       (map first)
+;       (mapv #(d/pull db '[*] %))))
+;
+(defn find-all-unprocessed-bets
+  [db]
+  (->> (d/q {:query '[:find ?bet
+                      :where [?bet :bet/processed? false]]
+             :args  [db]})
+       (mapv
+         ;;each guess is a vector with 1 element
+         (fn [bet]
+           (d/pull db
+                   '[:game/id :bet/processed? :bet/amount :match/id
+                     :db/id :game/type :user/_bets :team/id]
+                   (first bet))))))
 
 (defn find-this-week-leaderboard
   [lower-bound]
   (let [db (d/db (:conn datomic-cloud))]
     (->> (d/q
-           {:query '[:find ?guess
+           {:query '[:find ?bet
                      :in $ ?lower-bound
-                     :where [?guess :guess/time ?time]
-                     [?guess :guess/score ?score]
+                     :where [?bet :bet/time ?time]
+                     [?bet :bet/payout ?payout]
                      [(>= ?time ?lower-bound)]
-                     [?guess :guess/processed? true]
-                     [(> ?score 0)]]
+                     [?bet :bet/processed? true]
+                     [(> ?payout 0)]]
             :args  [db lower-bound]})
-      (map #(d/pull db '[:guess/score :user/_guesses] (first %)))
-      (mapv (fn [guess]
-             (-> guess
-                 (assoc :user/name
-                        (:user/name (d/pull db
-                                            '[:user/name]
-                                            (-> guess :user/_guesses :db/id))))))))))
+      (map #(d/pull db '[:bet/score :user/_bets] (first %)))
+      (map (fn [bet]
+              (d/pull db
+                      '[:user/name :user/bets]
+                      (-> bet :user/_bets :db/id)))))))
 
 (comment
   (def test-client (d/client cloud-config))
@@ -186,6 +200,6 @@
 
   (d/transact conn {:tx-data [{:user/first-name  "testy"
                                :user/last-name "testerino"
-                               :user/guesses   []}]})
+                               :user/bets   []}]})
 
   (d/delete-database test-client {:db-name "foo"}))

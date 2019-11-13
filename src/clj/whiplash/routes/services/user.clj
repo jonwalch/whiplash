@@ -4,7 +4,8 @@
             [buddy.hashers :as hashers]
             [whiplash.middleware :as middleware]
             [datomic.client.api :as d]
-            [whiplash.integrations.amazon-ses :as ses])
+            [whiplash.integrations.amazon-ses :as ses]
+            [clojure.tools.logging :as log])
   (:import (java.security MessageDigest)))
 
 ;; https://www.regular-expressions.info/email.html
@@ -68,13 +69,14 @@
       (conflict {:message "User name taken"})
 
       :else
-      (let [tx-result (db/add-user (:conn db/datomic-cloud) {:first-name   first_name
-                                            :last-name    last_name
-                                            :status       :user.status/pending
-                                            :verify-token email-token
-                                            :user-name    user_name
-                                            :email        email
-                                            :password     encrypted-password})]
+      (let [tx-result (db/add-user (:conn db/datomic-cloud)
+                                   {:first-name   first_name
+                                    :last-name    last_name
+                                    :status       :user.status/pending
+                                    :verify-token email-token
+                                    :user-name    user_name
+                                    :email        email
+                                    :password     encrypted-password})]
         (ses/send-verification-email {:user/first-name first_name
                                       :user/verify-token email-token
                                       :user/email email})
@@ -86,7 +88,7 @@
   (let [{:keys [user exp]} (middleware/req->token req)
         user-entity (-> (d/pull (d/db (:conn db/datomic-cloud))
                                 '[:user/first-name :user/last-name :user/email :user/status
-                                  :user/name :user/verify-token]
+                                  :user/name :user/verify-token :user/cash]
                                 (db/find-user-by-user-name user))
                         (db/resolve-enum :user/status))]
     (if (some? user-entity)
@@ -100,8 +102,8 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [user_name password]} body-params
         user-entity (d/pull (d/db (:conn db/datomic-cloud))
-                     '[:user/password :user/name]
-                     (db/find-user-by-user-name user_name))
+                            '[:user/password :user/name]
+                            (db/find-user-by-user-name user_name))
         ;; TODO maybe return not-found if can't find user, right now just return 401
         valid-password (hashers/check password (:user/password user-entity))
         {:keys [exp-str token]} (when valid-password
@@ -127,35 +129,50 @@
              :expire    "Thu, 01 Jan 1970 00:00:00 GMT"}})
 
 ;; TODO validation
-(defn create-guess
+(defn create-bet
   [{:keys [body-params] :as req}]
-  (let [{:keys [match_name game_id team_name team_id match_id]} body-params
+  (let [{:keys [match_name game_id team_name team_id match_id bet_amount]} body-params
         {:keys [user exp]} (middleware/req->token req)
-        user-db-id (db/find-user-by-user-name user)
-        existing-guess (when user-db-id
+        {:keys [db/id user/cash]} (d/pull (d/db (:conn db/datomic-cloud))
+                                          '[:user/cash :db/id]
+                                          (db/find-user-by-user-name user))
+        existing-bet (when id
                          (d/pull (d/db (:conn db/datomic-cloud))
-                                 '[:guess/time]
-                                 (db/find-guess (d/db (:conn db/datomic-cloud)) user game_id match_id)))]
+                                 '[:bet/time]
+                                 (db/find-bet (d/db (:conn db/datomic-cloud))
+                                              user
+                                              game_id
+                                              match_id)))]
     (cond
-      (some? existing-guess)
-      (conflict {:message "Already made a guess."})
+      (>= 0 bet_amount)
+      (conflict {:message "Cannot bet less than 1."})
 
-      (some? user-db-id)
-      (do
-        (db/add-guess-for-user (:conn db/datomic-cloud)
-                               {:db/id      user-db-id
-                                :game-id    game_id
-                                :match-name match_name
-                                :game-type  :game.type/csgo
-                                :team-name  team_name
-                                :match-id   match_id
-                                :team-id    team_id})
-        (ok {}))
+      (> bet_amount cash)
+      (conflict {:message "Bet cannot exceed total user cash."})
+
+      (some? existing-bet)
+      (conflict {:message "Already made a bet."})
+
+      (some? id)
+      (if (try
+            (db/add-guess-for-user (:conn db/datomic-cloud)
+                                   {:db/id      id
+                                    :game-id    game_id
+                                    :match-name match_name
+                                    :game-type  :game.type/csgo
+                                    :team-name  team_name
+                                    :match-id   match_id
+                                    :team-id    team_id
+                                    :bet-amount bet_amount
+                                    :cash       cash})
+            (catch Throwable t (log/info "cas failed for adding guess: " t)))
+        (ok {})
+        (conflict {:message "CAS failed"}))
 
       :else
-      (not-found {:message (format "User not found.")}))))
+      (not-found {:message "User not found."}))))
 
-(defn get-guess
+(defn get-bet
   [{:keys [params] :as req}]
   (let [{:keys [game_id match_id]} params
         ;; TODO figure out why this isnt getting casted by middleware
@@ -164,10 +181,9 @@
         {:keys [user exp]} (middleware/req->token req)
         existing-guess (when user
                          (-> (d/pull (d/db (:conn db/datomic-cloud))
-                                     '[:team/name :team/id :game/id :match/name :guess/time :guess/score :game/type
-                                       :guess/processed? :guess/processed-time]
-                                     (db/find-guess (d/db (:conn db/datomic-cloud))
-                                                    user game-id match-id))
+                                     '[*]
+                                     (db/find-bet (d/db (:conn db/datomic-cloud))
+                                                  user game-id match-id))
                              (db/resolve-enum :game/type)))]
     (if (some? existing-guess)
       (ok existing-guess)

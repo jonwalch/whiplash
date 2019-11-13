@@ -38,6 +38,11 @@
         :db/valueType   :db.type/string
         :db/cardinality :db.cardinality/one
         }
+       {:db/doc "User's cash"
+        :db/ident :user/cash
+        :db/valueType :db.type/bigint
+        :db/cardinality :db.cardinality/one
+        }
        ;; example of enumeration in Datomic
        {:db/ident :user.status/pending}
        {:db/ident :user.status/active}
@@ -58,6 +63,7 @@
         :db/valueType   :db.type/ref
         :db/cardinality :db.cardinality/one
         }
+       {:db/ident :game.type/csgo}
        {:db/doc         "Match id (from pandascore)"
         :db/ident       :match/id
         :db/valueType   :db.type/long
@@ -73,38 +79,43 @@
         :db/valueType   :db.type/string
         :db/cardinality :db.cardinality/one
         }
-       ;{:db/doc         "Teams that played this game"
-       ; :db/ident       :game/teams
-       ; :db/valueType   :db.type/ref
-       ; :db/cardinality :db.cardinality/many
-       ; }
-       {:db/ident :game.type/csgo}
 
-       {:db/doc         "Score of guess"
-        :db/ident       :guess/score
-        :db/valueType   :db.type/long
+       {:db/doc         "Bet amount"
+        :db/ident       :bet/amount
+        :db/valueType   :db.type/bigint
         :db/cardinality :db.cardinality/one
         }
-       {:db/doc         "Time of guess"
-        :db/ident       :guess/time
+       {:db/doc         "Bet payout"
+        :db/ident       :bet/payout
+        :db/valueType   :db.type/bigint
+        :db/cardinality :db.cardinality/one
+        }
+       {:db/doc         "Time of bet"
+        :db/ident       :bet/time
         :db/valueType   :db.type/instant
         :db/cardinality :db.cardinality/one
         }
-       {:db/doc         "Guess processed yet"
-        :db/ident       :guess/processed?
+       {:db/doc         "Bet processed yet"
+        :db/ident       :bet/processed?
         :db/valueType   :db.type/boolean
         :db/cardinality :db.cardinality/one
         }
-       {:db/doc         "Guess processed time"
-        :db/ident       :guess/processed-time
+       {:db/doc         "Bet processed time"
+        :db/ident       :bet/processed-time
         :db/valueType   :db.type/instant
         :db/cardinality :db.cardinality/one}
 
-       {:db/doc         "User guesses"
-        :db/ident       :user/guesses
+       {:db/doc         "User bets"
+        :db/ident       :user/bets
         :db/valueType   :db.type/ref
         :db/cardinality :db.cardinality/many
         :db/isComponent true
+        }
+
+       {:db/doc         "Game bet pool for a team"
+        :db/ident       :game/team-pool
+        :db/valueType   :db.type/bigint
+        :db/cardinality :db.cardinality/one
         }
        ]})
 

@@ -4,7 +4,9 @@
     [ring.mock.request :as mock]
     [clojure.string :as string]
     [whiplash.test.common :as common]
-    [whiplash.guess-processor :as guess-processor]))
+    [whiplash.guess-processor :as guess-processor]
+    [whiplash.db.core :as db]
+    [datomic.client.api :as d]))
 
 (common/app-fixtures)
 (common/db-fixtures)
@@ -67,6 +69,13 @@
    :password "foobar2000"
    :user_name "queefburglar"})
 
+(def dummy-user-2
+  {:first_name "yas"
+   :last_name "queen"
+   :email "butt@crack.com"
+   :password "foobar2000"
+   :user_name "donniedarko"})
+
 (deftest test-user-400s
   (testing "cant get user, not logged in"
     (let [response ((common/test-app) (-> (mock/request :get "/user")))]
@@ -113,7 +122,8 @@
        (is (= 200 (:status resp)))
        (is (empty? parsed-body))
 
-       (is (= 1 (count sent-emails)))
+       (is (= 1 (count (filter #(= email (:user/email %))
+                               sent-emails))))
        (is (= #:user{:first-name first_name
                      :email email}
               (select-keys sent-email [:user/first-name :user/email])))
@@ -182,9 +192,10 @@
                     :first-name first_name
                     :last-name  last_name
                     :status     "user.status/pending"
-                    :name       user_name}
+                    :name       user_name
+                    :cash       500}
              (select-keys (:body get-success-resp)
-                          [:user/email :user/first-name :user/last-name :user/status :user/name])))
+                          [:user/email :user/first-name :user/last-name :user/status :user/name :user/cash])))
 
       (is (= 401 (:status login-fail-resp)))
       (is (= 409 (:status create-again-fail))))))
@@ -195,7 +206,8 @@
    :game_id   9388
    :match_id 549829
    :team_name "Liquid"
-   :team_id   3213})
+   :team_id   3213
+   :bet_amount 75})
 
 (def dummy-guess-2
   {;;:game-type "csgo"
@@ -203,7 +215,8 @@
    :game_id   9389
    :match_id 549829
    :team_name "Liquid"
-   :team_id   3213})
+   :team_id   3213
+   :bet_amount 25})
 
 (defn- create-guess
   [auth-token guess]
@@ -228,7 +241,8 @@
 
 (deftest add-guesses
   (testing "We can add and get guesses for a user"
-    (let [keys-to-select [:game/id :team/name :team/id :game/type :match/name :guess/processed? :guess/score]
+    (let [keys-to-select [:game/id :team/name :team/id :game/type :match/name
+                          :bet/processed? :bet/amount :bet/payout :match/id]
           {:keys [auth-token] login-resp :response} (create-user-and-login)
           {:keys [game_id match_id]} dummy-guess
           create-guess-resp (create-guess auth-token dummy-guess)
@@ -240,34 +254,40 @@
           fail-create-same-guess-resp ((common/test-app) (-> (mock/request :post "/user/guess")
                                                              (mock/json-body dummy-guess)
                                                              (mock/cookie :value auth-token)))]
-      (is (= {:game/id   (:game_id dummy-guess)
+      (is (= {:bet/amount 75
+              :game/id   (:game_id dummy-guess)
               :team/name (:team_name dummy-guess)
               :team/id   (:team_id dummy-guess)
               :game/type "game.type/csgo"
+              :match/id   549829
               :match/name (:match_name dummy-guess)
-              :guess/processed? false}
+              :bet/processed? false}
              (select-keys body keys-to-select)))
 
-      (is (= {:game/id   (:game_id dummy-guess-2)
+      (is (= {:bet/amount 25
+              :game/id   (:game_id dummy-guess-2)
               :team/name (:team_name dummy-guess-2)
               :team/id   (:team_id dummy-guess-2)
               :game/type "game.type/csgo"
+              :match/id  549829
               :match/name (:match_name dummy-guess-2)
-              :guess/processed? false}
+              :bet/processed? false}
              (select-keys (:body get-guess-resp2) keys-to-select)))
 
-      (is (not= (:guess/time body)
-                (:guess/time get-guess-resp2)))
+      (is (= 400 (-> (get-user auth-token) :body :user/cash)))
+
+      (is (not= (:bet/time body)
+                (:bet/time get-guess-resp2)))
 
       (is (= nil
-             (:guess/processed-time body)
-             (:guess/processed-time get-guess-resp2)))
+             (:bet/processed-time body)
+             (:bet/processed-time get-guess-resp2)))
 
       (is (= 409 (:status fail-create-same-guess-resp)))
 
       (testing "Guess success processing works"
         (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
-          (let [_ (guess-processor/process-guesses)
+          (let [_ (guess-processor/process-bets)
                 {:keys [body] :as get-guess-resp} (get-guess auth-token game_id match_id)
                 get-guess-resp2 (get-guess auth-token
                                            (:game_id dummy-guess-2)
@@ -278,25 +298,81 @@
                     :team/name        (:team_name dummy-guess)
                     :team/id          (:team_id dummy-guess)
                     :game/type        "game.type/csgo"
+                    :match/id       549829
                     :match/name       (:match_name dummy-guess)
-                    :guess/processed? true
-                    :guess/score      0}
+                    :bet/processed? true
+                    :bet/amount      75
+                    :bet/payout      0}
                    (select-keys body keys-to-select)))
 
             (is (= {:game/id          (:game_id dummy-guess-2)
                     :team/name        (:team_name dummy-guess-2)
                     :team/id          (:team_id dummy-guess-2)
                     :game/type        "game.type/csgo"
+                    :match/id       549829
                     :match/name       (:match_name dummy-guess-2)
-                    :guess/processed? true
-                    :guess/score      100}
+                    :bet/processed? true
+                    :bet/amount      25
+                    :bet/payout      25}
                    (select-keys (:body get-guess-resp2) keys-to-select)))
 
-            (is (not= (:guess/processed-time body)
-                      (:guess/processed-time get-guess-resp2)))
+            (is (= 425 (-> (get-user auth-token) :body :user/cash)))
+
+            (is (not= (:bet/processed-time body)
+                      (:bet/processed-time get-guess-resp2)))
 
             (is (= 200 (:status leaderboard-resp)))
-            (is (= [{:user_name "queefburglar" :score 100}]
+            (is (= [{:user_name "queefburglar" :payout 25}]
+                   (common/parse-json-body leaderboard-resp)))))))))
+
+(deftest payout
+  (testing "Testing more complex payout"
+    (let [keys-to-select [:game/id :team/name :team/id :game/type :match/name
+                          :bet/processed? :bet/amount :bet/payout :match/id]
+          {:keys [auth-token] login-resp :response} (create-user-and-login)
+          {auth-token2 :auth-token login-resp2 :response} (create-user-and-login dummy-user-2)
+          create-guess-resp (create-guess auth-token (assoc dummy-guess :bet_amount 475))
+          create-guess-resp2 (create-guess auth-token2 (assoc dummy-guess :bet_amount 100
+                                                                          :team_id 125859))]
+
+      (is (= 25 (-> (get-user auth-token) :body :user/cash)))
+      (is (= 400 (-> (get-user auth-token2) :body :user/cash)))
+
+      (testing "Proper payout"
+        (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
+          (let [{:keys [game_id match_id]} dummy-guess
+                _ (guess-processor/process-bets)
+                {:keys [body] :as get-guess-resp} (get-guess auth-token game_id match_id)
+                get-guess-resp2 (get-guess auth-token2 game_id match_id)
+                leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/weekly")))]
+
+            (is (= {:game/id          game_id
+                    :team/name        (:team_name dummy-guess)
+                    :team/id          (:team_id dummy-guess)
+                    :game/type        "game.type/csgo"
+                    :match/id         match_id
+                    :match/name       (:match_name dummy-guess)
+                    :bet/processed? true
+                    :bet/amount      475
+                    :bet/payout      0}
+                   (select-keys body keys-to-select)))
+
+            (is (= {:game/id          game_id
+                    :team/name        (:team_name dummy-guess-2)
+                    :team/id          125859
+                    :game/type        "game.type/csgo"
+                    :match/id         match_id
+                    :match/name       (:match_name dummy-guess)
+                    :bet/processed? true
+                    :bet/amount      100
+                    :bet/payout      575}
+                   (select-keys (:body get-guess-resp2) keys-to-select)))
+
+            ;; if user falls below 100, bail them out so they have 100 again
+            (is (= 100 (-> (get-user auth-token) :body :user/cash)))
+            (is (= 975 (-> (get-user auth-token2) :body :user/cash)))
+
+            (is (= [{:user_name "donniedarko" :payout 575}]
                    (common/parse-json-body leaderboard-resp)))))))))
 
 (deftest fail-add-guess

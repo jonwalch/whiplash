@@ -149,7 +149,7 @@
                                 (map :games)
                                 flatten
                                 (group-by :match_id))
-        update-txs (->> (db/find-all-unprocessed-guesses)
+        update-txs (->> (db/find-all-unprocessed-bets)
                         (keep
                           (fn [guess]
                             (let [games-in-match (get match->game-lookup (:match/id guess))
@@ -167,7 +167,6 @@
                                 (log/info (format "Match id %s not found in finished game lookup." (:match/id guess)))))))
                         flatten
                         vec)]
-    (println update-txs)
     (when (not-empty update-txs)
       (d/transact (:conn db/datomic-cloud) {:tx-data update-txs})))
 
