@@ -76,7 +76,7 @@ export function Login(props: any) {
     console.log(resp);
     console.log(response.status);
     if (response.status == 200) {
-      setLoggedInState({userName: "", cash: null});
+      setLoggedInState({userName: "", cash: 0});
     } else {
       alert("Failed to hit server to logout");
     }

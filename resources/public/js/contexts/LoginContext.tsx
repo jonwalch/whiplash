@@ -2,9 +2,9 @@ import React, { createContext, useState } from "react";
 
 export interface loggedIn {
   userName: string | null;
-  cash: number | null;
+  cash: number;
 }
-export const defaultLoggedIn: loggedIn = { userName: null, cash: null};
+export const defaultLoggedIn: loggedIn = { userName: null, cash: 0};
 
 interface loggedInState {
   loggedInState: loggedIn;

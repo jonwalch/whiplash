@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, ChangeEvent } from "react";
 import { Opponent, defaultTeam } from "./Home";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
 import { getCSRFToken, useInterval } from "../common";
+import NumericInput from "react-numeric-input";
 
 export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [passedGuessingPeriod, setPastGuessingPeriod] = useState<boolean | null>(null);
   const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
+  const [betAmount, setBetAmount] = useState<number>(0);
 
   useEffect(() => {
     if (props.currentGame.id && props.matchID && loggedInState.userName) {
@@ -15,11 +17,12 @@ export function Vote(props: any) {
     }
   }, [props.currentGame.id, props.matchID, loggedInState.userName]);
 
-  const threeMinutes = 1000 * 60 * 3;
+  const fiveMinutes = 1000 * 60 * 5;
   useInterval(() => {
     //Allows if begin_at is null
     const beginAt: number = Date.parse(props.currentGame["begin_at"]);
-    if (beginAt + threeMinutes <= Date.now()) {
+    // if (beginAt + fiveMinutes <= Date.now()) {
+    if (false) {
       setPastGuessingPeriod(true);
     } else {
       setPastGuessingPeriod(false);
@@ -42,7 +45,7 @@ export function Vote(props: any) {
     });
     if (response.status == 200) {
       const resp = await response.json();
-      // console.log(resp);
+      console.log(resp);
       setGuessedTeamName(resp["team/name"]);
     } else if (response.status == 404) {
       setGuessedTeamName("");
@@ -63,7 +66,8 @@ export function Vote(props: any) {
         match_id: props.matchID,
         game_id: props.currentGame.id,
         team_name: props.team.teamName,
-        team_id: props.team.teamID
+        team_id: props.team.teamID,
+        bet_amount: betAmount,
       })
     });
     console.log(response.status);
@@ -83,7 +87,7 @@ export function Vote(props: any) {
 
   const toggleValid = () => {
     // means the user hasn't select a team yet
-    return props.team == defaultTeam;
+    return props.team == defaultTeam || betAmount == 0 || betAmount > loggedInState.cash;
   };
 
   const renderContent = () => {
@@ -113,12 +117,20 @@ export function Vote(props: any) {
               })}
             </div>
             <h1> You selected {props.team.teamName}</h1>
+            <NumericInput
+              min={1}
+              max={loggedInState.cash}
+              value={betAmount}
+              onChange={(valueAsNumber) => {
+                setBetAmount(Number(valueAsNumber));
+              }}
+            />
             <button
               type="button"
               disabled={toggleValid()}
               onClick={() => makeGuess()}
             >
-              Make Guess
+              Make Bet
             </button>
           </>
         );

@@ -45,8 +45,8 @@ export function Home(props: any) {
   useEffect(() => {
     if (loggedInState.userName) {
       getUser();
-    }
-  }, [loggedInState.userName]);
+    } //teamName changes when a user makes a guess
+  }, [loggedInState.userName, team.teamName]);
 
   const getStream = async () => {
     const response = await fetch( baseUrl + "stream", {
