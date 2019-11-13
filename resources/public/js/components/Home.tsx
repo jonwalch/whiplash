@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Login } from "./Login";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
 import { useInterval } from "../common";
+import { LoginContext } from "../contexts/LoginContext";
 
 declare const Twitch: any;
 
@@ -17,6 +18,7 @@ export const defaultTeam : Opponent = { teamName: "", teamID: -1 }
 const failedToFetch : string = "failed to fetch stream"
 
 export function Home(props: any) {
+  const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [team, setTeam] = useState<Opponent>(defaultTeam);
   const [streamURL, setURL] = useState("");
   const [twitchUsername, setTwitchUsername] = useState("");
@@ -24,6 +26,7 @@ export function Home(props: any) {
   const [matchID, setMatchID] = useState(0);
   const [currentGame, setCurrentGame] = useState({});
   const [opponents, setOpponents] = useState<Opponent[]>([]);
+  const [userStatus, setUserStatus] = useState<string | null>(null);
 
   useEffect(() => {
     getStream();
@@ -38,6 +41,12 @@ export function Home(props: any) {
       twitchEmbed();
     }
   }, [twitchUsername]);
+
+  useEffect(() => {
+    if (loggedInState.userName) {
+      getUser();
+    }
+  }, [loggedInState.userName]);
 
   const getStream = async () => {
     const response = await fetch( baseUrl + "stream", {
@@ -63,6 +72,23 @@ export function Home(props: any) {
     } else {
       //right now would be a 204
       setURL(failedToFetch)
+    }
+  };
+
+  const getUser = async () => {
+    const response = await fetch(baseUrl + "user", {
+      headers: { "Content-Type": "application/json" },
+      method: "GET",
+      mode: "same-origin",
+      redirect: "error"
+    });
+    if (response.status == 200) {
+      const resp = await response.json();
+      console.log(resp);
+      setUserStatus(resp["user/status"]);
+      setLoggedInState({userName: loggedInState.userName, cash: resp["user/cash"]})
+    } else {
+      setUserStatus("");
     }
   };
 
@@ -98,6 +124,7 @@ export function Home(props: any) {
             matchID={matchID}
             matchName={matchName}
             currentGame={currentGame}
+            userStatus={userStatus}
           />
         </div>
       );

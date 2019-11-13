@@ -8,19 +8,12 @@ export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [passedGuessingPeriod, setPastGuessingPeriod] = useState<boolean | null>(null);
   const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
-  const [userStatus, setUserStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (props.currentGame.id && props.matchID && loggedInState.userName) {
       getGuess();
     }
   }, [props.currentGame.id, props.matchID, loggedInState.userName]);
-
-  useEffect(() => {
-    if (loggedInState.userName) {
-      getUser();
-    }
-  }, [loggedInState.userName]);
 
   const threeMinutes = 1000 * 60 * 3;
   useInterval(() => {
@@ -32,22 +25,6 @@ export function Vote(props: any) {
       setPastGuessingPeriod(false);
     }
   }, 1000);
-
-  const getUser = async () => {
-    const response = await fetch(baseUrl + "user", {
-      headers: { "Content-Type": "application/json" },
-      method: "GET",
-      mode: "same-origin",
-      redirect: "error"
-    });
-    if (response.status == 200) {
-      const resp = await response.json();
-      // console.log(resp)
-      setUserStatus(resp["user/status"]);
-    } else {
-      setUserStatus("");
-    }
-  };
 
   const getGuess = async () => {
     const url =
@@ -111,9 +88,9 @@ export function Vote(props: any) {
 
   const renderContent = () => {
     if (loggedInState.userName) {
-      if (passedGuessingPeriod === null || userStatus === null) {
+      if (passedGuessingPeriod === null || props.userStatus === null) {
         return <div>Loading</div>;
-      } else if (!(userStatus == "user.status/active")) {
+      } else if (!(props.userStatus == "user.status/active")) {
         return (
           <>
             <p>Verify your email to guess!</p>

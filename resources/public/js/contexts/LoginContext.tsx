@@ -1,6 +1,11 @@
 import React, { createContext, useState } from "react";
 
-export const defaultLoggedIn: loggedIn = { userName: null };
+export interface loggedIn {
+  userName: string | null;
+  cash: number | null;
+}
+export const defaultLoggedIn: loggedIn = { userName: null, cash: null};
+
 interface loggedInState {
   loggedInState: loggedIn;
   setLoggedInState: React.Dispatch<React.SetStateAction<loggedIn>>;
@@ -11,9 +16,6 @@ const defaultShitState: loggedInState = {
   setLoggedInState: (): void => {},
 };
 
-export interface loggedIn {
-  userName: string | null;
-}
 const LoginContext = createContext<loggedInState>(defaultShitState);
 
 const LoginProvider = (props: any) => {

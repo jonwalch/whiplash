@@ -34,7 +34,7 @@ export function Login(props: any) {
     });
     console.log(response.status);
     if (response.status == 200) {
-      setLoggedInState({ userName: userName});
+      setLoggedInState({ userName: userName, cash: loggedInState.cash});
       setShowSignup(false);
     } else {
       const resp = await response.text();
@@ -55,10 +55,10 @@ export function Login(props: any) {
       const resp = await response.json();
       console.log(resp);
       console.log(response.status);
-      setLoggedInState({ userName: resp["user/name"]});
+      setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
       setShowSignup(false);
     } else {
-      setLoggedInState({ userName: ""})
+      setLoggedInState({ userName: "", cash: loggedInState.cash})
     }
   };
 
@@ -76,7 +76,7 @@ export function Login(props: any) {
     console.log(resp);
     console.log(response.status);
     if (response.status == 200) {
-      setLoggedInState({userName: ""});
+      setLoggedInState({userName: "", cash: null});
     } else {
       alert("Failed to hit server to logout");
     }
@@ -95,7 +95,8 @@ export function Login(props: any) {
     } else if (loggedInState.userName) {
       return (
         <>
-          <p>Logged in as {loggedInState.userName}</p>
+          <p>User: {loggedInState.userName}</p>
+          <p>Cash: ${loggedInState.cash}</p>
           <button type="button" onClick={logout}>
             Sign out
           </button>
