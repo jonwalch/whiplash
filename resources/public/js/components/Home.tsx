@@ -136,17 +136,17 @@ export function Home(props: any) {
 
   return (
     <header role="banner" className="site-header">
-      <h1>Whiplash (Pre-alpha)</h1>
-      <p>Win While Watching</p>
-    </header>
+      <h1 class="site-title">Whiplash</h1>
+      <p class="site-description">Win While Watching</p>
+    </header><!-- .site-header -->
     <Login />
-    <main role="main" class="site-main">
+    <main id="content" role="main" class="site-main">
       {renderContent()}
       <Leaderboard/>
-    </main>
+    </main><!-- .site-main -->
     <footer role="contentinfo" className="site-footer">
       <p className="copyright">&copy; Whiplash. All Rights Reserved.</p>
       <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
-    </footer>
+    </footer><!-- .site-footer -->
   );
 }
