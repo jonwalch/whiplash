@@ -6,21 +6,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <!-- Force IE 8/9/10 to use its latest rendering engine -->
   <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <link rel="canonical" href="/">
+  <!-- TODO (paulshryock): Add dynamic meta title and description -->
   <title>Whiplash</title>
   <!-- <meta name="description" content=""> -->
+  <!-- TODO (paulshryock): Add linked stylesheet -->
+  <!-- TODO (paulshryock): Minify stylesheet in production -->
   <!-- <link rel="stylesheet" href="/dist/css/bundle.min.css"> -->
+  <!-- TODO (paulshryock): When we're ready to launch, update robots meta tag and http headers to allow search engine indexing and link following -->
+  <!-- Block search engines for now -->
+  <meta name="robots" content="noindex, nofollow">
 </head>
 
-<body>
+<body class="site">
   <noscript>
+    <!-- TODO (paulshryock): Add better noscript experience -->
     You need to enable JavaScript to run this app.
   </noscript>
   {% csrf-field %}
   <div id="root"></div>
-  <script src="/dist/bundle.js"></script>
-  <!-- Load the Twitch embed script -->
+  <!-- TODO (paulshryock): Get minified Twitch script in production -->
   <script src="https://embed.twitch.tv/embed/v1.js"></script>
+  <!-- TODO (paulshryock): Minify JS bundle in production -->
+  <script src="/dist/bundle.js"></script>
 
-</body>
+</body><!-- .site -->
 
 </html>
