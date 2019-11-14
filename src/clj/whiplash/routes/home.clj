@@ -57,7 +57,13 @@
     ["/weekly"
      {:get {:summary "return this week's leaderboard"
             :handler (fn [req]
-                       (leaderboard/weekly-leaderboard req))}}]]
+                       (leaderboard/weekly-leaderboard req))}}]
+    ["/bets"
+     {:get  {:summary    "get all bets for current game"
+             :parameters {:query {:game_id  int?
+                                  :match_id int?}}
+             :handler    (fn [req]
+                           (leaderboard/get-bets req))}}]]
 
    ["/user"
 
@@ -125,7 +131,8 @@
                                  :bet_amount int?}}
              :middleware [middleware/wrap-restricted]
              :handler    (fn [req]
-                           (user/create-bet req))}}]]
+                           (user/create-bet req))}}]
+    ]
 
    #_["/graphiql" {:get (fn [request]
                         (layout/render request "graphiql.html"))}]

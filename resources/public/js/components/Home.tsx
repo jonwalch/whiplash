@@ -5,6 +5,7 @@ import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
 import { useInterval } from "../common";
 import { LoginContext } from "../contexts/LoginContext";
+import { Bets } from "./Bets";
 
 declare const Twitch: any;
 
@@ -24,17 +25,16 @@ export function Home(props: any) {
   const [twitchUsername, setTwitchUsername] = useState("");
   const [matchName, setMatchName] = useState("");
   const [matchID, setMatchID] = useState(0);
-  const [currentGame, setCurrentGame] = useState({});
+  const [currentGame, setCurrentGame] = useState<any>({});
   const [opponents, setOpponents] = useState<Opponent[]>([]);
   const [userStatus, setUserStatus] = useState<string | null>(null);
+  const [passedGuessingPeriod, setPastGuessingPeriod] = useState<
+    boolean | null
+  >(null);
 
   useEffect(() => {
     getStream();
   }, []);
-
-  useInterval(() => {
-    getStream();
-  }, 10000);
 
   useEffect(() => {
     if (twitchUsername) {
@@ -48,8 +48,24 @@ export function Home(props: any) {
     } //teamName changes when a user makes a guess
   }, [loggedInState.userName, team.teamName]);
 
+  const fiveMinutes = 1000 * 60 * 5;
+  useInterval(() => {
+    //Allows if begin_at is null
+    const beginAt: number = Date.parse(currentGame["begin_at"]);
+    // if (beginAt + fiveMinutes <= Date.now()) {
+    if (false) {
+      setPastGuessingPeriod(true);
+    } else {
+      setPastGuessingPeriod(false);
+    }
+  }, 1000);
+
+  useInterval(() => {
+    getStream();
+  }, 10000);
+
   const getStream = async () => {
-    const response = await fetch( baseUrl + "stream", {
+    const response = await fetch(baseUrl + "stream", {
       headers: { "Content-Type": "application/json" }
     });
     if (response.status == 200) {
@@ -71,7 +87,7 @@ export function Home(props: any) {
       setOpponents(parsedOpponents);
     } else {
       //right now would be a 204
-      setURL(failedToFetch)
+      setURL(failedToFetch);
     }
   };
 
@@ -86,13 +102,21 @@ export function Home(props: any) {
       const resp = await response.json();
       console.log(resp);
       setUserStatus(resp["user/status"]);
-      setLoggedInState({userName: loggedInState.userName, cash: resp["user/cash"]})
+      setLoggedInState({
+        userName: loggedInState.userName,
+        cash: resp["user/cash"]
+      });
     } else {
       setUserStatus("");
     }
   };
 
   const twitchEmbed = () => {
+    // const node: any = document.getElementById("twitch-embed");
+    // if (node.firstChild) {
+    //   node.removeChild(node.firstChild);
+    // }
+
     new Twitch.Embed("twitch-embed", {
       width: 1024,
       height: 576,
@@ -125,6 +149,7 @@ export function Home(props: any) {
             matchName={matchName}
             currentGame={currentGame}
             userStatus={userStatus}
+            passedGuessingPeriod={passedGuessingPeriod}
           />
         </div>
       );
@@ -136,8 +161,15 @@ export function Home(props: any) {
     <div>
       <h2>Whiplash (Pre-alpha) - Win While Watching</h2>
       <Login />
-      {renderContent()}
-      <Leaderboard/>
+      <div className="main-container">
+        <Bets
+          matchID={matchID}
+          currentGame={currentGame}
+          passedguessingPeriod={passedGuessingPeriod}
+        />
+        {renderContent()}
+      </div>
+      <Leaderboard />
     </div>
   );
 }

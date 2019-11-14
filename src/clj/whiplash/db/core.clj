@@ -148,18 +148,25 @@
                 :args [db user-name game-id match-id]})))
 
 ;;; TODO resolve :game/type
-;(defn find-all-unprocessed-bets-for-game
-;  [db game-id match-id]
-;  (->> (d/q
-;         {:query '[:find ?bet
-;                   :in $ ?game-id ?match-id
-;                   :where [?bet :bet/processed? false]
-;                   [?bet :match/id ?match-id]
-;                   [?bet :game/id ?game-id]]
-;          :args  [db game-id match-id]})
-;       (map first)
-;       (mapv #(d/pull db '[*] %))))
-;
+(defn find-all-unprocessed-bets-for-game
+  [db {:keys [game-id match-id]}]
+  (->> (d/q
+         {:query '[:find ?bet
+                   :in $ ?game-id ?match-id
+                   :where [?bet :bet/processed? false]
+                   [?bet :match/id ?match-id]
+                   [?bet :game/id ?game-id]]
+          :args  [db game-id match-id]})
+       (map first)
+       (map #(d/pull db '[:bet/amount :user/_bets :team/name :game/type] %))
+       (mapv (fn [bet]
+              (-> bet
+                  (merge (d/pull db
+                                 '[:user/name]
+                                 (-> bet :user/_bets :db/id)))
+                  ;; for now dissoc game/type
+                  (dissoc :user/_bets :game/type))))))
+
 (defn find-all-unprocessed-bets
   [db]
   (->> (d/q {:query '[:find ?bet
@@ -185,11 +192,12 @@
                      [?bet :bet/processed? true]
                      [(> ?payout 0)]]
             :args  [db lower-bound]})
-      (map #(d/pull db '[:bet/score :user/_bets] (first %)))
-      (map (fn [bet]
-              (d/pull db
-                      '[:user/name :user/bets]
-                      (-> bet :user/_bets :db/id)))))))
+         (map #(d/pull db '[:bet/payout :user/_bets] (first %)))
+         (map (fn [bet]
+                (merge bet
+                       (d/pull db
+                               '[:user/name]
+                               (-> bet :user/_bets :db/id))))))))
 
 (comment
   (def test-client (d/client cloud-config))

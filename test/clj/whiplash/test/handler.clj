@@ -333,12 +333,23 @@
           {auth-token2 :auth-token login-resp2 :response} (create-user-and-login dummy-user-2)
           create-guess-resp (create-guess auth-token (assoc dummy-guess :bet_amount 475))
           create-guess-resp2 (create-guess auth-token2 (assoc dummy-guess :bet_amount 100
-                                                                          :team_id 125859))]
+                                                                          :team_id 125859
+                                                                          :team_name "Other-team"))
+          bets-resp ((common/test-app) (-> (mock/request :get "/leaderboard/bets")
+                                           (mock/query-string {:match_id (:match_id dummy-guess)
+                                                               :game_id  (:game_id dummy-guess)})))]
 
       (is (= 25 (-> (get-user auth-token) :body :user/cash)))
       (is (= 400 (-> (get-user auth-token2) :body :user/cash)))
+      (is (= {:Liquid     [{:bet/amount 475
+                            :team/name  "Liquid"
+                            :user/name  "queefburglar"}]
+              :Other-team [{:bet/amount 100
+                            :team/name  "Other-team"
+                            :user/name  "donniedarko"}]}
+             (common/parse-json-body bets-resp)))
 
-      (testing "Proper payout"
+     (testing "Proper payout"
         (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
           (let [{:keys [game_id match_id]} dummy-guess
                 _ (guess-processor/process-bets)
@@ -358,7 +369,7 @@
                    (select-keys body keys-to-select)))
 
             (is (= {:game/id          game_id
-                    :team/name        (:team_name dummy-guess-2)
+                    :team/name        "Other-team"
                     :team/id          125859
                     :game/type        "game.type/csgo"
                     :match/id         match_id

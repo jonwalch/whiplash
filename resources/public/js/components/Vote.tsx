@@ -7,7 +7,6 @@ import NumericInput from "react-numeric-input";
 
 export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
-  const [passedGuessingPeriod, setPastGuessingPeriod] = useState<boolean | null>(null);
   const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
   const [betAmount, setBetAmount] = useState<number>(0);
 
@@ -16,18 +15,6 @@ export function Vote(props: any) {
       getGuess();
     }
   }, [props.currentGame.id, props.matchID, loggedInState.userName]);
-
-  const fiveMinutes = 1000 * 60 * 5;
-  useInterval(() => {
-    //Allows if begin_at is null
-    const beginAt: number = Date.parse(props.currentGame["begin_at"]);
-    // if (beginAt + fiveMinutes <= Date.now()) {
-    if (false) {
-      setPastGuessingPeriod(true);
-    } else {
-      setPastGuessingPeriod(false);
-    }
-  }, 1000);
 
   const getGuess = async () => {
     const url =
@@ -92,7 +79,7 @@ export function Vote(props: any) {
 
   const renderContent = () => {
     if (loggedInState.userName) {
-      if (passedGuessingPeriod === null || props.userStatus === null) {
+      if (props.passedGuessingPeriod === null || props.userStatus === null) {
         return <div>Loading</div>;
       } else if (!(props.userStatus == "user.status/active")) {
         return (
@@ -100,7 +87,7 @@ export function Vote(props: any) {
             <p>Verify your email to guess!</p>
           </>
         );
-      } else if (!guessedTeamName && !passedGuessingPeriod) {
+      } else if (!guessedTeamName && !props.passedGuessingPeriod) {
         return (
           <>
             <div>
@@ -134,14 +121,14 @@ export function Vote(props: any) {
             </button>
           </>
         );
-      } else if (!guessedTeamName && passedGuessingPeriod) {
+      } else if (!guessedTeamName && props.passedGuessingPeriod) {
         return (
           <h3>
             Sorry! You missed guessing for this game. Stick around for the next
             one!
           </h3>
         );
-      } else if (guessedTeamName && !passedGuessingPeriod) {
+      } else if (guessedTeamName && !props.passedGuessingPeriod) {
         return <h3>You guessed {guessedTeamName} for this game!</h3>;
       }
     } else {

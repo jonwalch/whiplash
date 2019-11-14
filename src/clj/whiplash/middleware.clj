@@ -110,6 +110,7 @@
 (defn authed-req->user-name
   "Only use this if the endpoint is also wrap-restricted"
   [{:keys [cookies] :as req}]
+  ;; TODO check expiry
   (when-let [{:keys [user exp]} (req->token req)]
     user))
 

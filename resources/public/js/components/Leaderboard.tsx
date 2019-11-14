@@ -7,12 +7,13 @@ import { useInterval } from "../common";
 
 export interface Leader {
   user_name: string;
-  score: number;
+  payout: number;
 }
 
-export function Leaderboard(props: any) {
-  const { loggedInState, setLoggedInState} = useContext(LoginContext);
+export function Leaderboard() {
+  const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [leaderboard, setLeaderboard] = useState<Leader[]>([]);
+  const [bets, setBets] = useState<any>(null);
 
   useEffect(() => {
     getLeaderboard();
@@ -20,27 +21,23 @@ export function Leaderboard(props: any) {
 
   //every 5 minutes
   useInterval(() => {
-      getLeaderboard();
+    getLeaderboard();
   }, 300000);
 
   const getLeaderboard = async () => {
-    const response = await fetch(baseUrl + "leaderboard/weekly",
-      {
-        headers: { "Content-Type": "application/json" },
-        method: "GET",
-        mode: "same-origin",
-        redirect: "error"
-      }
-    );
+    const response = await fetch(baseUrl + "leaderboard/weekly", {
+      headers: { "Content-Type": "application/json" },
+      method: "GET",
+      mode: "same-origin",
+      redirect: "error"
+    });
     const resp = await response.json();
-    console.log(resp);
-    console.log(response.status);
     setLeaderboard(resp);
+    console.log(resp)
     // setLeaderboard([
     //   { user_name: "fuck", score: 300 },
     //   { user_name: "you", score: 100 }
     // ]);
-
   };
 
   const renderContent = () => {
@@ -49,25 +46,27 @@ export function Leaderboard(props: any) {
     } else {
       return (
         <div>
-          <h3>User, score</h3>
-        <div>
-          {leaderboard.map((leader: Leader) => {
-            return (
-              <div key={leader.user_name}>
-                {leader.user_name} {leader.score}
-              </div>
-            );
-          })}
-        </div>
+          <h3>User, Payout</h3>
+          <div>
+            {leaderboard.map((leader: Leader) => {
+              return (
+                <div key={leader.user_name}>
+                  {leader.user_name} {leader.payout}
+                </div>
+              );
+            })}
+          </div>
         </div>
       );
     }
   };
-
+  
   return (
-    <div className="leaderboard">
-      <h3>Weekly Leaderboard</h3>
-      {renderContent()}
+    <div>
+      <div className="leaderboard">
+        <h3>Weekly Leaderboard</h3>
+        {renderContent()}
+      </div>
     </div>
   );
 }
