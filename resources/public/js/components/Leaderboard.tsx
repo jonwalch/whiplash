@@ -51,7 +51,7 @@ export function Leaderboard() {
             {leaderboard.map((leader: Leader) => {
               return (
                 <div key={leader.user_name}>
-                  {leader.user_name} {leader.payout}
+                  {leader.user_name} ${leader.payout}
                 </div>
               );
             })}
