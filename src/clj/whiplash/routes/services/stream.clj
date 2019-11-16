@@ -21,13 +21,13 @@
                     (if (nil? stream)
                       (do
                         (when-not cached?
-                          (log/info "Couldn't find a stream candidate"))
+                          (log/debug "Couldn't find a stream candidate"))
                         (no-content))
                       (ok stream)))]
     (if (or (nil? last-fetch)
             (java-time/after? (time/now) (time/minutes-delta last-fetch 1)))
       (do
-        (log/info "Fetching streams")
+        (log/debug "Fetching streams")
         (let [all-streams (-> :csgo
                               pandascore/get-matches
                               pandascore/sort-and-transform-stream-candidates)]
@@ -36,6 +36,6 @@
           (return-fn {:stream (first all-streams)
                       :cached? false})))
       (do
-        (log/info "Serving cached stream")
+        (log/debug "Serving cached stream")
         (return-fn {:stream (first ordered-candidates)
                     :cached? true})))))

@@ -99,7 +99,6 @@ export function Home(props: any) {
     });
     if (response.status == 200) {
       const resp = await response.json();
-      console.log(resp);
       setUserStatus(resp["user/status"]);
       setLoggedInState({
         userName: loggedInState.userName,

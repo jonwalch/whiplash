@@ -50,9 +50,9 @@
 (defn- match-and-game->winner
   [game]
   (->> (pandascore/get-matches game)
-       (filter #(= "finished" (:status %)))
        (map :games)
        flatten
+       (filter #(= "finished" (:status %)))
        (map #(hash-map (set/rename-keys (select-keys % [:match_id :id])
                                         {:match_id :match/id
                                          :id       :game/id})
@@ -61,12 +61,12 @@
 
 (defn process-bets
   []
-  #_(log/debug "Processing bets")
+  (log/debug "Processing bets")
   (let [db (d/db (:conn db/datomic-cloud))
         unprocessed-bets (group-by #(select-keys % [:match/id :game/id])
                                    (db/find-all-unprocessed-bets db))
         winner-lookup (when (not-empty unprocessed-bets)
-                        #_(log/debug (format "Found bets to process %s" unprocessed-bets))
+                        (log/debug (format "Found bets to process %s" unprocessed-bets))
                         (match-and-game->winner :csgo))
         game-info->bet-info (->> unprocessed-bets
                                  (map (fn [[k bets]]
