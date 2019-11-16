@@ -48,12 +48,11 @@ export function Home(props: any) {
     } //teamName changes when a user makes a guess
   }, [loggedInState.userName, team.teamName]);
 
-  const fiveMinutes = 1000 * 60 * 5;
+  const fifteenMinutes = 1000 * 60 * 15;
   useInterval(() => {
     //Allows if begin_at is null
     const beginAt: number = Date.parse(currentGame["begin_at"]);
-    // if (beginAt + fiveMinutes <= Date.now()) {
-    if (false) {
+    if (beginAt + fifteenMinutes <= Date.now()) {
       setPastGuessingPeriod(true);
     } else {
       setPastGuessingPeriod(false);
