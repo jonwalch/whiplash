@@ -42,6 +42,7 @@ export function Home(props: any) {
     }
   }, [twitchUsername]);
 
+  // TODO: figure out when else to run this to show updated payout amounts
   useEffect(() => {
     if (loggedInState.userName) {
       getUser();
