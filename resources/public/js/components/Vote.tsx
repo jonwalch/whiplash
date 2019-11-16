@@ -97,7 +97,7 @@ export function Vote(props: any) {
       } else if (!(props.userStatus == "user.status/active")) {
         return (
           <>
-            <p>Verify your email to guess!</p>
+            <p>Verify your email to bet!</p>
           </>
         );
       } else if (!guessedTeamName && !props.passedGuessingPeriod) {
@@ -135,12 +135,12 @@ export function Vote(props: any) {
       } else if (!guessedTeamName && props.passedGuessingPeriod) {
         return (
           <h3>
-            Sorry! You missed guessing for this game. Stick around for the next
+            Sorry! You missed betting for this game. Stick around for the next
             one!
           </h3>
         );
       } else if (guessedTeamName && !props.passedGuessingPeriod) {
-        return <h3>You guessed {guessedTeamName} for this game!</h3>;
+        return <h3>You bet on {guessedTeamName} for this game!</h3>;
       }
     } else {
       return <h3>Login to guess!</h3>;

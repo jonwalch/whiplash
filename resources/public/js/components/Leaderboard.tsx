@@ -42,7 +42,7 @@ export function Leaderboard() {
 
   const renderContent = () => {
     if (leaderboard.length == 0) {
-      return <div>No scores yet for this week!</div>;
+      return <div>No payouts yet for this week!</div>;
     } else {
       return (
         <div>
