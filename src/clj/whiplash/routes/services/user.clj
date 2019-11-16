@@ -101,9 +101,11 @@
 (defn login
   [{:keys [body-params] :as req}]
   (let [{:keys [user_name password]} body-params
-        user-entity (d/pull (d/db (:conn db/datomic-cloud))
-                            '[:user/password :user/name]
-                            (db/find-user-by-user-name user_name))
+        found-user (db/find-user-by-user-name user_name)
+        user-entity (when found-user
+                      (d/pull (d/db (:conn db/datomic-cloud))
+                              '[:user/password :user/name]
+                              found-user))
         ;; TODO maybe return not-found if can't find user, right now just return 401
         valid-password (hashers/check password (:user/password user-entity))
         {:keys [exp-str token]} (when valid-password
@@ -133,16 +135,10 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [match_name game_id team_name team_id match_id bet_amount]} body-params
         {:keys [user exp]} (middleware/req->token req)
-        {:keys [db/id user/cash]} (d/pull (d/db (:conn db/datomic-cloud))
-                                          '[:user/cash :db/id]
-                                          (db/find-user-by-user-name user))
+        db (d/db (:conn db/datomic-cloud))
+        {:keys [db/id user/cash]} (d/pull db '[:user/cash :db/id] (db/find-user-by-user-name user))
         existing-bet (when id
-                         (d/pull (d/db (:conn db/datomic-cloud))
-                                 '[:bet/time]
-                                 (db/find-bet (d/db (:conn db/datomic-cloud))
-                                              user
-                                              game_id
-                                              match_id)))]
+                       (db/find-bet db user game_id match_id))]
     (cond
       (>= 0 bet_amount)
       (conflict {:message "Cannot bet less than 1."})
@@ -179,14 +175,14 @@
         game-id (Integer/parseInt game_id)
         match-id (Integer/parseInt match_id)
         {:keys [user exp]} (middleware/req->token req)
+        db (d/db (:conn db/datomic-cloud))
         existing-guess (when user
-                         (-> (d/pull (d/db (:conn db/datomic-cloud))
-                                     '[*]
-                                     (db/find-bet (d/db (:conn db/datomic-cloud))
-                                                  user game-id match-id))
-                             (db/resolve-enum :game/type)))]
-    (if (some? existing-guess)
-      (ok existing-guess)
+                         (db/find-bet db user game-id match-id))
+        pulled-guess (when existing-guess
+                       (-> (d/pull db '[*] existing-guess)
+                           (db/resolve-enum :game/type)))]
+    (if (some? pulled-guess)
+      (ok pulled-guess)
       (not-found {:message (format "guess for user %s, game-id %s, match-id %s not found"
                                    user
                                    game-id
