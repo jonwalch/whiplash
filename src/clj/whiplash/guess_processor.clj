@@ -42,7 +42,8 @@
                                 0.0)))
           floored-payout (Math/floor payout)]
       ;;TODO save this casino take somewhere in the DB
-      (log/info (format "Casino floored payout take %s dollars" (- payout floored-payout)))
+      (when (< 0 (- payout floored-payout))
+        (log/info (format "Casino floored payout take %s dollars" (- payout floored-payout))))
       (if (= winner id)
         floored-payout
         0.0))))
