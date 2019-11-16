@@ -3,7 +3,6 @@ import { Opponent, defaultTeam } from "./Home";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
 import { getCSRFToken, useInterval } from "../common";
-import NumericInput from "react-numeric-input";
 
 export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
@@ -32,7 +31,6 @@ export function Vote(props: any) {
     });
     if (response.status == 200) {
       const resp = await response.json();
-      console.log(resp);
       setGuessedTeamName(resp["team/name"]);
     } else if (response.status == 404) {
       setGuessedTeamName("");
@@ -57,11 +55,9 @@ export function Vote(props: any) {
         bet_amount: betAmount,
       })
     });
-    console.log(response.status);
 
     if (response.status == 200) {
       const resp = await response.json();
-      console.log(resp);
       setGuessedTeamName(props.team.teamName);
       // reset local state to no longer have a selected team
       props.setTeam(defaultTeam);
@@ -75,6 +71,23 @@ export function Vote(props: any) {
   const toggleValid = () => {
     // means the user hasn't select a team yet
     return props.team == defaultTeam || betAmount == 0 || betAmount > loggedInState.cash;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    const numbers = /^[0-9]*$/
+    if (numbers.test(e.target.value)) {
+      const amount = parseInt(e.target.value, 10) || 0;
+      setBetAmount(amount);
+    } 
+  }
+
+  const renderTeamSelect = () => {
+    if (props.team.teamName) {
+      return <h1> You selected {props.team.teamName}</h1>;
+    } else {
+      return <h1> Select a team!</h1>;
+    }
   };
 
   const renderContent = () => {
@@ -103,13 +116,11 @@ export function Vote(props: any) {
                 );
               })}
             </div>
-            <h1> You selected {props.team.teamName}</h1>
-            <NumericInput
-              min={1}
-              max={loggedInState.cash}
-              value={betAmount}
-              onChange={(valueAsNumber) => {
-                setBetAmount(Number(valueAsNumber));
+            {renderTeamSelect()}
+            <input
+              value={betAmount > 0 ? betAmount : ""}
+              onChange={e => {
+                handleInputChange(e);
               }}
             />
             <button

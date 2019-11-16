@@ -112,10 +112,10 @@ export function Home(props: any) {
   };
 
   const twitchEmbed = () => {
-    // const node: any = document.getElementById("twitch-embed");
-    // if (node.firstChild) {
-    //   node.removeChild(node.firstChild);
-    // }
+    const node: any = document.getElementById("twitch-embed");
+    if (node.firstChild) {
+      node.removeChild(node.firstChild);
+    }
 
     new Twitch.Embed("twitch-embed", {
       width: 1024,
@@ -130,6 +130,7 @@ export function Home(props: any) {
     if (streamURL == "") {
       return <h3>Loading</h3>;
     } else if (streamURL == failedToFetch) {
+    // } else if (false) {
       return (
         <h3>
           Whiplash is taking a nap, hang tight, we'll find a CS:GO match for you
