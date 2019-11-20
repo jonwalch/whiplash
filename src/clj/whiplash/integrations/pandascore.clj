@@ -41,6 +41,24 @@
       (assoc resp :body (common/resp->body resp))
       resp)))
 
+(comment
+  ;; returns access token
+  (client/post "https://api.abiosgaming.com/v2/oauth/access_token"
+              {:debug true
+               :form-params {"grant_type" "client_credentials"
+                              "client_id" "Jonwalch"
+                              "client_secret" "df5bda2c14cb75b52b899de1972e1d14784ddbd8ca5d0a7bdd"}
+               })
+
+  (client/get "https://api.abiosgaming.com/v2/games"
+              {:debug true?
+               :query-params {"q" "counter"
+                              "access-token" ""}})
+
+  ;; https://docs.abiosgaming.com/v2/reference#matchesidlight_summary
+  ;; has round based shit
+  )
+
 (defn get-all-matches
   [url date-range]
   (let [{:keys [body] :as resp} (get-matches-request url 0 date-range)
@@ -85,9 +103,6 @@
              updated-match (update-timestamps-fn %)]
          (assoc updated-match :games updated-games))
       matches)))
-
-#_(def match-keys
-  [:id :live_url :begin_at :end_at :games :name :opponents :scheduled_at :status])
 
 (defn twitch-matches
   [matches]
@@ -197,3 +212,4 @@
                    :debug true})
       #_resp->body)
   )
+

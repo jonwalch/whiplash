@@ -33,11 +33,6 @@ export function Leaderboard() {
     });
     const resp = await response.json();
     setLeaderboard(resp);
-    console.log(resp)
-    // setLeaderboard([
-    //   { user_name: "fuck", score: 300 },
-    //   { user_name: "you", score: 100 }
-    // ]);
   };
 
   const renderContent = () => {

@@ -42,12 +42,18 @@ export function Home(props: any) {
     }
   }, [twitchUsername]);
 
-  // TODO: figure out when else to run this to show updated payout amounts
   useEffect(() => {
     if (loggedInState.userName) {
       getUser();
     } //teamName changes when a user makes a guess
   }, [loggedInState.userName, team.teamName]);
+
+  //TODO revisit this, currently polling the user's cash and status every 10 seconds
+  useInterval(() => {
+    if (loggedInState.userName) {
+      getUser();
+    } //teamName changes when a user makes a guess
+  }, 10000);
 
   const fifteenMinutes = 1000 * 60 * 15;
   useInterval(() => {
@@ -70,7 +76,6 @@ export function Home(props: any) {
     });
     if (response.status == 200) {
       const resp = await response.json();
-      console.log(resp);
       setURL(resp["live_url"]);
       setTwitchUsername(resp["twitch/username"]);
       setMatchName(resp["name"]);

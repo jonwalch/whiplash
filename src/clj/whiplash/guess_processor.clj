@@ -10,9 +10,9 @@
             [clojure.set :as set]))
 
 (defn game-bet-stats
-  [bets]
+  [bets group-by-key]
   (->> bets
-       (group-by :team/id)
+       (group-by group-by-key)
        (map (fn [[team-id bets]]
               (hash-map team-id
                         (hash-map :bet/total
@@ -28,7 +28,8 @@
     (->> bet-stats
          (map (fn [[k v]]
                 (hash-map k (assoc v :bet/odds
-                                     (/ total-bet-for-game (:bet/total v))))))
+                                     (double
+                                       (/ total-bet-for-game (:bet/total v)))))))
          (apply conj))))
 
 (defn payout-for-user
@@ -73,7 +74,7 @@
                                  (map (fn [[k bets]]
                                         (hash-map k (hash-map :bets bets
                                                               :stats (-> bets
-                                                                         (game-bet-stats)
+                                                                         (game-bet-stats :team/id)
                                                                          (team-odds))))))
                                  (apply merge))
         ;; TODO: what happens if a user makes a new bet while this is running?

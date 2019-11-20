@@ -341,12 +341,17 @@
 
       (is (= 25 (-> (get-user auth-token) :body :user/cash)))
       (is (= 400 (-> (get-user auth-token2) :body :user/cash)))
-      (is (= {:Liquid     [{:bet/amount 475
-                            :team/name  "Liquid"
-                            :user/name  "queefburglar"}]
-              :Other-team [{:bet/amount 100
-                            :team/name  "Other-team"
-                            :user/name  "donniedarko"}]}
+
+      (is (= {:Liquid     {:bets  [{:bet/amount 475
+                                    :team/name  "Liquid"
+                                    :user/name  "queefburglar"}]
+                           :odds  1.210526315789474
+                           :total 475}
+              :Other-team {:bets  [{:bet/amount 100
+                                    :team/name  "Other-team"
+                                    :user/name  "donniedarko"}]
+                           :odds  5.75
+                           :total 100}}
              (common/parse-json-body bets-resp)))
 
      (testing "Proper payout"
