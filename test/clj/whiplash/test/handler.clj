@@ -133,6 +133,26 @@
 
        (assoc resp :body parsed-body)))))
 
+(deftest create-user-same-user-name-different-case-failure
+  (create-user)
+  (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
+                                    (mock/json-body (assoc dummy-user :email "butts@guts.com"
+                                                                      :user_name "Queefburglar"))))
+        parsed-body (common/parse-json-body resp)]
+
+    (is (= 409 (:status resp)))
+    (is (= {:message "User name taken"} parsed-body))))
+
+(deftest create-user-same-email-different-case-failure
+  (create-user)
+  (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
+                                    (mock/json-body (assoc dummy-user :email "Butt@cheek.com"
+                                                                      :user_name "queefburglar96"))))
+        parsed-body (common/parse-json-body resp)]
+
+    (is (= 409 (:status resp)))
+    (is (= {:message "Email taken"} parsed-body))))
+
 (defn- login
   ([]
    (login dummy-user))
