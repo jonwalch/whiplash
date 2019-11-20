@@ -54,6 +54,10 @@
                       (stream/get-stream req))}}]
 
    ["/leaderboard"
+    ["/all-time"
+     {:get {:summary "return this highest all time user cash"
+            :handler (fn [req]
+                       (leaderboard/all-time-top-ten req))}}]
     ["/weekly"
      {:get {:summary "return this week's leaderboard"
             :handler (fn [req]

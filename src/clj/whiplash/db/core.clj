@@ -199,6 +199,18 @@
                                '[:user/name]
                                (-> bet :user/_bets :db/id))))))))
 
+(defn find-top-ten
+  []
+  (let [db (d/db (:conn datomic-cloud))]
+    (->> (d/q
+           {:query '[:find ?user-name (max 10 ?cash)
+                     :in $
+                     :where [?user :user/cash ?cash]
+                     [?user :user/name ?user-name]]
+            :args  [db]})
+         (mapv #(hash-map :user_name (first %)
+                          :cash (-> % second first))))))
+
 (comment
   (def test-client (d/client cloud-config))
   (d/create-database test-client {:db-name "test"})

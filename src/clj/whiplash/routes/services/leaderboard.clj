@@ -5,6 +5,10 @@
             [datomic.client.api :as d]
             [whiplash.guess-processor :as guess-processor]))
 
+(defn all-time-top-ten
+  [{:keys [params] :as req}]
+  (ok (db/find-top-ten)))
+
 ;; TODO maybe cache this every 10 minutes or so if it takes too long
 (defn weekly-leaderboard
   [{:keys [params] :as req}]

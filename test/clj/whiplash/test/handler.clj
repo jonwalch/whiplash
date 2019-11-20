@@ -360,7 +360,8 @@
                 _ (guess-processor/process-bets)
                 {:keys [body] :as get-guess-resp} (get-guess auth-token game_id match_id)
                 get-guess-resp2 (get-guess auth-token2 game_id match_id)
-                leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/weekly")))]
+                leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/weekly")))
+                all-time-leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
 
             (is (= {:game/id          game_id
                     :team/name        (:team_name dummy-guess)
@@ -389,7 +390,13 @@
             (is (= 975 (-> (get-user auth-token2) :body :user/cash)))
 
             (is (= [{:user_name "donniedarko" :payout 575}]
-                   (common/parse-json-body leaderboard-resp)))))))))
+                   (common/parse-json-body leaderboard-resp)))
+
+            (is (= [{:cash      975
+                     :user_name "donniedarko"}
+                    {:cash      100
+                     :user_name "queefburglar"}]
+                   (common/parse-json-body all-time-leaderboard-resp)))))))))
 
 (deftest fail-add-guess
   (testing "Fail to auth because no cookie"
