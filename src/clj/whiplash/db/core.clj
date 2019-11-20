@@ -124,17 +124,35 @@
                  :where [?e ?attr ?val]]
         :args  [db attr val]}))
 
+(defn find-user-by-email-db
+  [db email]
+  (d/q {:query '[:find ?user
+                 :in $ ?email
+                 :where [?user :user/email ?original-email]
+                 [(.toLowerCase ^String ?original-email) ?lowercase-email]
+                 [(= ?lowercase-email ?email)]]
+        :args  [db email]}))
+
+(defn find-user-by-user-name-db
+  [db user-name]
+  (d/q {:query '[:find ?user
+                 :in $ ?user-name
+                 :where [?user :user/name ?original-name]
+                 [(.toLowerCase ^String ?original-name) ?lowercase-name]
+                 [(= ?lowercase-name ?user-name)]]
+        :args  [db user-name]}))
+
 (defn find-user [id]
   (when-let [user (ffirst (find-one-by (d/db (:conn datomic-cloud)) :db/id id))]
     user))
 
 (defn find-user-by-email [email]
-  (when-let [user (ffirst (find-one-by (d/db (:conn datomic-cloud)) :user/email email))]
+  (when-let [user (ffirst (find-user-by-email-db (d/db (:conn datomic-cloud)) email))]
      user))
 
 (defn find-user-by-user-name [user-name]
   (let [db (d/db (:conn datomic-cloud))]
-    (when-let [user (ffirst (find-one-by db :user/name user-name))]
+    (when-let [user (ffirst (find-user-by-user-name-db db user-name))]
       user)))
 
 (defn find-bet
