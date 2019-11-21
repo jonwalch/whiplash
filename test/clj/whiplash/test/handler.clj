@@ -19,42 +19,7 @@
 
   (testing "not-found route"
     (let [response ((common/test-app) (mock/request :get "/invalid"))]
-      (is (= 404 (:status response)))))
-
-  #_(testing "services"
-      (testing "success"
-        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                          (mock/json-body {:x 10, :y 6})))]
-          (is (= 200 (:status response)))
-          (is (= {:total 16} (m/decode-response-body response)))))
-
-      (testing "parameter coercion error, stack trace expected"
-        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                          (mock/json-body {:x 10, :y "invalid"})))]
-          (is (= 400 (:status response)))))
-
-      (testing "parameter coercion error, stack trace expected"
-        (let [response ((handler/app) (-> (mock/request :get "/v1/math/plus")
-                                          (mock/query-string {:x 10, :y "invalid"})))]
-          (is (= 400 (:status response)))))
-
-      (testing "response coercion error"
-        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                          (mock/json-body {:x -10, :y 6})))]
-          (is (= 500 (:status response)))))
-
-      (testing "fail spec"
-        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                          (mock/json-body {:piss "fart"})))]
-          (is (= 400 (:status response)))))
-
-      (testing "content negotiation"
-        (let [response ((handler/app) (-> (mock/request :post "/v1/math/plus")
-                                          (mock/body (pr-str {:x 10, :y 6}))
-                                          (mock/content-type "application/edn")
-                                          (mock/header "accept" "application/transit+json")))]
-          (is (= 200 (:status response)))
-          (is (= {:total 16} (m/decode-response-body response)))))))
+      (is (= 404 (:status response))))))
 
 (deftest static-content
   (testing "can get static content"
@@ -132,6 +97,12 @@
        (is (not (string/blank? (:user/verify-token sent-email))))
 
        (assoc resp :body parsed-body)))))
+
+(deftest test-uncommon-name-success
+  (create-user (assoc dummy-user :last_name "de Flandres")))
+
+(deftest test-uncommon-name-success-2
+  (create-user (assoc dummy-user :last_name "Sold-Toes")))
 
 (deftest create-user-same-user-name-different-case-failure
   (create-user)
