@@ -53,8 +53,6 @@ export function Login(props: any) {
 
     if (response.status == 200){
       const resp = await response.json();
-      console.log(resp);
-      console.log(response.status);
       setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
       setShowSignup(false);
     } else {

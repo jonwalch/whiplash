@@ -52,7 +52,7 @@ export function Home(props: any) {
   useInterval(() => {
     if (loggedInState.userName) {
       getUser();
-    } //teamName changes when a user makes a guess
+    }
   }, 10000);
 
   const fifteenMinutes = 1000 * 60 * 15;
@@ -107,7 +107,7 @@ export function Home(props: any) {
       const resp = await response.json();
       setUserStatus(resp["user/status"]);
       setLoggedInState({
-        userName: loggedInState.userName,
+        userName: resp["user/name"],
         cash: resp["user/cash"]
       });
     } else {
