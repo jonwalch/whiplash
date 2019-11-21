@@ -7,8 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode development"
+    "start": "npm run build",
+    "build": "npx webpack -d"
   },
   "repository": {
     "type": "git",
