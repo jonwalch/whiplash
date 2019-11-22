@@ -53,50 +53,62 @@ export function Leaderboard() {
 
   const renderWeeklyLeaderboard = () => {
     if (weeklyLeaderboard.length == 0) {
-      return <div>No payouts yet for this week!</div>;
+      return <p>No payouts yet for this week!</p>;
     } else {
       return (
-        <div>
-          <h3>User, Payout</h3>
-          <div>
+        <table className="leaderboard">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Payout</th>
+            </tr>
+          </thead>
+          <tbody>
             {weeklyLeaderboard.map((leader: WeeklyLeader) => {
               return (
-                <div key={leader.user_name}>
-                  {leader.user_name} ${leader.payout}
-                </div>
+                <tr key={leader.user_name}>
+                  <td>{leader.user_name}</td>
+                  <td>{leader.payout}</td>
+                </tr>
               );
             })}
-          </div>
-        </div>
+          </tbody>
+        </table>
       );
     }
   };
 
   const renderLeaderboard = () => {
     return (
-      <div>
-        <h3>User, Total Cash</h3>
-        <div>
+      <table className="leaderboard">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Total Cash</th>
+          </tr>
+        </thead>
+        <tbody>
           {leaderboard.map((leader: Leader) => {
             return (
-              <div key={leader.user_name}>
-                {leader.user_name} ${leader.cash}
-              </div>
+              <tr key={leader.user_name}>
+                <td>{leader.user_name}</td>
+                <td>{leader.cash}</td>
+              </tr>
             );
           })}
-        </div>
-      </div>
+        </tbody>
+      </table>
     );
   };
 
   return (
-    <div>
-      <div className="leaderboard">
-        <h3>All Time Top Ten</h3>
-        {renderLeaderboard()}
-        <h3>Weekly Leaderboard</h3>
-        {renderWeeklyLeaderboard()}
-      </div>
-    </div>
+    <section>
+      <h2>All Time Top Ten</h2>
+      {renderLeaderboard()}
+    <section>
+    </section>
+      <h2>Weekly Leaderboard</h2>
+      {renderWeeklyLeaderboard()}
+    </section>
   );
 }

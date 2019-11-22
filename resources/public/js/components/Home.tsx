@@ -132,19 +132,23 @@ export function Home(props: any) {
 
   const renderContent = () => {
     if (streamURL == "") {
-      return <h3>Loading</h3>;
+      return <p>Loading...</p>;
     } else if (streamURL == failedToFetch) {
     // } else if (false) {
       return (
-        <h3>
-          Whiplash is taking a nap, hang tight, we'll find a CS:GO match for you
-          soon.
-        </h3>
+        <>
+          <h2>
+            Whiplash is taking a nap
+          </h2>
+          <p>
+            Hang tight, we'll find a CS:GO match for you soon.
+          </p>
+        </>
       );
     } else {
       return (
-        <div>
-          <h3>{matchName}</h3>
+        <>
+          <h2>{matchName}</h2>
           <div id="twitch-embed"></div>
           <Vote
             opponents={opponents}
@@ -156,25 +160,31 @@ export function Home(props: any) {
             userStatus={userStatus}
             passedGuessingPeriod={passedGuessingPeriod}
           />
-        </div>
+        </>
       );
     }
   };
 
-  //TODO size video based on web browser size
   return (
-    <div>
-      <h2>Whiplash (Pre-alpha) - Win While Watching</h2>
+    <>
+      <header role="banner" className="site-header">
+        <h1 className="site-title">Whiplash</h1>
+        <p className="site-description">Win While Watching</p>
+      </header>
       <Login />
-      <div className="main-container">
+      <main id="content" role="main" className="site-main">
         <Bets
           matchID={matchID}
           currentGame={currentGame}
           passedguessingPeriod={passedGuessingPeriod}
         />
         {renderContent()}
-      </div>
-      <Leaderboard />
-    </div>
+        <Leaderboard />
+      </main>
+      <footer role="contentinfo" className="site-footer">
+        <p className="copyright">&copy; Whiplash. All Rights Reserved.</p>
+        <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
+      </footer>
+    </>
   );
 }
