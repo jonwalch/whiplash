@@ -25,11 +25,11 @@ spec:
             httpGet:
               path: /v1/healthz
               port: container-port
-              initialDelaySeconds: 60
-              periodSeconds: 15
+            initialDelaySeconds: 60
+            periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /v1/healthz
               port: container-port
-              initialDelaySeconds: 10
-              periodSeconds: 3
+            initialDelaySeconds: 10
+            periodSeconds: 3
