@@ -8,6 +8,7 @@
     [whiplash.routes.services.stream :refer [cached-streams]]
     [clojure.tools.cli :refer [parse-opts]]
     [whiplash.db.core :refer [datomic-cloud]]
+    [whiplash.integrations.abios :refer [cached-token]]
     [clojure.tools.logging :as log]
     [mount.core :as mount])
   (:gen-class))

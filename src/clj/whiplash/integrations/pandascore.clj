@@ -6,9 +6,7 @@
     [whiplash.integrations.twitch :as twitch]
     [whiplash.integrations.common :as common]
     [clojure.string :as string]
-    [clojure.tools.logging :as log]
-    [whiplash.db.core :as db]
-    [datomic.client.api :as d]))
+    [clojure.tools.logging :as log]))
 
 (def base-url "https://api.pandascore.co/%s/")
 (def matches-url (str base-url "matches"))
@@ -40,24 +38,6 @@
     (if (some? body)
       (assoc resp :body (common/resp->body resp))
       resp)))
-
-(comment
-  ;; returns access token
-  (client/post "https://api.abiosgaming.com/v2/oauth/access_token"
-              {:debug true
-               :form-params {"grant_type" "client_credentials"
-                              "client_id" "Jonwalch"
-                              "client_secret" "df5bda2c14cb75b52b899de1972e1d14784ddbd8ca5d0a7bdd"}
-               })
-
-  (client/get "https://api.abiosgaming.com/v2/games"
-              {:debug true?
-               :query-params {"q" "counter"
-                              "access-token" ""}})
-
-  ;; https://docs.abiosgaming.com/v2/reference#matchesidlight_summary
-  ;; has round based shit
-  )
 
 (defn get-all-matches
   [url date-range]
