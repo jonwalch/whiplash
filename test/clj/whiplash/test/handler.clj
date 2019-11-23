@@ -27,6 +27,11 @@
           ((common/test-app) (mock/request :get "/js/index.tsx"))]
       (is (= 200 status)))))
 
+(deftest healthz
+  (testing "healthz endpoint works"
+    (let [response ((common/test-app) (mock/request :get "/v1/healthz"))]
+      (is (= 200 (:status response))))))
+
 (def dummy-user
   {:first_name "yas"
    :last_name "queen"

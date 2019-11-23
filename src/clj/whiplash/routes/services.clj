@@ -33,6 +33,11 @@
                  ;; multipart
                  multipart/multipart-middleware]}
 
+   ["/healthz"
+    ;; TODO: add actual checks to this
+    {:get (fn [req]
+            (ok))}]
+
    ;; swagger documentation
    ["" #_{:no-doc true
         :swagger {:info {:title "my-api"
@@ -46,8 +51,8 @@
              {:url "/v1/swagger.json"
               :config {:validator-url nil}})}]]
 
-   ;["/graphql" {:post (fn [req]
-   ;                     (ok (graphql/execute-request (-> req :body slurp))))}]
+   #_["/graphql" {:post (fn [req]
+                        (ok (graphql/execute-request (-> req :body slurp))))}]
 
 
    #_["/math"
