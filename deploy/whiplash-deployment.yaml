@@ -25,7 +25,6 @@ spec:
             httpGet:
               path: /v1/healthz
               port: container-port
-              failureThreshold:
               initialDelaySeconds: 60
               periodSeconds: 15
           readinessProbe:
