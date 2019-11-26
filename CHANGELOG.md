@@ -23,11 +23,11 @@ and this project adheres to [Semantic Versioning](semver).
 - [ ] Add better CSS defaults
 - [ ] Design layout
 - [ ] Style components
-- [ ] Add CSS pre-processing and post-processing
-  - [ ] Sass syntax
-  - [ ] PostCSS plugins (`autoprefixer`, dynamic imports, `precss`, beautify, etc.)
-  - [ ] Concatenate/bundle CSS components
-  - [ ] Minification with sourcemaps
+- [x] Add CSS pre-processing and post-processing
+  - [x] Sass syntax
+  - [x] PostCSS plugins (`autoprefixer`, dynamic imports, `precss`, beautify, etc.)
+  - [x] Concatenate/bundle CSS components
+  - [x] Minification with sourcemaps
 
 ### Changed
 - [x] Update component markup to be a bit more semantic
