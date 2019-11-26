@@ -15,5 +15,27 @@ and this project adheres to [Semantic Versioning](semver).
 ### Security
 -->
 
+## 1.0.0-alpha - 2019-12-XX - Alpha Release
+
+### Added
+- [x] Add CSS reset
+- [x] Add a few CSS defaults
+- [ ] Add better CSS defaults
+- [ ] Design layout
+- [ ] Style components
+- [ ] Add CSS pre-processing and post-processing
+  - [ ] Sass syntax
+  - [ ] PostCSS plugins (`autoprefixer`, dynamic imports, `precss`, beautify, etc.)
+  - [ ] Concatenate/bundle CSS components
+  - [ ] Minification with sourcemaps
+
+### Changed
+- [x] Update component markup to be a bit more semantic
+- [ ] Move inlined CSS to linked cacheable asset file(s)
+- [ ] Further modularize markup components/layouts
+
+### Removed
+- [x] Remove extra `div` elements
+
 [changelog]: https://keepachangelog.com/en/1.0.0/
 [semver]: https://semver.org/spec/v2.0.0.html
