@@ -1,4 +1,6 @@
 # AWS CodeBuild CI Configuration
+version: 0.2
+
 phases:
   foo:
     commands:
