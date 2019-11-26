@@ -7,9 +7,12 @@
     "test": "test"
   },
   "scripts": {
-    "start": "npm run watch",
-    "build": "webpack",
-    "watch": "webpack -w"
+    "start": "npm run build",
+    "develop": "NODE_ENV='development' gulp develop",
+    "watch": "webpack -w",
+    "serve": "NODE_ENV='development' gulp serve & npm run watch",
+    "build": "NODE_ENV='production' gulp && webpack",
+    "production": "NODE_ENV='production' gulp production && webpack",
   },
   "repository": {
     "type": "git",
