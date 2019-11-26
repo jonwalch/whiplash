@@ -9,9 +9,8 @@
   "scripts": {
     "start": "npm run build",
     "develop": "NODE_ENV='development' gulp develop",
-    "watch": "webpack -w",
-    "serve": "NODE_ENV='development' gulp serve & npm run watch",
-    "build": "NODE_ENV='production' gulp && webpack",
+    "watch": "NODE_ENV='development' gulp watch & webpack -w",
+    "build": "NODE_ENV='production' gulp build && webpack",
     "production": "NODE_ENV='production' gulp production && webpack",
   },
   "repository": {
