@@ -1,4 +1,7 @@
 @import './reset.css';
+@import './globals/*.css';
+@import './elements/*.css';
+@import './components/*.css';
 
 html {
   font: 400 1rem/1.5 sans-serif;
