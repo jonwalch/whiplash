@@ -4,6 +4,7 @@ phases:
   foo:
     commands:
       - git status
+      - git log
 
   test:
     commands:
