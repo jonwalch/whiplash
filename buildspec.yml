@@ -1,0 +1,23 @@
+# AWS CodeBuild CI Configuration
+
+phases:
+  foo:
+    commands:
+      - git status
+
+  test:
+    commands:
+      - lein test
+
+  build:
+    commands:
+      - npx webpack -p
+      - lein uberjar
+
+  docker-image:
+    commands:
+      - docker build -t whiplash:test .
+
+  push-docker:
+    commands:
+      - docker push 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:test
