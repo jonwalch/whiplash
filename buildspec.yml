@@ -7,8 +7,8 @@ phases:
       - echo $IMAGE_REPO_NAME $IMAGE_TAG $AWS_ACCOUNT_ID $AWS_DEFAULT_REGION
       #- git status
       #- git log
-      - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-      - sudo apt install nodejs
+      #- curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+      #- sudo apt install nodejs
       - npm install --save-dev webpack
       - npm install --save-dev webpack-cli
       # Test before installs so we can fail faster
