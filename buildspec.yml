@@ -2,13 +2,10 @@
 version: 0.2
 
 phases:
-  foo:
+  pre_build:
     commands:
       - git status
       - git log
-
-  test:
-    commands:
       - lein test
 
   build:
@@ -16,10 +13,8 @@ phases:
       - npx webpack -p
       - lein uberjar
 
-  docker-image:
+  post_build:
     commands:
       - docker build -t whiplash:test .
-
-  push-docker:
-    commands:
       - docker push 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:test
+
