@@ -5,8 +5,8 @@ phases:
   pre_build:
     commands:
       - echo $IMAGE_REPO_NAME $IMAGE_TAG $AWS_ACCOUNT_ID $AWS_DEFAULT_REGION
-      - git status
-      - git log
+      #- git status
+      #- git log
       - lein test
 
   build:
