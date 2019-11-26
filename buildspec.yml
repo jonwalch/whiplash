@@ -20,10 +20,10 @@ phases:
       - npx webpack -p
       - lein uberjar
 
-  artifacts:
-    files: "/whiplash/app.jar"
-    ## TODO: Tag this with semver + git commit SHA
-    name: whiplash-$(date +%Y-%m-%d).jar
+artifacts:
+  files: /whiplash/app.jar
+  ## TODO: Tag this with semver + git commit SHA
+  name: whiplash-$(date +%Y-%m-%d).jar
 #  post_build:
 #    commands:
 #      - docker build -t whiplash:test .
