@@ -23,7 +23,7 @@ phases:
 artifacts:
   files: target/uberjar/whiplash.jar
   ## TODO: Tag this with semver + git commit SHA
-  name: whiplash-$(date +%Y-%m-%d).jar
+  name: whiplash-$(date +%Y-%m-%d-%S-%N).jar
 #  post_build:
 #    commands:
 #      - docker build -t whiplash:test .
