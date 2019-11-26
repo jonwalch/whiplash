@@ -21,7 +21,7 @@ phases:
       - lein uberjar
 
 artifacts:
-  files: /whiplash/app.jar
+  files: target/uberjar/whiplash.jar
   ## TODO: Tag this with semver + git commit SHA
   name: whiplash-$(date +%Y-%m-%d).jar
 #  post_build:
