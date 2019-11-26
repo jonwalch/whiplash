@@ -11,7 +11,7 @@
     "develop": "NODE_ENV='development' gulp develop",
     "watch": "NODE_ENV='development' gulp watch & webpack -w",
     "build": "NODE_ENV='production' gulp build && webpack",
-    "production": "NODE_ENV='production' gulp production && webpack",
+    "production": "NODE_ENV='production' gulp production && webpack"
   },
   "repository": {
     "type": "git",
