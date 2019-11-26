@@ -29,4 +29,3 @@ artifacts:
 #    commands:
 #      - docker build -t whiplash:test .
 #      - docker push 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:test
-
