@@ -10,8 +10,7 @@
     "start": "npm run build",
     "develop": "NODE_ENV='development' gulp develop",
     "watch": "NODE_ENV='development' gulp watch & webpack -w",
-    "build": "NODE_ENV='production' gulp build && webpack",
-    "production": "NODE_ENV='production' gulp production && webpack"
+    "build": "NODE_ENV='production' gulp build && webpack -p"
   },
   "repository": {
     "type": "git",
@@ -31,6 +30,7 @@
     "cssnano": "^4.1.10",
     "gulp": "^4.0.2",
     "gulp-beautify": "^3.0.0",
+    "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.7.0",
     "gulp-postcss": "^8.0.0",
     "gulp-rename": "^1.4.0",

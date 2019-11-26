@@ -4,12 +4,11 @@ const gulpStylelint = require('gulp-stylelint')
 const sourcemaps = require('gulp-sourcemaps')
 const postcss = require('gulp-postcss')
 const path = require('path')
+const concat = require('gulp-concat')
 const beautify = require('gulp-beautify')
 const uglify = require('gulp-uglify')
 const rename = require('gulp-rename')
 const connect = require('gulp-connect')
-
-const isProduction = process.env.NODE_ENV === 'production'
 
 const paths = {
   css: {
@@ -68,21 +67,11 @@ function minify () {
   const css = gulp.src(paths.css.output)
     .pipe(sourcemaps.init())
     .pipe(postcss([require('cssnano')])) // Minify
-    .pipe(rename({ suffix: '.min' })) // Rename
     .pipe(sourcemaps.write('.')) // Maintain Sourcemaps
     .pipe(gulp.dest(paths.css.dest))
     .pipe(connect.reload())
 
   return css
-}
-
-function postMinify (cb) {
-  del([
-    paths.css.output,
-    `${paths.css.output}.map`
-  ])
-
-  return cb()
 }
 
 function images () {
@@ -105,19 +94,16 @@ function watch (cb) {
  * Gulp tasks
  */
 const develop = gulp.series(
-  clean,
   css,
   images
 )
 
 const build = gulp.series(
   develop,
-  minify,
-  postMinify
+  minify
 )
 
 exports.develop = develop
 exports.watch = gulp.series(develop, watch)
 exports.build = build
-exports.production = gulp.series(build, watch)
 exports.default = build

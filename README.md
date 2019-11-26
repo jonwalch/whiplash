@@ -23,7 +23,7 @@ Run from repl or:
 
     ./scripts/push-prod-dockerimage.sh x.x.x
     
-#Deploying
+## Deploying
 
     kubectl set image deployments/whiplash-web whiplash=296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:x.x.x
 
@@ -36,6 +36,14 @@ To start a web server for the application, run:
 Or run in the REPL:
 
     (start-app nil)
+
+## CSS
+
+CSS source files are located in `/resources/css`, and will be processed via Gulp and output to `/resources/public/css/App.css`.
+
+### Note
+
+This inlines all CSS in the `index.html` file, which is fine for now. Later, as the number of styles and pages grow, we will want to link styles in a cacheable `.css` file that gets served separately.
 
 ## License
 
