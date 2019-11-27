@@ -9,7 +9,7 @@
     display: flex;
     justify-content: flex-start;
 
-    &__branding + .navigation {
+    &__branding + * {
       margin-left: 0.5em;
     }
   }
@@ -34,7 +34,7 @@
   }
 
   a {
-    
+
     &:link,
     &:visited {
       text-decoration: none;
