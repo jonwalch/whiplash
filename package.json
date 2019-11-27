@@ -28,6 +28,8 @@
     "autoprefixer": "^9.7.1",
     "css-loader": "^1.0.0",
     "cssnano": "^4.1.10",
+    "del": "^5.1.0",
+    "file-loader": "^5.0.2",
     "gulp": "^4.0.2",
     "gulp-beautify": "^3.0.0",
     "gulp-concat": "^2.6.1",

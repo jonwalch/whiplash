@@ -1,5 +1,6 @@
 const gulp = require('gulp')
 const merge = require('merge-stream')
+const del = require('del')
 const gulpStylelint = require('gulp-stylelint')
 const sourcemaps = require('gulp-sourcemaps')
 const postcss = require('gulp-postcss')
@@ -23,12 +24,19 @@ const paths = {
   }
 }
 
+function clean (cb) {
+  del([paths.css.dest])
+
+  return cb()
+}
+
 function css () {
   const settings = {
     config: {
       extends: ['stylelint-config-standard'],
       rules: {
         "no-descending-specificity": null,
+        "property-no-unknown": null,
         "selector-pseudo-class-no-unknown": null
       }
     },
@@ -94,6 +102,7 @@ function watch (cb) {
  * Gulp tasks
  */
 const develop = gulp.series(
+  clean,
   css,
   images
 )

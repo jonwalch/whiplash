@@ -7,9 +7,7 @@
 body {
 	background: $body-background-color;
 	color: $body-color;
-	font-family: $font-stack-primary;
-	font-size: 1rem;
-  line-height: 1.5;
+	font: 400 1rem/1.5 $font-stack-primary;
   margin: 0;
 	overflow-y: auto;
 }
