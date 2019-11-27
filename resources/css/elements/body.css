@@ -5,7 +5,7 @@
 }
 
 body {
-	background: $dark-white;
+	background: white;
 	color: $light-black;
 	font: 400 1rem/1.5 $font-stack-primary;
   margin: 0;

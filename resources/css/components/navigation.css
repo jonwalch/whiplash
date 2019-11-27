@@ -23,10 +23,16 @@
     cursor: pointer;
     font-weight: 600;
     padding: 0.5em;
+
+    &:hover,
+    &:focus,
+    &:active {
+      text-decoration: underline;
+    }
   }
 
   &__button {
-    background: orange;
+    background: $orange;
     border: none;
     border-bottom: 0.25em solid $dark-orange;
     color: $dark-blue;
@@ -34,9 +40,16 @@
     font-weight: 600;
     margin: 0 0.5em;
     padding: 0.5em;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background: $dark-white;
+      border-color: $medium-blue;
+    }
   }
 
-  + &_cta {
+  + .navigation_cta {
 
     @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
       margin-left: auto;

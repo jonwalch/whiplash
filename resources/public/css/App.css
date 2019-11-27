@@ -83,8 +83,6 @@ select {
   }
 }
 
-/* TODO (paulshryock): Add brand colors */
-
 /**
   * Import web fonts
   */
@@ -312,7 +310,7 @@ explicitly, e.g.
 }
 
 body {
-  background: hsl(83, 100%, 96%);
+  background: white;
   color: hsl(202, 65%, 3%);
   font: 400 16px/1.5 'Inter', Roboto, Helvetica, Arial, sans-serif;
   font: 400 1rem/1.5 'Inter', Roboto, Helvetica, Arial, sans-serif;
@@ -463,23 +461,36 @@ progress {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 0.5em;
+  padding: 0.5em
+}
+
+.navigation__link:hover,
+.navigation__link:focus,
+.navigation__link:active {
+  text-decoration: underline;
 }
 
 .navigation__button {
-  background: orange;
+  background: hsl(41, 94%, 51%);
   border: none;
   border-bottom: 0.25em solid hsl(41, 94%, 31%);
   color: hsl(220, 39%, 21%);
   cursor: pointer;
   font-weight: 600;
   margin: 0 0.5em;
-  padding: 0.5em;
+  padding: 0.5em
+}
+
+.navigation__button:hover,
+.navigation__button:focus,
+.navigation__button:active {
+  background: hsl(83, 100%, 96%);
+  border-color: hsl(220, 39%, 41%);
 }
 
 @media screen and (min-width: 37.5rem) {
 
-  .navigation_cta {
+  .navigation+.navigation_cta {
     /* Tablet Portrait / 37.5rem / 600px */
     margin-left: auto
   }
@@ -517,7 +528,7 @@ progress {
     justify-content: flex-start;
   }
 
-  .site-header__branding+.navigation {
+  .site-header__branding+* {
     margin-left: 0.5em;
   }
 }
