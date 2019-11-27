@@ -168,8 +168,21 @@ export function Home(props: any) {
   return (
     <>
       <header role="banner" className="site-header">
-        <h1 className="site-title">Whiplash</h1>
-        <p className="site-description">Win While Watching</p>
+        <div className="site-header__branding">
+          <h1 className="site-header__title"><a href="/">Whiplash</a></h1>
+        </div>
+        <nav className="navigation">
+          <ul className="navigation__list">
+            <li><a className="navigation__link" href="/">About</a></li>
+            <li><a className="navigation__link" href="mailto:support@whiplashesports.com">Contact</a></li>
+          </ul>
+        </nav>
+        <nav className="navigation navigation_cta">
+          <ul className="navigation__list">
+            <li><button type="button" className="navigation__link">Login</button></li>
+            <li><button type="button" className="navigation__button">Sign Up</button></li>
+          </ul>
+        </nav>
       </header>
       <Login />
       <main id="content" role="main" className="site-main">

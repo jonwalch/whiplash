@@ -8,13 +8,10 @@
   box-sizing: border-box;
 }
 
-/* Remove default padding */
-
 /* Remove list styles on ul, ol elements with a class attribute */
 
 ul[class],
 ol[class] {
-  padding: 0;
   list-style: none;
 }
 
@@ -26,8 +23,6 @@ h2,
 h3,
 h4,
 p,
-ul[class],
-ol[class],
 li,
 figure,
 figcaption,
@@ -317,8 +312,8 @@ explicitly, e.g.
 }
 
 body {
-  background: white;
-  color: black;
+  background: hsl(83, 100%, 96%);
+  color: hsl(202, 65%, 3%);
   font: 400 16px/1.5 'Inter', Roboto, Helvetica, Arial, sans-serif;
   font: 400 1rem/1.5 'Inter', Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
@@ -437,5 +432,125 @@ progress {
 
 .aspect-ratio-square {
   padding-top: 100%;
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .navigation {
+    /* Tablet Portrait / 37.5rem / 600px */
+    align-items: center;
+    display: flex
+  }
+}
+
+.navigation__list {
+  margin: 0 -1em;
+  padding: 0.5em
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .navigation__list {
+    /* Tablet Portrait / 37.5rem / 600px */
+    align-items: center;
+    display: flex;
+    margin: 0
+  }
+}
+
+.navigation__link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.5em;
+}
+
+.navigation__button {
+  background: orange;
+  border: none;
+  border-bottom: 0.25em solid hsl(41, 94%, 31%);
+  color: hsl(220, 39%, 21%);
+  cursor: pointer;
+  font-weight: 600;
+  margin: 0 0.5em;
+  padding: 0.5em;
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .navigation_cta {
+    /* Tablet Portrait / 37.5rem / 600px */
+    margin-left: auto
+  }
+}
+
+.navigation_cta .navigation__list {
+  margin: 0 -1em
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .navigation_cta .navigation__list {
+    /* Tablet Portrait / 37.5rem / 600px */
+    margin: -1em
+  }
+}
+
+.navigation_cta .navigation__link {
+  color: hsl(41, 94%, 51%);
+}
+
+.site-header {
+  background: hsl(220, 39%, 21%);
+  border-top: 0.25em solid hsl(41, 94%, 51%);
+  color: hsl(83, 100%, 96%);
+  padding: 1.5em
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .site-header {
+    /* Tablet Portrait / 37.5rem / 600px */
+    align-content: center;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .site-header__branding+.navigation {
+    margin-left: 0.5em;
+  }
+}
+
+.site-header__title {
+  color: hsl(41, 94%, 51%)
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .site-header__title {
+    /* Tablet Portrait / 37.5rem / 600px */
+    margin: 0
+  }
+}
+
+.site-header .site-header__title a:hover,
+.site-header .site-header__title a:focus {
+  text-decoration: none;
+}
+
+.site-header a:link,
+.site-header a:visited {
+  text-decoration: none;
+}
+
+.site-header a:hover,
+.site-header a:focus {
+  text-decoration: underline;
+}
+
+.site-header a:active {
+  color: white;
+  text-decoration: underline;
 }
 /*# sourceMappingURL=App.css.map */
