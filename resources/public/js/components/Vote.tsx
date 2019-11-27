@@ -56,11 +56,13 @@ export function Vote(props: any) {
       })
     });
 
+    const resp = await response.json();
     if (response.status == 200) {
-      const resp = await response.json();
       setGuessedTeamName(props.team.teamName);
       // reset local state to no longer have a selected team
       props.setTeam(defaultTeam);
+    } else {
+      alert(resp);
     }
   };
 
