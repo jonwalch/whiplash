@@ -78,3 +78,9 @@
   (-> (io/resource "fixtures/pandascore-finished-response.edn")
       slurp
       edn/read-string))
+
+(defn abios-auth-token-fake
+  []
+  (-> (io/resource "fixtures/abios/access-token-response.edn")
+      slurp
+      edn/read-string))

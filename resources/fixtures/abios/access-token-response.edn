@@ -1,0 +1,28 @@
+;; Request Code
+;(client/post "https://api.abiosgaming.com/v2/oauth/access_token"
+;  {:debug true
+;   :form-params {"grant_type" "client_credentials"
+;                 "client_id" "jonwalch"
+;                 "client_secret" "df5bda2c14cb75b52b899de1972e1d14784ddbd8ca5d0a7bdd"}})
+
+{:cached nil,
+ :request-time 1319,
+ :repeatable? false,
+ :protocol-version {:name "HTTP", :major 1, :minor 1},
+ :streaming? true,
+ ;:http-client #object[org.apache.http.impl.client.InternalHttpClient
+ ;                     0x283f2dcd
+ ;                     "org.apache.http.impl.client.InternalHttpClient@283f2dcd"],
+ :chunked? false,
+ :reason-phrase "OK",
+ :headers {"Access-Control-Allow-Origin" "*",
+           "Content-Type" "application/json",
+           "Date" "Fri, 22 Nov 2019 18:53:51 GMT",
+           "Vary" "Accept-Encoding",
+           "Content-Length" "123",
+           "Connection" "Close"},
+ :orig-content-encoding nil,
+ :status 200,
+ :length 123,
+ :body "{\"access_token\":\"efa04a96aaec98cfff0c8ea34a04789aae14f48ac9b99aae2c58756cc0c81459\",\"expires_in\":3600,\"token_type\":\"bearer\"}",
+ :trace-redirects []}

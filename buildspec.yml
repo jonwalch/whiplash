@@ -1,0 +1,31 @@
+# AWS CodeBuild CI Configuration
+version: 0.2
+
+phases:
+  #install:
+  #  runtime-versions:
+  #    docker: 19
+  pre_build:
+    commands:
+      #- echo $IMAGE_REPO_NAME $IMAGE_TAG $AWS_ACCOUNT_ID $AWS_DEFAULT_REGION
+      #- git status
+      #- git log
+      # Test before installs so we can fail faster
+      - lein test
+      - npm install --save-dev webpack
+      - npm install --save-dev webpack-cli
+
+  build:
+    commands:
+      - npx webpack -p
+      - lein uberjar
+
+artifacts:
+  files:
+    - target/uberjar/whiplash.jar
+  ## TODO: Tag this with semver + git commit SHA
+  name: whiplash-$(date +%Y-%m-%d-%S-%N).jar
+#  post_build:
+#    commands:
+#      - docker build -t whiplash:test .
+#      - docker push 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:test

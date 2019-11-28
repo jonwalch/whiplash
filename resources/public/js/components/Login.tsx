@@ -56,7 +56,7 @@ export function Login(props: any) {
       setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
       setShowSignup(false);
     } else {
-      setLoggedInState({ userName: "", cash: loggedInState.cash})
+      setLoggedInState(defaultLoggedIn)
     }
   };
 

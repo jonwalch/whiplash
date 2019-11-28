@@ -1,0 +1,27 @@
+;; Request code
+;(client/get "https://api.abiosgaming.com/v2/games"
+;  {:debug        true?
+;   :query-params {"q"            "counter"
+;                  "access_token" access-token}})
+
+{:cached nil,
+ :request-time 1118,
+ :repeatable? false,
+ :protocol-version {:name "HTTP", :major 1, :minor 1},
+ :streaming? true,
+ :http-client #object[org.apache.http.impl.client.InternalHttpClient
+                      0x35ed4825
+                      "org.apache.http.impl.client.InternalHttpClient@35ed4825"],
+ :chunked? false,
+ :reason-phrase "OK",
+ :headers {"Access-Control-Allow-Origin" "*",
+           "Content-Type" "application/json",
+           "Date" "Fri, 22 Nov 2019 19:05:50 GMT",
+           "Vary" "Accept-Encoding",
+           "Content-Length" "426",
+           "Connection" "Close"},
+ :orig-content-encoding nil,
+ :status 200,
+ :length 426,
+ :body "{\"last_page\":1,\"current_page\":1,\"data\":[{\"id\":5,\"title\":\"CS:GO\",\"default_match_type\":\"team\",\"default_map\":null,\"color\":\"fbb766\",\"long_title\":\"Counter-Strike: Global Offensive\",\"deleted_at\":null,\"images\":{\"square\":\"https:\\/\\/img.abiosgaming.com\\/games\\/cs-square-logo.png\",\"circle\":\"https:\\/\\/img.abiosgaming.com\\/games\\/round-cs-logo.png\",\"rectangle\":\"https:\\/\\/img.abiosgaming.com\\/games\\/flat-rectangular-cs-go-logo.jpg\"}}]}",
+ :trace-redirects []}

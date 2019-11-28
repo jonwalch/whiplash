@@ -35,6 +35,18 @@
   ([start minutes]
    (time/plus start (time/minutes minutes))))
 
+(defn hours-delta
+  ([hours]
+   (hours-delta (now) hours))
+  ([start hours]
+   (time/plus start (time/hours hours))))
+
+(defn seconds-delta
+  ([seconds]
+   (seconds-delta (now) seconds))
+  ([start seconds]
+   (time/plus start (time/seconds seconds))))
+
 (defn date-iso-string
   [date]
   (time/format (time/formatter :iso-instant) date))
