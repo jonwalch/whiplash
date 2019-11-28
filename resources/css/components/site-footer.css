@@ -1,0 +1,14 @@
+.site-footer {
+  background: $dark-blue;
+  border-bottom: 0.25em solid $orange;
+  color: white;
+
+  a {
+
+    &:hover,
+    &:focus,
+    &:active {
+      color: $orange;
+    }
+  }
+}

@@ -1,0 +1,32 @@
+.site-branding {
+
+  @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+    align-items: center;
+    display: flex;
+
+    + * {
+      align-items: center;
+      display: flex;
+      margin-left: 0.5em;
+    }
+  }
+
+  &__title {
+    color: $orange;
+
+    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+      margin: 0;
+    }
+  }
+
+  & &__title {
+
+    a {
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+      }
+    }
+  }
+}

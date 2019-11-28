@@ -168,31 +168,33 @@ export function Home(props: any) {
   return (
     <>
       <header role="banner" className="site-header">
-        <div className="site-header__branding">
-          <h1 className="site-header__title">
-            <a href="/">
-              <img
-                src="./img/logos/whiplash-horizontal-4c.svg"
-                alt="Whiplash"
-                width="165"
-                height="36"
-                className="site-logo"
-              />
-            </a>
-          </h1>
+        <div className="site-navigation container">
+          <div className="site-branding">
+            <h1 className="site-branding__title">
+              <a href="/">
+                <img
+                  src="./img/logos/whiplash-horizontal-4c.svg"
+                  alt="Whiplash"
+                  width="165"
+                  height="36"
+                  className="site-logo"
+                />
+              </a>
+            </h1>
+          </div>
+          <nav className="navigation">
+            <ul className="navigation__list">
+              <li><a className="navigation__link" href="/">About</a></li>
+              <li><a className="navigation__link" href="mailto:support@whiplashesports.com">Contact</a></li>
+            </ul>
+          </nav>
+          <nav className="navigation navigation_cta">
+            <ul className="navigation__list">
+              <li><button type="button" className="navigation__link">Login</button></li>
+              <li><button type="button" className="navigation__button">Sign Up</button></li>
+            </ul>
+          </nav>
         </div>
-        <nav className="navigation">
-          <ul className="navigation__list">
-            <li><a className="navigation__link" href="/">About</a></li>
-            <li><a className="navigation__link" href="mailto:support@whiplashesports.com">Contact</a></li>
-          </ul>
-        </nav>
-        <nav className="navigation navigation_cta">
-          <ul className="navigation__list">
-            <li><button type="button" className="navigation__link">Login</button></li>
-            <li><button type="button" className="navigation__button">Sign Up</button></li>
-          </ul>
-        </nav>
       </header>
       <Login />
       <main id="content" role="main" className="site-main">
@@ -205,8 +207,38 @@ export function Home(props: any) {
         <Leaderboard />
       </main>
       <footer role="contentinfo" className="site-footer">
-        <p className="copyright">&copy; Whiplash. All Rights Reserved.</p>
-        <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
+        <section className="site-navigation container">
+          <div className="site-branding">
+            <p className="site-branding__title">
+              <a href="/">
+                <img
+                  src="./img/logos/whiplash-horizontal-4c.svg"
+                  alt="Whiplash"
+                  width="165"
+                  height="36"
+                  className="site-logo"
+                />
+              </a>
+            </p>
+          </div>
+          <nav className="navigation">
+            <ul className="navigation__list">
+              <li><a className="navigation__link" href="/">About</a></li>
+              <li><a className="navigation__link" href="mailto:support@whiplashesports.com">Contact</a></li>
+            </ul>
+          </nav>
+          <nav className="navigation navigation_cta">
+            <ul className="navigation__list">
+              <li><button type="button" className="navigation__link">Login</button></li>
+              <li><button type="button" className="navigation__button">Sign Up</button></li>
+            </ul>
+          </nav>
+        </section>
+        <section class="container">
+          <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
+          <p>&copy; Whiplash. All Rights Reserved.</p>
+          <p className="tagline">Win While Watching</p>
+        </section>
       </footer>
     </>
   );

@@ -303,6 +303,10 @@ explicitly, e.g.
   src: url("../fonts/Inter/Inter.var.woff2") format("woff2");
 }
 
+a {
+  transition: all 200ms ease;
+}
+
 * {
   font-family: inherit;
   line-height: inherit;
@@ -316,6 +320,10 @@ body {
   font: 400 1rem/1.5 'Inter', Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
   overflow-y: auto;
+}
+
+button {
+  transition: all 200ms ease;
 }
 
 h1,
@@ -427,6 +435,10 @@ progress {
   padding-top: 100%;
 }
 
+.container {
+  padding: 1.5em;
+}
+
 @media screen and (min-width: 37.5rem) {
 
   .navigation {
@@ -507,49 +519,54 @@ progress {
   color: hsl(41, 94%, 51%);
 }
 
-.site-header {
-  background: hsl(220, 39%, 21%);
-  border-top: 0.25em solid hsl(41, 94%, 51%);
-  color: hsl(83, 100%, 96%);
-  padding: 1.5em
-}
-
 @media screen and (min-width: 37.5rem) {
 
-  .site-header {
+  .site-branding {
     /* Tablet Portrait / 37.5rem / 600px */
-    align-content: center;
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  .site-header__branding {
     align-items: center;
     display: flex;
   }
 
-  .site-header__branding+* {
+  .site-branding+* {
     align-items: center;
     display: flex;
     margin-left: 0.5em;
   }
 }
 
-.site-header__title {
+.site-branding__title {
   color: hsl(41, 94%, 51%)
 }
 
 @media screen and (min-width: 37.5rem) {
 
-  .site-header__title {
+  .site-branding__title {
     /* Tablet Portrait / 37.5rem / 600px */
     margin: 0
   }
 }
 
-.site-header .site-header__title a:hover,
-.site-header .site-header__title a:focus {
+.site-branding .site-branding__title a:hover,
+.site-branding .site-branding__title a:focus {
   text-decoration: none;
+}
+
+.site-footer {
+  background: hsl(220, 39%, 21%);
+  border-bottom: 0.25em solid hsl(41, 94%, 51%);
+  color: white;
+}
+
+.site-footer a:hover,
+.site-footer a:focus,
+.site-footer a:active {
+  color: hsl(41, 94%, 51%);
+}
+
+.site-header {
+  background: hsl(220, 39%, 21%);
+  border-top: 0.25em solid hsl(41, 94%, 51%);
+  color: hsl(83, 100%, 96%);
 }
 
 .site-header a:link,
@@ -605,6 +622,16 @@ progress {
     /* Big Desktop / 112.5rem / 1800px */
     height: calc(1.5 * 1.8rem);
     width: calc(1.5 * 8.25rem)
+  }
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .site-navigation {
+    /* Tablet Portrait / 37.5rem / 600px */
+    align-content: center;
+    display: flex;
+    justify-content: flex-start
   }
 }
 /*# sourceMappingURL=App.css.map */
