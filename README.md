@@ -37,13 +37,18 @@ Or run in the REPL:
 
     (start-app nil)
 
-## CSS
+## Front End Development
 
-CSS source files are located in `/resources/css`, and will be processed via Gulp and output to `/resources/public/css/App.css`.
+CSS source files are located in `/resources/css`, and will be processed via Gulp and output to `/resources/public/css/App.css`. JS files are located in `/resources/public/js`.
+
+- `npm run develop`: Build CSS
+- `npm run watch:css`: Build CSS and watch for changes (run this before `watch:js`)
+- `npm run watch:js`: Build JS and watch for changes (run this after `watch:css` in another terminal tab/window)
+- `npm run build`: Build CSS and JS, and minify CSS for production
 
 ### Note
 
-This inlines all CSS in the `index.html` file, which is fine for now. Later, as the number of styles and pages grow, we will want to link styles in a cacheable `.css` file that gets served separately.
+CSS gets inlined in `index.html`, which is fine for now. As the number of styles and pages grow, we will want to link styles in a cacheable `.css` file that gets served separately. Most important, 'above the fold' styles can stay inline.
 
 ## License
 

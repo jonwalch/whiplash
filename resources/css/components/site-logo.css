@@ -1,0 +1,24 @@
+.site-logo {
+  height: calc( 1 * 1.8rem );
+  width: calc( 1 * 8.25rem );
+
+  @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+    height: calc( 1.125 * 1.8rem );
+    width: calc( 1.125 * 8.25rem );
+  }
+
+  @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+    height: calc( 1.25 * 1.8rem );
+    width: calc( 1.25 * 8.25rem );
+  }
+
+  @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+    height: calc( 1.375 * 1.8rem );
+    width: calc( 1.375 * 8.25rem );
+  }
+
+  @media screen and (min-width: 112.5rem) { /* Big Desktop / 112.5rem / 1800px */
+    height: calc( 1.5 * 1.8rem );
+    width: calc( 1.5 * 8.25rem );
+  }
+}

@@ -169,7 +169,17 @@ export function Home(props: any) {
     <>
       <header role="banner" className="site-header">
         <div className="site-header__branding">
-          <h1 className="site-header__title"><a href="/">Whiplash</a></h1>
+          <h1 className="site-header__title">
+            <a href="/">
+              <img
+                src="./img/logos/whiplash-horizontal-4c.svg"
+                alt="Whiplash"
+                width="165"
+                height="36"
+                className="site-logo"
+              />
+            </a>
+          </h1>
         </div>
         <nav className="navigation">
           <ul className="navigation__list">

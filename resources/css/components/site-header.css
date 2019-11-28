@@ -9,8 +9,15 @@
     display: flex;
     justify-content: flex-start;
 
-    &__branding + * {
-      margin-left: 0.5em;
+    &__branding {
+      align-items: center;
+      display: flex;
+
+      + * {
+        align-items: center;
+        display: flex;
+        margin-left: 0.5em;
+      }
     }
   }
 
