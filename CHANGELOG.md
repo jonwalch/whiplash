@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](semver).
 - [ ] Design layout and style components
   - [ ] Signup and Login forms
   - [ ] Twitch embed primary prominence (front and center/left)
-  - [ ] Remove container `max-width`
+  - [x] Remove container `max-width`
   - [ ] Vote
   - [ ] Bet
   - [ ] etc.
