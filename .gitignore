@@ -27,4 +27,5 @@ _logs/
 # Manually added below here
 /.idea
 /resources/public/dist
+/resources/public/css
 get-pip.py
