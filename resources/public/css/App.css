@@ -333,8 +333,7 @@ h4 {
   margin: 0 0 0.5em;
 }
 
-[hidden],
-template {
+[hidden] {
   display: none;
 }
 
@@ -399,6 +398,10 @@ progress {
     font-size: calc(1.5 * 100%)
       /* 1.5 * 16px = 24px base rem unit */
   }
+}
+
+template {
+  display: none;
 }
 
 @-ms-viewport {
@@ -497,25 +500,25 @@ progress {
 
 @media screen and (min-width: 37.5rem) {
 
-  .navigation+.navigation_cta {
+  .navigation+.navigation--cta {
     /* Tablet Portrait / 37.5rem / 600px */
     margin-left: auto
   }
 }
 
-.navigation_cta .navigation__list {
+.navigation--cta .navigation__list {
   margin: 0 -1em
 }
 
 @media screen and (min-width: 37.5rem) {
 
-  .navigation_cta .navigation__list {
+  .navigation--cta .navigation__list {
     /* Tablet Portrait / 37.5rem / 600px */
     margin: -1em
   }
 }
 
-.navigation_cta .navigation__link {
+.navigation--cta .navigation__link {
   color: hsl(41, 94%, 51%);
 }
 
@@ -554,12 +557,12 @@ progress {
 .site-footer {
   background: hsl(220, 39%, 21%);
   border-bottom: 0.25em solid hsl(41, 94%, 51%);
-  color: white;
+  color: hsl(83, 100%, 96%);
 }
 
-.site-footer a:hover,
-.site-footer a:focus,
-.site-footer a:active {
+.site-footer__content a:hover,
+.site-footer__content a:focus,
+.site-footer__content a:active {
   color: hsl(41, 94%, 51%);
 }
 
@@ -567,21 +570,6 @@ progress {
   background: hsl(220, 39%, 21%);
   border-top: 0.25em solid hsl(41, 94%, 51%);
   color: hsl(83, 100%, 96%);
-}
-
-.site-header a:link,
-.site-header a:visited {
-  text-decoration: none;
-}
-
-.site-header a:hover,
-.site-header a:focus {
-  text-decoration: underline;
-}
-
-.site-header a:active {
-  color: white;
-  text-decoration: underline;
 }
 
 .site-logo {
@@ -633,5 +621,20 @@ progress {
     display: flex;
     justify-content: flex-start
   }
+}
+
+.site-navigation a:link,
+.site-navigation a:visited {
+  text-decoration: none;
+}
+
+.site-navigation a:hover,
+.site-navigation a:focus {
+  text-decoration: underline;
+}
+
+.site-navigation a:active {
+  color: white;
+  text-decoration: underline;
 }
 /*# sourceMappingURL=App.css.map */

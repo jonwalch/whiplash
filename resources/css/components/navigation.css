@@ -49,14 +49,14 @@
     }
   }
 
-  + .navigation_cta {
+  + .navigation--cta {
 
     @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
       margin-left: auto;
     }
   }
 
-  &_cta {
+  &--cta {
 
     .navigation {
 

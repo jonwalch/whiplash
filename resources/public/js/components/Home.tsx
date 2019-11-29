@@ -188,7 +188,7 @@ export function Home(props: any) {
               <li><a className="navigation__link" href="mailto:support@whiplashesports.com">Contact</a></li>
             </ul>
           </nav>
-          <nav className="navigation navigation_cta">
+          <nav className="navigation navigation--cta">
             <ul className="navigation__list">
               <li><button type="button" className="navigation__link">Login</button></li>
               <li><button type="button" className="navigation__button">Sign Up</button></li>
@@ -227,14 +227,14 @@ export function Home(props: any) {
               <li><a className="navigation__link" href="mailto:support@whiplashesports.com">Contact</a></li>
             </ul>
           </nav>
-          <nav className="navigation navigation_cta">
+          <nav className="navigation navigation--cta">
             <ul className="navigation__list">
               <li><button type="button" className="navigation__link">Login</button></li>
               <li><button type="button" className="navigation__button">Sign Up</button></li>
             </ul>
           </nav>
         </section>
-        <section class="container">
+        <section className="container site-footer__content">
           <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
           <p>&copy; Whiplash. All Rights Reserved.</p>
           <p className="tagline">Win While Watching</p>

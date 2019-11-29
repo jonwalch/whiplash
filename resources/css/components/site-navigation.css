@@ -4,4 +4,22 @@
     display: flex;
     justify-content: flex-start;
   }
+
+  a {
+
+    &:link,
+    &:visited {
+      text-decoration: none;
+    }
+
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+    }
+
+    &:active {
+      color: white;
+      text-decoration: underline;
+    }
+  }
 }
