@@ -4,7 +4,6 @@ import "../../css/App.css";
 import { LoginContext, defaultLoggedIn } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const"
 import { getCSRFToken } from "../common";
-import { Signup } from "./Signup";
 
 export function Login(props: any) {
   const [userName, setUserName] = useState("");
@@ -102,7 +101,7 @@ export function Login(props: any) {
       );
     } else {
       return (
-        <>
+        <form className="form form--login" name="login">
           <label htmlFor="userName">Username</label>
           <input
             value={userName}
@@ -130,33 +129,14 @@ export function Login(props: any) {
           <button type="button" onClick={login} disabled={toggleValid()}>
             Log In
           </button>
-        </>
-      );
-    }
-  };
-
-  const renderSignup = () => {
-    if (showSignup) {
-      return (
-        <>
-          <Signup setShowSignup={setShowSignup}/>
-        </>
+        </form>
       );
     }
   };
 
   return (
-    <form className="login" name="login">
+    <>
       {renderContent()}
-      <button
-        type="button"
-        onClick={() => {
-          setShowSignup(!showSignup);
-        }}
-      >
-        Register
-      </button>
-      {renderSignup()}
-    </form>
+    </>
   );
 }

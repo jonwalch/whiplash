@@ -51,7 +51,7 @@ export function Signup(props: any) {
   };
 
   return (
-    <form className="signup" name="signUp">
+    <form className="form form--signup container" name="signUp">
       <h2>Sign up</h2>
       <label htmlFor="email">Email</label>
       <input

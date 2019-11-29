@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { Login } from "./Login";
+import { Signup } from "./Signup";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
@@ -165,6 +166,26 @@ export function Home(props: any) {
     }
   };
 
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  const [showSignup, setShowSignup] = useState(false);
+
+  const renderSignup = () => {
+    if (showSignup) {
+      return (
+        <>
+          <Signup setShowSignup={setShowSignup}/>
+        </>
+      );
+    }
+  };
+
   return (
     <>
       <header role="banner" className="site-header">
@@ -191,20 +212,33 @@ export function Home(props: any) {
           <nav className="navigation navigation--cta">
             <ul className="navigation__list">
               <li><button type="button" className="navigation__link">Login</button></li>
-              <li><button type="button" className="navigation__button">Sign Up</button></li>
+              <li>
+                <button
+                  type="button"
+                  className="navigation__button"
+                  onClick={() => {
+                    setShowSignup(!showSignup);
+                  }}
+                >
+                  Register
+                </button>
+              </li>
             </ul>
           </nav>
         </div>
+        {renderSignup()}
       </header>
       <Login />
       <main id="content" role="main" className="site-main">
-        <Bets
-          matchID={matchID}
-          currentGame={currentGame}
-          passedguessingPeriod={passedGuessingPeriod}
-        />
-        {renderContent()}
-        <Leaderboard />
+        <div className="container">
+          <Bets
+            matchID={matchID}
+            currentGame={currentGame}
+            passedguessingPeriod={passedGuessingPeriod}
+          />
+          {renderContent()}
+          <Leaderboard />
+        </div>
       </main>
       <footer role="contentinfo" className="site-footer">
         <section className="site-navigation container">
@@ -230,10 +264,22 @@ export function Home(props: any) {
           <nav className="navigation navigation--cta">
             <ul className="navigation__list">
               <li><button type="button" className="navigation__link">Login</button></li>
-              <li><button type="button" className="navigation__button">Sign Up</button></li>
+              <li>
+                <button
+                  type="button"
+                  className="navigation__button"
+                  onClick={() => {
+                    scrollToTop();
+                    setShowSignup(!showSignup);
+                  }}
+                >
+                  Register
+                </button>
+              </li>
             </ul>
           </nav>
         </section>
+        <hr />
         <section className="container site-footer__content">
           <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
           <p>&copy; Whiplash. All Rights Reserved.</p>
