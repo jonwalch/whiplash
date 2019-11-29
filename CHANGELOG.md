@@ -20,9 +20,17 @@ and this project adheres to [Semantic Versioning](semver).
 ### Added
 - [x] Add CSS reset
 - [x] Add a few CSS defaults
-- [ ] Add better CSS defaults
-- [ ] Design layout
-- [ ] Style components
+- [x] Add better CSS defaults
+- [ ] Design layout and style components
+  - [x] Site header
+  - [x] Site footer
+  - [x] Navigation
+  - [x] Responsive Twitch embed
+  - [x] Signup
+  - [ ] Login
+  - [ ] Vote
+  - [ ] Bet
+  - [ ] etc.
 - [x] Add CSS pre-processing and post-processing
   - [x] Sass syntax
   - [x] PostCSS plugins (`autoprefixer`, dynamic imports, `precss`, beautify, etc.)
