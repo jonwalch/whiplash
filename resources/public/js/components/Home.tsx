@@ -150,7 +150,7 @@ export function Home(props: any) {
       return (
         <>
           <h2>{matchName}</h2>
-          <div id="twitch-embed"></div>
+          <div className="aspect-ratio-wide" id="twitch-embed"></div>
           <Vote
             opponents={opponents}
             team={team}
