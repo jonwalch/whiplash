@@ -1,0 +1,4 @@
+@import './reset.css';
+@import './globals/*.css';
+@import './elements/*.css';
+@import './components/*.css';

@@ -1,0 +1,25 @@
+.site-navigation {
+  @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+    align-content: center;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  a {
+
+    &:link,
+    &:visited {
+      text-decoration: none;
+    }
+
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+    }
+
+    &:active {
+      color: white;
+      text-decoration: underline;
+    }
+  }
+}

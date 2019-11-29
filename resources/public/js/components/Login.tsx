@@ -4,7 +4,6 @@ import "../../css/App.css";
 import { LoginContext, defaultLoggedIn } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const"
 import { getCSRFToken } from "../common";
-import { Signup } from "./Signup";
 
 export function Login(props: any) {
   const [userName, setUserName] = useState("");
@@ -96,16 +95,15 @@ export function Login(props: any) {
           <p>User: {loggedInState.userName}</p>
           <p>Cash: ${loggedInState.cash}</p>
           <button type="button" onClick={logout}>
-            Sign out
+            Sign Out
           </button>
         </>
       );
     } else {
       return (
-        <>
-          <h3>Log in</h3>
+        <form className="form form--login" name="login">
+          <label htmlFor="userName">Username</label>
           <input
-            placeholder="User Name"
             value={userName}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setUserName(e.currentTarget.value);
@@ -113,9 +111,11 @@ export function Login(props: any) {
             onKeyPress={(e) => {loginOnKeyPress(e)}}
             type="text"
             maxLength={100}
+            name="userName"
+            id="userName"
           />
+          <label htmlFor="password">Password</label>
           <input
-            placeholder="Password"
             value={password}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setPassword(e.currentTarget.value);
@@ -123,37 +123,20 @@ export function Login(props: any) {
             onKeyPress={(e) => {loginOnKeyPress(e)}}
             type="password"
             maxLength={100}
+            name="password"
+            id="password"
           />
           <button type="button" onClick={login} disabled={toggleValid()}>
             Log In
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setShowSignup(!showSignup);
-            }}
-          >
-            Show Sign Up
-          </button>
-        </>
-      );
-    }
-  };
-
-  const renderSignup = () => {
-    if (showSignup) {
-      return (
-        <>
-          <Signup setShowSignup={setShowSignup}/>
-        </>
+        </form>
       );
     }
   };
 
   return (
-    <div className="login-bar">
+    <>
       {renderContent()}
-      {renderSignup()}
-    </div>
+    </>
   );
 }

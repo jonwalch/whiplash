@@ -1,0 +1,10 @@
+/**
+  * Import web fonts
+  */
+
+@import './inter.css';
+
+/**
+  * Declare font stacks
+  */
+$font-stack-primary: 'Inter', Roboto, Helvetica, Arial, sans-serif;

@@ -1,0 +1,13 @@
+* {
+	font-family: inherit;
+	line-height: inherit;
+	color: inherit;
+}
+
+body {
+	background: white;
+	color: $light-black;
+	font: 400 1rem/1.5 $font-stack-primary;
+  margin: 0;
+	overflow-y: auto;
+}

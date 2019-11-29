@@ -95,7 +95,7 @@ export function Vote(props: any) {
   const renderContent = () => {
     if (loggedInState.userName) {
       if (props.passedGuessingPeriod === null || props.userStatus === null) {
-        return <div>Loading</div>;
+        return <p>Loading...</p>;
       } else if (!(props.userStatus == "user.status/active")) {
         return (
           <>
@@ -105,25 +105,26 @@ export function Vote(props: any) {
       } else if (!guessedTeamName && !props.passedGuessingPeriod) {
         return (
           <>
-            <div>
-              {props.opponents.map((opponent: Opponent) => {
-                return (
-                  <button
-                    type="button"
-                    key={opponent.teamID}
-                    onClick={() => handleClick(opponent)}
-                  >
-                    {opponent.teamName}
-                  </button>
-                );
-              })}
-            </div>
+            {props.opponents.map((opponent: Opponent) => {
+              return (
+                <button
+                  type="button"
+                  key={opponent.teamID}
+                  onClick={() => handleClick(opponent)}
+                >
+                  {opponent.teamName}
+                </button>
+              );
+            })}
             {renderTeamSelect()}
             <input
               value={betAmount > 0 ? betAmount : ""}
               onChange={e => {
                 handleInputChange(e);
               }}
+              type="number"
+              name="betAmount"
+              id="betAmount"
             />
             <button
               type="button"
@@ -136,16 +137,16 @@ export function Vote(props: any) {
         );
       } else if (!guessedTeamName && props.passedGuessingPeriod) {
         return (
-          <h3>
+          <p>
             Sorry! You missed betting for this game. Stick around for the next
             one!
-          </h3>
+          </p>
         );
       } else if (guessedTeamName && !props.passedGuessingPeriod) {
-        return <h3>You bet on {guessedTeamName} for this game!</h3>;
+        return <p>You bet on {guessedTeamName} for this game!</p>;
       }
     } else {
-      return <h3>Login to guess!</h3>;
+      return <p>Login to guess!</p>;
     }
   };
 

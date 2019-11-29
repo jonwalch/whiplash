@@ -7,8 +7,11 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode development"
+    "start": "npm run build",
+    "develop": "NODE_ENV='development' gulp develop",
+    "watch:css": "NODE_ENV='development' gulp watch",
+    "watch:js": "NODE_ENV='development' webpack -w",
+    "build": "NODE_ENV='production' gulp build && webpack -p"
   },
   "repository": {
     "type": "git",
@@ -23,9 +26,29 @@
   "devDependencies": {
     "@types/react": "^16.9.5",
     "@types/react-dom": "^16.9.1",
+    "autoprefixer": "^9.7.1",
     "css-loader": "^1.0.0",
+    "cssnano": "^4.1.10",
+    "del": "^5.1.0",
+    "file-loader": "^5.0.2",
+    "gulp": "^4.0.2",
+    "gulp-beautify": "^3.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-connect": "^5.7.0",
+    "gulp-postcss": "^8.0.0",
+    "gulp-rename": "^1.4.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-stylelint": "^10.0.0",
+    "gulp-uglify": "^3.0.2",
+    "merge-stream": "^2.0.0",
+    "pixrem": "^5.0.0",
+    "postcss-easy-import": "^3.0.0",
+    "postcss-preset-env": "^6.7.0",
+    "precss": "^4.0.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.0",
+    "stylelint": "^11.1.1",
+    "stylelint-config-standard": "^19.0.0",
     "ts-loader": "^6.2.0",
     "typescript": "^3.6.4",
     "webpack": "^4.19.1",
@@ -39,5 +62,11 @@
     "react-dom": "^16.10.2",
     "react-router": "^5.1.2",
     "react-router-dom": "^5.1.2"
-  }
+  },
+  "browserslist": [
+    "last 3 versions",
+    "> 1%",
+    "maintained node versions",
+    "not dead"
+  ]
 }

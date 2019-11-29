@@ -51,68 +51,76 @@ export function Signup(props: any) {
   };
 
   return (
-    <div>
-      <h2>Sign up ya filthy animal</h2>
-      <div className="signup">
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            setEmail(e.currentTarget.value);
-          }}
-          onKeyPress={(e) => {signupOnKeyPress(e)}}
-          type="text"
-          maxLength={100}
-          minLength={5}
-        />
-        <input
-          placeholder="User Name"
-          value={userName}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            setUserName(e.currentTarget.value);
-          }}
-          onKeyPress={(e) => {signupOnKeyPress(e)}}
-          type="text"
-          maxLength={100}
-          minLength={1}
-        />
-        <input
-          placeholder="Password"
-          value={password}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            setPassword(e.currentTarget.value);
-          }}
-          onKeyPress={(e) => {signupOnKeyPress(e)}}
-          type="password"
-          maxLength={100}
-          minLength= {8}
-        />
-        <input
-          placeholder="First Name"
-          value={firstName}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            setFirstName(e.currentTarget.value);
-          }}
-          onKeyPress={(e) => {signupOnKeyPress(e)}}
-          type="text"
-          maxLength={30}
-          minLength={2}
-        />
-        <input
-          placeholder="Last Name"
-          value={lastName}
+    <form className="form form--signup container" name="signUp">
+      <h2>Sign up</h2>
+      <label htmlFor="email">Email</label>
+      <input
+        value={email}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+          setEmail(e.currentTarget.value);
+        }}
+        onKeyPress={(e) => {signupOnKeyPress(e)}}
+        type="email"
+        maxLength={100}
+        minLength={5}
+        name="email"
+        id="email"
+      />
+      <label htmlFor="userName">Username</label>
+      <input
+        value={userName}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+          setUserName(e.currentTarget.value);
+        }}
+        onKeyPress={(e) => {signupOnKeyPress(e)}}
+        type="text"
+        maxLength={100}
+        minLength={1}
+        name="userName"
+        id="userName"
+      />
+      <label htmlFor="password">Password</label>
+      <input
+        value={password}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+          setPassword(e.currentTarget.value);
+        }}
+        onKeyPress={(e) => {signupOnKeyPress(e)}}
+        type="password"
+        maxLength={100}
+        minLength= {8}
+        name="password"
+        id="password"
+      />
+      <label htmlFor="firstName">First Name</label>
+      <input
+        value={firstName}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+          setFirstName(e.currentTarget.value);
+        }}
+        onKeyPress={(e) => {signupOnKeyPress(e)}}
+        type="text"
+        maxLength={30}
+        minLength={2}
+        name="firstName"
+        id="firstName"
+      />
+      <label htmlFor="lastName">Last Name</label>
+      <input
+        value={lastName}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             setLastName(e.currentTarget.value);
           }}
           onKeyPress={(e) => {signupOnKeyPress(e)}}
-          type="text"
-          maxLength={30}
-          minLength={2}
-        />
-        <button type="button" onClick={createUser} disabled={toggleValid()}>
-          Sign up
-        </button>
-      </div>
-    </div>
+        type="text"
+        maxLength={30}
+        minLength={2}
+        name="lastName"
+        id="lastName"
+      />
+      <button type="button" onClick={createUser} disabled={toggleValid()}>
+        Register
+      </button>
+    </form>
   );
 }

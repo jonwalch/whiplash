@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { Login } from "./Login";
+import { Signup } from "./Signup";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
@@ -132,20 +133,24 @@ export function Home(props: any) {
 
   const renderContent = () => {
     if (streamURL == "") {
-      return <h3>Loading</h3>;
+      return <p>Loading...</p>;
     } else if (streamURL == failedToFetch) {
     // } else if (false) {
       return (
-        <h3>
-          Whiplash is taking a nap, hang tight, we'll find a CS:GO match for you
-          soon.
-        </h3>
+        <>
+          <h2>
+            Whiplash is taking a nap
+          </h2>
+          <p>
+            Hang tight, we'll find a CS:GO match for you soon.
+          </p>
+        </>
       );
     } else {
       return (
-        <div>
-          <h3>{matchName}</h3>
-          <div id="twitch-embed"></div>
+        <>
+          <h2>{matchName}</h2>
+          <div className="aspect-ratio-wide" id="twitch-embed"></div>
           <Vote
             opponents={opponents}
             team={team}
@@ -156,25 +161,131 @@ export function Home(props: any) {
             userStatus={userStatus}
             passedGuessingPeriod={passedGuessingPeriod}
           />
-        </div>
+        </>
       );
     }
   };
 
-  //TODO size video based on web browser size
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  const [showSignup, setShowSignup] = useState(false);
+
+  const renderSignup = () => {
+    if (showSignup) {
+      return (
+        <>
+          <Signup setShowSignup={setShowSignup}/>
+        </>
+      );
+    }
+  };
+
   return (
-    <div>
-      <h2>Whiplash (Pre-alpha) - Win While Watching</h2>
+    <>
+      <header role="banner" className="site-header">
+        <div className="site-navigation container">
+          <div className="site-branding">
+            <h1 className="site-branding__title">
+              <a href="/">
+                <img
+                  src="./img/logos/whiplash-horizontal-4c.svg"
+                  alt="Whiplash"
+                  width="165"
+                  height="36"
+                  className="site-logo"
+                />
+              </a>
+            </h1>
+          </div>
+          <nav className="navigation">
+            <ul className="navigation__list">
+              <li><a className="navigation__link" href="/">About</a></li>
+              <li><a className="navigation__link" href="mailto:support@whiplashesports.com">Contact</a></li>
+            </ul>
+          </nav>
+          <nav className="navigation navigation--cta">
+            <ul className="navigation__list">
+              <li><button type="button" className="navigation__link">Login</button></li>
+              <li>
+                <button
+                  type="button"
+                  className="navigation__button"
+                  onClick={() => {
+                    setShowSignup(!showSignup);
+                  }}
+                >
+                  Register
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        {renderSignup()}
+      </header>
       <Login />
-      <div className="main-container">
-        <Bets
-          matchID={matchID}
-          currentGame={currentGame}
-          passedguessingPeriod={passedGuessingPeriod}
-        />
-        {renderContent()}
-      </div>
-      <Leaderboard />
-    </div>
+      <main id="content" role="main" className="site-main">
+        <div className="container">
+          <Bets
+            matchID={matchID}
+            currentGame={currentGame}
+            passedguessingPeriod={passedGuessingPeriod}
+          />
+          {renderContent()}
+          <Leaderboard />
+        </div>
+      </main>
+      <footer role="contentinfo" className="site-footer">
+        <section className="site-navigation container">
+          <div className="site-branding">
+            <p className="site-branding__title">
+              <a href="/">
+                <img
+                  src="./img/logos/whiplash-horizontal-4c.svg"
+                  alt="Whiplash"
+                  width="165"
+                  height="36"
+                  className="site-logo"
+                />
+              </a>
+            </p>
+          </div>
+          <nav className="navigation">
+            <ul className="navigation__list">
+              <li><a className="navigation__link" href="/">About</a></li>
+              <li><a className="navigation__link" href="mailto:support@whiplashesports.com">Contact</a></li>
+            </ul>
+          </nav>
+          <nav className="navigation navigation--cta">
+            <ul className="navigation__list">
+              <li><button type="button" className="navigation__link">Login</button></li>
+              <li>
+                <button
+                  type="button"
+                  className="navigation__button"
+                  onClick={() => {
+                    scrollToTop();
+                    setShowSignup(!showSignup);
+                  }}
+                >
+                  Register
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </section>
+        <hr />
+        <section className="container site-footer__content">
+          <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
+          <p>&copy; Whiplash. All Rights Reserved.</p>
+          <p className="tagline">Win While Watching</p>
+        </section>
+      </footer>
+    </>
   );
 }

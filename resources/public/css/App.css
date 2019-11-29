@@ -1,24 +1,643 @@
-.login-bar {
-    display: flex;
-    justify-content: space-around;
+/* A bare-bones CSS reset for modern web development. https://github.com/hankchizljaw/modern-css-reset */
+
+/* Box sizing rules */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.signup {
-    display: flex;
-    flex-direction: column;
+/* Remove list styles on ul, ol elements with a class attribute */
+
+ul[class],
+ol[class] {
+  list-style: none;
 }
 
-.leaderboard {
-    padding-top: 50px;
+/* Remove default margin */
+
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+li,
+figure,
+figcaption,
+blockquote,
+dl,
+dd {
+  margin: 0;
 }
 
-.main-container {
-    display: flex;
-    /* justify-content: space-between; */
+/* Set core body defaults */
+
+body {
+  min-height: 100vh;
+  scroll-behavior: smooth;
+  text-rendering: optimizeSpeed;
+  line-height: 1.5;
 }
 
-.bets-container {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
+/* A elements that don't have a class get default styles */
+
+a:not([class]) {
+  -webkit-text-decoration-skip: ink;
+  text-decoration-skip-ink: auto;
 }
+
+/* Make images easier to work with */
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Natural flow and rhythm in articles by default */
+
+article>*+* {
+  margin-top: 1em;
+}
+
+/* Inherit fonts for inputs and buttons */
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Remove all animations and transitions for people that prefer not to see them */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    -webkit-animation-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    -webkit-animation-iteration-count: 1 !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/**
+  * Import web fonts
+  */
+
+/**
+  * Declare font stacks
+  */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-Thin-BETA.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-Thin-BETA.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 100;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-ThinItalic-BETA.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-ThinItalic-BETA.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-ExtraLight-BETA.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-ExtraLight-BETA.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 200;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-ExtraLightItalic-BETA.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-ExtraLightItalic-BETA.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-Light-BETA.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-Light-BETA.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-LightItalic-BETA.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-LightItalic-BETA.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-Regular.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-Italic.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-Italic.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-Medium.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-Medium.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-MediumItalic.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-MediumItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-SemiBold.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-SemiBold.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-SemiBoldItalic.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-SemiBoldItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-Bold.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-Bold.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-BoldItalic.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-BoldItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-ExtraBold.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-ExtraBold.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 800;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-ExtraBoldItalic.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-ExtraBoldItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-Black.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-Black.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url("../fonts/Inter/Inter-BlackItalic.woff2") format("woff2"),
+    url("../fonts/Inter/Inter-BlackItalic.woff") format("woff");
+}
+
+/* -------------------------------------------------------
+Variable font.
+Usage:
+
+  html { font-family: 'Inter', sans-serif; }
+  @supports (font-variation-settings: normal) {
+    html { font-family: 'Inter var', sans-serif; }
+  }
+*/
+
+@font-face {
+  font-family: 'Inter var';
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+  font-named-instance: 'Regular';
+  src: url("../fonts/Inter/Inter-upright.var.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: 'Inter var';
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: italic;
+  font-named-instance: 'Italic';
+  src: url("../fonts/Inter/Inter-italic.var.woff2") format("woff2");
+}
+
+/* --------------------------------------------------------------------------
+[EXPERIMENTAL] Multi-axis, single variable font.
+
+Slant axis is not yet widely supported (as of February 2019) and thus this
+multi-axis single variable font is opt-in rather than the default.
+
+When using this, you will probably need to set font-variation-settings
+explicitly, e.g.
+
+  * { font-variation-settings: "slnt" 0deg }
+  .italic { font-variation-settings: "slnt" 10deg }
+
+*/
+
+@font-face {
+  font-family: 'Inter var experimental';
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: oblique 0deg 10deg;
+  src: url("../fonts/Inter/Inter.var.woff2") format("woff2");
+}
+
+a {
+  transition: all 200ms ease;
+}
+
+* {
+  font-family: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+body {
+  background: white;
+  color: hsl(202, 65%, 3%);
+  font: 400 16px/1.5 'Inter', Roboto, Helvetica, Arial, sans-serif;
+  font: 400 1rem/1.5 'Inter', Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  overflow-y: auto;
+}
+
+button {
+  transition: all 200ms ease;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 0.5em;
+}
+
+[hidden] {
+  display: none;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+progress {
+  vertical-align: baseline;
+}
+
+:root {
+  font-feature-settings: "kern", "liga", "clig", "calt", "onum", "pnum";
+  font-size: calc(1 * 100%);
+  /* 1 * 16px = 16px base rem unit */
+  font-size-adjust: 0.516
+    /* Set x-height */
+}
+
+@supports ((-webkit-font-kerning: normal) or (font-kerning: normal)) and (font-variant-ligatures: common-ligatures contextual) and (font-variant-numeric: oldstyle-nums proportional-nums) {
+
+  :root {
+    -webkit-font-kerning: normal;
+    font-kerning: normal;
+    font-variant-ligatures: common-ligatures contextual;
+    font-variant-numeric: oldstyle-nums proportional-nums;
+    font-feature-settings: normal, "kern", common-ligatures contextual, oldstyle-nums proportional-nums, "kern", common-ligatures contextual, oldstyle-nums proportional-nums
+  }
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  :root {
+    /* Tablet Portrait / 37.5rem / 600px */
+    font-size: calc(1.125 * 100%)
+      /* 1.125 * 16px = 18px base rem unit */
+  }
+}
+
+@media screen and (min-width: 56.25rem) {
+
+  :root {
+    /* Tablet Landscape / 56.25rem / 900px */
+    font-size: calc(1.25 * 100%)
+      /* 1.25 * 16px = 20px base rem unit */
+  }
+}
+
+@media screen and (min-width: 75rem) {
+
+  :root {
+    /* Desktop / 75rem / 1200px */
+    font-size: calc(1.375 * 100%)
+      /* 1.375 * 16px = 22px base rem unit */
+  }
+}
+
+@media screen and (min-width: 112.5rem) {
+
+  :root {
+    /* Big Desktop / 112.5rem / 1800px */
+    font-size: calc(1.5 * 100%)
+      /* 1.5 * 16px = 24px base rem unit */
+  }
+}
+
+template {
+  display: none;
+}
+
+@-ms-viewport {
+  width: device-width;
+}
+
+@-o-viewport {
+  width: device-width;
+}
+
+@viewport {
+  width: device-width;
+}
+
+[class*='ratio-'] {
+  display: block;
+  position: relative;
+}
+
+[class*='ratio-']>* {
+  display: block;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.aspect-ratio-wide {
+  padding-top: 56.25%;
+}
+
+.aspect-ratio-square {
+  padding-top: 100%;
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 960px;
+  max-width: 60rem;
+  padding: 1.5em;
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .navigation {
+    /* Tablet Portrait / 37.5rem / 600px */
+    align-items: center;
+    display: flex
+  }
+}
+
+.navigation__list {
+  margin: 0 -1em;
+  padding: 0.5em
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .navigation__list {
+    /* Tablet Portrait / 37.5rem / 600px */
+    align-items: center;
+    display: flex;
+    margin: 0
+  }
+}
+
+.navigation__link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.5em
+}
+
+.navigation__link:hover,
+.navigation__link:focus,
+.navigation__link:active {
+  text-decoration: underline;
+}
+
+.navigation__button {
+  background: hsl(41, 94%, 51%);
+  border: none;
+  border-bottom: 0.25em solid hsl(41, 94%, 31%);
+  color: hsl(220, 39%, 21%);
+  cursor: pointer;
+  font-weight: 600;
+  margin: 0 0.5em;
+  padding: 0.5em
+}
+
+.navigation__button:hover,
+.navigation__button:focus,
+.navigation__button:active {
+  background: hsl(83, 100%, 96%);
+  border-color: hsl(220, 39%, 41%);
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .navigation+.navigation--cta {
+    /* Tablet Portrait / 37.5rem / 600px */
+    margin-left: auto
+  }
+}
+
+.navigation--cta .navigation__list {
+  margin: 0 -1em
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .navigation--cta .navigation__list {
+    /* Tablet Portrait / 37.5rem / 600px */
+    margin: -1em
+  }
+}
+
+.navigation--cta .navigation__link {
+  color: hsl(41, 94%, 51%);
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .site-branding {
+    /* Tablet Portrait / 37.5rem / 600px */
+    align-items: center;
+    display: flex;
+  }
+
+  .site-branding+* {
+    align-items: center;
+    display: flex;
+    margin-left: 0.5em;
+  }
+}
+
+.site-branding__title {
+  color: hsl(41, 94%, 51%)
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .site-branding__title {
+    /* Tablet Portrait / 37.5rem / 600px */
+    margin: 0
+  }
+}
+
+.site-branding .site-branding__title a:hover,
+.site-branding .site-branding__title a:focus {
+  text-decoration: none;
+}
+
+.site-footer {
+  background: hsl(220, 39%, 21%);
+  border-bottom: 0.25em solid hsl(41, 94%, 51%);
+  color: hsl(83, 100%, 96%);
+}
+
+.site-footer__content a:hover,
+.site-footer__content a:focus,
+.site-footer__content a:active {
+  color: hsl(41, 94%, 51%);
+}
+
+.site-header {
+  background: hsl(220, 39%, 21%);
+  border-top: 0.25em solid hsl(41, 94%, 51%);
+  color: hsl(83, 100%, 96%);
+}
+
+.site-logo {
+  height: calc(1 * 1.8rem);
+  width: calc(1 * 8.25rem)
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .site-logo {
+    /* Tablet Portrait / 37.5rem / 600px */
+    height: calc(1.125 * 1.8rem);
+    width: calc(1.125 * 8.25rem)
+  }
+}
+
+@media screen and (min-width: 56.25rem) {
+
+  .site-logo {
+    /* Tablet Landscape / 56.25rem / 900px */
+    height: calc(1.25 * 1.8rem);
+    width: calc(1.25 * 8.25rem)
+  }
+}
+
+@media screen and (min-width: 75rem) {
+
+  .site-logo {
+    /* Desktop / 75rem / 1200px */
+    height: calc(1.375 * 1.8rem);
+    width: calc(1.375 * 8.25rem)
+  }
+}
+
+@media screen and (min-width: 112.5rem) {
+
+  .site-logo {
+    /* Big Desktop / 112.5rem / 1800px */
+    height: calc(1.5 * 1.8rem);
+    width: calc(1.5 * 8.25rem)
+  }
+}
+
+@media screen and (min-width: 37.5rem) {
+
+  .site-navigation {
+    /* Tablet Portrait / 37.5rem / 600px */
+    align-content: center;
+    display: flex;
+    justify-content: flex-start
+  }
+}
+
+.site-navigation a:link,
+.site-navigation a:visited {
+  text-decoration: none;
+}
+
+.site-navigation a:hover,
+.site-navigation a:focus {
+  text-decoration: underline;
+}
+
+.site-navigation a:active {
+  color: white;
+  text-decoration: underline;
+}
+/*# sourceMappingURL=App.css.map */

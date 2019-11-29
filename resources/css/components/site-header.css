@@ -1,0 +1,5 @@
+.site-header {
+  background: $dark-blue;
+  border-top: 0.25em solid $orange;
+  color: $dark-white;
+}

@@ -9,13 +9,22 @@ test-config.edn
 *.class
 /.lein-*
 profiles.clj
+.env
 /.env
 .nrepl-port
 
+# Dependencies
 /node_modules
-/log
+package-lock.json
 
-#Manually added below here
+# Log files
+/log
+_logs/
+
+# OS files
+.DS_Store
+
+# Manually added below here
 /.idea
 /resources/public/dist
 get-pip.py
