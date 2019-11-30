@@ -229,8 +229,10 @@
                      :where [?user :user/cash ?cash]
                      [?user :user/name ?user-name]]
             :args  [db]})
-         (mapv #(hash-map :user_name (first %)
-                          :cash (-> % second first))))))
+         (map #(hash-map :user_name (first %)
+                         :cash (-> % second first)))
+         (sort-by :cash #(compare %2 %1))
+         (vec))))
 
 (comment
   (def test-client (d/client cloud-config))
