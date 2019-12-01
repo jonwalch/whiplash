@@ -170,8 +170,18 @@ export function Home(props: any) {
     window.scrollTo(0,0);
   }
 
-  const [showSignup, setShowSignup] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const renderLogin = () => {
+    if (showLogin) {
+      return (
+        <>
+          <Login setShowLogin={setShowLogin}/>
+        </>
+      );
+    }
+  };
 
+  const [showSignup, setShowSignup] = useState(false);
   const renderSignup = () => {
     if (showSignup) {
       return (
@@ -207,7 +217,17 @@ export function Home(props: any) {
           </nav>
           <nav className="navigation navigation--cta">
             <ul className="navigation__list">
-              <li><button type="button" className="navigation__link">Login</button></li>
+              <li>
+                <button
+                  type="button"
+                  className="navigation__link"
+                  onClick={() => {
+                    setShowLogin(!showLogin);
+                  }}
+                >
+                  Log In
+                </button>
+              </li>
               <li>
                 <button
                   type="button"
@@ -222,9 +242,9 @@ export function Home(props: any) {
             </ul>
           </nav>
         </div>
+        {renderLogin()}
         {renderSignup()}
       </header>
-      <Login />
       <main id="content" role="main" className="site-main">
         <div className="container">
           <Bets
@@ -259,7 +279,18 @@ export function Home(props: any) {
           </nav>
           <nav className="navigation navigation--cta">
             <ul className="navigation__list">
-              <li><button type="button" className="navigation__link">Login</button></li>
+              <li>
+                <button
+                  type="button"
+                  className="navigation__link"
+                  onClick={() => {
+                    scrollToTop();
+                    setShowLogin(!showLogin);
+                  }}
+                >
+                  Log In
+                </button>
+              </li>
               <li>
                 <button
                   type="button"
