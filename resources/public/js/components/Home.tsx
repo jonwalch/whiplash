@@ -167,11 +167,7 @@ export function Home(props: any) {
   };
 
   function scrollToTop() {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'smooth'
-    });
+    window.scrollTo(0,0);
   }
 
   const [showSignup, setShowSignup] = useState(false);
@@ -215,12 +211,12 @@ export function Home(props: any) {
               <li>
                 <button
                   type="button"
-                  className="navigation__button"
+                  className="button"
                   onClick={() => {
                     setShowSignup(!showSignup);
                   }}
                 >
-                  Register
+                  Sign Up
                 </button>
               </li>
             </ul>
@@ -267,19 +263,19 @@ export function Home(props: any) {
               <li>
                 <button
                   type="button"
-                  className="navigation__button"
+                  className="button"
                   onClick={() => {
                     scrollToTop();
                     setShowSignup(!showSignup);
                   }}
                 >
-                  Register
+                  Sign Up
                 </button>
               </li>
             </ul>
           </nav>
         </section>
-        <hr />
+        <hr className="site-footer__hr" />
         <section className="container site-footer__content">
           <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
           <p>&copy; Whiplash. All Rights Reserved.</p>

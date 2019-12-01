@@ -1,0 +1,17 @@
+  .button {
+    background: $orange;
+    border: none;
+    border-bottom: 0.25em solid $dark-orange;
+    color: $dark-blue;
+    cursor: pointer;
+    font-family: $font-stack-secondary;
+    font-weight: 600;
+    padding: 0.5em;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background: $dark-white;
+      border-color: $medium-blue;
+    }
+  }
