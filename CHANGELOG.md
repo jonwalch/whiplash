@@ -19,14 +19,17 @@ and this project adheres to [Semantic Versioning](semver).
 
 ### Added
 - [ ] Design layout and style components
-  - [ ] Signup and Login forms
-  - [ ] Twitch embed primary prominence (front and center/left)
   - [x] Remove container `max-width`
+  - [x] Add brand fonts
+  - [x] Signup form
+  - [ ] Login form
+  - [ ] Twitch embed primary prominence (front and center/left)
   - [ ] Vote
   - [ ] Bet
   - [ ] etc.
 - [ ] Move Login into header/footer
 - [ ] Fix Twitch embed height on mobile
+  - [ ] Embed video and chat separately (#32)
 
 ### Changed
 - [ ] Move inlined CSS to linked cacheable asset file(s)
