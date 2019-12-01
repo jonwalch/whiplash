@@ -54,7 +54,7 @@ export function Signup(props: any) {
     <form className="form form--signup container" name="signUp">
       <hr className="form__hr" />
       <header className="form__header">
-        <h2 className="form__title">Sign up</h2>
+        <h2 className="form__title">Sign Up</h2>
         <p className="form__description">Create a username and password to sign up.</p>
       </header>
       <fieldset className="form__fieldset">

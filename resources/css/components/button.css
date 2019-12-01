@@ -1,7 +1,7 @@
   .button {
     background: $orange;
     border: none;
-    border-bottom: 0.25em solid $dark-orange;
+    border-bottom: 0.25em solid $darker-orange;
     color: $dark-blue;
     cursor: pointer;
     font-family: $font-stack-secondary;
@@ -11,7 +11,8 @@
     &:hover,
     &:focus,
     &:active {
-      background: $dark-white;
-      border-color: $medium-blue;
+      background: $medium-orange;
+      border-color: $dark-orange;
+      outline: 0.25em solid $purple;
     }
   }

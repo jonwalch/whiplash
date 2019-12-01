@@ -30,6 +30,7 @@
   &__fieldset {
     background: $light-black;
     border: 0.25em solid $orange;
+    color: $dark-white;
     padding: 1.5em;
     
     @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
@@ -63,10 +64,22 @@
     border: none;
     color: $light-black;
     padding: 0.25em 0.5em;
+
+    &:hover,
+    &:focus {
+      background: $dark-white;
+      outline: 0.25em solid $purple;
+    }
   }
 
   &__button {
     align-self: end;
     justify-self: start;
+  }
+
+  &--login,
+  &--signup {
+    background: $dark-blue;
+    color: $dark-white;
   }
 }
