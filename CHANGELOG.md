@@ -15,21 +15,17 @@ and this project adheres to [Semantic Versioning](semver).
 ### Security
 -->
 
-## 0.1.40 - 2019-XX-XX - Signup, login, twitch, bets, votes
+## 0.1.40 - 2019-XX-XX - Main content layout
 
 ### Added
-- [ ] Design layout and style components
-  - [x] Remove container `max-width`
-  - [x] Add brand fonts
-  - [x] Signup form
-  - [ ] Login form
-  - [ ] Twitch embed primary prominence (front and center/left)
+- [ ] Design main content layout
   - [ ] Vote
   - [ ] Bet
-  - [ ] etc.
-- [ ] Move Login into header/footer
-- [ ] Fix Twitch embed height on mobile
-  - [ ] Embed video and chat separately (#32)
+  - [ ] Twitch video
+    - [ ] Fix Twitch embed height on mobile
+    - [ ] Embed video and chat separately (#32)
+  - [ ] Twitch chat
+  - [ ] Leaderboard
 
 ### Changed
 - [ ] Move inlined CSS to linked cacheable asset file(s)
@@ -47,6 +43,12 @@ and this project adheres to [Semantic Versioning](semver).
   - [x] Navigation
   - [x] Responsive Twitch embed
   - [x] Signup
+  - [x] Remove container `max-width`
+  - [x] Add brand fonts
+  - [x] Signup form
+  - [x] Form state(s)
+  - [x] Login form
+  - [x] Move Login into header/footer
 - Add CSS pre-processing and post-processing
   - [x] Sass syntax
   - [x] PostCSS plugins (`autoprefixer`, dynamic imports, `precss`, beautify, etc.)
