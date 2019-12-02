@@ -246,15 +246,13 @@ export function Home(props: any) {
         {renderSignup()}
       </header>
       <main id="content" role="main" className="site-main">
-        <div className="container">
-          <Bets
-            matchID={matchID}
-            currentGame={currentGame}
-            passedguessingPeriod={passedGuessingPeriod}
-          />
-          {renderContent()}
-          <Leaderboard />
-        </div>
+        {renderContent()}
+        <Bets
+          matchID={matchID}
+          currentGame={currentGame}
+          passedguessingPeriod={passedGuessingPeriod}
+        />
+        <Leaderboard />
       </main>
       <footer role="contentinfo" className="site-footer">
         <section className="site-navigation container">

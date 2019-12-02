@@ -40,17 +40,14 @@ export function Bets(props: any) {
 
   const renderBets = () => {
     return (
-      <div className="bets-container">
-        <p style={{ textAlign: "center" }}>Current Bets:</p>
-        <div style={{ display: "flex" }}>
+      <div className="container">
+        <p>Current Bets:</p>
+        <div>
           {bets.map((el: any) => {
             const teamName = el[0];
             const teamBets = el[1];
             return (
-              <div
-                key={teamName}
-                style={{ display: "flex", flexDirection: "column" }}
-              >
+              <div key={teamName}>
                 <div>
                   {teamName} Odds:{teamBets.odds.toFixed(2)} Total:$
                   {teamBets.total}

@@ -40,6 +40,29 @@ export function Leaderboard() {
     setLeaderboard(resp);
   };
 
+  const renderLeaderboard = () => {
+    return (
+      <table className="leaderboard">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Total Cash</th>
+          </tr>
+        </thead>
+        <tbody>
+          {leaderboard.map((leader: Leader) => {
+            return (
+              <tr key={leader.user_name}>
+                <td>{leader.user_name}</td>
+                <td>{leader.cash}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    );
+  };
+
   const getWeeklyLeaderboard = async () => {
     const response = await fetch(baseUrl + "leaderboard/weekly", {
       headers: { "Content-Type": "application/json" },
@@ -78,37 +101,16 @@ export function Leaderboard() {
     }
   };
 
-  const renderLeaderboard = () => {
-    return (
-      <table className="leaderboard">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Total Cash</th>
-          </tr>
-        </thead>
-        <tbody>
-          {leaderboard.map((leader: Leader) => {
-            return (
-              <tr key={leader.user_name}>
-                <td>{leader.user_name}</td>
-                <td>{leader.cash}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    );
-  };
-
   return (
-    <section>
-      <h2>All Time Top Ten</h2>
-      {renderLeaderboard()}
-    <section>
-    </section>
-      <h2>Weekly Leaderboard</h2>
-      {renderWeeklyLeaderboard()}
-    </section>
+    <div className="container">
+      <section>
+        <h2>All Time Top Ten</h2>
+        {renderLeaderboard()}
+      <section>
+      </section>
+        <h2>Weekly Leaderboard</h2>
+        {renderWeeklyLeaderboard()}
+      </section>
+    </div>
   );
 }
