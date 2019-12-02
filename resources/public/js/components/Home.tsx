@@ -133,24 +133,32 @@ export function Home(props: any) {
 
   const renderContent = () => {
     if (streamURL == "") {
-      return <p>Loading...</p>;
+      return (
+        <div className="theater">
+          <p>Loading...</p>
+        </div>
+      );
     } else if (streamURL == failedToFetch) {
     // } else if (false) {
       return (
-        <>
+        <div className="theater">
           <h2>
             Whiplash is taking a nap
           </h2>
           <p>
             Hang tight, we'll find a CS:GO match for you soon.
           </p>
-        </>
+        </div>
       );
     } else {
       return (
         <>
-          <h2>{matchName}</h2>
-          <div className="aspect-ratio-wide" id="twitch-embed"></div>
+          <div className="theater">
+            <header className="theater__header">
+              <h2>{matchName}</h2>
+            </header>
+            <div className="aspect-ratio-wide" id="twitch-embed"></div>
+          </div>
           <Vote
             opponents={opponents}
             team={team}
