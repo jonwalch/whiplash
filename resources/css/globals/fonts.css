@@ -1,10 +1,11 @@
 /**
   * Import web fonts
   */
-
-@import './inter.css';
+@import './fonts/*.css';
 
 /**
   * Declare font stacks
   */
-$font-stack-primary: 'Inter', Roboto, Helvetica, Arial, sans-serif;
+$font-stack-primary: 'Rubik', Roboto, Helvetica, Arial, sans-serif;
+$font-stack-secondary: 'Inter', 'Rubik', Roboto, Helvetica, Arial, sans-serif;
+$font-stack-code: 'Fira Code', Courier, monospace;

@@ -3,6 +3,10 @@
   border-bottom: 0.25em solid $orange;
   color: $dark-white;
 
+  &__hr {
+    margin: 0 1.5em;
+  }
+
   &__content {
 
     a {
@@ -12,6 +16,10 @@
       &:active {
         color: $orange;
       }
+    }
+
+    *:last-child {
+      margin-bottom: 0;
     }
   }
 }

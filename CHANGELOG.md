@@ -15,23 +15,41 @@ and this project adheres to [Semantic Versioning](semver).
 ### Security
 -->
 
-## 1.0.0-alpha - 2019-12-XX - Alpha Release
+## 0.1.40 - 2019-XX-XX - Main content layout
+
+### Added
+- [ ] Vote
+- [ ] Bet
+- [ ] Twitch video
+  - [ ] Fix Twitch embed height on mobile
+  - [ ] Embed video and chat separately (#32)
+- [ ] Twitch chat
+- [ ] Leaderboard
+- [ ] Login/Signup form success/error states
+
+### Changed
+- [ ] Move inlined CSS to linked cacheable asset file(s)
+- [ ] Further modularize markup components/layouts
+
+## 0.1.39 - 2019-11-29 - Header, footer, navigation
 
 ### Added
 - [x] Add CSS reset
 - [x] Add a few CSS defaults
 - [x] Add better CSS defaults
-- [ ] Design layout and style components
+- Design layout and style components
   - [x] Site header
   - [x] Site footer
   - [x] Navigation
   - [x] Responsive Twitch embed
   - [x] Signup
-  - [ ] Login
-  - [ ] Vote
-  - [ ] Bet
-  - [ ] etc.
-- [x] Add CSS pre-processing and post-processing
+  - [x] Remove container `max-width`
+  - [x] Add brand fonts
+  - [x] Signup form
+  - [x] Form state(s)
+  - [x] Login form
+  - [x] Move Login into header/footer
+- Add CSS pre-processing and post-processing
   - [x] Sass syntax
   - [x] PostCSS plugins (`autoprefixer`, dynamic imports, `precss`, beautify, etc.)
   - [x] Concatenate/bundle CSS components
@@ -39,8 +57,6 @@ and this project adheres to [Semantic Versioning](semver).
 
 ### Changed
 - [x] Update component markup to be a bit more semantic
-- [ ] Move inlined CSS to linked cacheable asset file(s)
-- [ ] Further modularize markup components/layouts
 
 ### Removed
 - [x] Remove extra `div` elements

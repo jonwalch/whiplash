@@ -101,34 +101,50 @@ export function Login(props: any) {
       );
     } else {
       return (
-        <form className="form form--login" name="login">
-          <label htmlFor="userName">Username</label>
-          <input
-            value={userName}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setUserName(e.currentTarget.value);
-            }}
-            onKeyPress={(e) => {loginOnKeyPress(e)}}
-            type="text"
-            maxLength={100}
-            name="userName"
-            id="userName"
-          />
-          <label htmlFor="password">Password</label>
-          <input
-            value={password}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setPassword(e.currentTarget.value);
-            }}
-            onKeyPress={(e) => {loginOnKeyPress(e)}}
-            type="password"
-            maxLength={100}
-            name="password"
-            id="password"
-          />
-          <button type="button" onClick={login} disabled={toggleValid()}>
-            Log In
-          </button>
+        <form className="form form--login container" name="login">
+          <hr className="form__hr" />
+          <header className="form__header">
+            <h2 className="form__title">Log In</h2>
+            <p className="form__description">Enter your username and password to log in.</p>
+          </header>
+          <fieldset className="form__fieldset">
+            <div className="form__input-group">
+              <label className="form__label" htmlFor="userName">Username</label>
+              <input
+                className="form__input"
+                value={userName}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  setUserName(e.currentTarget.value);
+                }}
+                onKeyPress={(e) => {loginOnKeyPress(e)}}
+                type="text"
+                maxLength={100}
+                name="userName"
+                id="userName"
+              />
+            </div>
+            <div className="form__input-group">
+              <label className="form__label" htmlFor="password">Password</label>
+              <input
+                className="form__input"
+                value={password}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  setPassword(e.currentTarget.value);
+                }}
+                onKeyPress={(e) => {loginOnKeyPress(e)}}
+                type="password"
+                maxLength={100}
+                name="password"
+                id="password"
+              />
+            </div>
+            <button
+              className="button form__button"
+              type="button"
+              onClick={login} disabled={toggleValid()}>
+              Log In
+            </button>
+          </fieldset>
         </form>
       );
     }

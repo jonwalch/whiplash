@@ -1,0 +1,7 @@
+.twitch {
+
+  &__title {
+    font-family: $font-stack-secondary;
+    margin: 0;
+  }
+}

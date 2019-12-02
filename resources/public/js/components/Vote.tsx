@@ -150,5 +150,9 @@ export function Vote(props: any) {
     }
   };
 
-  return <>{renderContent()}</>;
+  return (
+    <div className="container">
+      {renderContent()}
+    </div>
+  );
 }
