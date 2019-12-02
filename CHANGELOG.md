@@ -18,14 +18,14 @@ and this project adheres to [Semantic Versioning](semver).
 ## 0.1.40 - 2019-XX-XX - Main content layout
 
 ### Added
-- [ ] Design main content layout
-  - [ ] Vote
-  - [ ] Bet
-  - [ ] Twitch video
-    - [ ] Fix Twitch embed height on mobile
-    - [ ] Embed video and chat separately (#32)
-  - [ ] Twitch chat
-  - [ ] Leaderboard
+- [ ] Vote
+- [ ] Bet
+- [ ] Twitch video
+  - [ ] Fix Twitch embed height on mobile
+  - [ ] Embed video and chat separately (#32)
+- [ ] Twitch chat
+- [ ] Leaderboard
+- [ ] Login/Signup form success/error states
 
 ### Changed
 - [ ] Move inlined CSS to linked cacheable asset file(s)
