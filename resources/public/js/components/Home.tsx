@@ -122,40 +122,47 @@ export function Home(props: any) {
       node.removeChild(node.firstChild);
     }
 
-    new Twitch.Embed("twitch-embed", {
+    const options = {
       width: 1024,
       height: 576,
       channel: twitchUsername,
-      autoplay: true,
-      layout: "video-with-chat"
-    });
+      autoplay: true
+    }
+
+    const player = new Twitch.Embed("twitch-embed", options);
   };
 
   const renderContent = () => {
     if (streamURL == "") {
       return (
-        <div className="theater">
-          <p>Loading...</p>
+        <div className="aspect-ratio-wide">
+          <div className="twitch">
+            <header className="container">
+              <h2 className="twitch__title">Loading...</h2>
+            </header>
+          </div>
         </div>
       );
     } else if (streamURL == failedToFetch) {
     // } else if (false) {
       return (
-        <div className="theater">
-          <h2>
-            Whiplash is taking a nap
-          </h2>
-          <p>
-            Hang tight, we'll find a CS:GO match for you soon.
-          </p>
+        <div className="aspect-ratio-wide">
+          <div className="twitch">
+            <header className="container">
+              <h2 className="twitch__title">Whiplash is taking a nap</h2>
+            </header>
+            <div className="container">
+              <p>Hang tight, we'll find a CS:GO match for you soon.</p>
+            </div>
+          </div>
         </div>
       );
     } else {
       return (
         <>
-          <div className="theater">
-            <header className="theater__header">
-              <h2>{matchName}</h2>
+          <div className="twitch">
+            <header className="container">
+              <h2 className="twitch__title">{matchName}</h2>
             </header>
             <div className="aspect-ratio-wide" id="twitch-embed"></div>
           </div>
@@ -316,9 +323,8 @@ export function Home(props: any) {
         </section>
         <hr className="site-footer__hr" />
         <section className="container site-footer__content">
-          <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
           <p>&copy; Whiplash. All Rights Reserved.</p>
-          <p className="tagline">Win While Watching</p>
+          <p><strong>Need help?</strong> Contact us at <a href="mailto:support@whiplashesports.com" target="_blank" rel="noreferrer">support@whiplashesports.com</a></p>
         </section>
       </footer>
     </>
