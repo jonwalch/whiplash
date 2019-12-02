@@ -54,7 +54,7 @@ export function Leaderboard() {
             return (
               <tr key={leader.user_name}>
                 <td>{leader.user_name}</td>
-                <td>{leader.cash}</td>
+                <td>${leader.cash}</td>
               </tr>
             );
           })}
