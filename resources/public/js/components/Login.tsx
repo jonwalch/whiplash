@@ -94,7 +94,7 @@ export function Login(props: any) {
         <>
           <p>User: {loggedInState.userName}</p>
           <p>Cash: ${loggedInState.cash}</p>
-          <button type="button" onClick={logout}>
+          <button className="button" type="button" onClick={logout}>
             Sign Out
           </button>
         </>
