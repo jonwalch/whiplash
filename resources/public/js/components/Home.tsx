@@ -232,7 +232,7 @@ export function Home(props: any) {
               <li>
                 <button
                   type="button"
-                  className="button"
+                  className="button navigation__button"
                   onClick={() => {
                     scrollToTop();
                     setShowSignup(!showSignup);
@@ -294,7 +294,7 @@ export function Home(props: any) {
               <li>
                 <button
                   type="button"
-                  className="button"
+                  className="button navigation__button"
                   onClick={() => {
                     scrollToTop();
                     setShowSignup(!showSignup);
