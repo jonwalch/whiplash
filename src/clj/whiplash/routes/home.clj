@@ -42,10 +42,10 @@
                  ;; multipart
                  multipart/multipart-middleware
 
-                 #_middleware/wrap-csrf
                  middleware/wrap-formats]}
    ;; user pages
    ["/" {:get home-page}]
+   ["/about" {:get home-page}]
 
    ;;endpoints client talks to
    ["/stream"
@@ -119,6 +119,7 @@
                               (user/create-user req))}}]
 
     ["/guess"
+     ;; TODO there may now be more than 1 bet, so we need to return them all
      {:get  {:summary    "get a guess for a user/game-id"
              :parameters {:query {:game_id  int?
                                   :match_id int?}}

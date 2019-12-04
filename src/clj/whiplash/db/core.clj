@@ -99,7 +99,6 @@
                                :user/cash         (bigint 500)}]}))
 
 (defn add-guess-for-user
-  "purposely leaving out :guess/score, will be added by another piece of code later"
   [conn {:keys [db/id game-type match-name game-id team-name team-id match-id bet-amount cash]}]
   (d/transact conn {:tx-data [[:db/cas id :user/cash cash (bigint (- cash bet-amount))]
                               {:db/id     id
@@ -158,6 +157,7 @@
     (when-let [user (ffirst (find-user-by-user-name-db db user-name))]
       user)))
 
+;;TODO refactor, this can now return multiple results
 (defn find-bet
   [db user-name game-id match-id]
   (ffirst (d/q {:query '[:find ?bet

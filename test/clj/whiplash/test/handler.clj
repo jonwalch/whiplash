@@ -4,9 +4,7 @@
     [ring.mock.request :as mock]
     [clojure.string :as string]
     [whiplash.test.common :as common]
-    [whiplash.guess-processor :as guess-processor]
-    [whiplash.db.core :as db]
-    [datomic.client.api :as d]))
+    [whiplash.guess-processor :as guess-processor]))
 
 (common/app-fixtures)
 (common/db-fixtures)
@@ -15,6 +13,10 @@
 (deftest test-app
   (testing "main route"
     (let [response ((common/test-app) (mock/request :get "/"))]
+      (is (= 200 (:status response)))))
+
+  (testing "about"
+    (let [response ((common/test-app) (mock/request :get "/about"))]
       (is (= 200 (:status response)))))
 
   (testing "not-found route"
@@ -247,9 +249,9 @@
           get-guess-resp2 (get-guess auth-token
                                      (:game_id dummy-guess-2)
                                      (:match_id dummy-guess-2))
-          fail-create-same-guess-resp ((common/test-app) (-> (mock/request :post "/user/guess")
-                                                             (mock/json-body dummy-guess)
-                                                             (mock/cookie :value auth-token)))]
+          success-create-same-guess-resp ((common/test-app) (-> (mock/request :post "/user/guess")
+                                                                (mock/json-body dummy-guess)
+                                                                (mock/cookie :value auth-token)))]
       (is (= {:bet/amount 75
               :game/id   (:game_id dummy-guess)
               :team/name (:team_name dummy-guess)
@@ -270,7 +272,7 @@
               :bet/processed? false}
              (select-keys (:body get-guess-resp2) keys-to-select)))
 
-      (is (= 400 (-> (get-user auth-token) :body :user/cash)))
+      (is (= 325 (-> (get-user auth-token) :body :user/cash)))
 
       (is (not= (:bet/time body)
                 (:bet/time get-guess-resp2)))
@@ -279,7 +281,7 @@
              (:bet/processed-time body)
              (:bet/processed-time get-guess-resp2)))
 
-      (is (= 409 (:status fail-create-same-guess-resp)))
+      (is (= 200 (:status success-create-same-guess-resp)))
 
       (testing "Guess success processing works"
         (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
@@ -312,7 +314,7 @@
                     :bet/payout      25}
                    (select-keys (:body get-guess-resp2) keys-to-select)))
 
-            (is (= 425 (-> (get-user auth-token) :body :user/cash)))
+            (is (= 350 (-> (get-user auth-token) :body :user/cash)))
 
             (is (not= (:bet/processed-time body)
                       (:bet/processed-time get-guess-resp2)))

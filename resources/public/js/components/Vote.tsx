@@ -6,36 +6,36 @@ import { getCSRFToken, useInterval } from "../common";
 
 export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
-  const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
+  // const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
   const [betAmount, setBetAmount] = useState<number>(0);
 
-  useEffect(() => {
-    if (props.currentGame.id && props.matchID && loggedInState.userName) {
-      getGuess();
-    }
-  }, [props.currentGame.id, props.matchID, loggedInState.userName]);
-
-  const getGuess = async () => {
-    const url =
-      baseUrl +
-      "user/guess" +
-      "?match_id=" +
-      props.matchID +
-      "&game_id=" +
-      props.currentGame.id;
-    const response = await fetch(url, {
-      headers: { "Content-Type": "application/json" },
-      method: "GET",
-      mode: "same-origin",
-      redirect: "error"
-    });
-    if (response.status == 200) {
-      const resp = await response.json();
-      setGuessedTeamName(resp["team/name"]);
-    } else if (response.status == 404) {
-      setGuessedTeamName("");
-    }
-  };
+  // useEffect(() => {
+  //   if (props.currentGame.id && props.matchID && loggedInState.userName) {
+  //     getGuess();
+  //   }
+  // }, [props.currentGame.id, props.matchID, loggedInState.userName]);
+  //
+  // const getGuess = async () => {
+  //   const url =
+  //     baseUrl +
+  //     "user/guess" +
+  //     "?match_id=" +
+  //     props.matchID +
+  //     "&game_id=" +
+  //     props.currentGame.id;
+  //   const response = await fetch(url, {
+  //     headers: { "Content-Type": "application/json" },
+  //     method: "GET",
+  //     mode: "same-origin",
+  //     redirect: "error"
+  //   });
+  //   if (response.status == 200) {
+  //     const resp = await response.json();
+  //     setGuessedTeamName(resp["team/name"]);
+  //   } else if (response.status == 404) {
+  //     setGuessedTeamName("");
+  //   }
+  // };
 
   const makeGuess = async () => {
     const response = await fetch(baseUrl + "user/guess", {
@@ -58,9 +58,10 @@ export function Vote(props: any) {
 
     const resp = await response.json();
     if (response.status == 200) {
-      setGuessedTeamName(props.team.teamName);
+      // setGuessedTeamName(props.team.teamName);
       // reset local state to no longer have a selected team
       props.setTeam(defaultTeam);
+      alert(`You successfully bet $${betAmount} on ${props.team.teamName}`)
     } else {
       alert(resp);
     }
@@ -76,13 +77,13 @@ export function Vote(props: any) {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault()
-    const numbers = /^[0-9]*$/
+    e.preventDefault();
+    const numbers = /^[0-9]*$/;
     if (numbers.test(e.target.value)) {
       const amount = parseInt(e.target.value, 10) || 0;
       setBetAmount(amount);
     } 
-  }
+  };
 
   const renderTeamSelect = () => {
     if (props.team.teamName) {
@@ -94,7 +95,7 @@ export function Vote(props: any) {
 
   const renderContent = () => {
     if (loggedInState.userName) {
-      if (props.passedGuessingPeriod === null || props.userStatus === null) {
+      if (props.userStatus === null) {
         return <p>Loading...</p>;
       } else if (!(props.userStatus == "user.status/active")) {
         return (
@@ -102,7 +103,7 @@ export function Vote(props: any) {
             <p>Verify your email to bet!</p>
           </>
         );
-      } else if (!guessedTeamName && !props.passedGuessingPeriod) {
+      } else {
         return (
           <>
             {props.opponents.map((opponent: Opponent) => {
@@ -135,15 +136,6 @@ export function Vote(props: any) {
             </button>
           </>
         );
-      } else if (!guessedTeamName && props.passedGuessingPeriod) {
-        return (
-          <p>
-            Sorry! You missed betting for this game. Stick around for the next
-            one!
-          </p>
-        );
-      } else if (guessedTeamName && !props.passedGuessingPeriod) {
-        return <p>You bet on {guessedTeamName} for this game!</p>;
       }
     } else {
       return <p>Login to guess!</p>;
