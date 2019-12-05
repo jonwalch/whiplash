@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](semver).
 
 ### Added
 - [ ] Style Vote
-- [ ] Style Bet
+- [ ] Style Bet (#34)
 - [ ] Style Twitch video
   - [ ] Add toggle button to hide/show Twitch chat window (#32)
     - [ ] When hidden, expand video to fill the space (#32)
@@ -28,7 +28,6 @@ and this project adheres to [Semantic Versioning](semver).
 - [ ] Style Login/Signup form success/error states
 - [ ] Add favicon (#34)
 - [ ] Add About page/route (#34)
-
 
 ### Changed
 - [ ] Bring username and cash out of Login component (#34)
