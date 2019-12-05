@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](semver).
 - [ ] Further modularize markup components/layouts
 
 ### Removed
-- [ ] Remove button focus style after click (without breaking accessibility/keyboard/screenreaders) (#34)
+- [x] Remove button focus style after click (without breaking accessibility/keyboard/screenreaders) (#34)
 
 ### Fixed
 - [ ] Fix Twitch embed height on mobile
