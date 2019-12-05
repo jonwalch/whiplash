@@ -199,12 +199,22 @@ export function Home(props: any) {
     }
   };
 
-  async function isLoggedIn () {
-    // TODO (jonwalch): Help me out with this if statement, please
-    if ('user is logged in') {
+  const loggedIn = async () => {
+    const response = await fetch(baseUrl + "user/login", {
+      headers: { "Content-Type": "application/json" },
+      method: "GET",
+      mode: "same-origin",
+      redirect: "error"
+    });
+
+    if (response.status == 200) {
+      const resp = await response.json();
+      setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
       return true
+    } else {
+      setLoggedInState({ userName: "", cash: loggedInState.cash})
+      return false
     }
-    return false
   };
 
   const logout = async () => {
@@ -228,7 +238,7 @@ export function Home(props: any) {
   };
 
   const renderLogInOutButton = () => {
-    if (isLoggedIn()) {
+    if (loggedIn()) {
       // Show log out button
       return (
         <>
