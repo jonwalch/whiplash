@@ -3,6 +3,7 @@
             [whiplash.config :refer [env]]
             [clojure.tools.logging :as log]))
 
+;;TODO move secrets to KMS
 (def aws-ses-config
   {:user "AKIAUJ3FEDZ5XK6Z7THM"
    :pass "BLF7jQ5tdWxsCTapjL/RZI6h25Ki2UNIqBhI4Mw2bnWX"
@@ -15,6 +16,7 @@
   ;; TODO: On success save this email information to the user
   (if (:prod env)
     (future
+      ;;TODO: retry n times and then give up
       (try (postal/send-message aws-ses-config
                                 {:from    "Whiplash <noreply@whiplashesports.com>"
                                  :to      email
@@ -26,9 +28,6 @@
     (log/info {:to      email
                :subject subject
                :body    body})))
-
-(comment
-  (internal-send-verification-email {:user/email "jonwalch@gmail.com" :subject "hi" :body "hi"}))
 
 (defn send-verification-email
   [{:user/keys [email first-name verify-token] :as user}]

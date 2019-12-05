@@ -6,7 +6,6 @@
             [whiplash.time :as time]
             [clojure.tools.logging :as log]))
 
-;;TODO this will not work when (count webservers) > 1
 (mount/defstate cached-streams
                 :start
                 (atom {})
@@ -14,6 +13,12 @@
                 :stop
                 (atom {}))
 
+;; In development, if no games are currently running you can fake it to get the UI up
+;; just wrap the body of the get-stream function with this
+;; (with-redefs [whiplash.integrations.pandascore/get-matches-request whiplash.test.common/pandascore-running-fake
+;;               whiplash.integrations.twitch/views-per-twitch-stream whiplash.test.common/twitch-view-fake]
+;;   (let ...)
+;; )
 (defn get-stream
   [{:keys [params] :as req}]
   (let [{:keys [streams/last-fetch streams/ordered-candidates]} (deref cached-streams)
@@ -31,11 +36,11 @@
         (let [all-streams (-> :csgo
                               pandascore/get-matches
                               pandascore/sort-and-transform-stream-candidates)]
-          (reset! cached-streams {:streams/last-fetch (time/now)
-                                  :streams/ordered-candidates    all-streams})
-          (return-fn {:stream (first all-streams)
+          (reset! cached-streams {:streams/last-fetch         (time/now)
+                                  :streams/ordered-candidates all-streams})
+          (return-fn {:stream  (first all-streams)
                       :cached? false})))
       (do
         (log/debug "Serving cached stream")
-        (return-fn {:stream (first ordered-candidates)
+        (return-fn {:stream  (first ordered-candidates)
                     :cached? true})))))

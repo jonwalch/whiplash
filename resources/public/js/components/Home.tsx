@@ -29,9 +29,6 @@ export function Home(props: any) {
   const [currentGame, setCurrentGame] = useState<any>({});
   const [opponents, setOpponents] = useState<Opponent[]>([]);
   const [userStatus, setUserStatus] = useState<string | null>(null);
-  const [passedGuessingPeriod, setPastGuessingPeriod] = useState<
-    boolean | null
-  >(null);
 
   useEffect(() => {
     getStream();
@@ -56,16 +53,16 @@ export function Home(props: any) {
     }
   }, 10000);
 
-  const fifteenMinutes = 1000 * 60 * 15;
-  useInterval(() => {
-    //Allows if begin_at is null
-    const beginAt: number = Date.parse(currentGame["begin_at"]);
-    if (beginAt + fifteenMinutes <= Date.now()) {
-      setPastGuessingPeriod(true);
-    } else {
-      setPastGuessingPeriod(false);
-    }
-  }, 1000);
+  // const fifteenMinutes = 1000 * 60 * 15;
+  // useInterval(() => {
+  //   //Allows if begin_at is null
+  //   const beginAt: number = Date.parse(currentGame["begin_at"]);
+  //   if (beginAt + fifteenMinutes <= Date.now()) {
+  //     setPassedGuessingPeriod(true);
+  //   } else {
+  //     setPassedGuessingPeriod(false);
+  //   }
+  // }, 1000);
 
   useInterval(() => {
     getStream();
@@ -174,7 +171,6 @@ export function Home(props: any) {
             matchName={matchName}
             currentGame={currentGame}
             userStatus={userStatus}
-            passedGuessingPeriod={passedGuessingPeriod}
           />
         </>
       );
@@ -267,7 +263,6 @@ export function Home(props: any) {
         <Bets
           matchID={matchID}
           currentGame={currentGame}
-          passedguessingPeriod={passedGuessingPeriod}
         />
         <Leaderboard />
       </main>

@@ -12,7 +12,7 @@ export function Bets(props: any) {
   }, [props.matchID, props.currentGame]);
 
   useInterval(() => {
-    if (!props.passedGuessingPeriod && props.currentGame && props.currentGame.id) {
+    if (props.currentGame && props.currentGame.id) {
       getBets();
     }
   }, 5000);

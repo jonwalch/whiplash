@@ -136,18 +136,13 @@
   (let [{:keys [match_name game_id team_name team_id match_id bet_amount]} body-params
         {:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        {:keys [db/id user/cash]} (d/pull db '[:user/cash :db/id] (db/find-user-by-user-name user))
-        existing-bet (when id
-                       (db/find-bet db user game_id match_id))]
+        {:keys [db/id user/cash]} (d/pull db '[:user/cash :db/id] (db/find-user-by-user-name user))]
     (cond
       (>= 0 bet_amount)
       (conflict {:message "Cannot bet less than 1."})
 
       (> bet_amount cash)
       (conflict {:message "Bet cannot exceed total user cash."})
-
-      (some? existing-bet)
-      (conflict {:message "Already made a bet."})
 
       (some? id)
       (if (try
@@ -168,6 +163,7 @@
       :else
       (not-found {:message "User not found."}))))
 
+;; TODO there may now be more than 1 bet, so we need to return them all
 (defn get-bet
   [{:keys [params] :as req}]
   (let [{:keys [game_id match_id]} params
