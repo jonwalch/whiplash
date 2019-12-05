@@ -108,7 +108,7 @@ export function Login(props: any) {
             <p className="form__description">Enter your username and password to log in.</p>
           </header>
           <fieldset className="form__fieldset">
-            <div className="form__input-group">
+            <div className="form__group">
               <label className="form__label" htmlFor="userName">Username</label>
               <input
                 className="form__input"
@@ -123,7 +123,7 @@ export function Login(props: any) {
                 id="userName"
               />
             </div>
-            <div className="form__input-group">
+            <div className="form__group">
               <label className="form__label" htmlFor="password">Password</label>
               <input
                 className="form__input"

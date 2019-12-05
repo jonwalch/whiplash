@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](semver).
 - [ ] Style Twitch chat
 - [ ] Style Leaderboard
 - [ ] Style Login/Signup form success/error states
-- [ ] Add favicon (#34)
+- [x] Add favicon (#34)
 - [ ] Add About page/route (#34)
 
 ### Changed

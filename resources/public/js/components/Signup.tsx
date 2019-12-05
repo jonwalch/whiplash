@@ -58,7 +58,7 @@ export function Signup(props: any) {
         <p className="form__description">Create a username and password to sign up.</p>
       </header>
       <fieldset className="form__fieldset">
-        <div className="form__input-group">
+        <div className="form__group">
           <label className="form__label" htmlFor="email">Email</label>
           <input
             className="form__input"
@@ -74,7 +74,7 @@ export function Signup(props: any) {
             id="email"
           />
         </div>
-        <div className="form__input-group">
+        <div className="form__group">
           <label className="form__label" htmlFor="userName">Username</label>
           <input
             className="form__input"
@@ -90,7 +90,7 @@ export function Signup(props: any) {
             id="userName"
           />
         </div>
-        <div className="form__input-group">
+        <div className="form__group">
           <label className="form__label" htmlFor="password">Password</label>
           <input
             className="form__input"
@@ -106,7 +106,7 @@ export function Signup(props: any) {
             id="password"
           />
         </div>
-        <div className="form__input-group">
+        <div className="form__group">
           <label className="form__label" htmlFor="firstName">First Name</label>
           <input
             className="form__input"
@@ -122,7 +122,7 @@ export function Signup(props: any) {
             id="firstName"
           />
         </div>
-        <div className="form__input-group">
+        <div className="form__group">
           <label className="form__label" htmlFor="lastName">Last Name</label>
           <input
             className="form__input"
