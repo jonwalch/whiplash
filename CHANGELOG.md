@@ -15,21 +15,35 @@ and this project adheres to [Semantic Versioning](semver).
 ### Security
 -->
 
-## 0.1.40 - 2019-XX-XX - Main content layout
+## 0.1.41 - 2019-XX-XX - Main content layout
 
 ### Added
-- [ ] Vote
-- [ ] Bet
-- [ ] Twitch video
-  - [ ] Fix Twitch embed height on mobile
-  - [ ] Embed video and chat separately (#32)
-- [ ] Twitch chat
-- [ ] Leaderboard
-- [ ] Login/Signup form success/error states
+- [ ] Style Vote
+- [ ] Style Bet
+- [ ] Style Twitch video
+  - [ ] Add toggle button to hide/show Twitch chat window (#32)
+    - [ ] When hidden, expand video to fill the space (#32)
+- [ ] Style Twitch chat
+- [ ] Style Leaderboard
+- [ ] Style Login/Signup form success/error states
+- [ ] Add favicon (#34)
+- [ ] Add About page/route (#34)
+
 
 ### Changed
+- [ ] Bring username and cash out of Login component (#34)
+- [ ] Change Log In button to Log Out when user is logged in (#34)
+- [ ] Embed video and chat separately (#32)
+- [ ] Conditionally render Twitch chat only when cookies are available (#32)
 - [ ] Move inlined CSS to linked cacheable asset file(s)
 - [ ] Further modularize markup components/layouts
+
+### Removed
+- [ ] Remove button focus style after click (without breaking accessibility/keyboard/screenreaders) (#34)
+
+### Fixed
+- [ ] Fix Twitch embed height on mobile
+- [ ] Fix Sign up form layout on large screens (#34)
 
 ## 0.1.39 - 2019-11-29 - Header, footer, navigation
 
