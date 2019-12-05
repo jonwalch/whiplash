@@ -4,7 +4,7 @@ import { Signup } from "./Signup";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
-import { useInterval } from "../common";
+import { useInterval, getCSRFToken } from "../common";
 import { LoginContext } from "../contexts/LoginContext";
 import { Bets } from "./Bets";
 
@@ -185,9 +185,7 @@ export function Home(props: any) {
   const renderLogin = () => {
     if (showLogin) {
       return (
-        <>
-          <Login setShowLogin={setShowLogin}/>
-        </>
+        <Login setShowLogin={setShowLogin}/>
       );
     }
   };
@@ -196,12 +194,75 @@ export function Home(props: any) {
   const renderSignup = () => {
     if (showSignup) {
       return (
-        <>
-          <Signup setShowSignup={setShowSignup}/>
-        </>
+        <Signup setShowSignup={setShowSignup}/>
       );
     }
   };
+
+  async function isLoggedIn () {
+    // TODO (jonwalch): Help me out with this if statement, please
+    if ('user is logged in') {
+      return true
+    }
+    return false
+  };
+
+  const logout = async () => {
+    const response = await fetch(baseUrl + "user/logout", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCSRFToken()
+      },
+      method: "POST",
+      mode: "same-origin",
+      redirect: "error"
+    });
+    const resp = await response.json();
+    console.log(resp);
+    console.log(response.status);
+    if (response.status == 200) {
+      setLoggedInState({userName: "", cash: 0});
+    } else {
+      alert("Failed to hit server to logout");
+    }
+  };
+
+  const renderLogInOutButton = () => {
+    if (isLoggedIn()) {
+      // Show log out button
+      return (
+        <>
+          <li className="navigation__item">{loggedInState.userName}</li>
+          <li className="navigation__item">${loggedInState.cash}</li>
+          <li>
+            <button
+              type="button"
+              className="navigation__link"
+              onClick={logout}
+            >
+              Log Out
+            </button>
+          </li>
+        </>
+      )
+    } else {
+      // Show log in button
+      return (
+        <li>
+          <button
+            type="button"
+            className="navigation__link"
+            onClick={() => {
+              scrollToTop();
+              setShowLogin(!showLogin);
+            }}
+          >
+            Log In
+          </button>
+        </li>
+      )
+    }
+  }
 
   return (
     <>
@@ -228,18 +289,7 @@ export function Home(props: any) {
           </nav>
           <nav className="navigation navigation--cta">
             <ul className="navigation__list">
-              <li>
-                <button
-                  type="button"
-                  className="navigation__link"
-                  onClick={() => {
-                    scrollToTop();
-                    setShowLogin(!showLogin);
-                  }}
-                >
-                  Log In
-                </button>
-              </li>
+              {renderLogInOutButton()}
               <li>
                 <button
                   type="button"
@@ -289,18 +339,7 @@ export function Home(props: any) {
           </nav>
           <nav className="navigation navigation--cta">
             <ul className="navigation__list">
-              <li>
-                <button
-                  type="button"
-                  className="navigation__link"
-                  onClick={() => {
-                    scrollToTop();
-                    setShowLogin(!showLogin);
-                  }}
-                >
-                  Log In
-                </button>
-              </li>
+              {renderLogInOutButton()}
               <li>
                 <button
                   type="button"

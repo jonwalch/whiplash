@@ -90,15 +90,7 @@ export function Login(props: any) {
     if (loggedInState.userName === null) {
       return <div>Loading</div>;
     } else if (loggedInState.userName) {
-      return (
-        <>
-          <p>User: {loggedInState.userName}</p>
-          <p>Cash: ${loggedInState.cash}</p>
-          <button className="button" type="button" onClick={logout}>
-            Sign Out
-          </button>
-        </>
-      );
+      return;
     } else {
       return (
         <form className="form form--login container" name="login">
