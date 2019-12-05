@@ -138,7 +138,7 @@ export function Vote(props: any) {
         );
       }
     } else {
-      return <p>Login to guess!</p>;
+      return <p>Login to bet!</p>;
     }
   };
 
