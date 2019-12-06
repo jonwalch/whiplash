@@ -105,37 +105,45 @@ export function Vote(props: any) {
         );
       } else {
         return (
-          <>
-            {props.opponents.map((opponent: Opponent) => {
-              return (
-                <button
-                  type="button"
-                  key={opponent.teamID}
-                  onClick={() => handleClick(opponent)}
-                >
-                  {opponent.teamName}
-                </button>
-              );
-            })}
-            {renderTeamSelect()}
-            <input
-              value={betAmount > 0 ? betAmount : ""}
-              onChange={e => {
-                handleInputChange(e);
-              }}
-              type="number"
-              name="betAmount"
-              id="betAmount"
-            />
-            <button
-              className="button"
-              type="button"
-              disabled={toggleValid()}
-              onClick={() => makeGuess()}
-            >
-              Make Bet
-            </button>
-          </>
+          <form className="form">
+            <fieldset className="form__fieldset">
+              {props.opponents.map((opponent: Opponent) => {
+                return (
+                  <button
+                    className="button"
+                    type="button"
+                    key={opponent.teamID}
+                    onClick={() => handleClick(opponent)}
+                  >
+                    {opponent.teamName}
+                  </button>
+                );
+              })}
+              {renderTeamSelect()}
+              <div className="form__group">
+                <label className="form__label" htmlFor="betAmount">Bet Amount</label>
+                <input
+                  className="form__input form--vote"
+                  value={betAmount > 0 ? betAmount : ""}
+                  onChange={e => {
+                    handleInputChange(e);
+                  }}
+                  type="number"
+                  min="1"
+                  name="betAmount"
+                  id="betAmount"
+                />
+              </div>
+              <button
+                className="button"
+                type="button"
+                disabled={toggleValid()}
+                onClick={() => makeGuess()}
+              >
+                Make Bet
+              </button>
+            </fieldset>
+          </form>
         );
       }
     } else {

@@ -132,8 +132,9 @@ export function Home(props: any) {
   };
 
   const twitchEmbed = () => {
-    const node: any = document.getElementById("twitch-embed");
-    if (node.firstChild) {
+    const node: any = document.querySelector('#twitch-embed');
+    const hasNode = node !== null ? true : false
+    if (hasNode && node.firstChild) {
       node.removeChild(node.firstChild);
     }
 
@@ -144,7 +145,9 @@ export function Home(props: any) {
       autoplay: true
     }
 
-    const player = new Twitch.Embed("twitch-embed", options);
+    if (hasNode) {
+      const player = new Twitch.Embed("twitch-embed", options);
+    }
   };
 
   const renderContent = () => {
