@@ -8,7 +8,6 @@ import { getCSRFToken } from "../common";
 export function Login(props: any) {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const [showSignup, setShowSignup] = useState(false);
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
 
   const toggleValid = () => {
@@ -27,34 +26,12 @@ export function Login(props: any) {
       redirect: "error",
       body: JSON.stringify({ password: password, user_name: userName })
     });
-    console.log(response.status);
     if (response.status == 200) {
       setLoggedInState({ userName: userName, cash: loggedInState.cash});
-      setShowSignup(false);
+      props.setShowSignup(false);
     } else {
       const resp = await response.text();
-      console.log(resp);
       alert(resp);
-    }
-  };
-
-  const logout = async () => {
-    const response = await fetch(baseUrl + "user/logout", {
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": getCSRFToken()
-      },
-      method: "POST",
-      mode: "same-origin",
-      redirect: "error"
-    });
-    const resp = await response.json();
-    console.log(resp);
-    console.log(response.status);
-    if (response.status == 200) {
-      setLoggedInState({userName: "", cash: 0});
-    } else {
-      alert("Failed to hit server to logout");
     }
   };
 
@@ -66,59 +43,65 @@ export function Login(props: any) {
   };
 
   const renderContent = () => {
+    // Loading
     if (loggedInState.userName === null) {
       return <div>Loading</div>;
+    // Show log in form, user is not logged in
     } else if (loggedInState.userName === '') {
       return (
-        <form className="form form--login container" name="login">
-          <hr className="form__hr" />
-          <header className="form__header">
-            <h2 className="form__title">Log In</h2>
-            <p className="form__description">Enter your username and password to log in.</p>
-          </header>
-          <fieldset className="form__fieldset">
-            <div className="form__group">
-              <label className="form__label" htmlFor="userName">Username</label>
-              <input
-                className="form__input"
-                value={userName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  setUserName(e.currentTarget.value);
-                }}
-                onKeyPress={(e) => {loginOnKeyPress(e)}}
-                type="text"
-                maxLength={100}
-                name="userName"
-                id="userName"
-              />
-            </div>
-            <div className="form__group">
-              <label className="form__label" htmlFor="password">Password</label>
-              <input
-                className="form__input"
-                value={password}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  setPassword(e.currentTarget.value);
-                }}
-                onKeyPress={(e) => {loginOnKeyPress(e)}}
-                type="password"
-                maxLength={100}
-                name="password"
-                id="password"
-              />
-            </div>
-            <button
-              className="button form__button"
-              type="button"
-              onClick={login} disabled={toggleValid()}>
-              Log In
-            </button>
-          </fieldset>
-        </form>
+          <form className="form form--login container" name="login">
+            <hr className="form__hr"/>
+            <header className="form__header">
+              <h2 className="form__title">Log In</h2>
+              <p className="form__description">Enter your username and password to log in.</p>
+            </header>
+            <fieldset className="form__fieldset">
+              <div className="form__group">
+                <label className="form__label" htmlFor="userName">Username</label>
+                <input
+                    className="form__input"
+                    value={userName}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      setUserName(e.currentTarget.value);
+                    }}
+                    onKeyPress={(e) => {
+                      loginOnKeyPress(e)
+                    }}
+                    type="text"
+                    maxLength={100}
+                    name="userName"
+                    id="userName"
+                />
+              </div>
+              <div className="form__group">
+                <label className="form__label" htmlFor="password">Password</label>
+                <input
+                    className="form__input"
+                    value={password}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      setPassword(e.currentTarget.value);
+                    }}
+                    onKeyPress={(e) => {
+                      loginOnKeyPress(e)
+                    }}
+                    type="password"
+                    maxLength={100}
+                    name="password"
+                    id="password"
+                />
+              </div>
+              <button
+                  className="button form__button"
+                  type="button"
+                  onClick={login} disabled={toggleValid()}>
+                Log In
+              </button>
+            </fieldset>
+          </form>
       );
-    } else {
-      return;
     }
+    // Show nothing, user is logged in
+    return;
   };
 
   return (

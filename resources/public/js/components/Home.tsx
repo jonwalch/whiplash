@@ -4,7 +4,7 @@ import { Signup } from "./Signup";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
-import { useInterval, getCSRFToken } from "../common";
+import { useInterval, getCSRFToken, scrollToTop } from "../common";
 import { LoginContext } from "../contexts/LoginContext";
 import { Bets } from "./Bets";
 
@@ -30,6 +30,10 @@ export function Home(props: any) {
   const [opponents, setOpponents] = useState<Opponent[]>([]);
   const [userStatus, setUserStatus] = useState<string | null>(null);
 
+  // Signup and Login state
+  const [showSignup, setShowSignup] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+
   useEffect(() => {
     getStream();
     loggedIn();
@@ -47,26 +51,12 @@ export function Home(props: any) {
     } //teamName changes when a user makes a guess
   }, [loggedInState.userName, team.teamName]);
 
-  //TODO revisit this, currently polling the user's cash and status every 10 seconds
   useInterval(() => {
+    getStream();
+    //TODO revisit this, currently polling the user's cash and status every 10 seconds
     if (loggedInState.userName) {
       getUser();
     }
-  }, 10000);
-
-  // const fifteenMinutes = 1000 * 60 * 15;
-  // useInterval(() => {
-  //   //Allows if begin_at is null
-  //   const beginAt: number = Date.parse(currentGame["begin_at"]);
-  //   if (beginAt + fifteenMinutes <= Date.now()) {
-  //     setPassedGuessingPeriod(true);
-  //   } else {
-  //     setPassedGuessingPeriod(false);
-  //   }
-  // }, 1000);
-
-  useInterval(() => {
-    getStream();
   }, 10000);
 
   const loggedIn = async () => {
@@ -96,9 +86,6 @@ export function Home(props: any) {
       mode: "same-origin",
       redirect: "error"
     });
-    const resp = await response.json();
-    console.log(resp);
-    console.log(response.status);
     if (response.status == 200) {
       setLoggedInState({userName: "", cash: 0});
     } else {
@@ -163,7 +150,7 @@ export function Home(props: any) {
       height: 576,
       channel: twitchUsername,
       autoplay: true
-    }
+    };
 
     if (hasNode) {
       const player = new Twitch.Embed("twitch-embed", options);
@@ -171,6 +158,7 @@ export function Home(props: any) {
   };
 
   const renderContent = () => {
+    // Loading
     if (streamURL == "") {
       return (
         <div className="twitch">
@@ -179,8 +167,8 @@ export function Home(props: any) {
           </div>
         </div>
       );
+    // No stream to show
     } else if (streamURL == failedToFetch) {
-    // } else if (false) {
       return (
         <div className="twitch">
           <div className="container">
@@ -189,40 +177,39 @@ export function Home(props: any) {
           </div>
         </div>
       );
+    // Found stream
     } else {
       return (
         <>
-          <Vote
-            opponents={opponents}
-            team={team}
-            setTeam={setTeam}
-            matchID={matchID}
-            matchName={matchName}
-            currentGame={currentGame}
-            userStatus={userStatus}
-          />
           <div className="twitch">
+            <header className="container">
+              <h2 className="twitch__title">{matchName}</h2>
+            </header>
             <div className="twitch__embed" id="twitch-embed"></div>
+            {/*<div className="aspect-ratio-wide" id="twitch-embed"></div>*/}
           </div>
+          <Vote
+              opponents={opponents}
+              team={team}
+              setTeam={setTeam}
+              matchID={matchID}
+              matchName={matchName}
+              currentGame={currentGame}
+              userStatus={userStatus}
+          />
         </>
       );
     }
   };
 
-  function scrollToTop() {
-    window.scrollTo(0,0);
-  }
-
-  const [showLogin, setShowLogin] = useState(false);
   const renderLogin = () => {
     if (showLogin) {
       return (
-        <Login setShowLogin={setShowLogin}/>
+        <Login setShowSignup={setShowSignup}/>
       );
     }
   };
 
-  const [showSignup, setShowSignup] = useState(false);
   const renderSignup = () => {
     if (showSignup) {
       return (
@@ -232,11 +219,11 @@ export function Home(props: any) {
   };
 
   const renderLogInOutButton = () => {
+    // No userName, currently loading
     if (loggedInState.userName === null) {
-      // No userName
-      return
+      return;
+    // Show log in button, user is not logged in
     } else if (loggedInState.userName === '') {
-      // Show log in button
       return (
         <li>
           <button
@@ -251,8 +238,8 @@ export function Home(props: any) {
           </button>
         </li>
       )
+      // Show log out button, user is logged in
     } else {
-      // Show log out button
       return (
         <>
           <li className="navigation__item">{loggedInState.userName}</li>
@@ -273,7 +260,7 @@ export function Home(props: any) {
         </>
       )
     }
-  }
+  };
 
   return (
     <>

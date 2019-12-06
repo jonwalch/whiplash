@@ -4,7 +4,7 @@ export const getCSRFToken = ():string => {
     const elem : HTMLInputElement = document.getElementById("__anti-forgery-token") as unknown as HTMLInputElement
     const token : string = elem.value as unknown as string;
     return token
-}
+};
 
 export function useInterval(callback: () => void, delay: number) {
   const savedCallback = useRef(callback);
@@ -24,4 +24,8 @@ export function useInterval(callback: () => void, delay: number) {
       return () => clearInterval(id);
     }
   }, [delay]);
+}
+
+export function scrollToTop() {
+  window.scrollTo(0,0);
 }

@@ -59,9 +59,9 @@ export function Vote(props: any) {
     const resp = await response.json();
     if (response.status == 200) {
       // setGuessedTeamName(props.team.teamName);
+      alert(`You successfully bet $${betAmount} on ${props.team.teamName}`)
       // reset local state to no longer have a selected team
       props.setTeam(defaultTeam);
-      alert(`You successfully bet $${betAmount} on ${props.team.teamName}`)
     } else {
       alert(resp);
     }
