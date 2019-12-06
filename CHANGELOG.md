@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](semver).
 - [ ] Add About page/route (#34)
 
 ### Changed
-- [ ] Bring username and cash out of Login component (#34)
+- [x] Bring username and cash out of Login component (#34)
 - [x] Change Log In button to Log Out when user is logged in (#34)
 - [ ] Embed video and chat separately (#32)
 - [ ] Conditionally render Twitch chat only when cookies are available (#32)
@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](semver).
 - [x] Remove button focus style after click (without breaking accessibility/keyboard/screenreaders) (#34)
 
 ### Fixed
-- [ ] Fix Twitch embed height on mobile
+- [x] Fix Twitch embed height on mobile
 - [ ] Fix Sign up form layout on large screens (#34)
 
 ## 0.1.39 - 2019-11-29 - Header, footer, navigation
