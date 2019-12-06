@@ -20,11 +20,9 @@ and this project adheres to [Semantic Versioning](semver).
 ### Added
 - [ ] Style Vote
 - [ ] Style Bet (#34)
-- [ ] Style Twitch video
-  - [ ] Add toggle button to hide/show Twitch chat window (#32)
-    - [ ] When hidden, expand video to fill the space (#32)
-- [ ] Style Twitch chat
 - [ ] Style Leaderboard
+- [ ] Style Twitch video
+- [ ] Style Twitch chat
 - [ ] Style Login/Signup form success/error states
 - [x] Add favicon (#34)
 - [ ] Add About page/route (#34)
@@ -33,6 +31,8 @@ and this project adheres to [Semantic Versioning](semver).
 - [x] Bring username and cash out of Login component (#34)
 - [x] Change Log In button to Log Out when user is logged in (#34)
 - [ ] Embed video and chat separately (#32)
+  - [ ] Add toggle button to hide/show Twitch chat window (#32)
+  - [ ] When chat is hidden, expand video to fill the space (#32)
 - [ ] Conditionally render Twitch chat only when cookies are available (#32)
 - [ ] Move inlined CSS to linked cacheable asset file(s)
 - [ ] Further modularize markup components/layouts

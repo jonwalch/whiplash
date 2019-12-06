@@ -87,9 +87,9 @@ export function Vote(props: any) {
 
   const renderTeamSelect = () => {
     if (props.team.teamName) {
-      return <h1> You selected {props.team.teamName}</h1>;
+      return <p>You selected {props.team.teamName}</p>;
     } else {
-      return <h1> Select a team!</h1>;
+      return <p>Select a team!</p>;
     }
   };
 
@@ -128,6 +128,7 @@ export function Vote(props: any) {
               id="betAmount"
             />
             <button
+              className="button"
               type="button"
               disabled={toggleValid()}
               onClick={() => makeGuess()}
@@ -143,8 +144,10 @@ export function Vote(props: any) {
   };
 
   return (
-    <div className="container">
+    <div className="vote">
+      <div className="container">
       {renderContent()}
+      </div>
     </div>
   );
 }

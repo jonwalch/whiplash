@@ -1,0 +1,9 @@
+.vote {
+  @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+    grid-column: 1 / -1;
+  }
+
+  @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+    grid-column: -2;
+  }
+}

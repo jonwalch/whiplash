@@ -150,37 +150,25 @@ export function Home(props: any) {
   const renderContent = () => {
     if (streamURL == "") {
       return (
-        <div className="aspect-ratio-wide">
-          <div className="twitch">
-            <header className="container">
-              <h2 className="twitch__title">Loading...</h2>
-            </header>
+        <div className="twitch">
+          <div className="container">
+            <p className="twitch__title">Loading...</p>
           </div>
         </div>
       );
     } else if (streamURL == failedToFetch) {
     // } else if (false) {
       return (
-        <div className="aspect-ratio-wide">
-          <div className="twitch">
-            <header className="container">
-              <h2 className="twitch__title">Whiplash is taking a nap</h2>
-            </header>
-            <div className="container">
-              <p>Hang tight, we'll find a CS:GO match for you soon.</p>
-            </div>
+        <div className="twitch">
+          <div className="container">
+            <h2 className="twitch__title">Whiplash is taking a nap</h2>
+            <p>Hang tight, we'll find a CS:GO match for you soon.</p>
           </div>
         </div>
       );
     } else {
       return (
         <>
-          <div className="twitch">
-            <header className="container">
-              <h2 className="twitch__title">{matchName}</h2>
-            </header>
-            <div className="twitch__embed" id="twitch-embed"></div>
-          </div>
           <Vote
             opponents={opponents}
             team={team}
@@ -190,6 +178,9 @@ export function Home(props: any) {
             currentGame={currentGame}
             userStatus={userStatus}
           />
+          <div className="twitch">
+            <div className="twitch__embed" id="twitch-embed"></div>
+          </div>
         </>
       );
     }

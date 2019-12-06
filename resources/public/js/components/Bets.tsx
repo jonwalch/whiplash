@@ -69,8 +69,8 @@ export function Bets(props: any) {
   };
 
   return (
-    <>
+    <div className="bets">
       {bets && renderBets()}
-    </>
+    </div>
   );
 }
