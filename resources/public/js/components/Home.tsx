@@ -30,23 +30,6 @@ export function Home(props: any) {
   const [opponents, setOpponents] = useState<Opponent[]>([]);
   const [userStatus, setUserStatus] = useState<string | null>(null);
 
-  const loggedIn = async () => {
-    const response = await fetch(baseUrl + "user/login", {
-      headers: { "Content-Type": "application/json" },
-      method: "GET",
-      mode: "same-origin",
-      redirect: "error"
-    });
-
-    if (response.status == 200){
-      const resp = await response.json();
-      setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
-      setShowSignup(false);
-    } else {
-      setLoggedInState({ userName: "", cash: loggedInState.cash})
-    }
-  };
-
   useEffect(() => {
     getStream();
     loggedIn();
@@ -85,6 +68,43 @@ export function Home(props: any) {
   useInterval(() => {
     getStream();
   }, 10000);
+
+  const loggedIn = async () => {
+    const response = await fetch(baseUrl + "user/login", {
+      headers: { "Content-Type": "application/json" },
+      method: "GET",
+      mode: "same-origin",
+      redirect: "error"
+    });
+
+    if (response.status == 200){
+      const resp = await response.json();
+      setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
+      setShowSignup(false);
+    } else {
+      setLoggedInState({ userName: "", cash: loggedInState.cash})
+    }
+  };
+
+  const logout = async () => {
+    const response = await fetch(baseUrl + "user/logout", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCSRFToken()
+      },
+      method: "POST",
+      mode: "same-origin",
+      redirect: "error"
+    });
+    const resp = await response.json();
+    console.log(resp);
+    console.log(response.status);
+    if (response.status == 200) {
+      setLoggedInState({userName: "", cash: 0});
+    } else {
+      alert("Failed to hit server to logout");
+    }
+  };
 
   const getStream = async () => {
     const response = await fetch(baseUrl + "stream", {
@@ -208,26 +228,6 @@ export function Home(props: any) {
       return (
         <Signup setShowSignup={setShowSignup}/>
       );
-    }
-  };
-
-  const logout = async () => {
-    const response = await fetch(baseUrl + "user/logout", {
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": getCSRFToken()
-      },
-      method: "POST",
-      mode: "same-origin",
-      redirect: "error"
-    });
-    const resp = await response.json();
-    console.log(resp);
-    console.log(response.status);
-    if (response.status == 200) {
-      setLoggedInState({userName: "", cash: 0});
-    } else {
-      alert("Failed to hit server to logout");
     }
   };
 
