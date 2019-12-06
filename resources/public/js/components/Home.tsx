@@ -30,8 +30,26 @@ export function Home(props: any) {
   const [opponents, setOpponents] = useState<Opponent[]>([]);
   const [userStatus, setUserStatus] = useState<string | null>(null);
 
+  const loggedIn = async () => {
+    const response = await fetch(baseUrl + "user/login", {
+      headers: { "Content-Type": "application/json" },
+      method: "GET",
+      mode: "same-origin",
+      redirect: "error"
+    });
+
+    if (response.status == 200){
+      const resp = await response.json();
+      setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
+      setShowSignup(false);
+    } else {
+      setLoggedInState({ userName: "", cash: loggedInState.cash})
+    }
+  };
+
   useEffect(() => {
     getStream();
+    loggedIn();
   }, []);
 
   useEffect(() => {
@@ -199,24 +217,6 @@ export function Home(props: any) {
     }
   };
 
-  const loggedIn = async () => {
-    const response = await fetch(baseUrl + "user/login", {
-      headers: { "Content-Type": "application/json" },
-      method: "GET",
-      mode: "same-origin",
-      redirect: "error"
-    });
-
-    if (response.status == 200) {
-      const resp = await response.json();
-      setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
-      return true
-    } else {
-      setLoggedInState({ userName: "", cash: loggedInState.cash})
-      return false
-    }
-  };
-
   const logout = async () => {
     const response = await fetch(baseUrl + "user/logout", {
       headers: {
@@ -238,24 +238,10 @@ export function Home(props: any) {
   };
 
   const renderLogInOutButton = () => {
-    if (loggedIn()) {
-      // Show log out button
-      return (
-        <>
-          <li className="navigation__item">{loggedInState.userName}</li>
-          <li className="navigation__item">${loggedInState.cash}</li>
-          <li>
-            <button
-              type="button"
-              className="navigation__link"
-              onClick={logout}
-            >
-              Log Out
-            </button>
-          </li>
-        </>
-      )
-    } else {
+    if (loggedInState.userName === null) {
+      // No userName
+      return
+    } else if (loggedInState.userName === '') {
       // Show log in button
       return (
         <li>
@@ -270,6 +256,27 @@ export function Home(props: any) {
             Log In
           </button>
         </li>
+      )
+    } else {
+      // Show log out button
+      return (
+        <>
+          <li className="navigation__item">{loggedInState.userName}</li>
+          <li className="navigation__item"><span className="navigation__highlight">Cash:</span> ${loggedInState.cash}</li>
+          <li>
+            <button
+              type="button"
+              className="navigation__link"
+              onClick={() => {
+                  logout()
+                  setShowLogin(false);
+                }
+              }
+            >
+              Log Out
+            </button>
+          </li>
+        </>
       )
     }
   }

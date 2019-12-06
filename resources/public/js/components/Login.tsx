@@ -11,10 +11,6 @@ export function Login(props: any) {
   const [showSignup, setShowSignup] = useState(false);
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
 
-  useEffect(() => {
-    loggedIn();
-  }, []);
-
   const toggleValid = () => {
     //TODO: add validation
     return !(userName && password);
@@ -39,23 +35,6 @@ export function Login(props: any) {
       const resp = await response.text();
       console.log(resp);
       alert(resp);
-    }
-  };
-
-  const loggedIn = async () => {
-    const response = await fetch(baseUrl + "user/login", {
-      headers: { "Content-Type": "application/json" },
-      method: "GET",
-      mode: "same-origin",
-      redirect: "error"
-    });
-
-    if (response.status == 200){
-      const resp = await response.json();
-      setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
-      setShowSignup(false);
-    } else {
-      setLoggedInState({ userName: "", cash: loggedInState.cash})
     }
   };
 
@@ -89,9 +68,7 @@ export function Login(props: any) {
   const renderContent = () => {
     if (loggedInState.userName === null) {
       return <div>Loading</div>;
-    } else if (loggedInState.userName) {
-      return;
-    } else {
+    } else if (loggedInState.userName === '') {
       return (
         <form className="form form--login container" name="login">
           <hr className="form__hr" />
@@ -139,6 +116,8 @@ export function Login(props: any) {
           </fieldset>
         </form>
       );
+    } else {
+      return;
     }
   };
 

@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](semver).
 
 ### Changed
 - [ ] Bring username and cash out of Login component (#34)
-- [ ] Change Log In button to Log Out when user is logged in (#34)
+- [x] Change Log In button to Log Out when user is logged in (#34)
 - [ ] Embed video and chat separately (#32)
 - [ ] Conditionally render Twitch chat only when cookies are available (#32)
 - [ ] Move inlined CSS to linked cacheable asset file(s)

@@ -27,6 +27,10 @@
     }
   }
 
+  &__highlight {
+    color: $orange;
+  }
+
   &__link {
     background: none;
     border: none;
