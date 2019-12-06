@@ -216,7 +216,7 @@
    :team_id   3213
    :bet_amount 25})
 
-(defn- create-guess
+(defn- create-bet
   [auth-token guess]
   (let [resp ((common/test-app) (-> (mock/request :post "/user/guess")
                                     (mock/json-body guess)
@@ -226,7 +226,7 @@
 
     (assoc resp :body parsed-body)))
 
-(defn- get-guess
+(defn- get-bets
   [auth-token game-id match-id]
   (let [resp ((common/test-app) (-> (mock/request :get "/user/guess")
                                     (mock/query-string {:match_id match-id
@@ -239,89 +239,98 @@
 
 (deftest add-guesses
   (testing "We can add and get guesses for a user"
-    (let [keys-to-select [:game/id :team/name :team/id :game/type :match/name
-                          :bet/processed? :bet/amount :bet/payout :match/id]
-          {:keys [auth-token] login-resp :response} (create-user-and-login)
+    (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
           {:keys [game_id match_id]} dummy-guess
-          create-guess-resp (create-guess auth-token dummy-guess)
-          create-guess-resp2 (create-guess auth-token dummy-guess-2)
-          {:keys [body] :as get-guess-resp} (get-guess auth-token game_id match_id)
-          get-guess-resp2 (get-guess auth-token
-                                     (:game_id dummy-guess-2)
-                                     (:match_id dummy-guess-2))
-          success-create-same-guess-resp ((common/test-app) (-> (mock/request :post "/user/guess")
-                                                                (mock/json-body dummy-guess)
-                                                                (mock/cookie :value auth-token)))]
-      (is (= {:bet/amount 75
-              :game/id   (:game_id dummy-guess)
-              :team/name (:team_name dummy-guess)
-              :team/id   (:team_id dummy-guess)
-              :game/type "game.type/csgo"
-              :match/id   549829
-              :match/name (:match_name dummy-guess)
-              :bet/processed? false}
-             (select-keys body keys-to-select)))
+          create-guess-resp (create-bet auth-token dummy-guess)
+          create-guess-resp2 (create-bet auth-token dummy-guess-2)
+          create-guess-resp3 (create-bet auth-token dummy-guess-2)
+          {:keys [body] :as get-guess-resp} (get-bets auth-token game_id match_id)
+          get-guess-resp2 (get-bets auth-token
+                                    (:game_id dummy-guess-2)
+                                    (:match_id dummy-guess-2))
+          bets-resp ((common/test-app) (-> (mock/request :get "/leaderboard/bets")
+                                           (mock/query-string {:match_id (:match_id dummy-guess-2)
+                                                               :game_id  (:game_id dummy-guess-2)})))]
+      (is (= [{:bet/processed? false
+               :bet/amount     (:bet_amount dummy-guess)
+               :match/id (:match_id dummy-guess)
+               :game/id   (:game_id dummy-guess)
+               :team/id   (:team_id dummy-guess)
+               :match/name (:match_name dummy-guess)
+               :team/name      (:team_name dummy-guess)}]
+             (mapv #(dissoc % :bet/time) body)))
 
-      (is (= {:bet/amount 25
-              :game/id   (:game_id dummy-guess-2)
-              :team/name (:team_name dummy-guess-2)
-              :team/id   (:team_id dummy-guess-2)
-              :game/type "game.type/csgo"
-              :match/id  549829
-              :match/name (:match_name dummy-guess-2)
-              :bet/processed? false}
-             (select-keys (:body get-guess-resp2) keys-to-select)))
+      (is (= [{:bet/processed? false
+               :bet/amount     (:bet_amount dummy-guess-2)
+               :match/id (:match_id dummy-guess-2)
+               :game/id   (:game_id dummy-guess-2)
+               :team/id   (:team_id dummy-guess-2)
+               :match/name (:match_name dummy-guess-2)
+               :team/name      (:team_name dummy-guess-2)}
+              {:bet/processed? false
+               :bet/amount     (:bet_amount dummy-guess-2)
+               :match/id (:match_id dummy-guess-2)
+               :game/id   (:game_id dummy-guess-2)
+               :team/id   (:team_id dummy-guess-2)
+               :match/name (:match_name dummy-guess-2)
+               :team/name      (:team_name dummy-guess-2)}]
+             (mapv #(dissoc % :bet/time) (:body get-guess-resp2))))
 
-      (is (= 325 (-> (get-user auth-token) :body :user/cash)))
+      (is (= 375 (-> (get-user auth-token) :body :user/cash)))
 
-      (is (not= (:bet/time body)
-                (:bet/time get-guess-resp2)))
+      (is (= {:Liquid {:bets  [{:bet/amount 50
+                                :user/name  "queefburglar"}]
+                       :odds  1.0
+                       :total 50}}
+             (common/parse-json-body bets-resp)))
 
-      (is (= nil
-             (:bet/processed-time body)
-             (:bet/processed-time get-guess-resp2)))
-
-      (is (= 200 (:status success-create-same-guess-resp)))
-
-      (testing "Guess success processing works"
+      #_(testing "Guess success processing works"
         (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
           (let [_ (guess-processor/process-bets)
-                {:keys [body] :as get-guess-resp} (get-guess auth-token game_id match_id)
-                get-guess-resp2 (get-guess auth-token
-                                           (:game_id dummy-guess-2)
-                                           (:match_id dummy-guess-2))
-                leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/weekly")))]
+                {:keys [body] :as get-guess-resp} (get-bets auth-token game_id match_id)
+                get-guess-resp2 (get-bets auth-token
+                                          (:game_id dummy-guess-2)
+                                          (:match_id dummy-guess-2))
+                leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/weekly")))
+                all-time-leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
 
-            (is (= {:game/id          (:game_id dummy-guess)
-                    :team/name        (:team_name dummy-guess)
-                    :team/id          (:team_id dummy-guess)
-                    :game/type        "game.type/csgo"
-                    :match/id       549829
-                    :match/name       (:match_name dummy-guess)
-                    :bet/processed? true
-                    :bet/amount      75
-                    :bet/payout      0}
-                   (select-keys body keys-to-select)))
+            (is (= [{:bet/payout     0
+                     :bet/processed? true
+                     :bet/amount     (:bet_amount dummy-guess)
+                     :match/id (:match_id dummy-guess)
+                     :game/id   (:game_id dummy-guess)
+                     :team/id   (:team_id dummy-guess)
+                     :match/name (:match_name dummy-guess)
+                     :team/name      (:team_name dummy-guess)}]
+                   (mapv #(dissoc % :bet/time :bet/processed-time) body)))
 
-            (is (= {:game/id          (:game_id dummy-guess-2)
-                    :team/name        (:team_name dummy-guess-2)
-                    :team/id          (:team_id dummy-guess-2)
-                    :game/type        "game.type/csgo"
-                    :match/id       549829
-                    :match/name       (:match_name dummy-guess-2)
-                    :bet/processed? true
-                    :bet/amount      25
-                    :bet/payout      25}
-                   (select-keys (:body get-guess-resp2) keys-to-select)))
+            (is (= [{:bet/payout     25
+                     :bet/processed? true
+                     :bet/amount     (:bet_amount dummy-guess-2)
+                     :match/id (:match_id dummy-guess-2)
+                     :game/id   (:game_id dummy-guess-2)
+                     :team/id   (:team_id dummy-guess-2)
+                     :match/name (:match_name dummy-guess-2)
+                     :team/name      (:team_name dummy-guess-2)}
+                    {:bet/payout     25
+                     :bet/processed? true
+                     :bet/amount     (:bet_amount dummy-guess-2)
+                     :match/id (:match_id dummy-guess-2)
+                     :game/id   (:game_id dummy-guess-2)
+                     :team/id   (:team_id dummy-guess-2)
+                     :match/name (:match_name dummy-guess-2)
+                     :team/name      (:team_name dummy-guess-2)}]
+                   (mapv #(dissoc % :bet/time :bet/processed-time) (:body get-guess-resp2))))
 
-            (is (= 350 (-> (get-user auth-token) :body :user/cash)))
-
-            (is (not= (:bet/processed-time body)
-                      (:bet/processed-time get-guess-resp2)))
+            (is (= 425 (-> (get-user auth-token) :body :user/cash)))
 
             (is (= 200 (:status leaderboard-resp)))
-            (is (= [{:user_name "queefburglar" :payout 25}]
-                   (common/parse-json-body leaderboard-resp)))))))))
+            (is (= [{:user_name "queefburglar" :payout 50}]
+                   (common/parse-json-body leaderboard-resp)))
+
+            (is (= [{:cash      425
+                     :user_name "queefburglar"}]
+                   (common/parse-json-body all-time-leaderboard-resp)))))))))
 
 (deftest payout
   (testing "Testing more complex payout"
@@ -329,10 +338,10 @@
                           :bet/processed? :bet/amount :bet/payout :match/id]
           {:keys [auth-token] login-resp :response} (create-user-and-login)
           {auth-token2 :auth-token login-resp2 :response} (create-user-and-login dummy-user-2)
-          create-guess-resp (create-guess auth-token (assoc dummy-guess :bet_amount 475))
-          create-guess-resp2 (create-guess auth-token2 (assoc dummy-guess :bet_amount 100
-                                                                          :team_id 125859
-                                                                          :team_name "Other-team"))
+          create-guess-resp (create-bet auth-token (assoc dummy-guess :bet_amount 475))
+          create-guess-resp2 (create-bet auth-token2 (assoc dummy-guess :bet_amount 100
+                                                                        :team_id 125859
+                                                                        :team_name "Other-team"))
           bets-resp ((common/test-app) (-> (mock/request :get "/leaderboard/bets")
                                            (mock/query-string {:match_id (:match_id dummy-guess)
                                                                :game_id  (:game_id dummy-guess)})))]
@@ -341,12 +350,10 @@
       (is (= 400 (-> (get-user auth-token2) :body :user/cash)))
 
       (is (= {:Liquid     {:bets  [{:bet/amount 475
-                                    :team/name  "Liquid"
                                     :user/name  "queefburglar"}]
                            :odds  1.210526315789474
                            :total 475}
               :Other-team {:bets  [{:bet/amount 100
-                                    :team/name  "Other-team"
                                     :user/name  "donniedarko"}]
                            :odds  5.75
                            :total 100}}
@@ -356,32 +363,30 @@
         (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
           (let [{:keys [game_id match_id]} dummy-guess
                 _ (guess-processor/process-bets)
-                {:keys [body] :as get-guess-resp} (get-guess auth-token game_id match_id)
-                get-guess-resp2 (get-guess auth-token2 game_id match_id)
+                {:keys [body] :as get-guess-resp} (get-bets auth-token game_id match_id)
+                get-guess-resp2 (get-bets auth-token2 game_id match_id)
                 leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/weekly")))
                 all-time-leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
 
-            (is (= {:game/id          game_id
-                    :team/name        (:team_name dummy-guess)
-                    :team/id          (:team_id dummy-guess)
-                    :game/type        "game.type/csgo"
-                    :match/id         match_id
-                    :match/name       (:match_name dummy-guess)
-                    :bet/processed? true
-                    :bet/amount      475
-                    :bet/payout      0}
-                   (select-keys body keys-to-select)))
+            (is (= [{:game/id        game_id
+                     :team/name      (:team_name dummy-guess)
+                     :team/id        (:team_id dummy-guess)
+                     :match/id       match_id
+                     :match/name     (:match_name dummy-guess)
+                     :bet/processed? true
+                     :bet/amount     475
+                     :bet/payout     0}]
+                   (mapv #(dissoc % :bet/time :bet/processed-time) body)))
 
-            (is (= {:game/id          game_id
-                    :team/name        "Other-team"
-                    :team/id          125859
-                    :game/type        "game.type/csgo"
-                    :match/id         match_id
-                    :match/name       (:match_name dummy-guess)
-                    :bet/processed? true
-                    :bet/amount      100
-                    :bet/payout      575}
-                   (select-keys (:body get-guess-resp2) keys-to-select)))
+            (is (= [{:game/id        game_id
+                     :team/name      "Other-team"
+                     :team/id        125859
+                     :match/id       match_id
+                     :match/name     (:match_name dummy-guess)
+                     :bet/processed? true
+                     :bet/amount     100
+                     :bet/payout     575}]
+                   (mapv #(dissoc % :bet/time :bet/processed-time) (:body get-guess-resp2))))
 
             ;; if user falls below 100, bail them out so they have 100 again
             (is (= 100 (-> (get-user auth-token) :body :user/cash)))

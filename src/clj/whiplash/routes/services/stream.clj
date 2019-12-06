@@ -17,7 +17,6 @@
 ;; just wrap the body of the get-stream function with this
 ;; (with-redefs [whiplash.integrations.pandascore/get-matches-request whiplash.test.common/pandascore-running-fake
 ;;               whiplash.integrations.twitch/views-per-twitch-stream whiplash.test.common/twitch-view-fake]
-;;   (let ...)
 ;; )
 (defn get-stream
   [{:keys [params] :as req}]

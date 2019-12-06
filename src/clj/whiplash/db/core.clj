@@ -157,16 +157,16 @@
     (when-let [user (ffirst (find-user-by-user-name-db db user-name))]
       user)))
 
-;;TODO refactor, this can now return multiple results
-(defn find-bet
+(defn find-bets
   [db user-name game-id match-id]
-  (ffirst (d/q {:query '[:find ?bet
-                         :in $ ?user-name ?game-id ?match-id
-                         :where [?user :user/name ?user-name]
-                         [?user :user/bets ?bet]
-                         [?bet :game/id ?game-id]
-                         [?bet :match/id ?match-id]]
-                :args [db user-name game-id match-id]})))
+  (->> (d/q {:query '[:find ?bet
+                      :in $ ?user-name ?game-id ?match-id
+                      :where [?user :user/name ?user-name]
+                      [?user :user/bets ?bet]
+                      [?bet :game/id ?game-id]
+                      [?bet :match/id ?match-id]]
+             :args [db user-name game-id match-id]})
+       (map first)))
 
 ;;; TODO resolve :game/type
 (defn find-all-unprocessed-bets-for-game

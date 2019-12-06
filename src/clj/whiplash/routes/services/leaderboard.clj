@@ -39,8 +39,15 @@
                  (group-by :team/name)
                  (map (fn [[k v]]
                         (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds k)]
-                          {k {:bets (sort-by :bet/amount #(compare %2 %1) v)
+                          {k {:bets  (sort-by :bet/amount
+                                              #(compare %2 %1)
+                                              (->> v
+                                                   (group-by :user/name)
+                                                   (mapv (fn [[user-name bets]]
+                                                           {:user/name user-name
+                                                            :bet/amount (apply +
+                                                                               (map :bet/amount bets))}))))
                               :total total
-                              :odds odds}})))
+                              :odds  odds}})))
                  (apply merge))
             {}))))

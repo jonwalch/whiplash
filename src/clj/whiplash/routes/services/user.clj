@@ -172,14 +172,17 @@
         match-id (Integer/parseInt match_id)
         {:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        existing-guess (when user
-                         (db/find-bet db user game-id match-id))
-        pulled-guess (when existing-guess
-                       (-> (d/pull db '[*] existing-guess)
-                           (db/resolve-enum :game/type)))]
-    (if (some? pulled-guess)
-      (ok pulled-guess)
-      (not-found {:message (format "guess for user %s, game-id %s, match-id %s not found"
+        existing-bets (when user
+                        (db/find-bets db user game-id match-id))
+        pulled-bets (when existing-bets
+                      (mapv
+                        #(-> (d/pull db '[*] %)
+                             (db/resolve-enum :game/type)
+                             (dissoc :db/id :game/type))
+                        existing-bets))]
+    (if (some? pulled-bets)
+      (ok pulled-bets)
+      (not-found {:message (format "bets for user %s, game-id %s, match-id %s not found"
                                    user
                                    game-id
                                    match-id)}))))
