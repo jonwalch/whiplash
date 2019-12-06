@@ -4,7 +4,7 @@ import { Signup } from "./Signup";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
-import { useInterval } from "../common";
+import { useInterval, getCSRFToken, scrollToTop } from "../common";
 import { LoginContext } from "../contexts/LoginContext";
 import { Bets } from "./Bets";
 
@@ -30,8 +30,13 @@ export function Home(props: any) {
   const [opponents, setOpponents] = useState<Opponent[]>([]);
   const [userStatus, setUserStatus] = useState<string | null>(null);
 
+  // Signup and Login state
+  const [showSignup, setShowSignup] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+
   useEffect(() => {
     getStream();
+    loggedIn();
   }, []);
 
   useEffect(() => {
@@ -46,27 +51,47 @@ export function Home(props: any) {
     } //teamName changes when a user makes a guess
   }, [loggedInState.userName, team.teamName]);
 
-  //TODO revisit this, currently polling the user's cash and status every 10 seconds
   useInterval(() => {
+    getStream();
+    //TODO revisit this, currently polling the user's cash and status every 10 seconds
     if (loggedInState.userName) {
       getUser();
     }
   }, 10000);
 
-  // const fifteenMinutes = 1000 * 60 * 15;
-  // useInterval(() => {
-  //   //Allows if begin_at is null
-  //   const beginAt: number = Date.parse(currentGame["begin_at"]);
-  //   if (beginAt + fifteenMinutes <= Date.now()) {
-  //     setPassedGuessingPeriod(true);
-  //   } else {
-  //     setPassedGuessingPeriod(false);
-  //   }
-  // }, 1000);
+  const loggedIn = async () => {
+    const response = await fetch(baseUrl + "user/login", {
+      headers: { "Content-Type": "application/json" },
+      method: "GET",
+      mode: "same-origin",
+      redirect: "error"
+    });
 
-  useInterval(() => {
-    getStream();
-  }, 10000);
+    if (response.status == 200){
+      const resp = await response.json();
+      setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
+      setShowSignup(false);
+    } else {
+      setLoggedInState({ userName: "", cash: loggedInState.cash})
+    }
+  };
+
+  const logout = async () => {
+    const response = await fetch(baseUrl + "user/logout", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCSRFToken()
+      },
+      method: "POST",
+      mode: "same-origin",
+      redirect: "error"
+    });
+    if (response.status == 200) {
+      setLoggedInState({userName: "", cash: 0});
+    } else {
+      alert("Failed to hit server to logout");
+    }
+  };
 
   const getStream = async () => {
     const response = await fetch(baseUrl + "stream", {
@@ -114,8 +139,9 @@ export function Home(props: any) {
   };
 
   const twitchEmbed = () => {
-    const node: any = document.getElementById("twitch-embed");
-    if (node.firstChild) {
+    const node: any = document.querySelector('#twitch-embed');
+    const hasNode = node !== null ? true : false
+    if (hasNode && node.firstChild) {
       node.removeChild(node.firstChild);
     }
 
@@ -124,36 +150,34 @@ export function Home(props: any) {
       height: 576,
       channel: twitchUsername,
       autoplay: true
-    }
+    };
 
-    const player = new Twitch.Embed("twitch-embed", options);
+    if (hasNode) {
+      const player = new Twitch.Embed("twitch-embed", options);
+    }
   };
 
   const renderContent = () => {
+    // Loading
     if (streamURL == "") {
       return (
-        <div className="aspect-ratio-wide">
-          <div className="twitch">
-            <header className="container">
-              <h2 className="twitch__title">Loading...</h2>
-            </header>
+        <div className="twitch">
+          <div className="container">
+            <p className="twitch__title">Loading...</p>
           </div>
         </div>
       );
+    // No stream to show
     } else if (streamURL == failedToFetch) {
-    // } else if (false) {
       return (
-        <div className="aspect-ratio-wide">
-          <div className="twitch">
-            <header className="container">
-              <h2 className="twitch__title">Whiplash is taking a nap</h2>
-            </header>
-            <div className="container">
-              <p>Hang tight, we'll find a CS:GO match for you soon.</p>
-            </div>
+        <div className="twitch">
+          <div className="container">
+            <h2 className="twitch__title">Whiplash is taking a nap</h2>
+            <p>Hang tight, we'll find a CS:GO match for you soon.</p>
           </div>
         </div>
       );
+    // Found stream
     } else {
       return (
         <>
@@ -161,45 +185,80 @@ export function Home(props: any) {
             <header className="container">
               <h2 className="twitch__title">{matchName}</h2>
             </header>
-            <div className="aspect-ratio-wide" id="twitch-embed"></div>
+            <div className="twitch__embed" id="twitch-embed"></div>
+            {/*<div className="aspect-ratio-wide" id="twitch-embed"></div>*/}
           </div>
           <Vote
-            opponents={opponents}
-            team={team}
-            setTeam={setTeam}
-            matchID={matchID}
-            matchName={matchName}
-            currentGame={currentGame}
-            userStatus={userStatus}
+              opponents={opponents}
+              team={team}
+              setTeam={setTeam}
+              matchID={matchID}
+              matchName={matchName}
+              currentGame={currentGame}
+              userStatus={userStatus}
           />
         </>
       );
     }
   };
 
-  function scrollToTop() {
-    window.scrollTo(0,0);
-  }
-
-  const [showLogin, setShowLogin] = useState(false);
   const renderLogin = () => {
     if (showLogin) {
       return (
-        <>
-          <Login setShowLogin={setShowLogin}/>
-        </>
+        <Login setShowSignup={setShowSignup}/>
       );
     }
   };
 
-  const [showSignup, setShowSignup] = useState(false);
   const renderSignup = () => {
     if (showSignup) {
       return (
-        <>
-          <Signup setShowSignup={setShowSignup}/>
-        </>
+        <Signup setShowSignup={setShowSignup}/>
       );
+    }
+  };
+
+  const renderLogInOutButton = () => {
+    // No userName, currently loading
+    if (loggedInState.userName === null) {
+      return;
+    // Show log in button, user is not logged in
+    } else if (loggedInState.userName === '') {
+      return (
+        <li>
+          <button
+            type="button"
+            className="navigation__link"
+            onClick={() => {
+              scrollToTop();
+              setShowLogin(!showLogin);
+            }}
+          >
+            Log In
+          </button>
+        </li>
+      )
+      // Show log out button, user is logged in
+    } else {
+      return (
+        <>
+          <li className="navigation__item">{loggedInState.userName}</li>
+          <li className="navigation__item"><span className="navigation__highlight">Cash:</span> ${loggedInState.cash}</li>
+          <li>
+            <button
+              type="button"
+              className="navigation__link"
+              onClick={() => {
+                  logout()
+                  setShowLogin(false);
+                }
+              }
+            >
+              Log Out
+            </button>
+          </li>
+        </>
+      )
     }
   };
 
@@ -228,18 +287,7 @@ export function Home(props: any) {
           </nav>
           <nav className="navigation navigation--cta">
             <ul className="navigation__list">
-              <li>
-                <button
-                  type="button"
-                  className="navigation__link"
-                  onClick={() => {
-                    scrollToTop();
-                    setShowLogin(!showLogin);
-                  }}
-                >
-                  Log In
-                </button>
-              </li>
+              {renderLogInOutButton()}
               <li>
                 <button
                   type="button"
@@ -289,18 +337,7 @@ export function Home(props: any) {
           </nav>
           <nav className="navigation navigation--cta">
             <ul className="navigation__list">
-              <li>
-                <button
-                  type="button"
-                  className="navigation__link"
-                  onClick={() => {
-                    scrollToTop();
-                    setShowLogin(!showLogin);
-                  }}
-                >
-                  Log In
-                </button>
-              </li>
+              {renderLogInOutButton()}
               <li>
                 <button
                   type="button"

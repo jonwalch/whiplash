@@ -59,9 +59,9 @@ export function Vote(props: any) {
     const resp = await response.json();
     if (response.status == 200) {
       // setGuessedTeamName(props.team.teamName);
+      alert(`You successfully bet $${betAmount} on ${props.team.teamName}`)
       // reset local state to no longer have a selected team
       props.setTeam(defaultTeam);
-      alert(`You successfully bet $${betAmount} on ${props.team.teamName}`)
     } else {
       alert(resp);
     }
@@ -87,9 +87,9 @@ export function Vote(props: any) {
 
   const renderTeamSelect = () => {
     if (props.team.teamName) {
-      return <h1> You selected {props.team.teamName}</h1>;
+      return <p>You selected {props.team.teamName}</p>;
     } else {
-      return <h1> Select a team!</h1>;
+      return <p>Select a team!</p>;
     }
   };
 
@@ -105,36 +105,45 @@ export function Vote(props: any) {
         );
       } else {
         return (
-          <>
-            {props.opponents.map((opponent: Opponent) => {
-              return (
-                <button
-                  type="button"
-                  key={opponent.teamID}
-                  onClick={() => handleClick(opponent)}
-                >
-                  {opponent.teamName}
-                </button>
-              );
-            })}
-            {renderTeamSelect()}
-            <input
-              value={betAmount > 0 ? betAmount : ""}
-              onChange={e => {
-                handleInputChange(e);
-              }}
-              type="number"
-              name="betAmount"
-              id="betAmount"
-            />
-            <button
-              type="button"
-              disabled={toggleValid()}
-              onClick={() => makeGuess()}
-            >
-              Make Bet
-            </button>
-          </>
+          <form className="form">
+            <fieldset className="form__fieldset">
+              {props.opponents.map((opponent: Opponent) => {
+                return (
+                  <button
+                    className="button"
+                    type="button"
+                    key={opponent.teamID}
+                    onClick={() => handleClick(opponent)}
+                  >
+                    {opponent.teamName}
+                  </button>
+                );
+              })}
+              {renderTeamSelect()}
+              <div className="form__group">
+                <label className="form__label" htmlFor="betAmount">Bet Amount</label>
+                <input
+                  className="form__input form--vote"
+                  value={betAmount > 0 ? betAmount : ""}
+                  onChange={e => {
+                    handleInputChange(e);
+                  }}
+                  type="number"
+                  min="1"
+                  name="betAmount"
+                  id="betAmount"
+                />
+              </div>
+              <button
+                className="button"
+                type="button"
+                disabled={toggleValid()}
+                onClick={() => makeGuess()}
+              >
+                Make Bet
+              </button>
+            </fieldset>
+          </form>
         );
       }
     } else {
@@ -143,8 +152,10 @@ export function Vote(props: any) {
   };
 
   return (
-    <div className="container">
+    <div className="vote">
+      <div className="container">
       {renderContent()}
+      </div>
     </div>
   );
 }

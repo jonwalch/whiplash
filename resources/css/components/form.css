@@ -1,7 +1,7 @@
 .form {
 
   &__hr {
-    margin: 0 0 1em;
+    margin: 0 0 $space;
   }
 
   &__header {
@@ -35,12 +35,12 @@
     
     @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
       display: grid;
-      grid-gap: 1em;
+      grid-gap: $space;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
   }
 
-  &__input-group {
+  &__group {
     display: flex;
     flex-direction: column;
     margin-bottom: 1em;

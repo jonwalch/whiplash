@@ -1,13 +1,9 @@
-.site-main {
-  background: $light-black;
-  color: white;
-  display: grid;
-
+.vote {
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
-    grid-template-columns: repeat(2, 1fr);
+    grid-column: 1 / -1;
   }
 
   @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
-    grid-template-columns: repeat(5, 1fr);
+    grid-column: -2;
   }
 }

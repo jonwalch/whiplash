@@ -18,6 +18,19 @@
 
   }
 
+  &__item {
+    font-weight: 600;
+    padding: 0 0.5em;
+
+    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+      padding: 0.5em;
+    }
+  }
+
+  &__highlight {
+    color: $orange;
+  }
+
   &__link {
     background: none;
     border: none;

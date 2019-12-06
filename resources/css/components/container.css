@@ -1,4 +1,8 @@
 .container {
   margin: 0 auto;
-  padding: 1.5em;
+  padding: $space;
+
+  :last-child {
+    margin-bottom: 0;
+  }
 }

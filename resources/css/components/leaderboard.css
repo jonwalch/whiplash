@@ -1,0 +1,6 @@
+.leaderboard {
+  @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+    grid-column: -2;
+    grid-row: 3;
+  }
+}
