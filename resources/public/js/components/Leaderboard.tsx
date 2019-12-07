@@ -102,20 +102,20 @@ export function Leaderboard() {
   };
 
   return (
-    <div className="leaderboard">
-      <div className="container">
-        <header>
-          <h2>Leaderboard</h2>
-        </header>
-        <section>
-          <h3>All Time Top Ten</h3>
-          {renderLeaderboard()}
-        <section>
-        </section>
-          <h3>Weekly Leaderboard</h3>
-          {renderWeeklyLeaderboard()}
-        </section>
+      <div>
+          <header>
+              <h2 style={{textAlign: "center"}}>Leaderboard</h2>
+          </header>
+          <div style={{display: "flex", justifyContent: "space-around"}}>
+              <section>
+                  <h3>All Time Top Ten</h3>
+                  {renderLeaderboard()}
+              </section>
+              <section>
+                  <h3>Weekly Leaderboard</h3>
+                  {renderWeeklyLeaderboard()}
+              </section>
+          </div>
       </div>
-    </div>
   );
 }

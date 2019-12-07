@@ -107,19 +107,22 @@ export function Vote(props: any) {
         return (
           <form className="form">
             <fieldset className="form__fieldset">
-              {props.opponents.map((opponent: Opponent) => {
-                return (
-                  <button
-                    className="button"
-                    type="button"
-                    key={opponent.teamID}
-                    onClick={() => handleClick(opponent)}
-                  >
-                    {opponent.teamName}
-                  </button>
-                );
-              })}
               {renderTeamSelect()}
+              <div style={{display: "flex", justifyContent: "space-around", marginBottom: "20px"}}>
+                {props.opponents.map((opponent: Opponent) => {
+                  return (
+                      <button
+                          className="button"
+                          style={{flexGrow: 1}}
+                          type="button"
+                          key={opponent.teamID}
+                          onClick={() => handleClick(opponent)}
+                      >
+                        {opponent.teamName}
+                      </button>
+                  );
+                })}
+              </div>
               <div className="form__group">
                 <label className="form__label" htmlFor="betAmount">Bet Amount</label>
                 <input
@@ -134,14 +137,16 @@ export function Vote(props: any) {
                   id="betAmount"
                 />
               </div>
-              <button
-                className="button"
-                type="button"
-                disabled={toggleValid()}
-                onClick={() => makeGuess()}
-              >
-                Make Bet
-              </button>
+              <div style={{display: "flex", justifyContent: "space-around"}}>
+                <button
+                    className="button"
+                    type="button"
+                    disabled={toggleValid()}
+                    onClick={() => makeGuess()}
+                >
+                  Make Bet
+                </button>
+              </div>
             </fieldset>
           </form>
         );

@@ -7,6 +7,7 @@
   font-family: $font-stack-secondary;
   font-weight: 600;
   padding: 0.5em;
+  margin: 10px 10px 0 0;
 
   &:hover,
   &:focus,

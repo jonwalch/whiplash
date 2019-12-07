@@ -30,8 +30,8 @@ export function Login(props: any) {
       setLoggedInState({ userName: userName, cash: loggedInState.cash});
       props.setShowSignup(false);
     } else {
-      const resp = await response.text();
-      alert(resp);
+      const resp = await response.json();
+      alert(resp.messge);
     }
   };
 
