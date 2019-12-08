@@ -1,5 +1,5 @@
 .bets {
-  @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+  @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
     grid-column: -2;
     grid-row: 2;
   }

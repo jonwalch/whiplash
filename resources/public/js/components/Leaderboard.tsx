@@ -105,14 +105,14 @@ export function Leaderboard() {
     <div className="leaderboard">
       <div className="container">
         <header>
-          <h2>Leaderboard</h2>
+          <h2 className="leaderboard__title">Leaderboard</h2>
         </header>
         <section className="leaderboard__section">
-          <h3>All Time Top Ten</h3>
+          <h3 className="leaderboard__subtitle">All Time Top Ten</h3>
           {renderLeaderboard()}
         <section className="leaderboard__section">
         </section>
-          <h3>Weekly Leaderboard</h3>
+          <h3 className="leaderboard__subtitle">Weekly Leaderboard</h3>
           {renderWeeklyLeaderboard()}
         </section>
       </div>
