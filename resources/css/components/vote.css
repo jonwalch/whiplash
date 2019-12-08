@@ -1,9 +1,21 @@
 .vote {
+  background: $dark-blue;
+
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-column: 1 / -1;
   }
 
   @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
     grid-column: -2;
+  }
+
+  &__message {
+    background: $light-black;
+    border: 0.25em solid $orange;
+    font-size: 0.85em;
+    font-weight: 600;
+    line-height: 1.3;
+    padding: $space;
+    text-align: center;
   }
 }

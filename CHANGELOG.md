@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](semver).
 ## 0.1.XX - 2019-XX-XX - Main content layout
 
 ### Added
-- [ ] Style Vote
+- [x] Style Vote
 - [ ] Style Bet (#34)
 - [ ] Style Leaderboard
 - [ ] Style Twitch video
