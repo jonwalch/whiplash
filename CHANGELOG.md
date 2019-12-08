@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](semver).
 
 ### Fixed
 - [ ] Fix Sign up form layout on large screens (#34)
+- [x] Fix container grandchild descendent bug
 
 ## 0.1.42 - 2019-12-06 - Main content layout
 
