@@ -42,19 +42,19 @@ export function Leaderboard() {
 
   const renderLeaderboard = () => {
     return (
-      <table className="leaderboard">
+      <table className="leaderboard__table">
         <thead>
-          <tr>
-            <th>User</th>
-            <th>Total Cash</th>
+          <tr className="leaderboard__tr">
+            <th className="leaderboard__th">User</th>
+            <th className="leaderboard__th">Total Cash</th>
           </tr>
         </thead>
         <tbody>
           {leaderboard.map((leader: Leader) => {
             return (
-              <tr key={leader.user_name}>
-                <td>{leader.user_name}</td>
-                <td>${leader.cash}</td>
+              <tr className="leaderboard__tr" key={leader.user_name}>
+                <td className="leaderboard__td">{leader.user_name}</td>
+                <td className="leaderboard__td">${leader.cash}</td>
               </tr>
             );
           })}
@@ -79,19 +79,19 @@ export function Leaderboard() {
       return <p>No payouts yet for this week!</p>;
     } else {
       return (
-        <table className="leaderboard">
+        <table className="leaderboard__table">
           <thead>
-            <tr>
-              <th>User</th>
-              <th>Payout</th>
+            <tr className="leaderboard__tr">
+              <th className="leaderboard__th">User</th>
+              <th className="leaderboard__th">Payout</th>
             </tr>
           </thead>
           <tbody>
             {weeklyLeaderboard.map((leader: WeeklyLeader) => {
               return (
-                <tr key={leader.user_name}>
-                  <td>{leader.user_name}</td>
-                  <td>{leader.payout}</td>
+                <tr className="leaderboard__tr" key={leader.user_name}>
+                  <td className="leaderboard__td">{leader.user_name}</td>
+                  <td className="leaderboard__td">{leader.payout}</td>
                 </tr>
               );
             })}
@@ -107,10 +107,10 @@ export function Leaderboard() {
         <header>
           <h2>Leaderboard</h2>
         </header>
-        <section>
+        <section className="leaderboard__section">
           <h3>All Time Top Ten</h3>
           {renderLeaderboard()}
-        <section>
+        <section className="leaderboard__section">
         </section>
           <h3>Weekly Leaderboard</h3>
           {renderWeeklyLeaderboard()}
