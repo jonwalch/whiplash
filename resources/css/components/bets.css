@@ -11,4 +11,37 @@
     color: $light-black;
     padding: 0.25em 0.5em;
   }
+
+  &__title {
+    font-size: 1em;
+    margin-bottom: 0;
+  }
+
+  &__table {
+    background: $dark-blue;
+    width: 100%;
+  }
+
+  &__th {
+    background: $darker-blue;
+    color: $orange;
+    padding: 0.25em 0.5em;
+    text-align: left;
+
+    + .leaderboard__th {
+      border-left: 1px solid $light-black;
+    }
+  }
+
+  &__td {
+    border-top: 1px solid $light-black;
+    padding: 0.25em 0.5em;
+    color: $dark-white;
+    font-family: $font-stack-code;
+
+    + .leaderboard__td {
+      border-left: 1px solid $light-black;
+      color: $dark-white;
+    }
+  }
 }

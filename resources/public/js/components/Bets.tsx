@@ -56,8 +56,14 @@ export function Bets(props: any) {
               return (
                 <tr className="bets__team" key={teamName}>
                   <td>
-                    {teamName} Odds:{teamBets.odds.toFixed(2)} Total: ${teamBets.total}
-                    <table>
+                    <table className="bets__table bets__th">
+                      <tr>
+                        <td>{teamName}</td>
+                        <td><strong>Odds:</strong> {teamBets.odds.toFixed(2)}</td>
+                        <td><strong>Total:</strong> ${teamBets.total}</td>
+                      </tr>
+                    </table>
+                    <table className="bets__table">
                       {teamBets.bets.map((bet: any) => {
                         return (
                           <tr className="bets__user" key={bet["user/name"]}>
