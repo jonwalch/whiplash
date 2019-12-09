@@ -12,9 +12,13 @@
   }
 
   &__header {
+    background: $pale-green;
+    color: $light-black;
+    padding: 0.25em 0.5em;
 
     &--primary {
-
+      background: none;
+      padding: 0;
     }
   }
 
@@ -29,6 +33,7 @@
 
   &__subtitle {
     font-size: 1em;
+    margin-bottom: 0;
   }
 
   &__table {
@@ -37,6 +42,7 @@
   }
 
   &__th {
+    background: $darker-blue;
     color: $pale-green;
     padding: 0.25em 0.5em;
     text-align: left;
