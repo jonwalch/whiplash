@@ -110,16 +110,14 @@ export function Vote(props: any) {
       } else {
         return (
           <div className="container">
-            <form className="form">
-              <fieldset className="form__fieldset" style={{border: "none"}}>
+            <form className="form form--vote">
+              <fieldset className="form__fieldset">
                 {renderTeamSelect()}
-                <div style={{display: "flex", justifyContent: "space-around", marginBottom: "20px"}}>
                 {props.opponents.map((opponent: Opponent) => {
                   return (
                     <button
                       className="button"
                       type="button"
-                      style={{flexGrow: 1}}
                       key={opponent.teamID}
                       onClick={() => handleClick(opponent)}
                     >
@@ -127,7 +125,6 @@ export function Vote(props: any) {
                     </button>
                   );
                 })}
-                </div>
                 <div className="form__group">
                   <label className="form__label" htmlFor="betAmount">Bet Amount</label>
                   <input
@@ -142,17 +139,15 @@ export function Vote(props: any) {
                     id="betAmount"
                   />
                 </div>
-                <div style={{display: "flex", justifyContent: "space-around"}}>
-                  <button
-                      className="button"
-                      type="button"
+                <button
+                    className="button"
+                    type="button"
 
-                      disabled={toggleValid()}
-                      onClick={() => makeGuess()}
-                  >
-                    Make Bet
-                  </button>
-                </div>
+                    disabled={toggleValid()}
+                    onClick={() => makeGuess()}
+                >
+                  Make Bet
+                </button>
               </fieldset>
             </form>
           </div>

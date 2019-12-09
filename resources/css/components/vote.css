@@ -20,3 +20,18 @@
     color: $orange;
   }
 }
+
+/**
+  * This component depends on .form
+  * TODO (paulshryock): Refactor component to be independent from .form
+  **/
+.form--vote {
+  .form__fieldset {
+    /* Reset background and border */
+    /* TODO (paulshryock): Refactor .form__fieldset
+    by adding background and border to login and signup components,
+    so this does not need to be reset/undeclared. */
+    background: $dark-blue;
+    border: none;
+  }
+}

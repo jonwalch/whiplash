@@ -1,0 +1,19 @@
+/**
+  * This component depends on .form
+  * TODO (paulshryock): Refactor component to be independent from .form
+  **/
+.form--login {
+  background: $dark-blue;
+  color: $dark-white;
+
+  .form__fieldset {
+    background: $light-black;
+    border: 0.25em solid $orange;
+    
+    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+      display: grid;
+      grid-gap: $space;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+  }
+}

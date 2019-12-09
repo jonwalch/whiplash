@@ -15,13 +15,9 @@ and this project adheres to [Semantic Versioning](semver).
 ### Security
 -->
 
-## 0.1.XX - 2019-XX-XX - Main content layout
+## 0.1.XX - 2019-XX-XX - ROADMAP
 
 ### Added
-- [ ] Style Bet (#34)
-- [ ] Style Leaderboard
-- [ ] Style Twitch video
-- [ ] Style Twitch chat
 - [ ] Style Login/Signup form success/error states
 - [ ] Add About page/route (#34)
 
@@ -35,7 +31,6 @@ and this project adheres to [Semantic Versioning](semver).
 
 ### Fixed
 - [ ] Fix Sign up form layout on large screens (#34)
-
 
 ## 0.1.42 - 2019-12-06 - Main content layout
 
@@ -51,6 +46,8 @@ and this project adheres to [Semantic Versioning](semver).
 - [x] Style Twitch text
 - [x] Update Twitch inactive and loading placeholder and text
 - [x] Style leaderboard
+- [x] Update Readme
+- [x] Style Bet (#34)
 
 ### Removed
 - [x] Remove button focus style after click (without breaking accessibility/keyboard/screenreaders) (#34)

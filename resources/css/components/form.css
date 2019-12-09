@@ -76,10 +76,4 @@
     align-self: end;
     justify-self: start;
   }
-
-  &--login,
-  &--signup {
-    background: $dark-blue;
-    color: $dark-white;
-  }
 }
