@@ -174,10 +174,15 @@ export function Home(props: any) {
     // No stream to show
     } else if (streamURL == failedToFetch) {
       return (
-        <div className="twitch twitch--is-inactive">
+        <div className="twitch is-inactive">
           <div className="container">
             <h2 className="twitch__title">Whiplash is taking a nap</h2>
-            <p className="twitch__title">Hang tight, we'll find a CS:GO match for you soon.</p>
+            <div className="twitch__placeholder">
+              <div className="container">
+                <p className="twitch__subtitle">Hang tight, we'll find a CS:GO match for you soon.</p>
+                <p>In the meantime, bookmark this page and check back often for new chances to win while watching.</p>
+              </div>
+            </div>
           </div>
         </div>
       );
