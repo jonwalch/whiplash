@@ -29,7 +29,7 @@
 
   &__fieldset {
     background: $light-black;
-    /*border: 0.25em solid $orange;*/
+    border: 0.25em solid $orange;
     color: $dark-white;
     padding: 1.5em;
     
