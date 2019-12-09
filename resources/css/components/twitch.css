@@ -12,6 +12,8 @@
 
   &__title {
     font-family: $font-stack-secondary;
+    font-size: 1.5em;
+    font-weight: 700;
     color: $dark-white;
     margin: 0;
   }

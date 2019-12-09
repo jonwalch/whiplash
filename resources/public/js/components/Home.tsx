@@ -174,7 +174,7 @@ export function Home(props: any) {
     // No stream to show
     } else if (streamURL == failedToFetch) {
       return (
-        <div className="twitch">
+        <div className="twitch twitch--is-inactive">
           <div className="container">
             <h2 className="twitch__title">Whiplash is taking a nap</h2>
             <p className="twitch__title">Hang tight, we'll find a CS:GO match for you soon.</p>
@@ -190,7 +190,6 @@ export function Home(props: any) {
               <h2 className="twitch__title">{matchName}</h2>
             </header>
             <div className="twitch__embed" id="twitch-embed"></div>
-            {/*<div className="aspect-ratio-wide" id="twitch-embed"></div>*/}
           </div>
           <Vote
               opponents={opponents}
