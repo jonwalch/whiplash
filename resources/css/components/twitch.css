@@ -16,6 +16,11 @@
     margin: 0;
   }
 
+  &__message {
+     font-family: $font-stack-secondary;
+     color: $dark-white;
+   }
+
   &__embed {
     display: block;
     padding-top: calc(56.25% * 2);

@@ -173,7 +173,7 @@ export function Home(props: any) {
         <div className="twitch">
           <div className="container">
             <h2 className="twitch__title">Whiplash is taking a nap</h2>
-            <p>Hang tight, we'll find a CS:GO match for you soon.</p>
+            <p className="twitch__title">Hang tight, we'll find a CS:GO match for you soon.</p>
           </div>
         </div>
       );
