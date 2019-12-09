@@ -8,12 +8,16 @@ export function Bets(props: any) {
   useEffect(() => {
     if (props.matchID && props.currentGame && props.currentGame.id) {
       getBets();
+    } else {
+      setBets(null);
     }
   }, [props.matchID, props.currentGame]);
 
   useInterval(() => {
     if (props.currentGame && props.currentGame.id) {
       getBets();
+    } else {
+      setBets(null);
     }
   }, 5000);
 

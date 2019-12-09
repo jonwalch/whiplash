@@ -25,7 +25,7 @@ export function Home(props: any) {
   const [streamURL, setURL] = useState("");
   const [twitchUsername, setTwitchUsername] = useState("");
   const [matchName, setMatchName] = useState("");
-  const [matchID, setMatchID] = useState(0);
+  const [matchID, setMatchID] = useState(-1);
   const [currentGame, setCurrentGame] = useState<any>({});
   const [opponents, setOpponents] = useState<Opponent[]>([]);
   const [userStatus, setUserStatus] = useState<string | null>(null);
@@ -116,6 +116,10 @@ export function Home(props: any) {
     } else {
       //right now would be a 204
       setURL(failedToFetch);
+      setTwitchUsername("");
+      setMatchName("");
+      setMatchID(-1);
+      setCurrentGame({});
     }
   };
 
