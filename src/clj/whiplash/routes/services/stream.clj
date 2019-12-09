@@ -19,8 +19,6 @@
 ;; )
 (defn get-stream
   [{:keys [params] :as req}]
-   (with-redefs [whiplash.integrations.pandascore/get-matches-request whiplash.test.common/pandascore-running-fake
-                 whiplash.integrations.twitch/views-per-twitch-stream whiplash.test.common/twitch-view-fake]
   (let [{:keys [streams/last-fetch streams/ordered-candidates]} (deref cached-streams)
         return-fn (fn [{:keys [stream cached?]}]
                     (if (nil? stream)
@@ -44,4 +42,3 @@
         (log/debug "Serving cached stream")
         (return-fn {:stream  (first ordered-candidates)
                     :cached? true})))))
-  )
