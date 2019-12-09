@@ -76,7 +76,7 @@ export function Leaderboard() {
 
   const renderWeeklyLeaderboard = () => {
     if (weeklyLeaderboard.length == 0) {
-      return <p>No payouts yet for this week!</p>;
+      return <p className="twitch__message">No payouts yet for this week!</p>;
     } else {
       return (
         <table className="leaderboard__table">
