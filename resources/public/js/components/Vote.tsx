@@ -67,8 +67,23 @@ export function Vote(props: any) {
     }
   };
 
-  const handleClick = (team: Opponent) => {
+  const handleClick = (team: Opponent, e: any) => {
     props.setTeam(team);
+    e.target.classList.toggle('is-active')
+
+    // Get all vote buttons
+    const buttons = document.querySelectorAll('.button--vote');
+
+    // Loop through each button
+    for (var i = 0; i < buttons.length; i++) {
+
+      // If the button is the one clicked, skip it
+      if (buttons[i] === e.target) continue;
+
+      // Remove the .is-active class
+      buttons[i].classList.remove('is-active');
+
+    }
   };
 
   const toggleValid = () => {
@@ -115,12 +130,17 @@ export function Vote(props: any) {
                 {renderTeamSelect()}
                 <div className="form__button-group">
                   {props.opponents.map((opponent: Opponent) => {
+                    let isActive = false;
                     return (
                       <button
                         className="button button--vote"
                         type="button"
                         key={opponent.teamID}
-                        onClick={() => handleClick(opponent)}
+                        onClick={
+                          (e) => {
+                            handleClick(opponent, e)
+                          }
+                        }
                       >
                         {opponent.teamName}
                       </button>

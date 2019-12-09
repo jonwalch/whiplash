@@ -59,11 +59,12 @@
 
 .button--vote:not(.is-active) {
   background: $medium-gray;
+  border-color: $gray;
 
   &:hover,
   &:focus,
   &:active {
-    background: $medium-gray;
-    border-color: $dark-gray;
+    background: $light-gray;
+    border-color: $medium-gray;
   }
 }
