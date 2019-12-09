@@ -2,7 +2,7 @@
   margin: 0 auto;
   padding: $space;
 
-  :last-child {
+  > :last-child {
     margin-bottom: 0;
   }
 }

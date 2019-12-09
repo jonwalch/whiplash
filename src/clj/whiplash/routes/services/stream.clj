@@ -12,9 +12,11 @@
 
                 :stop
                 (atom {}))
-
 ;; In development, if no games are currently running you can fake it to get the UI up
 ;; just wrap the body of the get-stream function with this
+;; (with-redefs [whiplash.integrations.pandascore/get-matches-request whiplash.test.common/pandascore-running-fake
+;;               whiplash.integrations.twitch/views-per-twitch-stream whiplash.test.common/twitch-view-fake]
+;; )
 (defn get-stream
   [{:keys [params] :as req}]
   (let [{:keys [streams/last-fetch streams/ordered-candidates]} (deref cached-streams)
