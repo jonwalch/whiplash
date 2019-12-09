@@ -113,22 +113,24 @@ export function Vote(props: any) {
             <form className="form form--vote">
               <fieldset className="form__fieldset">
                 {renderTeamSelect()}
-                {props.opponents.map((opponent: Opponent) => {
-                  return (
-                    <button
-                      className="button"
-                      type="button"
-                      key={opponent.teamID}
-                      onClick={() => handleClick(opponent)}
-                    >
-                      {opponent.teamName}
-                    </button>
-                  );
-                })}
+                <div className="form__button-group">
+                  {props.opponents.map((opponent: Opponent) => {
+                    return (
+                      <button
+                        className="button button--vote"
+                        type="button"
+                        key={opponent.teamID}
+                        onClick={() => handleClick(opponent)}
+                      >
+                        {opponent.teamName}
+                      </button>
+                    );
+                  })}
+                </div>
                 <div className="form__group">
                   <label className="form__label" htmlFor="betAmount">Bet Amount</label>
                   <input
-                    className="form__input form--vote"
+                    className="form__input"
                     value={betAmount > 0 ? betAmount : ""}
                     onChange={e => {
                       handleInputChange(e);

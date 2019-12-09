@@ -43,13 +43,18 @@
   &__group {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1em;
+    margin-bottom: $space;
     
     @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
       @supports (display: grid) {
         margin-bottom: 0;
       }
     }
+  }
+
+  &__button-group {
+    display: flex;
+    margin-bottom: $space;
   }
 
   &__label {
