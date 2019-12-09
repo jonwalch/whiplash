@@ -33,6 +33,7 @@
   &__message {
     font-family: $font-stack-secondary;
     color: $dark-white;
+    margin-top: calc( $space / 2 );
    }
 
   &__embed {
