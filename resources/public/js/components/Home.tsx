@@ -165,9 +165,14 @@ export function Home(props: any) {
     // Loading
     if (streamURL == "") {
       return (
-        <div className="twitch">
+        <div className="twitch is-inactive">
           <div className="container">
-            <p className="twitch__title">Loading...</p>
+            <h2 className="twitch__title">Loading...</h2>
+            <div className="twitch__placeholder">
+              <div className="container">
+                <p className="twitch__subtitle">Hang tight, your CS:GO match is loading.</p>
+              </div>
+            </div>
           </div>
         </div>
       );
