@@ -103,7 +103,7 @@ export function Leaderboard() {
 
   return (
     <div className="leaderboard">
-      <div className="container leaderboard__container">
+      <div className="container">
         <header className="leaderboard__header leaderboard__header--primary">
           <h2 className="leaderboard__title">Leaderboard</h2>
         </header>

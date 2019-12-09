@@ -6,11 +6,6 @@
     grid-row: 3;
   }
 
-  &__container {
-    /*border: 1px solid $pale-green;*/
-    margin: $space;
-  }
-
   &__header {
     background: $orange;
     color: $light-black;

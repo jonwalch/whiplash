@@ -316,10 +316,8 @@ export function Home(props: any) {
               matchID={matchID}
               currentGame={currentGame}
           />
-        </main>
-        <div className="site-main" style={{display:"block", padding: "20px 0 20px 0"}}>
           <Leaderboard />
-        </div>
+        </main>
         <footer role="contentinfo" className="site-footer">
           <section className="site-navigation container">
             <div className="site-branding">
