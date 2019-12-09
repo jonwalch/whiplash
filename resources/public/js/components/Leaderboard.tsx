@@ -103,16 +103,20 @@ export function Leaderboard() {
 
   return (
     <div className="leaderboard">
-      <div className="container">
-        <header>
+      <div className="container leaderboard__container">
+        <header className="leaderboard__header leaderboard__header--primary">
           <h2 className="leaderboard__title">Leaderboard</h2>
         </header>
         <section className="leaderboard__section">
-          <h3 className="leaderboard__subtitle">All Time Top Ten</h3>
+          <header className="leaderboard__header">
+            <h3 className="leaderboard__subtitle">All Time Top Ten</h3>
+          </header>
           {renderLeaderboard()}
-        <section className="leaderboard__section">
         </section>
-          <h3 className="leaderboard__subtitle">Weekly Leaderboard</h3>
+        <section className="leaderboard__section">
+          <header className="leaderboard__header">
+            <h3 className="leaderboard__subtitle">Weekly Leaderboard</h3>
+          </header>
           {renderWeeklyLeaderboard()}
         </section>
       </div>

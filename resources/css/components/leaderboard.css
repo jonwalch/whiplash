@@ -5,4 +5,53 @@
     grid-column: -2;
     grid-row: 3;
   }
+
+  &__container {
+    border: 1px solid $pale-green;
+    margin: $space;
+  }
+
+  &__header {
+
+    &--primary {
+
+    }
+  }
+
+  &__section + &__section {
+    margin-top: $space;
+  }
+
+  &__title {
+    color: $pale-green;
+    font-size: 1.25em;
+  }
+
+  &__subtitle {
+    font-size: 1em;
+  }
+
+  &__table {
+    background: $dark-blue;
+    width: 100%;
+  }
+
+  &__th {
+    color: $pale-green;
+    padding: 0.25em 0.5em;
+    text-align: left;
+
+    + .leaderboard__th {
+      border-left: 1px solid $light-black;
+    }
+  }
+
+  &__td {
+    border-top: 1px solid $light-black;
+    padding: 0.25em 0.5em;
+
+    + .leaderboard__td {
+      border-left: 1px solid $light-black;
+    }
+  }
 }
