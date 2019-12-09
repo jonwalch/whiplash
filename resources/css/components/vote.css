@@ -1,5 +1,5 @@
 .vote {
-  background: $dark-blue;
+  /*background: $dark-blue;*/
 
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-column: 1 / -1;

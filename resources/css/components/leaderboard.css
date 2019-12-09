@@ -7,12 +7,12 @@
   }
 
   &__container {
-    border: 1px solid $pale-green;
+    /*border: 1px solid $pale-green;*/
     margin: $space;
   }
 
   &__header {
-    background: $pale-green;
+    background: $orange;
     color: $light-black;
     padding: 0.25em 0.5em;
 
@@ -27,7 +27,7 @@
   }
 
   &__title {
-    color: $pale-green;
+    color: $dark-white;
     font-size: 1.25em;
   }
 
@@ -43,7 +43,7 @@
 
   &__th {
     background: $darker-blue;
-    color: $pale-green;
+    color: $orange;
     padding: 0.25em 0.5em;
     text-align: left;
 

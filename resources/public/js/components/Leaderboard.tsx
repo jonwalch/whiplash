@@ -91,7 +91,7 @@ export function Leaderboard() {
               return (
                 <tr className="leaderboard__tr" key={leader.user_name}>
                   <td className="leaderboard__td">{leader.user_name}</td>
-                  <td className="leaderboard__td">{leader.payout}</td>
+                  <td className="leaderboard__td">${leader.payout}</td>
                 </tr>
               );
             })}
