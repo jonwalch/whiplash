@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](semver).
 - [x] Fix container grandchild descendent bug
 - [x] Fix leaderboard markup
 
+
 ## 0.1.42 - 2019-12-06 - Main content layout
 
 ### Added
