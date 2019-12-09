@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](semver).
 ## 0.1.XX - 2019-XX-XX - Main content layout
 
 ### Added
-- [ ] Style Vote
+- [x] Style Vote
 - [ ] Style Bet (#34)
 - [ ] Style Leaderboard
 - [ ] Style Twitch video
@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](semver).
 
 ### Fixed
 - [ ] Fix Sign up form layout on large screens (#34)
+- [x] Fix container grandchild descendent bug
 
 ## 0.1.42 - 2019-12-06 - Main content layout
 

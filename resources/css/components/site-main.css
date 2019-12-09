@@ -5,6 +5,7 @@
 
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto 1fr;
   }
 
   @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
