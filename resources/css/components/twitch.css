@@ -31,8 +31,8 @@
   }
 
   &__message {
-     font-family: $font-stack-secondary;
-     color: $dark-white;
+    font-family: $font-stack-secondary;
+    color: $dark-white;
    }
 
   &__embed {

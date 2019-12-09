@@ -1,6 +1,6 @@
 .site-main {
   background: $light-black;
-  color: white;
+  color: $dark-white;
   display: grid;
   padding-bottom: $space;
 
