@@ -54,7 +54,7 @@ export function Bets(props: any) {
               const teamName = el[0];
               const teamBets = el[1];
               return (
-                <>
+                <tbody>
                   <tr className="bets__tr bets__team" key={teamName}>
                     <th className="bets__th">{teamName}</th>
                     <th className="bets__th"><strong>Odds:</strong> {teamBets.odds.toFixed(2)}</th>
@@ -68,7 +68,7 @@ export function Bets(props: any) {
                       </tr>
                     );
                   })}
-                </>
+                </tbody>
               );
             })}
           </table>

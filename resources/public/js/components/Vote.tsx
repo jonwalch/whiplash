@@ -67,9 +67,11 @@ export function Vote(props: any) {
     }
   };
 
-  async function handleClick (team: Opponent) {
-    await props.setTeam(team);
-
+  function handleClick (team: Opponent) {
+    const updateTeam = new Promise((resolve, reject) => {
+      props.setTeam(team);
+    })
+    
     // Something is wrong here...
     //
     // The code below is being run before props.team.teamName is updated,
@@ -77,20 +79,28 @@ export function Vote(props: any) {
     //
     // First, we need to make sure the teamName has been updated,
     // and then proceed with the code below.
+    //
+    // ...
+    //
+    // How about a Promise instead of async/await?
+    // ... still doesn't seem to work.
 
-    const buttons = document.querySelectorAll('.button--vote')
+    updateTeam
+      .then(() => {
+        const buttons = document.querySelectorAll('.button--vote')
 
-    buttons.forEach((button) => {
-      if (button.innerHTML === props.team.teamName) {
-        // button text does match teamName
-        if (!button.classList.contains('is-active')) {
-          button.classList.add('is-active')
-        }
-      } else {
-        // button text does not match teamName
-        button.classList.remove('is-active')
-      }
-    })
+        buttons.forEach((button) => {
+          if (button.innerHTML === props.team.teamName) {
+            // button text does match teamName
+            if (!button.classList.contains('is-active')) {
+              button.classList.add('is-active')
+            }
+          } else {
+            // button text does not match teamName
+            button.classList.remove('is-active')
+          }
+        })
+      })
   };
 
   const toggleValid = () => {
