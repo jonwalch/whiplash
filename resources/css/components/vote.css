@@ -66,3 +66,15 @@
     border-color: $medium-gray;
   }
 }
+
+.button--make-bet:not(.is-active) {
+  background: $medium-gray;
+  border-color: $gray;
+
+&:hover,
+&:focus,
+&:active {
+   background: $light-gray;
+   border-color: $medium-gray;
+ }
+}

@@ -159,9 +159,8 @@ export function Vote(props: any) {
                   />
                 </div>
                 <button
-                    className="button"
+                    className={"button button--make-bet " + (!toggleValid() ? "is-active": "")}
                     type="button"
-
                     disabled={toggleValid()}
                     onClick={() => makeGuess()}
                 >
