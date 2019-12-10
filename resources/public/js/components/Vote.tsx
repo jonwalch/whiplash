@@ -71,7 +71,12 @@ export function Vote(props: any) {
     await props.setTeam(team);
 
     // Something is wrong here...
-    // The code below is being run before props.team.teamName is updated
+    //
+    // The code below is being run before props.team.teamName is updated,
+    // so it first updates the buttons, then updates the teamName.
+    //
+    // First, we need to make sure the teamName has been updated,
+    // and then proceed with the code below.
 
     const buttons = document.querySelectorAll('.button--vote')
 
