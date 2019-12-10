@@ -130,7 +130,6 @@ export function Vote(props: any) {
                 {renderTeamSelect()}
                 <div className="form__button-group">
                   {props.opponents.map((opponent: Opponent) => {
-                    let isActive = false;
                     return (
                       <button
                         className="button button--vote"
