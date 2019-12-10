@@ -70,17 +70,21 @@ export function Vote(props: any) {
   const handleClick = (team: Opponent, e: any) => {
     props.setTeam(team);
 
-    // Use props.team.teamName
-    e.target.classList.toggle('is-active')
-
     // Get all vote buttons
     const buttons = document.querySelectorAll('.button--vote');
 
     // Loop through each button
     for (var i = 0; i < buttons.length; i++) {
 
-      // If the button is the one clicked, skip it
-      if (buttons[i] === e.target) continue;
+      // If the button text matches the selected team name
+      if (buttons[i].textContent === props.team.teamName) {
+        // and if the button clicked is not already active
+        if (!buttons[i].classList.contains('is-active')) {
+          // make the button active, and skip the rest
+          buttons[i].classList.add('is-active')
+          continue
+        }
+      }
 
       // Remove the .is-active class
       buttons[i].classList.remove('is-active');
