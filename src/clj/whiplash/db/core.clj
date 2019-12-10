@@ -201,7 +201,7 @@
                      :db/id :game/type :user/_bets :team/id]
                    (first bet))))))
 
-(defn find-this-week-leaderboard
+(defn find-this-week-payout-leaderboard
   [lower-bound]
   (let [db (d/db (:conn datomic-cloud))]
     (->> (d/q
@@ -220,19 +220,25 @@
                                '[:user/name]
                                (-> bet :user/_bets :db/id))))))))
 
-(defn find-top-ten
+(defn find-all-time-leaderboard
   []
   (let [db (d/db (:conn datomic-cloud))]
     (->> (d/q
-           {:query '[:find ?user-name (max 10 ?cash)
+           {:query '[:find ?user-name ?cash
                      :in $
                      :where [?user :user/cash ?cash]
                      [?user :user/name ?user-name]]
             :args  [db]})
          (map #(hash-map :user_name (first %)
-                         :cash (-> % second first)))
+                         :cash (second %)))
          (sort-by :cash #(compare %2 %1))
          (vec))))
+
+(defn find-top-ten
+  []
+  (->> (find-all-time-leaderboard)
+       (take 10)
+       vec))
 
 (comment
   (def test-client (d/client cloud-config))

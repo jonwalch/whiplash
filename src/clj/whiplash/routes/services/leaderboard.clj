@@ -12,7 +12,7 @@
 ;; TODO maybe cache this every 10 minutes or so if it takes too long
 (defn weekly-leaderboard
   [{:keys [params] :as req}]
-  (let [weekly-leaderboard (->> (db/find-this-week-leaderboard (time/to-date (time/last-monday)))
+  (let [weekly-leaderboard (->> (db/find-this-week-payout-leaderboard (time/to-date (time/last-monday)))
                                 (group-by :user/name)
                                 (map (fn [[k v]]
                                        (hash-map :user_name k

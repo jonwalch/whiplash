@@ -523,3 +523,11 @@
         (is (= 200 (:status resp)))
         (is (every? #(contains? body %) [:live_url :status :id :games :opponents]))
         (is (= (:live_url body) "https://player.twitch.tv/?channel=faceittv"))))))
+
+(deftest all-time-top-ten
+  (testing "only returns 10 users"
+    (doseq [x (range 12)]
+      (create-user (assoc dummy-user :email (str x "@poops.com") :user_name (str x))))
+    (let [all-time-leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
+      (is (= 10
+             (count (common/parse-json-body all-time-leaderboard-resp)))))))
