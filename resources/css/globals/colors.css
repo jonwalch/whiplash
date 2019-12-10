@@ -10,3 +10,10 @@ $dark-orange: hsl( 41, 94%, 41% );
 $orange: hsl( 41, 94%, 51% );
 $medium-orange: hsl( 41, 94%, 71% );
 $pale-green: hsl( 146, 100%, 84% );
+
+
+$darker-gray: hsl( 41, 4%, 31% );
+$dark-gray: hsl( 41, 4%, 41% );
+$gray: hsl( 41, 4%, 51% );
+$medium-gray: hsl( 41, 4%, 71% );
+$light-gray: hsl( 41, 4%, 81% );

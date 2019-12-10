@@ -8,6 +8,7 @@
   font-weight: 600;
   padding: 0.5em;
   margin: 10px 10px 0 0;
+  min-width: 8em;
 
   &:hover,
   &:focus,

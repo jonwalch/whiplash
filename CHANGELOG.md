@@ -15,14 +15,9 @@ and this project adheres to [Semantic Versioning](semver).
 ### Security
 -->
 
-## 0.1.XX - 2019-XX-XX - Main content layout
+## 0.1.XX - 2019-XX-XX - ROADMAP
 
 ### Added
-- [x] Style Vote
-- [ ] Style Bet (#34)
-- [ ] Style Leaderboard
-- [ ] Style Twitch video
-- [ ] Style Twitch chat
 - [ ] Style Login/Signup form success/error states
 - [ ] Add About page/route (#34)
 
@@ -33,12 +28,10 @@ and this project adheres to [Semantic Versioning](semver).
 - [ ] Conditionally render Twitch chat only when cookies are available (#32)
 - [ ] Move inlined CSS to linked cacheable asset file(s)
 - [ ] Further modularize markup components/layouts
+- [ ] Refactor login, logout, and signup buttons as a single component with props
 
 ### Fixed
 - [ ] Fix Sign up form layout on large screens (#34)
-- [x] Fix container grandchild descendent bug
-- [x] Fix leaderboard markup
-
 
 ## 0.1.42 - 2019-12-06 - Main content layout
 
@@ -49,12 +42,25 @@ and this project adheres to [Semantic Versioning](semver).
 ### Changed
 - [x] Bring username and cash out of Login component (#34)
 - [x] Change Log In button to Log Out when user is logged in (#34)
+- [x] Let site height fill window
+- [x] Update Bets markup
+- [x] Style Twitch text
+- [x] Update Twitch inactive and loading placeholder and text
+- [x] Style leaderboard
+- [x] Update Readme
+- [x] Style Bet (#34)
+- [x] Never show login and signup forms at the same time
+- [x] Never show signup button while logged in
+- [x] Refactor login, logout, and signup buttons as functions
 
 ### Removed
 - [x] Remove button focus style after click (without breaking accessibility/keyboard/screenreaders) (#34)
+- [x] Remove inline styling and extra markup
 
 ### Fixed
 - [x] Fix Twitch embed height on mobile
+- [x] Fix container grandchild descendent bug
+- [x] Fix leaderboard markup
 
 ## 0.1.39 - 2019-11-29 - Header, footer, navigation
 

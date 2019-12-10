@@ -165,19 +165,29 @@ export function Home(props: any) {
     // Loading
     if (streamURL == "") {
       return (
-        <div className="twitch">
+        <div className="twitch is-inactive">
           <div className="container">
-            <p className="twitch__title">Loading...</p>
+            <h2 className="twitch__title">Loading...</h2>
+            <div className="twitch__placeholder">
+              <div className="container">
+                <p className="twitch__subtitle">Hang tight, your CS:GO match is loading.</p>
+              </div>
+            </div>
           </div>
         </div>
       );
     // No stream to show
     } else if (streamURL == failedToFetch) {
       return (
-        <div className="twitch">
+        <div className="twitch is-inactive">
           <div className="container">
             <h2 className="twitch__title">Whiplash is taking a nap</h2>
-            <p className="twitch__title">Hang tight, we'll find a CS:GO match for you soon.</p>
+            <div className="twitch__placeholder">
+              <div className="container">
+                <p className="twitch__subtitle">Hang tight, we'll find a CS:GO match for you soon.</p>
+                <p>In the meantime, bookmark this page and check back often for new chances to win while watching.</p>
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -190,16 +200,15 @@ export function Home(props: any) {
               <h2 className="twitch__title">{matchName}</h2>
             </header>
             <div className="twitch__embed" id="twitch-embed"></div>
-            {/*<div className="aspect-ratio-wide" id="twitch-embed"></div>*/}
           </div>
           <Vote
-              opponents={opponents}
-              team={team}
-              setTeam={setTeam}
-              matchID={matchID}
-              matchName={matchName}
-              currentGame={currentGame}
-              userStatus={userStatus}
+            opponents={opponents}
+            team={team}
+            setTeam={setTeam}
+            matchID={matchID}
+            matchName={matchName}
+            currentGame={currentGame}
+            userStatus={userStatus}
           />
         </>
       );
@@ -222,25 +231,65 @@ export function Home(props: any) {
     }
   };
 
-  const renderLogInOutButton = () => {
+  const renderLoginButton = () => {
+    return (
+      <button
+        type="button"
+        className="navigation__link"
+        onClick={() => {
+          scrollToTop();
+          setShowLogin(!showLogin);
+          setShowSignup(false);
+        }}>
+        Log In
+      </button>
+    );
+  }
+
+  const renderLogoutButton = () => {
+    return (
+      <button
+        type="button"
+        className="navigation__link"
+        onClick={() => {
+          logout()
+          setShowLogin(false);
+        }}>
+        Log Out
+      </button>
+    );
+  }
+
+  const renderSignupButton = () => {
+    return (
+      <button
+          type="button"
+          className="button navigation__button"
+          onClick={() => {
+            scrollToTop();
+            setShowSignup(!showSignup);
+            setShowLogin(false);
+          }}>
+        Sign Up
+      </button>
+    );
+  }
+
+  const renderNavCtaButtons = () => {
     // No userName, currently loading
     if (loggedInState.userName === null) {
-      return;
+      return (
+        <>
+          <li>{renderSignupButton()}</li>
+        </>
+      )
     // Show log in button, user is not logged in
     } else if (loggedInState.userName === '') {
       return (
-        <li>
-          <button
-            type="button"
-            className="navigation__link"
-            onClick={() => {
-              scrollToTop();
-              setShowLogin(!showLogin);
-            }}
-          >
-            Log In
-          </button>
-        </li>
+        <>
+          <li>{renderLoginButton()}</li>
+          <li>{renderSignupButton()}</li>
+        </>
       )
       // Show log out button, user is logged in
     } else {
@@ -248,19 +297,7 @@ export function Home(props: any) {
         <>
           <li className="navigation__item">{loggedInState.userName}</li>
           <li className="navigation__item"><span className="navigation__highlight">Cash:</span> ${loggedInState.cash}</li>
-          <li>
-            <button
-              type="button"
-              className="navigation__link"
-              onClick={() => {
-                  logout()
-                  setShowLogin(false);
-                }
-              }
-            >
-              Log Out
-            </button>
-          </li>
+          <li>{renderLogoutButton()}</li>
         </>
       )
     }
@@ -274,11 +311,11 @@ export function Home(props: any) {
               <h1 className="site-branding__title">
                 <a href="/">
                   <img
-                      src="./img/logos/whiplash-horizontal-4c.svg"
-                      alt="Whiplash"
-                      width="165"
-                      height="36"
-                      className="site-logo"
+                    src="./img/logos/whiplash-horizontal-4c.svg"
+                    alt="Whiplash"
+                    width="165"
+                    height="36"
+                    className="site-logo"
                   />
                 </a>
               </h1>
@@ -291,19 +328,7 @@ export function Home(props: any) {
             </nav>
             <nav className="navigation navigation--cta">
               <ul className="navigation__list">
-                {renderLogInOutButton()}
-                <li>
-                  <button
-                      type="button"
-                      className="button navigation__button"
-                      onClick={() => {
-                        scrollToTop();
-                        setShowSignup(!showSignup);
-                      }}
-                  >
-                    Sign Up
-                  </button>
-                </li>
+                {renderNavCtaButtons()}
               </ul>
             </nav>
           </div>
@@ -313,24 +338,22 @@ export function Home(props: any) {
         <main id="content" role="main" className="site-main">
           {renderContent()}
           <Bets
-              matchID={matchID}
-              currentGame={currentGame}
+            matchID={matchID}
+            currentGame={currentGame}
           />
-        </main>
-        <div className="site-main" style={{display:"block", padding: "20px 0 20px 0"}}>
           <Leaderboard />
-        </div>
+        </main>
         <footer role="contentinfo" className="site-footer">
           <section className="site-navigation container">
             <div className="site-branding">
               <p className="site-branding__title">
                 <a href="/">
                   <img
-                      src="./img/logos/whiplash-horizontal-4c.svg"
-                      alt="Whiplash"
-                      width="165"
-                      height="36"
-                      className="site-logo"
+                    src="./img/logos/whiplash-horizontal-4c.svg"
+                    alt="Whiplash"
+                    width="165"
+                    height="36"
+                    className="site-logo"
                   />
                 </a>
               </p>
@@ -343,19 +366,7 @@ export function Home(props: any) {
             </nav>
             <nav className="navigation navigation--cta">
               <ul className="navigation__list">
-                {renderLogInOutButton()}
-                <li>
-                  <button
-                      type="button"
-                      className="button navigation__button"
-                      onClick={() => {
-                        scrollToTop();
-                        setShowSignup(!showSignup);
-                      }}
-                  >
-                    Sign Up
-                  </button>
-                </li>
+                {renderNavCtaButtons()}
               </ul>
             </nav>
           </section>

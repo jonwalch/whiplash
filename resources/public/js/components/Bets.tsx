@@ -46,29 +46,32 @@ export function Bets(props: any) {
     return (
       <div className="bets">
         <div className="container">
-          <p>Current Bets:</p>
-          <div>
+          <header className="bets__header">
+            <h2 className="bets__title">Current Bets:</h2>
+          </header>
+          <table className="bets__table">
             {bets.map((el: any) => {
               const teamName = el[0];
               const teamBets = el[1];
               return (
-                <div key={teamName}>
-                  <div>
-                    {teamName} Odds:{teamBets.odds.toFixed(2)} Total:$
-                    {teamBets.total}
-                  </div>
+                <tbody>
+                  <tr className="bets__tr bets__team" key={teamName}>
+                    <th className="bets__th">{teamName}</th>
+                    <th className="bets__th"><strong>Odds:</strong> {teamBets.odds.toFixed(2)}</th>
+                    <th className="bets__th"><strong>Total:</strong> ${teamBets.total}</th>
+                  </tr>
                   {teamBets.bets.map((bet: any) => {
                     return (
-                      <div key={bet["user/name"]}>
-                        <div>{bet["user/name"]}</div>
-                        <div>${bet["bet/amount"]}</div>
-                      </div>
+                      <tr className="bets__tr" key={bet["user/name"] + teamName}>
+                        <td className="bets__td" colSpan={2}>{bet["user/name"]}</td>
+                        <td className="bets__td">${bet["bet/amount"]}</td>
+                      </tr>
                     );
                   })}
-                </div>
+                </tbody>
               );
             })}
-          </div>
+          </table>
         </div>
       </div>
     );

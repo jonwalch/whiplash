@@ -1,6 +1,4 @@
 .vote {
-  /*background: $dark-blue;*/
-
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-column: 1 / -1;
   }
@@ -18,5 +16,53 @@
     padding: $space;
     text-align: center;
     color: $orange;
+  }
+}
+
+/**
+  * This component depends on .form
+  * TODO (paulshryock): Refactor component to be independent from .form
+  **/
+.form--vote {
+  .form {
+    &__fieldset {
+      /* Reset background and border */
+      /* TODO (paulshryock): Refactor .form__fieldset
+      by adding background and border to login and signup components,
+      so this does not need to be reset/undeclared. */
+      background: $dark-blue;
+      border: none;
+      text-align: center;
+    
+      @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+        display: block;
+      }
+    }
+
+    &__button-group {
+      justify-content: center;
+      margin-bottom: $space;
+    }
+
+    &__group {
+      justify-content: center;
+      margin-bottom: $space;
+    }
+
+    &__input {
+      margin: 0 auto;
+    }
+  }
+}
+
+.button--vote:not(.is-active) {
+  background: $medium-gray;
+  border-color: $gray;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background: $light-gray;
+    border-color: $medium-gray;
   }
 }

@@ -12,13 +12,28 @@
 
   &__title {
     font-family: $font-stack-secondary;
+    font-size: 1.5em;
+    font-weight: 700;
     color: $dark-white;
     margin: 0;
+
+    + .twitch__placeholder {
+      margin-top: $space;
+    }
+  }
+
+  &__subtitle {
+    font-family: $font-stack-secondary;
+    font-size: 1.5em;
+    font-weight: 700;
+    color: $orange;
+    margin-bottom: 0.5em;
   }
 
   &__message {
-     font-family: $font-stack-secondary;
-     color: $dark-white;
+    font-family: $font-stack-secondary;
+    color: $dark-white;
+    margin-top: calc( $space / 2 );
    }
 
   &__embed {
@@ -81,5 +96,10 @@
       top: 0;
       width: 100%;
     }
+  }
+
+  &__placeholder {
+    background: $darker-blue;
+    padding-bottom: 25%;
   }
 }

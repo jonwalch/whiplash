@@ -46,9 +46,9 @@ Or run in the REPL:
 
 ### CSS
 
-CSS source files are located in `/resources/css`, and will be processed via Gulp and output to `/resources/public/css/App.css`.
+**Don't use inline styling**. **All styles should use class selectors** _(i.e., `.component { property: value; }`)_, and live in source files located in `/resources/css`. These will be processed via Gulp and output to `/resources/public/css/App.css`.
 
-Use BEM methodology for naming component classes. Avoid element and ID selectors generally--use nested element selectors if/when it really makes sense. But probably just use classes instead. BEM stands for Block, Element, Modifier. The syntax looks like `.block__element--modifier`. For example, `.card`, `.card__title`, `.card--primary`, `.card__image--highlight`, etc. Components with compound words are hyphenated (not camelCased), like `.aspect-ratio` (not `.aspectRatio`).
+Use [BEM][bem] methodology for naming component classes and [ITCSS][itcss] for organizing styles. Avoid element and ID selectors generally--use nested element selectors only if/when it really makes sense. But probably just use classes instead. BEM stands for Block, Element, Modifier. The syntax looks like `.block__element--modifier`. For example, `.card`, `.card__title`, `.card--primary`, `.card__image--highlight`, etc. Components with compound words are hyphenated (not camelCased), like `.aspect-ratio` (not `.aspectRatio`).
 
 To indicate state, use `.is-` and `.has-`, like `.is-visible` and `.has-loaded`. For JS hooks, use a `.js-` prefix, and don't use the `.js-` prefixed class for styling.
 
@@ -70,3 +70,6 @@ eksctl create cluster --name whiplash --version 1.14 --nodegroup-name standard-w
 
 ## If CloudFront isn't serving your newest content
 aws cloudfront create-invalidation --distribution-id E451IY44F3ERG --paths "/*"
+
+[bem]: http://getbem.com/introduction/
+[itcss]: https://speakerdeck.com/dafed/managing-css-projects-with-itcss

@@ -9,6 +9,22 @@ export function Vote(props: any) {
   // const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
   const [betAmount, setBetAmount] = useState<number>(0);
 
+  useEffect(() => {
+    const buttons = document.querySelectorAll('.button--vote');
+
+    buttons.forEach((button) => {
+      if (button.innerHTML === props.team.teamName) {
+        // button text does match teamName
+        if (!button.classList.contains('is-active')) {
+          button.classList.add('is-active')
+        }
+      } else {
+        // button text does not match teamName
+        button.classList.remove('is-active')
+      }
+    })
+  }, [props.team.teamName])
+
   // useEffect(() => {
   //   if (props.currentGame.id && props.matchID && loggedInState.userName) {
   //     getGuess();
@@ -67,8 +83,8 @@ export function Vote(props: any) {
     }
   };
 
-  const handleClick = (team: Opponent) => {
-    props.setTeam(team);
+  function handleClick (team: Opponent) {
+    props.setTeam(team)
   };
 
   const toggleValid = () => {
@@ -110,28 +126,28 @@ export function Vote(props: any) {
       } else {
         return (
           <div className="container">
-            <form className="form">
-              <fieldset className="form__fieldset" style={{border: "none"}}>
+            <form className="form form--vote">
+              <fieldset className="form__fieldset">
                 {renderTeamSelect()}
-                <div style={{display: "flex", justifyContent: "space-around", marginBottom: "20px"}}>
-                {props.opponents.map((opponent: Opponent) => {
-                  return (
-                    <button
-                      className="button"
-                      type="button"
-                      style={{flexGrow: 1}}
-                      key={opponent.teamID}
-                      onClick={() => handleClick(opponent)}
-                    >
-                      {opponent.teamName}
-                    </button>
-                  );
-                })}
+                <div className="form__button-group">
+                  {props.opponents.map((opponent: Opponent) => {
+                    return (
+                      <button
+                        className="button button--vote"
+                        type="button"
+                        key={opponent.teamID}
+                        onClick={() => {
+                            handleClick(opponent)
+                        }}>
+                        {opponent.teamName}
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="form__group">
                   <label className="form__label" htmlFor="betAmount">Bet Amount</label>
                   <input
-                    className="form__input form--vote"
+                    className="form__input"
                     value={betAmount > 0 ? betAmount : ""}
                     onChange={e => {
                       handleInputChange(e);
@@ -142,17 +158,15 @@ export function Vote(props: any) {
                     id="betAmount"
                   />
                 </div>
-                <div style={{display: "flex", justifyContent: "space-around"}}>
-                  <button
-                      className="button"
-                      type="button"
+                <button
+                    className="button"
+                    type="button"
 
-                      disabled={toggleValid()}
-                      onClick={() => makeGuess()}
-                  >
-                    Make Bet
-                  </button>
-                </div>
+                    disabled={toggleValid()}
+                    onClick={() => makeGuess()}
+                >
+                  Make Bet
+                </button>
               </fieldset>
             </form>
           </div>

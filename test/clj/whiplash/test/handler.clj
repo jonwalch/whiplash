@@ -284,7 +284,7 @@
                        :total 50}}
              (common/parse-json-body bets-resp)))
 
-      #_(testing "Guess success processing works"
+      (testing "Guess success processing works"
         (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
           (let [_ (guess-processor/process-bets)
                 {:keys [body] :as get-guess-resp} (get-bets auth-token game_id match_id)
