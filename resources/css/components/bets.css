@@ -44,4 +44,8 @@
       color: $dark-white;
     }
   }
+
+  &__tr + &__team {
+    border-top: 1px solid $light-black;
+  }
 }

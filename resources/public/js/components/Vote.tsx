@@ -67,29 +67,25 @@ export function Vote(props: any) {
     }
   };
 
-  const handleClick = (team: Opponent, e: any) => {
-    props.setTeam(team);
+  async function handleClick (team: Opponent) {
+    await props.setTeam(team);
 
-    // Get all vote buttons
-    const buttons = document.querySelectorAll('.button--vote');
+    // Something is wrong here...
+    // The code below is being run before props.team.teamName is updated
 
-    // Loop through each button
-    for (var i = 0; i < buttons.length; i++) {
+    const buttons = document.querySelectorAll('.button--vote')
 
-      // If the button text matches the selected team name
-      if (buttons[i].textContent === props.team.teamName) {
-        // and if the button clicked is not already active
-        if (!buttons[i].classList.contains('is-active')) {
-          // make the button active, and skip the rest
-          buttons[i].classList.add('is-active')
-          continue
+    buttons.forEach((button) => {
+      if (button.innerHTML === props.team.teamName) {
+        // button text does match teamName
+        if (!button.classList.contains('is-active')) {
+          button.classList.add('is-active')
         }
+      } else {
+        // button text does not match teamName
+        button.classList.remove('is-active')
       }
-
-      // Remove the .is-active class
-      buttons[i].classList.remove('is-active');
-
-    }
+    })
   };
 
   const toggleValid = () => {
@@ -141,12 +137,9 @@ export function Vote(props: any) {
                         className="button button--vote"
                         type="button"
                         key={opponent.teamID}
-                        onClick={
-                          (e) => {
-                            handleClick(opponent, e)
-                          }
-                        }
-                      >
+                        onClick={() => {
+                            handleClick(opponent)
+                        }}>
                         {opponent.teamName}
                       </button>
                     );

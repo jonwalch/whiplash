@@ -54,27 +54,21 @@ export function Bets(props: any) {
               const teamName = el[0];
               const teamBets = el[1];
               return (
-                <tr className="bets__team" key={teamName}>
-                  <td>
-                    <table className="bets__table bets__th">
-                      <tr>
-                        <td className="bets__td">{teamName}</td>
-                        <td className="bets__td"><strong>Odds:</strong> {teamBets.odds.toFixed(2)}</td>
-                        <td className="bets__td"><strong>Total:</strong> ${teamBets.total}</td>
+                <>
+                  <tr className="bets__tr bets__team" key={teamName}>
+                    <th className="bets__th">{teamName}</th>
+                    <th className="bets__th"><strong>Odds:</strong> {teamBets.odds.toFixed(2)}</th>
+                    <th className="bets__th"><strong>Total:</strong> ${teamBets.total}</th>
+                  </tr>
+                  {teamBets.bets.map((bet: any) => {
+                    return (
+                      <tr className="bets__tr" key={bet["user/name"]}>
+                        <td className="bets__td" colSpan={2}>{bet["user/name"]}</td>
+                        <td className="bets__td">${bet["bet/amount"]}</td>
                       </tr>
-                    </table>
-                    <table className="bets__table">
-                      {teamBets.bets.map((bet: any) => {
-                        return (
-                          <tr className="bets__user" key={bet["user/name"]}>
-                            <td className="bets__td">{bet["user/name"]}</td>
-                            <td className="bets__td">${bet["bet/amount"]}</td>
-                          </tr>
-                        );
-                      })}
-                    </table>
-                  </td>
-                </tr>
+                    );
+                  })}
+                </>
               );
             })}
           </table>
