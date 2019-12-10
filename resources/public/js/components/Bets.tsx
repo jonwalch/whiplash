@@ -62,7 +62,7 @@ export function Bets(props: any) {
                   </tr>
                   {teamBets.bets.map((bet: any) => {
                     return (
-                      <tr className="bets__tr" key={bet["user/name"]}>
+                      <tr className="bets__tr" key={bet["user/name"] + teamName}>
                         <td className="bets__td" colSpan={2}>{bet["user/name"]}</td>
                         <td className="bets__td">${bet["bet/amount"]}</td>
                       </tr>

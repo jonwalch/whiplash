@@ -37,11 +37,11 @@
                                    (guess-processor/team-odds))]
     (ok (or (->> unprocessed-bets
                  (group-by :team/name)
-                 (map (fn [[k v]]
-                        (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds k)]
-                          {k {:bets  (sort-by :bet/amount
+                 (map (fn [[team-name bets]]
+                        (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds team-name)]
+                          {team-name {:bets  (sort-by :bet/amount
                                               #(compare %2 %1)
-                                              (->> v
+                                              (->> bets
                                                    (group-by :user/name)
                                                    (mapv (fn [[user-name bets]]
                                                            {:user/name user-name
