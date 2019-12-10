@@ -67,40 +67,24 @@ export function Vote(props: any) {
     }
   };
 
-  function handleClick (team: Opponent) {
-    const updateTeam = new Promise((resolve, reject) => {
-      props.setTeam(team);
+  useEffect(() => {
+    const buttons = document.querySelectorAll('.button--vote')
+
+    buttons.forEach((button) => {
+      if (button.innerHTML === props.team.teamName) {
+        // button text does match teamName
+        if (!button.classList.contains('is-active')) {
+          button.classList.add('is-active')
+        }
+      } else {
+        // button text does not match teamName
+        button.classList.remove('is-active')
+      }
     })
-    
-    // Something is wrong here...
-    //
-    // The code below is being run before props.team.teamName is updated,
-    // so it first updates the buttons, then updates the teamName.
-    //
-    // First, we need to make sure the teamName has been updated,
-    // and then proceed with the code below.
-    //
-    // ...
-    //
-    // How about a Promise instead of async/await?
-    // ... still doesn't seem to work.
+  }, [props.team.teamName])
 
-    updateTeam
-      .then(() => {
-        const buttons = document.querySelectorAll('.button--vote')
-
-        buttons.forEach((button) => {
-          if (button.innerHTML === props.team.teamName) {
-            // button text does match teamName
-            if (!button.classList.contains('is-active')) {
-              button.classList.add('is-active')
-            }
-          } else {
-            // button text does not match teamName
-            button.classList.remove('is-active')
-          }
-        })
-      })
+  function handleClick (team: Opponent) {
+    props.setTeam(team)
   };
 
   const toggleValid = () => {
