@@ -202,13 +202,13 @@ export function Home(props: any) {
             <div className="twitch__embed" id="twitch-embed"></div>
           </div>
           <Vote
-              opponents={opponents}
-              team={team}
-              setTeam={setTeam}
-              matchID={matchID}
-              matchName={matchName}
-              currentGame={currentGame}
-              userStatus={userStatus}
+            opponents={opponents}
+            team={team}
+            setTeam={setTeam}
+            matchID={matchID}
+            matchName={matchName}
+            currentGame={currentGame}
+            userStatus={userStatus}
           />
         </>
       );
@@ -311,11 +311,11 @@ export function Home(props: any) {
               <h1 className="site-branding__title">
                 <a href="/">
                   <img
-                      src="./img/logos/whiplash-horizontal-4c.svg"
-                      alt="Whiplash"
-                      width="165"
-                      height="36"
-                      className="site-logo"
+                    src="./img/logos/whiplash-horizontal-4c.svg"
+                    alt="Whiplash"
+                    width="165"
+                    height="36"
+                    className="site-logo"
                   />
                 </a>
               </h1>
@@ -338,8 +338,8 @@ export function Home(props: any) {
         <main id="content" role="main" className="site-main">
           {renderContent()}
           <Bets
-              matchID={matchID}
-              currentGame={currentGame}
+            matchID={matchID}
+            currentGame={currentGame}
           />
           <Leaderboard />
         </main>
@@ -349,11 +349,11 @@ export function Home(props: any) {
               <p className="site-branding__title">
                 <a href="/">
                   <img
-                      src="./img/logos/whiplash-horizontal-4c.svg"
-                      alt="Whiplash"
-                      width="165"
-                      height="36"
-                      className="site-logo"
+                    src="./img/logos/whiplash-horizontal-4c.svg"
+                    alt="Whiplash"
+                    width="165"
+                    height="36"
+                    className="site-logo"
                   />
                 </a>
               </p>
