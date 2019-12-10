@@ -69,6 +69,8 @@ export function Vote(props: any) {
 
   const handleClick = (team: Opponent, e: any) => {
     props.setTeam(team);
+
+    // Use props.team.teamName
     e.target.classList.toggle('is-active')
 
     // Get all vote buttons

@@ -28,7 +28,7 @@
     padding: 0.25em 0.5em;
     text-align: left;
 
-    + .leaderboard__th {
+    + .bets__th {
       border-left: 1px solid $light-black;
     }
   }
@@ -39,7 +39,7 @@
     color: $dark-white;
     font-family: $font-stack-code;
 
-    + .leaderboard__td {
+    + .bets__td {
       border-left: 1px solid $light-black;
       color: $dark-white;
     }
