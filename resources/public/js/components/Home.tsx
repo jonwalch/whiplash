@@ -231,25 +231,65 @@ export function Home(props: any) {
     }
   };
 
-  const renderLogInOutButton = () => {
+  const renderLoginButton = () => {
+    return (
+      <button
+        type="button"
+        className="navigation__link"
+        onClick={() => {
+          scrollToTop();
+          setShowLogin(!showLogin);
+          setShowSignup(false);
+        }}>
+        Log In
+      </button>
+    );
+  }
+
+  const renderLogoutButton = () => {
+    return (
+      <button
+        type="button"
+        className="navigation__link"
+        onClick={() => {
+          logout()
+          setShowLogin(false);
+        }}>
+        Log Out
+      </button>
+    );
+  }
+
+  const renderSignupButton = () => {
+    return (
+      <button
+          type="button"
+          className="button navigation__button"
+          onClick={() => {
+            scrollToTop();
+            setShowSignup(!showSignup);
+            setShowLogin(false);
+          }}>
+        Sign Up
+      </button>
+    );
+  }
+
+  const renderNavCtaButtons = () => {
     // No userName, currently loading
     if (loggedInState.userName === null) {
-      return;
+      return (
+        <>
+          <li>{renderSignupButton()}</li>
+        </>
+      )
     // Show log in button, user is not logged in
     } else if (loggedInState.userName === '') {
       return (
-        <li>
-          <button
-            type="button"
-            className="navigation__link"
-            onClick={() => {
-              scrollToTop();
-              setShowLogin(!showLogin);
-            }}
-          >
-            Log In
-          </button>
-        </li>
+        <>
+          <li>{renderLoginButton()}</li>
+          <li>{renderSignupButton()}</li>
+        </>
       )
       // Show log out button, user is logged in
     } else {
@@ -257,19 +297,7 @@ export function Home(props: any) {
         <>
           <li className="navigation__item">{loggedInState.userName}</li>
           <li className="navigation__item"><span className="navigation__highlight">Cash:</span> ${loggedInState.cash}</li>
-          <li>
-            <button
-              type="button"
-              className="navigation__link"
-              onClick={() => {
-                  logout()
-                  setShowLogin(false);
-                }
-              }
-            >
-              Log Out
-            </button>
-          </li>
+          <li>{renderLogoutButton()}</li>
         </>
       )
     }
@@ -300,19 +328,7 @@ export function Home(props: any) {
             </nav>
             <nav className="navigation navigation--cta">
               <ul className="navigation__list">
-                {renderLogInOutButton()}
-                <li>
-                  <button
-                      type="button"
-                      className="button navigation__button"
-                      onClick={() => {
-                        scrollToTop();
-                        setShowSignup(!showSignup);
-                      }}
-                  >
-                    Sign Up
-                  </button>
-                </li>
+                {renderNavCtaButtons()}
               </ul>
             </nav>
           </div>
@@ -350,19 +366,7 @@ export function Home(props: any) {
             </nav>
             <nav className="navigation navigation--cta">
               <ul className="navigation__list">
-                {renderLogInOutButton()}
-                <li>
-                  <button
-                      type="button"
-                      className="button navigation__button"
-                      onClick={() => {
-                        scrollToTop();
-                        setShowSignup(!showSignup);
-                      }}
-                  >
-                    Sign Up
-                  </button>
-                </li>
+                {renderNavCtaButtons()}
               </ul>
             </nav>
           </section>
