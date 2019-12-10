@@ -31,7 +31,7 @@ export function Login(props: any) {
       props.setShowSignup(false);
     } else {
       const resp = await response.json();
-      alert(resp.messge);
+      alert(resp.message);
     }
   };
 
