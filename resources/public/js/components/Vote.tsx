@@ -9,6 +9,22 @@ export function Vote(props: any) {
   // const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
   const [betAmount, setBetAmount] = useState<number>(0);
 
+  useEffect(() => {
+    const buttons = document.querySelectorAll('.button--vote');
+
+    buttons.forEach((button) => {
+      if (button.innerHTML === props.team.teamName) {
+        // button text does match teamName
+        if (!button.classList.contains('is-active')) {
+          button.classList.add('is-active')
+        }
+      } else {
+        // button text does not match teamName
+        button.classList.remove('is-active')
+      }
+    })
+  }, [props.team.teamName])
+
   // useEffect(() => {
   //   if (props.currentGame.id && props.matchID && loggedInState.userName) {
   //     getGuess();
@@ -66,22 +82,6 @@ export function Vote(props: any) {
       alert(resp);
     }
   };
-
-  useEffect(() => {
-    const buttons = document.querySelectorAll('.button--vote')
-
-    buttons.forEach((button) => {
-      if (button.innerHTML === props.team.teamName) {
-        // button text does match teamName
-        if (!button.classList.contains('is-active')) {
-          button.classList.add('is-active')
-        }
-      } else {
-        // button text does not match teamName
-        button.classList.remove('is-active')
-      }
-    })
-  }, [props.team.teamName])
 
   function handleClick (team: Opponent) {
     props.setTeam(team)
