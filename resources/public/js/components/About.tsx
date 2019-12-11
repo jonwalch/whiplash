@@ -24,6 +24,7 @@ export function About() {
             <p>All players, bets, and winnings will not be deleted. If you drop below $100 Whiplash Cash you will receive a small bailout.</p>
             <h3>How are odds and payouts calculated?</h3>
             <p>Odds and payouts update in real-time and are based on <a href="https://en.wikipedia.org/wiki/Parimutuel_betting">parimutuel betting</a>.</p>
+            <p>Payouts are rounded down to the nearest whole dollar.</p>
             <h3>How can I chat with other Whiplash users?</h3>
             <p>Join our <a href="https://discord.gg/B9vSqy">Discord server</a>!</p>
             <h3>How does Whiplash decide which stream to play?</h3>
