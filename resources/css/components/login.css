@@ -9,6 +9,8 @@
   .form__fieldset {
     background: $light-black;
     border: 0.25em solid $orange;
+    margin: 0 auto;
+    max-width: 48rem;
     
     @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
       display: grid;
