@@ -2,14 +2,33 @@
   font-size: 0.85em;
 
   @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
-    grid-column: -2;
-    grid-row: 3;
+    grid-column: 1 / -1;
+  }
+
+  @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+    grid-column: 1 / -2;
+  }
+
+  &__container {
+    @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+      display: grid;
+      grid-column-gap: $space;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+      border-right: 0.25em solid $dark-blue;
+    }
   }
 
   &__header {
     background: $orange;
     color: $light-black;
     padding: 0.25em 0.5em;
+
+    @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+      grid-column: 1 / -1;
+    }
 
     &--primary {
       background: none;
@@ -19,6 +38,13 @@
 
   &__section + &__section {
     margin-top: $space;
+
+    @supports(display: grid) {
+      @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+        margin-top: 0;
+      }
+    }
+
   }
 
   &__title {
