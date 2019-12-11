@@ -5,14 +5,13 @@ generated using Luminus version "3.48"
 FIXME
 
 ## Prerequisites
-Java 8+
-Clojure 1.10.1
-npm
+- Java 8+
+- Clojure 1.10.1
+- [Leiningen][lein] 2.0 or above
+- [npm][node]
 
-You will need [Leiningen][1] 2.0 or above installed.
-
-[1]: https://github.com/technomancy/leiningen
-
+[lein]: https://github.com/technomancy/leiningen
+[node]: https://nodejs.org/en/download/
 
 ## Backend tests
 Run from repl or:
@@ -39,10 +38,14 @@ Or run in the REPL:
 
 ## Front End Development
 
-- `npm run develop`: Build CSS
+- `npm start`: Build CSS and JS, and minify CSS for production
+- `npm run build`: Build CSS and JS, and minify CSS for production
+- `npm test`: Run backend tests
+- `npm run serve`: Build CSS and JS, and serve Whiplash to `localhost:3000`
+- `npm run develop`: Build CSS and JS
 - `npm run watch:css`: Build CSS and watch for changes (run this before `watch:js`)
 - `npm run watch:js`: Build JS and watch for changes (run this after `watch:css` in another terminal tab/window)
-- `npm run build`: Build CSS and JS, and minify CSS for production
+- `npm run flush:cache`: Flush the Cloudfront CDN cache
 
 ### CSS
 
@@ -60,7 +63,7 @@ CSS gets inlined in `index.html`, which is fine for now. As the number of styles
 
 ### JS
 
-JS files are located in `/resources/public/js`.
+JS files are located in `/resources/public/js`. React powers the front end views as an SPA.
 
 ## License
 

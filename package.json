@@ -1,6 +1,5 @@
 {
   "name": "whiplash",
-  "version": "0.0.1",
   "description": "Whiplash frontend",
   "main": "index.js",
   "directories": {
@@ -8,21 +7,25 @@
   },
   "scripts": {
     "start": "npm run build",
-    "develop": "NODE_ENV='development' gulp develop",
+    "build": "NODE_ENV='production' gulp build && webpack -p",
+    "test": "lein test",
+    "serve": "npm run develop && lein run",
+    "develop": "NODE_ENV='development' gulp develop && webpack",
     "watch:css": "NODE_ENV='development' gulp watch",
     "watch:js": "NODE_ENV='development' webpack -w",
-    "build": "NODE_ENV='production' gulp build && webpack -p"
+    "flush:cache": "aws cloudfront create-invalidation --distribution-id E451IY44F3ERG --paths \"/*\""
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jonwalch/whiplash.git"
   },
   "author": "Jon Walch",
-  "license": "ISC",
+  "license": "UNLICENSED",
+  "private": true,
   "bugs": {
     "url": "https://github.com/jonwalch/whiplash/issues"
   },
-  "homepage": "https://github.com/jonwalch/whiplash#readme",
+  "homepage": "https://whiplashesports.com",
   "devDependencies": {
     "@types/react": "^16.9.5",
     "@types/react-dom": "^16.9.1",
