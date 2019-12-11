@@ -9,11 +9,34 @@
   .form__fieldset {
     background: $light-black;
     border: 0.25em solid $orange;
+    margin: 0 auto;
+    max-width: 55rem;
     
     @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
       display: grid;
       grid-gap: $space;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+  }
+
+  .form__button {
+
+    @media screen and (min-width: 717px) {
+      /**
+        * This media query is a hack
+        * TODO (paulshryock): Refactor this media query to not rely on pixels / specific grid-row
+        **/
+      grid-column: 1 / -1;
+      grid-row: 4;
+      justify-self: center;
+    }
+
+    @media screen and (min-width: 1050px) {
+      /**
+        * This media query is a hack
+        * TODO (paulshryock): Refactor this media query to not rely on pixels / specific grid-row
+        **/
+      grid-row: 3;
     }
   }
 }
