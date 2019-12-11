@@ -182,13 +182,15 @@ export function Home(props: any) {
   return (
       <>
         <Header/>
-        <main id="content" role="main" className="site-main">
-          {renderContent()}
-          <Bets
-            matchID={matchID}
-            currentGame={currentGame}
-          />
-          <Leaderboard />
+        <main id="content" role="main">
+          <div className="home__layout">
+            {renderContent()}
+            <Bets
+              matchID={matchID}
+              currentGame={currentGame}
+            />
+            <Leaderboard />
+          </div>
         </main>
         <Footer/>
       </>

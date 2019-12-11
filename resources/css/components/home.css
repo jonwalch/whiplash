@@ -1,0 +1,26 @@
+.home {
+
+  &__layout {
+    background: $light-black;
+    color: $dark-white;
+    display: grid;
+
+    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto 1fr;
+    }
+
+    @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: auto 1fr auto;
+    }
+
+    @media screen and (min-width: 112.5rem) { /* Big Desktop / 112.5rem / 1800px */
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
