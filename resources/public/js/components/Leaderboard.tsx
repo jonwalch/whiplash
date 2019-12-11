@@ -115,7 +115,7 @@ export function Leaderboard() {
         </section>
         <section className="leaderboard__section">
           <header className="leaderboard__header">
-            <h3 className="leaderboard__subtitle">Weekly Leaderboard</h3>
+            <h3 className="leaderboard__subtitle">Top Weekly Payouts</h3>
           </header>
           {renderWeeklyLeaderboard()}
         </section>

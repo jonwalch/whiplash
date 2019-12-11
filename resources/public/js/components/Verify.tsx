@@ -3,11 +3,18 @@ import queryString from "query-string";
 import { baseUrl } from "../config/const";
 import { getCSRFToken } from "../common";
 import { Link } from "react-router-dom";
+import {Header} from "./Header";
+import {Footer} from "./Footer";
 
 const defaultMessage = "Verifying your email address...";
 
 export function Verify(props: any) {
   const [verifyMessage, setVerifyMessage] = useState<string>(defaultMessage);
+
+  useEffect(() => {
+    verifyEmail();
+  }, []);
+
   const verifyEmail = async () => {
     const response = await fetch(baseUrl + "user/verify", {
       headers: {
@@ -31,14 +38,11 @@ export function Verify(props: any) {
     }
   };
 
-  useEffect(() => {
-    verifyEmail();
-  }, []);
-
   return (
-    <>
-      <p>{verifyMessage}</p>
-      <Link to={"/"}>Back to home page</Link>
-    </>
+      <>
+        <Header/>
+        <p>{verifyMessage}</p>
+        <Footer/>
+      </>
   );
 }

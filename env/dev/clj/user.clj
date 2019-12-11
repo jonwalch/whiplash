@@ -14,7 +14,7 @@
 
 (add-tap (bound-fn* clojure.pprint/pprint))
 
-(defn create-and-verify-local-dev-user
+(defn- create-and-verify-local-dev-user
   [{:keys [email user-name]}]
   (user/create-user {:body-params {:first_name "testy"
                                    :last_name  "testerino"
@@ -27,7 +27,7 @@
     (user/verify-email {:body-params {:email email
                                       :token verify-token}})))
 
-(defn add-many-users
+(defn- add-many-users
   [num-users]
   (doseq [x (range num-users)]
     (create-and-verify-local-dev-user {:email (str "test" x "@whiplashesports.com")

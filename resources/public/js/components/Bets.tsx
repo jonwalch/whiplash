@@ -47,7 +47,7 @@ export function Bets(props: any) {
       <div className="bets">
         <div className="container">
           <header className="bets__header">
-            <h2 className="bets__title">Current Bets:</h2>
+            <h2 className="bets__title">Current Bets</h2>
           </header>
           <table className="bets__table">
             {bets.map((el: any) => {
