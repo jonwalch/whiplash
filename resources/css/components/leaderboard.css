@@ -15,6 +15,10 @@
       grid-column-gap: $space;
       grid-template-columns: repeat(2, 1fr);
     }
+
+    @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+      border-right: 0.25em solid $dark-blue;
+    }
   }
 
   &__header {

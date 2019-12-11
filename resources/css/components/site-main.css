@@ -2,7 +2,6 @@
   background: $light-black;
   color: $dark-white;
   display: grid;
-  padding-bottom: $space;
 
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-template-columns: repeat(2, 1fr);
