@@ -32,9 +32,9 @@ To start a web server for the application, run:
 
     lein run 
 
-Or run in the REPL:
+Or run in the REPL from `env/dev/clj/user.clj`:
 
-    (start-app nil)
+    (start)
 
 ## Front End Development
 
