@@ -36,9 +36,12 @@ export function About() {
           </div>
           <div className="article__container">
             <h2>Terms of Service</h2>
+            <h3>Do not harass other players.</h3>
+            <h3>No spamming or hate speech. </h3>
             <h3>Do not advertise unauthorized third party extensions or other websites.</h3>
             <h3>Do not exploit, abuse, or excessively use the system in a way that affects other players or the operation of the system.</h3>
             <h3>Your account may be deleted by an administrator for violating these terms.</h3>
+            <p>NOTE: All Terms of Service also apply to the Whiplash Discord server.</p>
           </div>
         </article>
       </main>
