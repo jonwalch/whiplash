@@ -125,7 +125,7 @@
                                   :match_id int?}}
              :middleware [middleware/wrap-restricted]
              :handler    (fn [req]
-                           (user/get-bet req))}
+                           (user/get-bets req))}
 
       :post {:summary    "create a guess for a user"
              :parameters {:body {:match_name string?

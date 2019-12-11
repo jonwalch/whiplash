@@ -6,26 +6,40 @@
     [expound.alpha :as expound]
     [mount.core :as mount]
     [whiplash.db.core :as db]
-    [whiplash.core :refer [start-app]]))
+    [whiplash.core :refer [start-app]]
+    [whiplash.routes.services.user :as user]
+    [datomic.client.api :as d]))
 
 (alter-var-root #'s/*explain-out* (constantly expound/printer))
 
 (add-tap (bound-fn* clojure.pprint/pprint))
 
-(defn start 
+(defn create-and-verify-local-dev-user
+  [{:keys [email user-name]}]
+  (user/create-user {:body-params {:first_name "testy"
+                                   :last_name  "testerino"
+                                   :email      email
+                                   :password   "11111111"
+                                   :user_name  user-name}})
+  (let [{:keys [user/verify-token] :as user} (d/pull (d/db (:conn db/datomic-cloud))
+                                                     '[:user/verify-token]
+                                                     (db/find-user-by-email email))]
+    (user/verify-email {:body-params {:email email
+                                      :token verify-token}})))
+
+(defn add-many-users
+  [num-users]
+  (doseq [x (range num-users)]
+    (create-and-verify-local-dev-user {:email (str "test" x "@whiplashesports.com")
+                                       :user-name (str "test" x)})))
+
+(defn start
   "Starts application.
   You'll usually want to run this on startup."
   []
   (mount/start-without #'whiplash.core/repl-server)
-  (db/add-user (:conn db/datomic-cloud)
-               {:first-name "testy"
-                :last-name "testerino"
-                :status :user.status/active ;; don't have to verify email if we do this
-                :email "test@whiplashesports.com"
-                :password "11111111"
-                :user-name "test"
-                :verify-token "dummy"})
-  )
+  (create-and-verify-local-dev-user {:email "test@whiplashesports.com"
+                                     :user-name "test"}))
 
 (defn stop 
   "Stops application."
@@ -38,20 +52,9 @@
   (stop)
   (start))
 
-(defn add-many-users
-  [num-users]
-  (doseq [x (range num-users)]
-    (db/add-user (:conn db/datomic-cloud)
-                 {:first-name   "testy"
-                  :last-name    "testerino"
-                  :status       :user.status/active ;; don't have to verify email if we do this
-                  :email        (str x "@whiplashesports.com")
-                  :password     "11111111"
-                  :user-name    (str "test" x)
-                  :verify-token "dummy"})))
-
 (comment
   (start)
+  (stop)
   (add-many-users 10)
   )
 

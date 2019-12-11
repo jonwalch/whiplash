@@ -163,8 +163,7 @@
       :else
       (not-found {:message "User not found."}))))
 
-;; TODO there may now be more than 1 bet, so we need to return them all
-(defn get-bet
+(defn get-bets
   [{:keys [params] :as req}]
   (let [{:keys [game_id match_id]} params
         ;; TODO figure out why this isnt getting casted by middleware
