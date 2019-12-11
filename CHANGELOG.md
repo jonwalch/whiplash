@@ -33,6 +33,20 @@ and this project adheres to [Semantic Versioning](semver).
 ### Fixed
 - [ ] Fix Sign up form layout on large screens (#34)
 
+## 0.1.45 - 2019-12-11 - Update npm scripts and Readme
+
+### Added
+- [x] Add test script to run backend tests
+- [x] Add serve script to build CSS and JS, then serve Whiplash to localhost:3000
+- [x] Add flush:cache script to flush the CDN cache
+- [x] Add some details to Readme and package.json
+
+### Changed
+- [x] Update develop script to also build JS
+
+### Removed
+- [x] Remove package.json license and version, since the package is not published on npm
+
 ## 0.1.42 - 2019-12-06 - Main content layout
 
 ### Added
