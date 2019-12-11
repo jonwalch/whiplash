@@ -1,0 +1,47 @@
+.article {
+
+  &__header {
+    background: $darker-blue;
+  }
+
+  &__container {
+    margin: 0 auto;
+    max-width: 65ch;
+    padding: calc($space * 2) $space;
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: $font-stack-secondary;
+    line-height: 1.2;
+  }
+
+  h3 {
+    color: $orange;
+    font-weight: 500;
+    margin-top: 1.5em;
+  }
+
+  a {
+
+    &:link,
+    &:visited {
+      color: $orange;
+    }
+
+    &:hover,
+    &:focus {
+      color: $medium-orange;
+    }
+
+    &:active {
+      color: $light-orange;
+    }
+  }
+}
