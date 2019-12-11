@@ -29,15 +29,14 @@
                       (ok stream)))]
     (if (or (nil? last-fetch)
             (java-time/after? (time/now) (time/minutes-delta last-fetch 1)))
-      (do
+      (let [all-streams (-> :csgo
+                            pandascore/get-matches
+                            pandascore/sort-and-transform-stream-candidates)]
         (log/debug "Fetching streams")
-        (let [all-streams (-> :csgo
-                              pandascore/get-matches
-                              pandascore/sort-and-transform-stream-candidates)]
-          (reset! cached-streams {:streams/last-fetch         (time/now)
-                                  :streams/ordered-candidates all-streams})
-          (return-fn {:stream  (first all-streams)
-                      :cached? false})))
+        (reset! cached-streams {:streams/last-fetch         (time/now)
+                                :streams/ordered-candidates all-streams})
+        (return-fn {:stream  (first all-streams)
+                    :cached? false}))
       (do
         (log/debug "Serving cached stream")
         (return-fn {:stream  (first ordered-candidates)

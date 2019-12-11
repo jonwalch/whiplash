@@ -22,9 +22,9 @@
   (let [twitch-regex #"^https:\/\/player\.twitch\.tv\/\?channel=(.+?)(?=&|$).*$|^https:\/\/www\.twitch\.tv\/(.+?)(?=&|$).*$"]
     (map (fn [{:keys [live_url] :as match}]
            (let [regex-match (re-find twitch-regex live_url)
+                 ;; Second or third will not be nil for each vector of regex matches
                  username (or (second regex-match)
                               (nth regex-match 2))]
-             ;; Second or third will not be nil for each vector of regex matches
              (when-not username
                (log/info (format "couldn't parse twitch username from pandascore live_url %s" live_url)))
              (assoc match :twitch/username username

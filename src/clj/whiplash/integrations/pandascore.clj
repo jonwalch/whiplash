@@ -53,8 +53,7 @@
     (if (= total-pages 1)
       (seq body)
       (conj
-        (pmap #(common/resp->body
-                 (get-matches-request url % date-range))
+        (pmap #(get-matches-request url % date-range)
               (range 1 (inc total-pages)))
         body))))
 
@@ -63,7 +62,7 @@
   (assert (contains? game-lookup game))
   (let [url (format matches-url (get game-lookup game))
         start (time/date-iso-string (time/days-delta -1))
-        end (time/date-iso-string (time/days-delta 1))
+        end (time/date-iso-string (time/days-delta 3))
         date-range (format "%s,%s" start end)]
     (flatten (get-all-matches url date-range))))
 
