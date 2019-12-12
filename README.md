@@ -49,17 +49,21 @@ Or run in the REPL from `env/dev/clj/user.clj`:
 
 ### CSS
 
-**Don't use inline styling**. **All styles should use class selectors** _(i.e., `.component { property: value; }`)_, and live in source files located in `/resources/css`. These will be processed via Gulp and output to `/resources/public/css/App.css`.
+- **Don't use inline styling**.
+- **All styles (except the reset, globals, and elements) should use class selectors** _(i.e., `.component { property: value; }`)_
+- **All styles should live in CSS source files** located in `/resources/css`. These will be processed via Gulp and output to `/resources/public/css/App.css`.
+- Use [BEM][bem] methodology for naming component classes.
+- Use [ITCSS][itcss] for organizing styles (specifically, we're using a reset, globals, elements, and components, in that order).
+- Prioritize [keeping it simple with CSS that scales][css-scales].
+- Use [Sass][sass] and dynamic imports. PostCSS is doing most of the heavy-lifting in the gulp pipeline to make this possible.
+- **To indicate state**, use `.is-` and `.has-` _(i.e., `.is-visible` and `.has-loaded`)_.
+- **For JS hooks**, use [`[data-]` attributes][data-attributes] _(i.e., `[data-modal-content]`)_.
 
-Use [BEM][bem] methodology for naming component classes and [ITCSS][itcss] for organizing styles. Avoid element and ID selectors generally--use nested element selectors only if/when it really makes sense. But probably just use classes instead. BEM stands for Block, Element, Modifier. The syntax looks like `.block__element--modifier`. For example, `.card`, `.card__title`, `.card--primary`, `.card__image--highlight`, etc. Components with compound words are hyphenated (not camelCased), like `.aspect-ratio` (not `.aspectRatio`).
+Avoid element and ID selectors generally--use nested element selectors only if/when it really makes sense. But probably just use classes instead.
 
-To indicate state, use `.is-` and `.has-`, like `.is-visible` and `.has-loaded`. For JS hooks, use a `.js-` prefix, and don't use the `.js-` prefixed class for styling.
+BEM stands for Block, Element, Modifier. The syntax looks like `.block__element--modifier`. For example, `.card`, `.card__title`, `.card--primary`, `.card__image--highlight`, etc. Components with compound words are hyphenated (not camelCased), like `.aspect-ratio` (not `.aspectRatio`). This allows teams of people to stay consistent with how they name classes. At some point it might make sense to move away from BEM in favor of a different CSS methodology, and that's fine, but stay consistent. If we're using BEM, use BEM. If we're switching to something else, update everything to use that something else. Don't mix and match naming methodologies.
 
-At some point it might make sense to move away from BEM in favor of a different CSS methodology, and that's fine, but stay consistent. If we're using BEM, use BEM. If we're switching to something else, update everything to that something else. Don't mix and match.
-
-Feel free to use Sass-like syntax and dynamic imports. PostCSS does most of the heavy-lifting.
-
-CSS gets inlined in `index.html`, which is fine for now. As the number of styles and pages grow, we will want to link styles in a cacheable `.css` file that gets served separately. Most important/'above the fold' styles can stay inline.
+TODO (paulshryock): CSS from `/resources/public/css/App.css` gets inlined in `index.html`, which is fine for now. Before a v1 launch, we should instead link styles in a cacheable `.css` file that gets served separately. Crucial 'above the fold' styles can stay in `/resources/public/css/App.css`.
 
 ### JS
 
@@ -76,3 +80,6 @@ aws cloudfront create-invalidation --distribution-id E451IY44F3ERG --paths "/*"
 
 [bem]: http://getbem.com/introduction/
 [itcss]: https://speakerdeck.com/dafed/managing-css-projects-with-itcss
+[css-scales]: https://hankchizljaw.com/wrote/keeping-it-simple-with-css-that-scales/
+[sass]: https://hankchizljaw.com/wrote/keeping-it-simple-with-css-that-scales/#heading-sass-for-the-win!
+[data-attributes]: https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*
