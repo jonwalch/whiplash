@@ -53,7 +53,7 @@ Or run in the REPL from `env/dev/clj/user.clj`:
 - **All styles (except the reset, globals, and elements) should use class selectors** _(i.e., `.component { property: value; }`)_
 - **All styles should live in CSS source files** located in `/resources/css`. These will be processed via Gulp and output to `/resources/public/css/App.css`.
 - Use [BEM][bem] methodology for naming component classes.
-- Use [ITCSS][itcss] for organizing styles (specifically, we're using a reset, globals, elements, and components, in that order).
+- Use [ITCSS][itcss] for organizing styles. _(See `resources/css/style.css`.)_
 - Prioritize [keeping it simple with CSS that scales][css-scales].
 - Use [Sass][sass] and dynamic imports. PostCSS is doing most of the heavy-lifting in the gulp pipeline to make this possible.
 - **To indicate state**, use `.is-` and `.has-` _(i.e., `.is-visible` and `.has-loaded`)_.
