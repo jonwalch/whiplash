@@ -54,14 +54,15 @@ Or run in the REPL from `env/dev/clj/user.clj`:
 - **All styles should live in CSS source files** located in `/resources/css`. These will be processed via Gulp and output to `/resources/public/css/App.css`.
 - Use [BEM][bem] methodology for naming component classes.
 - Use [ITCSS][itcss] for organizing styles. _(See `resources/css/style.css`.)_
-- Prioritize [keeping it simple with CSS that scales][css-scales].
+- [Keep it simple with CSS that scales][simple-css-scales].
+- Seriously, [write CSS that scales][css-scales].
+- Avoid element and ID selectors for layouts and components--just use classes.
 - Use [Sass][sass] and dynamic imports. PostCSS is doing most of the heavy-lifting in the gulp pipeline to make this possible.
 - **To indicate state**, use `.is-` and `.has-` _(i.e., `.is-visible` and `.has-loaded`)_.
 - **For JS hooks**, use [`[data-]` attributes][data-attributes] _(i.e., `[data-modal-content]`)_.
 
-Avoid element and ID selectors generally--use nested element selectors only if/when it really makes sense. But probably just use classes instead.
-
-BEM stands for Block, Element, Modifier. The syntax looks like `.block__element--modifier`. For example, `.card`, `.card__title`, `.card--primary`, `.card__image--highlight`, etc. Components with compound words are hyphenated (not camelCased), like `.aspect-ratio` (not `.aspectRatio`). This allows teams of people to stay consistent with how they name classes. At some point it might make sense to move away from BEM in favor of a different CSS methodology, and that's fine, but stay consistent. If we're using BEM, use BEM. If we're switching to something else, update everything to use that something else. Don't mix and match naming methodologies.
+> The biggest, easiest win for organization and maintainability is to have a set of conventions in place that you and your team all follow... The important thing is that all of your CSS follows the conventions: that way, new (or forgetful) developers don’t need to learn the entire CSS codebase, only the conventions, to be able to contribute.
+> --[Steve Grossi, How To Write CSS That Scales][css-scales]
 
 TODO (paulshryock): CSS from `/resources/public/css/App.css` gets inlined in `index.html`, which is fine for now. Before a v1 launch, we should instead link styles in a cacheable `.css` file that gets served separately. Crucial 'above the fold' styles can stay in `/resources/public/css/App.css`.
 
@@ -80,6 +81,7 @@ aws cloudfront create-invalidation --distribution-id E451IY44F3ERG --paths "/*"
 
 [bem]: http://getbem.com/introduction/
 [itcss]: https://speakerdeck.com/dafed/managing-css-projects-with-itcss
-[css-scales]: https://hankchizljaw.com/wrote/keeping-it-simple-with-css-that-scales/
+[simple-css-scales]: https://hankchizljaw.com/wrote/keeping-it-simple-with-css-that-scales/
+[css-scales]: https://work.stevegrossi.com/2014/09/06/how-to-write-css-that-scales/
 [sass]: https://hankchizljaw.com/wrote/keeping-it-simple-with-css-that-scales/#heading-sass-for-the-win!
 [data-attributes]: https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*
