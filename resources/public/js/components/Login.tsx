@@ -19,7 +19,7 @@ export function Login(props: any) {
     const response = await fetch(baseUrl + "user/login", {
       headers: {
         "Content-Type": "application/json",
-        "X-CSRF-Token": getCSRFToken()
+        // "X-CSRF-Token": getCSRFToken()
       },
       method: "POST",
       mode: "same-origin",

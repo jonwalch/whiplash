@@ -48,7 +48,7 @@
   (swap! test-state (fn [{:keys [emails] :as val}]
                       (assoc val :emails (conj emails params)))))
 
-(defn test-wrap-base [handler]
+#_(defn test-wrap-base [handler]
   (-> ((:middleware defaults) handler)
       middleware/wrap-auth
       (wrap-defaults
@@ -60,7 +60,8 @@
 
 (defn test-app []
   "This version has CSRF disabled for testing purposes."
-  (test-wrap-base #'whiplash.handler/app-routes))
+  ;; no it doesn't, i've removed it for now
+  (middleware/wrap-base #'whiplash.handler/app-routes))
 
 (defn parse-json-body
   [{:keys [body] :as req}]

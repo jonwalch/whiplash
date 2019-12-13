@@ -140,6 +140,6 @@
       wrap-auth
       (wrap-defaults
         (-> site-defaults
-            #_(assoc-in [:security :anti-forgery] false)
-            (assoc-in  [:session :store] (ttl-memory-store (* 60 30))))) ;;seconds
+            (assoc-in [:security :anti-forgery] false)
+            #_(assoc-in  [:session :store] (ttl-memory-store (* 60 30))))) ;;seconds
       wrap-internal-error))

@@ -18,7 +18,7 @@ export function Signup(props: any) {
     const response = await fetch(baseUrl + "user/create", {
       headers: {
         "Content-Type": "application/json",
-        "X-CSRF-Token": getCSRFToken()
+        // "X-CSRF-Token": getCSRFToken()
       },
       method: "POST",
       mode: "same-origin",

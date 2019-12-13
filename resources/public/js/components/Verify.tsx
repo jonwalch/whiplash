@@ -19,7 +19,7 @@ export function Verify(props: any) {
     const response = await fetch(baseUrl + "user/verify", {
       headers: {
         "Content-Type": "application/json",
-        "X-CSRF-Token": getCSRFToken()
+        // "X-CSRF-Token": getCSRFToken()
       },
       method: "POST",
       mode: "same-origin",

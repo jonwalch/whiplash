@@ -36,7 +36,7 @@ export function Header() {
         const response = await fetch(baseUrl + "user/logout", {
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRF-Token": getCSRFToken()
+                // "X-CSRF-Token": getCSRFToken()
             },
             method: "POST",
             mode: "same-origin",

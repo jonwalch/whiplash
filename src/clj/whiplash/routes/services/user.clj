@@ -117,7 +117,8 @@
        ;; TODO :domain, maybe :path, maybe :secure
        :cookies {:value     token
                  :http-only true
-                 :expire exp-str}}
+                 :expire exp-str
+                 :same-site :strict}}
       (unauthorized {:message "Login failed"}))))
 
 (defn logout
