@@ -50,7 +50,7 @@ Or run in the REPL from `env/dev/clj/user.clj`:
 ### CSS
 
 - **Don't use inline styling**.
-- **All styles (except the reset, globals, and elements) should use class selectors** _(i.e., `.component { property: value; }`)_
+- **All styles (except settings, tools, generic, and base) should use class selectors** _(i.e., `.component { property: value; }`)_
 - **All styles should live in CSS source files** located in `/resources/css`. These will be processed via Gulp and output to `/resources/public/css/App.css`.
 - Use [BEM][bem] methodology for naming component classes.
 - Use [ITCSS][itcss] for organizing styles. _(See `resources/css/style.css`.)_
