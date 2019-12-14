@@ -130,7 +130,7 @@ export function Header() {
             return (
                 <>
                     <li className="navigation__item">{loggedInState.userName}</li>
-                    <li className="navigation__item"><span className="navigation__highlight">Cash:</span> ${loggedInState.cash}</li>
+                    <li className="navigation__item"><span className="navigation__highlight">Whiplash Cash:</span> ${loggedInState.cash}</li>
                     <li>{renderLogoutButton()}</li>
                 </>
             )
