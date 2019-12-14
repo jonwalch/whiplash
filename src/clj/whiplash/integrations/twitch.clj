@@ -17,6 +17,12 @@
                :query-params {:first      (str twitch-page-size)
                               :user_login usernames}}))
 
+(defn- standarize-twitch-user-name
+  [user-name]
+  (-> user-name
+      string/lower-case
+      (string/replace #" " "")))
+
 (defn- add-twitch-usernames-and-url
   [matches]
   (let [twitch-regex #"^https:\/\/player\.twitch\.tv\/\?channel=(.+?)(?=&|$).*$|^https:\/\/www\.twitch\.tv\/(.+?)(?=&|$).*$"]
@@ -27,9 +33,7 @@
                               (nth regex-match 2))]
              (when-not username
                (log/info (format "couldn't parse twitch username from pandascore live_url %s" live_url)))
-             (assoc match :twitch/username (-> username
-                                               string/lower-case
-                                               (string/replace #" " ""))
+             (assoc match :twitch/username (standarize-twitch-user-name username)
                           :live_url (format "https://player.twitch.tv/?channel=%s" username))))
          matches)))
 
@@ -44,7 +48,8 @@
            (map (fn [stream-info]
                   (let [relevant-info (-> stream-info
                                           (select-keys [:viewer_count :user_name]))]
-                    (hash-map (:user_name relevant-info) (:viewer_count relevant-info)))))
+                    (hash-map (standarize-twitch-user-name (:user_name relevant-info))
+                              (:viewer_count relevant-info)))))
            (apply conj))
       {})))
 
