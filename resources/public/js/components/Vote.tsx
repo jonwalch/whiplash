@@ -3,8 +3,10 @@ import { Opponent, defaultTeam } from "./Home";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
 import { getCSRFToken, useInterval } from "../common";
+const { gtag } = require('ga-gtag');
 
 export function Vote(props: any) {
+  const isProduction = document.location.hostname.search("whiplashesports.com") !== -1
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   // const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
   const [betAmount, setBetAmount] = useState<number>(0);
@@ -71,6 +73,15 @@ export function Vote(props: any) {
         bet_amount: betAmount,
       })
     });
+
+    if (isProduction) {
+      // Trigger Google Analytics event
+      gtag('event', 'bet', {
+        event_category: 'Betting',
+        event_label: loggedInState.userName,
+        value: betAmount
+      })
+    }
 
     const resp = await response.json();
     if (response.status == 200) {

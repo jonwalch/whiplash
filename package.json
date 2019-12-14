@@ -54,12 +54,13 @@
     "stylelint-config-standard": "^19.0.0",
     "ts-loader": "^6.2.0",
     "typescript": "^3.6.4",
-    "webpack": "^4.19.1",
+    "webpack": "^4.41.2",
     "webpack-cli": "^3.3.9",
     "webpack-dev-server": "^3.8.2"
   },
   "dependencies": {
     "@types/react-router-dom": "^5.1.0",
+    "ga-gtag": "^1.0.1",
     "query-string": "^6.8.3",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
