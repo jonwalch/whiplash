@@ -8,14 +8,6 @@ import {baseUrl} from "../config/const";
 const { install } = require('ga-gtag');
 
 export function Header() {
-
-  const isProduction = document.location.hostname.search("whiplashesports.com") !== -1
-
-  if (isProduction) {
-    // Install Google tag manager
-    install('UA-154430212-2')
-  }
-
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [showSignup, setShowSignup] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
@@ -23,6 +15,11 @@ export function Header() {
   useEffect(() => {
     loggedIn();
   }, []);
+
+  if (isProduction) {
+    // Install Google tag manager
+    install('UA-154430212-2')
+  }
 
   const loggedIn = async () => {
     const response = await fetch(baseUrl + "user/login", {

@@ -11,6 +11,8 @@ import { Link } from "react-router-dom";
 import {Header} from "./Header";
 import {Footer} from "./Footer";
 
+const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1
+
 declare const Twitch: any;
 
 export interface Opponent {
@@ -126,6 +128,7 @@ export function Home(props: any) {
   };
 
   const renderContent = () => {
+
     // Loading
     if (streamURL == "") {
       return (
@@ -173,6 +176,7 @@ export function Home(props: any) {
             matchName={matchName}
             currentGame={currentGame}
             userStatus={userStatus}
+            isProduction={isProduction}
           />
         </>
       );
@@ -181,7 +185,7 @@ export function Home(props: any) {
 
   return (
       <>
-        <Header/>
+        <Header isProduction={isProduction} />
         <main id="content" role="main">
           <div className="home__layout">
             {renderContent()}

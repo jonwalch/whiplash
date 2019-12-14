@@ -6,7 +6,6 @@ import { getCSRFToken, useInterval } from "../common";
 const { gtag } = require('ga-gtag');
 
 export function Vote(props: any) {
-  const isProduction = document.location.hostname.search("whiplashesports.com") !== -1
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   // const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
   const [betAmount, setBetAmount] = useState<number>(0);
