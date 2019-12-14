@@ -27,7 +27,9 @@
                               (nth regex-match 2))]
              (when-not username
                (log/info (format "couldn't parse twitch username from pandascore live_url %s" live_url)))
-             (assoc match :twitch/username username
+             (assoc match :twitch/username (-> username
+                                               string/lower-case
+                                               (string/replace #" " ""))
                           :live_url (format "https://player.twitch.tv/?channel=%s" username))))
          matches)))
 
@@ -41,11 +43,7 @@
            :data
            (map (fn [stream-info]
                   (let [relevant-info (-> stream-info
-                                          (select-keys [:viewer_count :user_name])
-                                          (update :user_name (fn [val]
-                                                               (-> val
-                                                                   string/lower-case
-                                                                   (string/replace #" " "")))))]
+                                          (select-keys [:viewer_count :user_name]))]
                     (hash-map (:user_name relevant-info) (:viewer_count relevant-info)))))
            (apply conj))
       {})))
