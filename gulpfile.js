@@ -11,6 +11,10 @@ const uglify = require('gulp-uglify')
 const rename = require('gulp-rename')
 const connect = require('gulp-connect')
 
+/**
+  * TODO (paulshryock): Add eleventy to develop pipeline
+  */
+
 const paths = {
   css: {
     all: './resources/css/**/*.css',
