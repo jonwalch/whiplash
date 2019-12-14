@@ -46,7 +46,7 @@ export function Leaderboard() {
         <thead>
           <tr className="leaderboard__tr">
             <th className="leaderboard__th">User</th>
-            <th className="leaderboard__th">Total Cash</th>
+            <th className="leaderboard__th">Total Whiplash Cash</th>
           </tr>
         </thead>
         <tbody>
