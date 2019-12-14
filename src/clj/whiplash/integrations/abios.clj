@@ -56,7 +56,7 @@
         (client/get "https://api.abiosgaming.com/v2/series"
                     {;;:debug        true
                      :query-params {"page"          (str page-number)
-                                    "games[]"       "5"     ;; 5 is CSGO
+                                    "games[]"       ["5"]   ;; 5 is CSGO
                                     "with[]"        ["matches" "casters"]
                                     "tiers[]"       ["1" "2"]
                                     "is_over"       is-over?
