@@ -26,7 +26,7 @@ export function About() {
             <p>Odds and payouts update in real-time and are based on <a href="https://en.wikipedia.org/wiki/Parimutuel_betting">parimutuel betting</a>.</p>
             <p>Payouts are rounded down to the nearest whole dollar.</p>
             <h3>How can I chat with other Whiplash users?</h3>
-            <p>Join our <a href="https://discord.gg/B9vSqy">Discord server</a>!</p>
+            <p>Join our <a href="https://discord.gg/GsG2G9t">Discord server</a>!</p>
             <h3>How does Whiplash decide which stream to play?</h3>
             <p>We play the most popular esports CS:GO match on Twitch.</p>
             <h3>Why can’t I see the embedded Twitch chat?</h3>
