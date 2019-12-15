@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Login } from "./Login";
-import { Signup } from "./Signup";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
@@ -10,6 +8,8 @@ import { Bets } from "./Bets";
 import { Link } from "react-router-dom";
 import {Header} from "./Header";
 import {Footer} from "./Footer";
+
+const { install } = require('ga-gtag');
 
 declare const Twitch: any;
 
@@ -33,7 +33,13 @@ export function Home(props: any) {
   const [opponents, setOpponents] = useState<Opponent[]>([]);
   const [userStatus, setUserStatus] = useState<string | null>(null);
 
+  const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
+
   useEffect(() => {
+    if (isProduction) {
+      // Install Google tag manager
+      install('UA-154430212-2')
+    }
     getStream();
   }, []);
 
@@ -126,6 +132,7 @@ export function Home(props: any) {
   };
 
   const renderContent = () => {
+
     // Loading
     if (streamURL == "") {
       return (
@@ -173,6 +180,7 @@ export function Home(props: any) {
             matchName={matchName}
             currentGame={currentGame}
             userStatus={userStatus}
+            isProduction={isProduction}
           />
         </>
       );

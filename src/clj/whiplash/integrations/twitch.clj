@@ -19,9 +19,9 @@
 
 (defn- standarize-twitch-user-name
   [user-name]
-  (-> user-name
-      string/lower-case
-      (string/replace #" " "")))
+  (some-> user-name
+          string/lower-case
+          (string/replace #" " "")))
 
 (defn- add-twitch-usernames-and-url
   [matches]
