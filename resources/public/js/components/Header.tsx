@@ -5,7 +5,6 @@ import {Signup} from "./Signup";
 import {getCSRFToken, scrollToTop} from "../common";
 import {LoginContext} from "../contexts/LoginContext";
 import {baseUrl} from "../config/const";
-const { install } = require('ga-gtag');
 
 export function Header() {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
@@ -15,11 +14,6 @@ export function Header() {
   useEffect(() => {
     loggedIn();
   }, []);
-
-  if (isProduction) {
-    // Install Google tag manager
-    install('UA-154430212-2')
-  }
 
   const loggedIn = async () => {
     const response = await fetch(baseUrl + "user/login", {

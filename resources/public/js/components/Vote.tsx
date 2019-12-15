@@ -73,7 +73,7 @@ export function Vote(props: any) {
       })
     });
 
-    if (isProduction) {
+    if (props.isProduction) {
       // Trigger Google Analytics event
       gtag('event', 'bet', {
         event_category: 'Betting',
