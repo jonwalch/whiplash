@@ -4,7 +4,7 @@
     [whiplash.layout :refer [error-page]]
     [whiplash.routes.home :refer [home-routes]]
     [whiplash.routes.services :refer [service-routes]]
-    [whiplash.routes.oauth :refer [oauth-routes]]
+    ;[whiplash.routes.oauth :refer [oauth-routes]]
     [reitit.swagger-ui :as swagger-ui]
     [reitit.ring :as ring]
     [ring.middleware.content-type :refer [wrap-content-type]]
