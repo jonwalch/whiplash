@@ -1,6 +1,5 @@
 (ns whiplash.time
-  (:require [java-time :as time]
-            [java-time.repl :as repl]))
+  (:require [java-time :as time]))
 
 ;; TODO unit tests
 
