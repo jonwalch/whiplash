@@ -116,6 +116,12 @@
                 :handler    (fn [req]
                               (user/create-user req))}}]
 
+    ["/password"
+     {:post    {:summary    "update a user's password"
+                :parameters {:body {:password   string?}}
+                :handler    (fn [req]
+                              (user/update-password req))}}]
+
     ["/guess"
      ;; TODO there may now be more than 1 bet, so we need to return them all
      {:get  {:summary    "get a guess for a user/game-id"

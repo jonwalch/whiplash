@@ -7,7 +7,6 @@ import {defaultLoggedIn, LoginContext} from "./contexts/LoginContext";
 import { Account } from "./components/Account";
 import {useInterval} from "./common";
 import {getUser} from "./common/getUser";
-import {match} from "react-router";
 
 export const App = () => {
     const [loggedInState, setLoggedInState] = useState(defaultLoggedIn);

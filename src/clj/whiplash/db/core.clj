@@ -98,6 +98,11 @@
                                :user/password     password
                                :user/cash         (bigint 500)}]}))
 
+(defn update-password
+  [conn {:keys [db/id password]}]
+  (d/transact conn {:tx-data [{:db/id id
+                               :user/password     password}]}))
+
 (defn add-guess-for-user
   [conn {:keys [db/id game-type match-name game-id team-name team-id match-id bet-amount cash]}]
   (d/transact conn {:tx-data [[:db/cas id :user/cash cash (bigint (- cash bet-amount))]

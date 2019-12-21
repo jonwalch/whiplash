@@ -39,6 +39,7 @@ export function Account(props: any) {
         if (response.status == 200) {
             alert("Successfully changed your password!");
             logout(setLoggedInState);
+            props.history.push("/")
         } else {
             alert(resp.message);
         }
