@@ -2,52 +2,15 @@ import React, {useContext, useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import {Login} from "./Login";
 import {Signup} from "./Signup";
-import {getCSRFToken, scrollToTop} from "../common";
+import {getCSRFToken, scrollToTop, useInterval} from "../common";
 import {LoginContext} from "../contexts/LoginContext";
 import {baseUrl} from "../config/const";
+import {logout} from "../common/logout";
 
 export function Header() {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [showSignup, setShowSignup] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-
-  useEffect(() => {
-    loggedIn();
-  }, []);
-
-  const loggedIn = async () => {
-    const response = await fetch(baseUrl + "user/login", {
-      headers: { "Content-Type": "application/json" },
-      method: "GET",
-      mode: "same-origin",
-      redirect: "error"
-    });
-
-    if (response.status == 200){
-      const resp = await response.json();
-      setLoggedInState({ userName: resp["user/name"], cash: loggedInState.cash});
-      setShowSignup(false);
-    } else {
-      setLoggedInState({ userName: "", cash: loggedInState.cash})
-    }
-  };
-
-  const logout = async () => {
-    const response = await fetch(baseUrl + "user/logout", {
-      headers: {
-        "Content-Type": "application/json",
-        // "X-CSRF-Token": getCSRFToken()
-      },
-      method: "POST",
-      mode: "same-origin",
-      redirect: "error"
-    });
-    if (response.status == 200) {
-      setLoggedInState({userName: "", cash: 0});
-    } else {
-      alert("Failed to hit server to logout");
-    }
-  };
 
   const renderLoginForm = () => {
     if (showLogin) {
@@ -86,7 +49,7 @@ export function Header() {
         type="button"
         className="navigation__link"
         onClick={() => {
-          logout()
+          logout(setLoggedInState);
           setShowLogin(false);
         }}>
         Log Out
@@ -110,15 +73,8 @@ export function Header() {
   };
 
   const renderNavCtaButtons = () => {
-    // No userName, currently loading
-    if (loggedInState.userName === null) {
-      return (
-        <>
-          <li>{renderSignupButton()}</li>
-        </>
-      )
       // Show log in button, user is not logged in
-    } else if (loggedInState.userName === '') {
+    if (loggedInState.userName === null) {
       return (
         <>
           <li>{renderLoginButton()}</li>
@@ -129,7 +85,7 @@ export function Header() {
     } else {
       return (
         <>
-          <li className="navigation__item">{loggedInState.userName}</li>
+          <li className="navigation__item"><Link to="/account">{loggedInState.userName}</Link></li>
           <li className="navigation__item"><span className="navigation__highlight">Whiplash Cash:</span> ${loggedInState.cash}</li>
           <li>{renderLogoutButton()}</li>
         </>

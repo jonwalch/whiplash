@@ -121,13 +121,13 @@ export function Vote(props: any) {
 
   const renderContent = () => {
     if (loggedInState.userName) {
-      if (props.userStatus === null) {
+      if (loggedInState.status === null) {
         return (
           <div className="container">
             <p>Loading...</p>
           </div>
         );
-      } else if (!(props.userStatus == "user.status/active")) {
+      } else if (!(loggedInState.status == "user.status/active")) {
         return (
           <div className="container">
             <p className="vote__message">Verify your email to bet!</p>

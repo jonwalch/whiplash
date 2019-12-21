@@ -29,7 +29,6 @@ export function Verify(props: any) {
 
     if (response.status == 200) {
       const resp = await response.json();
-      console.log(resp);
       setVerifyMessage(resp.message);
     } else {
       setVerifyMessage(

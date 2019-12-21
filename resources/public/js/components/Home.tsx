@@ -8,6 +8,7 @@ import { Bets } from "./Bets";
 import { Link } from "react-router-dom";
 import {Header} from "./Header";
 import {Footer} from "./Footer";
+import {getUser} from "../common/getUser";
 
 const { install } = require('ga-gtag');
 
@@ -31,7 +32,6 @@ export function Home(props: any) {
   const [matchID, setMatchID] = useState(-1);
   const [currentGame, setCurrentGame] = useState<any>({});
   const [opponents, setOpponents] = useState<Opponent[]>([]);
-  const [userStatus, setUserStatus] = useState<string | null>(null);
 
   const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
@@ -51,17 +51,32 @@ export function Home(props: any) {
 
   useEffect(() => {
     if (loggedInState.userName) {
-      getUser();
+      getUser(setLoggedInState);
     } //teamName changes when a user makes a guess
-  }, [loggedInState.userName, team.teamName]);
+  }, [team.teamName]);
 
   useInterval(() => {
     getStream();
-    //TODO revisit this, currently polling the user's cash and status every 10 seconds
-    if (loggedInState.userName) {
-      getUser();
-    }
   }, 10000);
+
+  const twitchEmbed = () => {
+    const node: any = document.querySelector('#twitch-embed');
+    const hasNode = node !== null;
+    if (hasNode && node.firstChild) {
+      node.removeChild(node.firstChild);
+    }
+
+    const options = {
+      width: 1024,
+      height: 576,
+      channel: twitchUsername,
+      autoplay: true
+    };
+
+    if (hasNode) {
+      const player = new Twitch.Embed("twitch-embed", options);
+    }
+  };
 
   const getStream = async () => {
     const response = await fetch(baseUrl + "stream", {
@@ -93,46 +108,7 @@ export function Home(props: any) {
     }
   };
 
-  const getUser = async () => {
-    const response = await fetch(baseUrl + "user", {
-      headers: { "Content-Type": "application/json" },
-      method: "GET",
-      mode: "same-origin",
-      redirect: "error"
-    });
-    if (response.status == 200) {
-      const resp = await response.json();
-      setUserStatus(resp["user/status"]);
-      setLoggedInState({
-        userName: resp["user/name"],
-        cash: resp["user/cash"]
-      });
-    } else {
-      setUserStatus("");
-    }
-  };
-
-  const twitchEmbed = () => {
-    const node: any = document.querySelector('#twitch-embed');
-    const hasNode = node !== null;
-    if (hasNode && node.firstChild) {
-      node.removeChild(node.firstChild);
-    }
-
-    const options = {
-      width: 1024,
-      height: 576,
-      channel: twitchUsername,
-      autoplay: true
-    };
-
-    if (hasNode) {
-      const player = new Twitch.Embed("twitch-embed", options);
-    }
-  };
-
   const renderContent = () => {
-
     // Loading
     if (streamURL == "") {
       return (
@@ -179,7 +155,6 @@ export function Home(props: any) {
             matchID={matchID}
             matchName={matchName}
             currentGame={currentGame}
-            userStatus={userStatus}
             isProduction={isProduction}
           />
         </>

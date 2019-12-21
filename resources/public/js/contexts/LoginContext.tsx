@@ -2,9 +2,10 @@ import React, { createContext, useState } from "react";
 
 export interface loggedIn {
   userName: string | null;
+  status: string;
   cash: number;
 }
-export const defaultLoggedIn: loggedIn = { userName: null, cash: 0};
+export const defaultLoggedIn: loggedIn = { userName: null, status: 'user.status/pending', cash: 0};
 
 interface loggedInState {
   loggedInState: loggedIn;
@@ -18,13 +19,13 @@ const defaultShitState: loggedInState = {
 
 const LoginContext = createContext<loggedInState>(defaultShitState);
 
-const LoginProvider = (props: any) => {
-  const [loggedInState, setLoggedInState] = useState(defaultLoggedIn);
-  return (
-    <LoginContext.Provider value={{loggedInState: loggedInState, setLoggedInState: setLoggedInState}}>
-      {props.children}
-    </LoginContext.Provider>
-  );
-};
+// const LoginProvider = (props: any) => {
+//   const [loggedInState, setLoggedInState] = useState(defaultLoggedIn);
+//   return (
+//     <LoginContext.Provider value={{loggedInState: loggedInState, setLoggedInState: setLoggedInState}}>
+//       {props.children}
+//     </LoginContext.Provider>
+//   );
+// };
 
-export { LoginContext, LoginProvider };
+export { LoginContext};
