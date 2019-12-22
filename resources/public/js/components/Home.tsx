@@ -70,7 +70,8 @@ export function Home(props: any) {
       width: 1024,
       height: 576,
       channel: twitchUsername,
-      autoplay: true
+      autoplay: true,
+      theme: "dark",
     };
 
     if (hasNode) {
