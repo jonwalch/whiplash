@@ -35,6 +35,11 @@
   &__section + &__section {
     margin-top: $space;
 
+    /* Working... */
+    height: 23.75em;
+    max-height: 23.75em;
+    overflow-y: scroll;
+
     @supports(display: grid) {
       @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
         margin-top: 0;
@@ -51,12 +56,6 @@
   &__subtitle {
     font-size: 1em;
     margin-bottom: 0;
-  }
-
-  &__table-container {
-    height: 200px;
-    max-height: 200px;
-    overflow-y: scroll;
   }
 
   &__table {
