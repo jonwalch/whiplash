@@ -53,9 +53,20 @@
     margin-bottom: 0;
   }
 
+  &__table-container {
+    height: 200px;
+    max-height: 200px;
+    overflow-y: scroll;
+  }
+
   &__table {
     background: $dark-blue;
     width: 100%;
+  }
+
+  &__thead {
+    /* TODO (paulshryock): Fix sticky */
+    position: sticky;
   }
 
   &__th {
