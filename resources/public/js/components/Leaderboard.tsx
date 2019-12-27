@@ -43,7 +43,7 @@ export function Leaderboard() {
   const renderLeaderboard = () => {
     return (
       <table className="leaderboard__table">
-        <thead>
+        <thead className="leaderboard__thead">
           <tr className="leaderboard__tr">
             <th className="leaderboard__th">User</th>
             <th className="leaderboard__th">Total Whiplash Cash</th>

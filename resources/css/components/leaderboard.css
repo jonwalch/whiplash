@@ -1,7 +1,7 @@
 .leaderboard {
   font-size: 0.85em;
 
-  @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+  @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-column: 1 / -1;
   }
 
@@ -10,10 +10,25 @@
   }
 
   &__container {
-    @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
       display: grid;
       grid-column-gap: $space;
       grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto minmax( auto, 349px );
+    }
+
+    @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+      grid-template-rows: auto minmax( auto, 407px );
+    }
+
+    @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+      grid-template-rows: auto minmax( auto, 444px );
+    }
+
+    > * {
+      @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+        overflow-y: scroll;
+      }
     }
   }
 
@@ -22,7 +37,7 @@
     color: $light-black;
     padding: 0.25em 0.5em;
 
-    @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
       grid-column: 1 / -1;
     }
 
@@ -36,11 +51,20 @@
     margin-top: $space;
 
     @supports(display: grid) {
-      @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+      @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
         margin-top: 0;
       }
     }
 
+    .leaderboard__header {
+      position: sticky;
+      top: 0;
+    }
+
+    .leaderboard__th {
+      position: sticky;
+      top: 2em;
+    }
   }
 
   &__title {
@@ -53,20 +77,9 @@
     margin-bottom: 0;
   }
 
-  &__table-container {
-    height: 200px;
-    max-height: 200px;
-    overflow-y: scroll;
-  }
-
   &__table {
     background: $dark-blue;
     width: 100%;
-  }
-
-  &__thead {
-    /* TODO (paulshryock): Fix sticky */
-    position: sticky;
   }
 
   &__th {
