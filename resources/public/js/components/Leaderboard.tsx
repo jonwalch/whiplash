@@ -71,8 +71,7 @@ export function Leaderboard() {
       redirect: "error"
     });
     const resp = await response.json();
-//     setWeeklyLeaderboard(resp);
-    setWeeklyLeaderboard([{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000}]);
+    setWeeklyLeaderboard(resp);
   };
 
   const renderWeeklyLeaderboard = () => {
