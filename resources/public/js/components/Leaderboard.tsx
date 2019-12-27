@@ -17,12 +17,10 @@ export interface Leader {
 export function Leaderboard() {
   const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<WeeklyLeader[]>([]);
   const [leaderboard, setLeaderboard] = useState<Leader[]>([]);
-  const [weeklyLeaderboardHeight, setWeeklyLeaderboardHeight] = useState<number>(0);
 
   useEffect(() => {
     getWeeklyLeaderboard();
     getLeaderboard();
-    getWeeklyLeaderboardHeight()
   }, []);
 
   //every 5 minutes
@@ -30,11 +28,6 @@ export function Leaderboard() {
     getWeeklyLeaderboard();
     getLeaderboard();
   }, 300000);
-
-  //every 5 minutes
-  useInterval(() => {
-    getWeeklyLeaderboardHeight()
-  }, 100);
 
   const getLeaderboard = async () => {
     const response = await fetch(baseUrl + "leaderboard/all-time", {
@@ -69,14 +62,6 @@ export function Leaderboard() {
       </table>
     );
   };
-
-  const getWeeklyLeaderboardHeight = function () {
-    const allTime: any = document.querySelector('.leaderboard__section')
-    const el: any = window.getComputedStyle(allTime, null)
-    const height: any = el.getPropertyValue('height')
-    console.log('height: ', height)
-    setWeeklyLeaderboardHeight(height)
-  }
 
   const getWeeklyLeaderboard = async () => {
     const response = await fetch(baseUrl + "leaderboard/weekly", {
@@ -131,7 +116,7 @@ export function Leaderboard() {
           </header>
           {renderLeaderboard()}
         </section>
-        <section className="leaderboard__section" style={{height: weeklyLeaderboardHeight}}>
+        <section className="leaderboard__section">
           <header className="leaderboard__header">
             <h3 className="leaderboard__subtitle">Top Weekly Payouts</h3>
           </header>
