@@ -70,12 +70,12 @@ export function Home(props: any) {
       width: 1024,
       height: 576,
       channel: twitchUsername,
-      autoplay: true,
-      theme: "dark",
+      // autoplay: true,
+      // theme: "dark",
     };
 
     if (hasNode) {
-      const player = new Twitch.Embed("twitch-embed", options);
+      const player = new Twitch.Player("twitch-embed", options);
     }
   };
 
