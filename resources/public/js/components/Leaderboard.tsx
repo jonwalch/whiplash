@@ -43,7 +43,7 @@ export function Leaderboard() {
   const renderLeaderboard = () => {
     return (
       <table className="leaderboard__table">
-        <thead>
+        <thead className="leaderboard__thead">
           <tr className="leaderboard__tr">
             <th className="leaderboard__th">User</th>
             <th className="leaderboard__th">Total Whiplash Cash</th>
@@ -71,7 +71,8 @@ export function Leaderboard() {
       redirect: "error"
     });
     const resp = await response.json();
-    setWeeklyLeaderboard(resp);
+//     setWeeklyLeaderboard(resp);
+    setWeeklyLeaderboard([{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000},{user_name: 'carl', payout: 2000}]);
   };
 
   const renderWeeklyLeaderboard = () => {
@@ -79,24 +80,26 @@ export function Leaderboard() {
       return <p className="twitch__message">No payouts yet for this week!</p>;
     } else {
       return (
-        <table className="leaderboard__table">
-          <thead>
-            <tr className="leaderboard__tr">
-              <th className="leaderboard__th">User</th>
-              <th className="leaderboard__th">Payout</th>
-            </tr>
-          </thead>
-          <tbody>
-            {weeklyLeaderboard.map((leader: WeeklyLeader) => {
-              return (
-                <tr className="leaderboard__tr" key={leader.user_name}>
-                  <td className="leaderboard__td">{leader.user_name}</td>
-                  <td className="leaderboard__td">${leader.payout}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="leaderboard__table-container">
+          <table className="leaderboard__table">
+            <thead className="leaderboard__thead">
+              <tr className="leaderboard__tr">
+                <th className="leaderboard__th">User</th>
+                <th className="leaderboard__th">Payout</th>
+              </tr>
+            </thead>
+            <tbody>
+              {weeklyLeaderboard.map((leader: WeeklyLeader) => {
+                return (
+                  <tr className="leaderboard__tr" key={leader.user_name}>
+                    <td className="leaderboard__td">{leader.user_name}</td>
+                    <td className="leaderboard__td">${leader.payout}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       );
     }
   };

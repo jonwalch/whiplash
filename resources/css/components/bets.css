@@ -1,6 +1,10 @@
 .bets {
   font-size: 0.85em;
 
+  @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+    grid-column: span 2;
+  }
+
   @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
     grid-column: -2;
     grid-row: 2;
