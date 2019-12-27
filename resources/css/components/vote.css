@@ -55,15 +55,19 @@
   }
 }
 
-.button--vote:not(.is-active) {
-  background: $medium-gray;
-  border-color: $gray;
+.button--vote {
+  margin: 0.5em 0.5em 0 0;
 
-  &:hover,
-  &:focus,
-  &:active {
-    background: $light-gray;
-    border-color: $medium-gray;
+  &:not(.is-active) {
+    background: $medium-gray;
+    border-color: $gray;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background: $light-gray;
+      border-color: $medium-gray;
+    }
   }
 }
 

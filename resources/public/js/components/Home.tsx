@@ -32,6 +32,7 @@ export function Home(props: any) {
   const [matchID, setMatchID] = useState(-1);
   const [currentGame, setCurrentGame] = useState<any>({});
   const [opponents, setOpponents] = useState<Opponent[]>([]);
+  const [chatIsOpen, setChatIsOpen] = useState<boolean>(true)
 
   const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
@@ -117,9 +118,17 @@ export function Home(props: any) {
     } else {
       return (
         <>
-          <div className="twitch">
+          <div className={"twitch" + (!chatIsOpen ? " chat-is-closed" : "")}>
             <header className="container twitch__header">
               <h2 className="twitch__title">{matchName}</h2>
+              <button
+                className="button twitch__button"
+                type="button"
+                onClick={() => {
+                  setChatIsOpen(!chatIsOpen)
+                }}>
+                {chatIsOpen ? 'Close Chat' : 'Open Chat'}
+              </button>
             </header>
             <div className="aspect-ratio-wide twitch__video">
               <iframe
@@ -128,13 +137,14 @@ export function Home(props: any) {
                 allowFullScreen={true}>
               </iframe>
             </div>
-            <div className="twitch__chat">
-              <iframe
-                frameBorder="0"
-                scrolling="true"
-                src={"https://www.twitch.tv/embed/" + twitchUsername + "/chat?darkpopout"}>
-              </iframe>
-            </div>
+            {chatIsOpen && <div className="twitch__chat">
+                <iframe
+                  frameBorder="0"
+                  scrolling="true"
+                  src={"https://www.twitch.tv/embed/" + twitchUsername + "/chat?darkpopout"}>
+                </iframe>
+              </div>
+            }
           </div>
           <Vote
             opponents={opponents}
