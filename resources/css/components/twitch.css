@@ -13,7 +13,8 @@
   }
 
   @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 3fr 1fr;
+    grid-template-rows: unset;
   }
 
   &__header {
