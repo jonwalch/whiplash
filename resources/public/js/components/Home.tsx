@@ -44,12 +44,6 @@ export function Home(props: any) {
   }, []);
 
   useEffect(() => {
-    if (twitchUsername) {
-      twitchEmbed();
-    }
-  }, [twitchUsername]);
-
-  useEffect(() => {
     if (loggedInState.userName) {
       getUser(setLoggedInState);
     } //teamName changes when a user makes a guess
@@ -58,26 +52,6 @@ export function Home(props: any) {
   useInterval(() => {
     getStream();
   }, 10000);
-
-  const twitchEmbed = () => {
-    const node: any = document.querySelector('#twitch-embed');
-    const hasNode = node !== null;
-    if (hasNode && node.firstChild) {
-      node.removeChild(node.firstChild);
-    }
-
-    const options = {
-      width: 1024,
-      height: 576,
-      channel: twitchUsername
-      // autoplay: true,
-      // theme: "dark",
-    };
-
-    if (hasNode) {
-      // const player = new Twitch.Player("twitch-embed", options);
-    }
-  };
 
   const getStream = async () => {
     const response = await fetch(baseUrl + "stream", {
