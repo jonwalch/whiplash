@@ -69,13 +69,13 @@ export function Home(props: any) {
     const options = {
       width: 1024,
       height: 576,
-      channel: twitchUsername,
+      channel: twitchUsername
       // autoplay: true,
       // theme: "dark",
     };
 
     if (hasNode) {
-      const player = new Twitch.Player("twitch-embed", options);
+      // const player = new Twitch.Player("twitch-embed", options);
     }
   };
 
@@ -144,10 +144,23 @@ export function Home(props: any) {
       return (
         <>
           <div className="twitch">
-            <header className="container">
+            <header className="container twitch__header">
               <h2 className="twitch__title">{matchName}</h2>
             </header>
-            <div className="twitch__embed" id="twitch-embed"></div>
+            <div className="aspect-ratio-wide twitch__video">
+              <iframe
+                src={"https://player.twitch.tv/?channel=" + twitchUsername}
+                frameBorder="0"
+                allowFullScreen={true}>
+              </iframe>
+            </div>
+            <div className="twitch__chat">
+              <iframe
+                frameBorder="0"
+                scrolling="true"
+                src={"https://www.twitch.tv/embed/" + twitchUsername + "/chat?darkpopout"}>
+              </iframe>
+            </div>
           </div>
           <Vote
             opponents={opponents}
