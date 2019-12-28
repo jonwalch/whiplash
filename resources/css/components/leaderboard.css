@@ -47,6 +47,10 @@
     }
   }
 
+  &__section:first-of-type {
+    height: fit-content;
+  }
+
   &__section + &__section {
     margin-top: $space;
 
