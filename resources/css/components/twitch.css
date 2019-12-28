@@ -71,6 +71,16 @@
   }
 
   &.chat-is-closed {
+    grid-template-rows: unset;
+
+    @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+      grid-template-rows: auto auto minmax(300px, auto);
+    }
+
+    @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+      grid-template-rows: unset;
+    }
+
     .twitch__video {
       grid-column: 1 / -1;
     }

@@ -27,7 +27,7 @@
 
     > * {
       @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
-        overflow-y: scroll;
+        overflow-y: auto;
       }
     }
   }
