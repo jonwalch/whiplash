@@ -32,6 +32,7 @@ export function Home(props: any) {
   const [matchID, setMatchID] = useState(-1);
   const [currentGame, setCurrentGame] = useState<any>({});
   const [opponents, setOpponents] = useState<Opponent[]>([]);
+  const [chatIsOpen, setChatIsOpen] = useState<boolean>(true)
 
   const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
@@ -44,12 +45,6 @@ export function Home(props: any) {
   }, []);
 
   useEffect(() => {
-    if (twitchUsername) {
-      twitchEmbed();
-    }
-  }, [twitchUsername]);
-
-  useEffect(() => {
     if (loggedInState.userName) {
       getUser(setLoggedInState);
     } //teamName changes when a user makes a guess
@@ -58,26 +53,6 @@ export function Home(props: any) {
   useInterval(() => {
     getStream();
   }, 10000);
-
-  const twitchEmbed = () => {
-    const node: any = document.querySelector('#twitch-embed');
-    const hasNode = node !== null;
-    if (hasNode && node.firstChild) {
-      node.removeChild(node.firstChild);
-    }
-
-    const options = {
-      width: 1024,
-      height: 576,
-      channel: twitchUsername,
-      autoplay: true,
-      theme: "dark",
-    };
-
-    if (hasNode) {
-      const player = new Twitch.Embed("twitch-embed", options);
-    }
-  };
 
   const getStream = async () => {
     const response = await fetch(baseUrl + "stream", {
@@ -143,11 +118,33 @@ export function Home(props: any) {
     } else {
       return (
         <>
-          <div className="twitch">
-            <header className="container">
+          <div className={"twitch" + (!chatIsOpen ? " chat-is-closed" : "")}>
+            <header className="container twitch__header">
               <h2 className="twitch__title">{matchName}</h2>
+              <button
+                className="button twitch__button"
+                type="button"
+                onClick={() => {
+                  setChatIsOpen(!chatIsOpen)
+                }}>
+                {chatIsOpen ? 'Close Chat' : 'Open Chat'}
+              </button>
             </header>
-            <div className="twitch__embed" id="twitch-embed"></div>
+            <div className="aspect-ratio-wide twitch__video">
+              <iframe
+                src={"https://player.twitch.tv/?channel=" + twitchUsername}
+                frameBorder="0"
+                allowFullScreen={true}>
+              </iframe>
+            </div>
+            {chatIsOpen && <div className="twitch__chat">
+                <iframe
+                  frameBorder="0"
+                  scrolling="true"
+                  src={"https://www.twitch.tv/embed/" + twitchUsername + "/chat?darkpopout"}>
+                </iframe>
+              </div>
+            }
           </div>
           <Vote
             opponents={opponents}

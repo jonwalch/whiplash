@@ -1,4 +1,6 @@
 .twitch {
+  display: grid;
+  grid-template-rows: auto auto minmax(300px, auto);
   position: relative;
 
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
@@ -8,6 +10,19 @@
   @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
     grid-column: 1 / -2;
     grid-row: 1 / span 2;
+  }
+
+  @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+    grid-template-columns: 3fr 1fr;
+    grid-template-rows: unset;
+  }
+
+  &__header {
+    align-items: center;
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    width: 100%;
   }
 
   &__title {
@@ -55,51 +70,26 @@
     }
   }
 
-  &__stream {
-    position: relative;
-    width: 75%;
-
-    &:before{
-      content: '';
-      display: block;
-      padding-top: 56.25%; /* 16:9 */
+  &.chat-is-closed {
+    .twitch__video {
+      grid-column: 1 / -1;
     }
+  }
 
-    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
-      width: 100%;
+  &__button {
+    font-size: 0.5em;
+  }
+
+  &__chat {
+    grid-column: 1 / -1;
+
+    @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+      grid-column: unset;
     }
 
     iframe {
       height: 100%;
-      left: 0;
-      position: absolute;
-      top: 0;
       width: 100%;
     }
-  }
-
-  &__chat{
-    bottom: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 25%;
-
-    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
-      display: none;
-    }
-
-    iframe {
-      height: 100%;
-      left: 0;
-      position: absolute;
-      top: 0;
-      width: 100%;
-    }
-  }
-
-  &__placeholder {
-    background: $darker-blue;
-    padding-bottom: 25%;
   }
 }
