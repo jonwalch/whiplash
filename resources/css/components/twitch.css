@@ -3,6 +3,12 @@
   grid-template-rows: auto auto minmax(300px, auto);
   position: relative;
 
+  &.is-inactive {
+    grid-template-rows: auto auto minmax(300px, auto);
+    background: $dark-blue;
+    margin: $space;
+  }
+
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-column: 1 / -1;
   }
@@ -88,6 +94,7 @@
 
   &__button {
     font-size: 0.5em;
+    margin-right: calc(-1 * $space);
   }
 
   &__chat {
