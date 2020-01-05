@@ -1,6 +1,8 @@
 const gulp = require('gulp')
 const merge = require('merge-stream')
 const del = require('del')
+const Eleventy = require('@11ty/eleventy')
+const ssg = new Eleventy()
 const gulpStylelint = require('gulp-stylelint')
 const sourcemaps = require('gulp-sourcemaps')
 const postcss = require('gulp-postcss')
@@ -16,6 +18,12 @@ const connect = require('gulp-connect')
   */
 
 const paths = {
+  emails: {
+    layouts: './resources/email/**/*.liquid',
+    content: './resources/email/**/*.md',
+    dest: './resources/public/email',
+    output: './resources/public/email/**/*.html'
+  },
   css: {
     all: './resources/css/**/*.css',
     src: './resources/css/style.css',
@@ -32,6 +40,23 @@ function clean (cb) {
   del([paths.css.dest])
 
   return cb()
+}
+
+async function email () {
+  await ssg.init()
+  await ssg.write()
+
+  const options = {
+    indent_size: 2,
+    max_preserve_newlines: 1
+  }
+
+  const emails = gulp.src(paths.emails.output)
+    .pipe(beautify.html(options)) // Beautify
+    .pipe(gulp.dest(paths.emails.dest))
+    .pipe(connect.reload())
+
+  return emails
 }
 
 function css () {
@@ -96,6 +121,10 @@ function images () {
 }
 
 function watch (cb) {
+  gulp.watch([
+    paths.emails.layouts,
+    paths.emails.content
+  ], email)
   gulp.watch([paths.css.all], css)
   gulp.watch([paths.images.src], images)
 
@@ -108,7 +137,8 @@ function watch (cb) {
 const develop = gulp.series(
   clean,
   css,
-  images
+  images,
+  email
 )
 
 const build = gulp.series(
