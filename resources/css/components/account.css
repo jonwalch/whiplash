@@ -1,0 +1,17 @@
+/**
+  * This component depends on .form
+  * TODO (paulshryock): Refactor component to be independent from .form
+  **/
+.form--account {
+
+  .form__fieldset {
+    background: $dark-blue;
+    margin: 0 auto;
+    max-width: 55rem;
+  }
+
+  .form__header {
+    display: initial;
+    text-align: center;
+  }
+}

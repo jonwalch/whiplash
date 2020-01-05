@@ -30,7 +30,7 @@
     "Email invalid"
 
     (not (re-matches valid-password password))
-    "Password invalid"
+    "Password must be at least 8 characters"
 
     (not (re-matches valid-user-name user-name))
     "User name invalid"))
@@ -51,7 +51,6 @@
 (defn create-user
   [{:keys [body-params] :as req}]
   (let [{:keys [first_name last_name email password user_name]} body-params
-        encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})
         invalid-input (validate-user-inputs {:first-name first_name
                                              :last-name last_name
                                              :email email
@@ -69,7 +68,8 @@
       (conflict {:message "User name taken"})
 
       :else
-      (let [tx-result (db/add-user (:conn db/datomic-cloud)
+      (let [encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})
+            tx-result (db/add-user (:conn db/datomic-cloud)
                                    {:first-name   first_name
                                     :last-name    last_name
                                     :status       :user.status/pending
@@ -82,6 +82,25 @@
                                       :user/email email})
         ;;TODO dont return 200 if db/add-user fails
         (ok {})))))
+
+(defn update-password
+  [{:keys [body-params] :as req}]
+  (let [{:keys [password]} body-params
+        invalid-input (when (not (re-matches valid-password password))
+                        "Password must be at least 8 characters")]
+    (cond
+      (some? invalid-input)
+      (conflict {:message invalid-input})
+
+      :else
+      (let [{:keys [user exp]} (middleware/req->token req)
+            encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})
+            tx-result (db/update-password (:conn db/datomic-cloud)
+                                          {:db/id (db/find-user-by-user-name user)
+                                           :password     encrypted-password})]
+        ;;TODO dont return 200 if db/update-password fails
+        (ok {}))))
+  )
 
 (defn get-user
   [{:keys [params] :as req}]

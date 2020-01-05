@@ -7,11 +7,20 @@ export function Signup(props: any) {
   const [lastName, setLastName] = useState("");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [email, setEmail] = useState("");
 
   const toggleValid = () => {
     //TODO: add validation
-    return !(firstName && lastName && userName && password && email);
+    return !(firstName && lastName && userName && password && repeatPassword && email);
+  };
+
+  const submitSignUp = () => {
+    if (password == repeatPassword){
+      createUser()
+    } else {
+      alert("Passwords don't match!")
+    }
   };
 
   const createUser = async () => {
@@ -32,10 +41,7 @@ export function Signup(props: any) {
       })
     });
     const resp = await response.json();
-    console.log(resp);
-    console.log(response.status);
     if (response.status == 200) {
-      // props.history.push("/");
       props.setShowSignup(false)
       alert("Successful Signup!");
     } else {
@@ -46,7 +52,7 @@ export function Signup(props: any) {
   const signupOnKeyPress = (e: any) => {
     const key = e.key;
     if (key == "Enter" && !toggleValid()) {
-      createUser();
+      submitSignUp();
     }
   };
 
@@ -107,6 +113,22 @@ export function Signup(props: any) {
           />
         </div>
         <div className="form__group">
+          <label className="form__label" htmlFor="repeatPassword">Confirm Password</label>
+          <input
+              className="form__input"
+              value={repeatPassword}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                setRepeatPassword(e.currentTarget.value);
+              }}
+              onKeyPress={(e) => {signupOnKeyPress(e)}}
+              type="password"
+              maxLength={100}
+              minLength= {8}
+              name="repeatPassword"
+              id="repeatPassword"
+          />
+        </div>
+        <div className="form__group">
           <label className="form__label" htmlFor="firstName">First Name</label>
           <input
             className="form__input"
@@ -141,7 +163,7 @@ export function Signup(props: any) {
         <button
           className="button form__button"
           type="button"
-          onClick={createUser}
+          onClick={submitSignUp}
           disabled={toggleValid()}>
           Sign Up
         </button>

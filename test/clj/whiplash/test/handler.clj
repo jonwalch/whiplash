@@ -162,6 +162,33 @@
    (create-user user)
    (login user)))
 
+(defn- change-password
+  ([auth-token]
+   (change-password auth-token dummy-user))
+  ([auth-token {:keys [password] :as user}]
+   (let [resp ((common/test-app) (-> (mock/request :post "/user/password")
+                                     (mock/json-body {:password password})
+                                     (mock/cookie :value auth-token)))
+         parsed-body (common/parse-json-body resp)]
+
+     (is (= 200 (:status resp)))
+
+     (assoc resp :body parsed-body))))
+
+(deftest create-user-and-change-password
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
+        new-password "bigfarts"
+        password-resp (change-password auth-token {:password new-password})
+        logout-resp ((common/test-app) (-> (mock/request :post "/user/logout")))]
+    (login {:user_name (:user_name dummy-user) :password new-password})))
+
+
+(deftest create-user-and-change-password-failure
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login)]
+    (is (= 409 (:status ((common/test-app) (-> (mock/request :post "/user/password")
+                                               (mock/json-body {:password "bigfart"})
+                                               (mock/cookie :value auth-token))))))))
+
 (defn- get-user
   ([auth-token]
    (get-user auth-token dummy-user))
@@ -456,7 +483,7 @@
          (-> (create-user-failure (assoc dummy-user :user_name ""))
              :body
              :message)))
-  (is (= "Password invalid"
+  (is (= "Password must be at least 8 characters"
          (-> (create-user-failure (assoc dummy-user :password "1234567"))
              :body
              :message)))

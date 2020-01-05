@@ -18,9 +18,6 @@
   (layout/render request "index.html")
   #_(layout/render request "home.html" {:docs (-> "docs/docs.md" io/resource slurp)}))
 
-(defn about-page [request]
-  (layout/render request "about.html"))
-
 (defn home-routes []
   [""
    {:coercion   spec-coercion/coercion
@@ -46,6 +43,7 @@
    ;; user pages
    ["/" {:get home-page}]
    ["/about" {:get home-page}]
+   ["/account" {:get home-page}]
 
    ;;endpoints client talks to
    ["/stream"
@@ -118,6 +116,12 @@
                 :handler    (fn [req]
                               (user/create-user req))}}]
 
+    ["/password"
+     {:post    {:summary    "update a user's password"
+                :parameters {:body {:password   string?}}
+                :handler    (fn [req]
+                              (user/update-password req))}}]
+
     ["/guess"
      ;; TODO there may now be more than 1 bet, so we need to return them all
      {:get  {:summary    "get a guess for a user/game-id"
@@ -136,11 +140,6 @@
                                  :bet_amount int?}}
              :middleware [middleware/wrap-restricted]
              :handler    (fn [req]
-                           (user/create-bet req))}}]
-    ]
-
-   #_["/graphiql" {:get (fn [request]
-                        (layout/render request "graphiql.html"))}]
-   #_["/about" {:get about-page}]])
+                           (user/create-bet req))}}]]])
 
 (comment (home-routes))

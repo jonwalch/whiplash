@@ -33,6 +33,8 @@ export function About() {
             <p>You need to allow third party cookies in your browser settings.</p>
             <h3>Why didn’t I get a verification email?</h3>
             <p>Check your spam. If it’s not there, email us at <a href="mailto:support@whiplashesports.com">support@whiplashesports.com</a>.</p>
+            <h3>How do I change my password?</h3>
+            <p>Login and click your name in the header. It will bring you to your account page.</p>
           </div>
           <div className="article__container">
             <h2>Terms of Service</h2>

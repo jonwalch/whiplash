@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "@types/react-router-dom": "^5.1.0",
+    "ga-gtag": "^1.0.1",
     "query-string": "^6.8.3",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",

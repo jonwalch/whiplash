@@ -3,6 +3,7 @@ import { Opponent, defaultTeam } from "./Home";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
 import { getCSRFToken, useInterval } from "../common";
+const { gtag } = require('ga-gtag');
 
 export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
@@ -72,6 +73,15 @@ export function Vote(props: any) {
       })
     });
 
+    if (props.isProduction) {
+      // Trigger Google Analytics event
+      gtag('event', 'bet', {
+        event_category: 'Betting',
+        event_label: loggedInState.userName,
+        value: betAmount
+      })
+    }
+
     const resp = await response.json();
     if (response.status == 200) {
       // setGuessedTeamName(props.team.teamName);
@@ -111,13 +121,13 @@ export function Vote(props: any) {
 
   const renderContent = () => {
     if (loggedInState.userName) {
-      if (props.userStatus === null) {
+      if (loggedInState.status === null) {
         return (
           <div className="container">
             <p>Loading...</p>
           </div>
         );
-      } else if (!(props.userStatus == "user.status/active")) {
+      } else if (!(loggedInState.status == "user.status/active")) {
         return (
           <div className="container">
             <p className="vote__message">Verify your email to bet!</p>

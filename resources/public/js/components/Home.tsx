@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Login } from "./Login";
-import { Signup } from "./Signup";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
 import { Leaderboard } from "./Leaderboard";
@@ -10,6 +8,9 @@ import { Bets } from "./Bets";
 import { Link } from "react-router-dom";
 import {Header} from "./Header";
 import {Footer} from "./Footer";
+import {getUser} from "../common/getUser";
+
+const { install } = require('ga-gtag');
 
 declare const Twitch: any;
 
@@ -31,30 +32,26 @@ export function Home(props: any) {
   const [matchID, setMatchID] = useState(-1);
   const [currentGame, setCurrentGame] = useState<any>({});
   const [opponents, setOpponents] = useState<Opponent[]>([]);
-  const [userStatus, setUserStatus] = useState<string | null>(null);
+  const [chatIsOpen, setChatIsOpen] = useState<boolean>(true)
+
+  const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
   useEffect(() => {
+    if (isProduction) {
+      // Install Google tag manager
+      install('UA-154430212-2')
+    }
     getStream();
   }, []);
 
   useEffect(() => {
-    if (twitchUsername) {
-      twitchEmbed();
-    }
-  }, [twitchUsername]);
-
-  useEffect(() => {
     if (loggedInState.userName) {
-      getUser();
+      getUser(setLoggedInState);
     } //teamName changes when a user makes a guess
-  }, [loggedInState.userName, team.teamName]);
+  }, [team.teamName]);
 
   useInterval(() => {
     getStream();
-    //TODO revisit this, currently polling the user's cash and status every 10 seconds
-    if (loggedInState.userName) {
-      getUser();
-    }
   }, 10000);
 
   const getStream = async () => {
@@ -87,94 +84,74 @@ export function Home(props: any) {
     }
   };
 
-  const getUser = async () => {
-    const response = await fetch(baseUrl + "user", {
-      headers: { "Content-Type": "application/json" },
-      method: "GET",
-      mode: "same-origin",
-      redirect: "error"
-    });
-    if (response.status == 200) {
-      const resp = await response.json();
-      setUserStatus(resp["user/status"]);
-      setLoggedInState({
-        userName: resp["user/name"],
-        cash: resp["user/cash"]
-      });
-    } else {
-      setUserStatus("");
-    }
-  };
-
-  const twitchEmbed = () => {
-    const node: any = document.querySelector('#twitch-embed');
-    const hasNode = node !== null;
-    if (hasNode && node.firstChild) {
-      node.removeChild(node.firstChild);
-    }
-
-    const options = {
-      width: 1024,
-      height: 576,
-      channel: twitchUsername,
-      autoplay: true
-    };
-
-    if (hasNode) {
-      const player = new Twitch.Embed("twitch-embed", options);
-    }
-  };
-
   const renderContent = () => {
     // Loading
     if (streamURL == "") {
       return (
-        <div className="twitch is-inactive">
-          <div className="container">
-            <h2 className="twitch__title">Loading...</h2>
-            <div className="twitch__placeholder">
-              <div className="container">
+          <div className="twitch is-inactive">
+            <div className="container">
+              <h2 className="twitch__title">Loading...</h2>
+              <div className="twitch__placeholder">
                 <p className="twitch__subtitle">Hang tight, your CS:GO match is loading.</p>
               </div>
             </div>
           </div>
-        </div>
       );
-    // No stream to show
+      // No stream to show
     } else if (streamURL == failedToFetch) {
       return (
-        <div className="twitch is-inactive">
-          <div className="container">
-            <h2 className="twitch__title">Whiplash is taking a nap</h2>
-            <div className="twitch__placeholder">
-              <div className="container">
+          <div className="twitch is-inactive">
+            <div className="container">
+              <h2 className="twitch__title">Whiplash is taking a nap</h2>
+              <div className="twitch__placeholder">
                 <p className="twitch__subtitle">Hang tight, we'll find a CS:GO match for you soon.</p>
                 <p>In the meantime, bookmark this page and check back often for new chances to win while watching.</p>
               </div>
             </div>
           </div>
-        </div>
       );
-    // Found stream
+      // Found stream
     } else {
       return (
-        <>
-          <div className="twitch">
-            <header className="container">
-              <h2 className="twitch__title">{matchName}</h2>
-            </header>
-            <div className="twitch__embed" id="twitch-embed"></div>
-          </div>
-          <Vote
-            opponents={opponents}
-            team={team}
-            setTeam={setTeam}
-            matchID={matchID}
-            matchName={matchName}
-            currentGame={currentGame}
-            userStatus={userStatus}
-          />
-        </>
+          <>
+            <div className={"twitch" + (!chatIsOpen ? " chat-is-closed" : "")}>
+              <header className="container twitch__header">
+                <h2 className="twitch__title">{matchName}</h2>
+                <button
+                    className="button twitch__button"
+                    type="button"
+                    onClick={() => {
+                      setChatIsOpen(!chatIsOpen)
+                    }}>
+                  {chatIsOpen ? 'Close Chat' : 'Open Chat'}
+                </button>
+              </header>
+              <div className="aspect-ratio-wide twitch__video">
+                <iframe
+                    src={"https://player.twitch.tv/?channel=" + twitchUsername}
+                    frameBorder="0"
+                    allowFullScreen={true}>
+                </iframe>
+              </div>
+              {chatIsOpen && <div className="twitch__chat">
+                <iframe
+                    frameBorder="0"
+                    scrolling="true"
+                    src={"https://www.twitch.tv/embed/" + twitchUsername + "/chat?darkpopout"}>
+                </iframe>
+              </div>
+              }
+            </div>
+            <Vote
+                opponents={opponents}
+                team={team}
+                setTeam={setTeam}
+                matchID={matchID}
+                matchName={matchName}
+                currentGame={currentGame}
+                isProduction={isProduction}
+            />
+          </>
       );
     }
   };

@@ -4,6 +4,7 @@ import "../../css/App.css";
 import { LoginContext, defaultLoggedIn } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const"
 import { getCSRFToken } from "../common";
+import {getUser} from "../common/getUser";
 
 export function Login(props: any) {
   const [userName, setUserName] = useState("");
@@ -27,7 +28,7 @@ export function Login(props: any) {
       body: JSON.stringify({ password: password, user_name: userName })
     });
     if (response.status == 200) {
-      setLoggedInState({ userName: userName, cash: loggedInState.cash});
+      getUser(setLoggedInState);
       props.setShowSignup(false);
     } else {
       const resp = await response.json();
@@ -43,11 +44,7 @@ export function Login(props: any) {
   };
 
   const renderContent = () => {
-    // Loading
     if (loggedInState.userName === null) {
-      return <div>Loading</div>;
-    // Show log in form, user is not logged in
-    } else if (loggedInState.userName === '') {
       return (
           <form className="form form--login container" name="login">
             <hr className="form__hr"/>
