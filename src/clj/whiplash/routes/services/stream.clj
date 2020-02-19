@@ -12,6 +12,7 @@
 
                 :stop
                 (atom {}))
+
 ;; In development, if no games are currently running you can fake it to get the UI up
 ;; just wrap the body of the get-stream function with this
 ;; (with-redefs [whiplash.integrations.pandascore/get-matches-request whiplash.test.common/pandascore-running-fake

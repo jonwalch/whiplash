@@ -28,6 +28,8 @@
       (log/error "Abios access token failure " resp))
     (assoc resp :body (common/resp->body resp))))
 
+(comment (access-token-req))
+
 (defn access-token
   "grants a new one every 50 minutes, good for an hour"
   []
@@ -56,7 +58,7 @@
         (client/get "https://api.abiosgaming.com/v2/series"
                     {;;:debug        true
                      :query-params {"page"          (str page-number)
-                                    "games[]"       ["5"]   ;; 5 is CSGO
+                                    "games[]"       ["5"]   ;; 5 is CSGO, 18 is Rocket league, 10 is smash
                                     "with[]"        ["matches" "casters"]
                                     "tiers[]"       ["1" "2"]
                                     "is_over"       is-over?
@@ -73,9 +75,7 @@
         args {:page-number 1
               :is-over? false
               :token token}
-        {:keys [body]} (get-csgo-series-request {:page-number 1
-                                                 :is-over? false
-                                                 :token token})
+        {:keys [body]} (get-csgo-series-request args)
         total-pages (:last_page body)
         data (:data body)]
     (if (= total-pages 1)
