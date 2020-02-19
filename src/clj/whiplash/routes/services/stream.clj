@@ -42,3 +42,7 @@
         (log/debug "Serving cached stream")
         (return-fn {:stream  (first ordered-candidates)
                     :cached? true})))))
+
+;; Pull stream from DB, that was set from admin panel
+(defn get-homegrown-stream
+  [])

@@ -1,6 +1,7 @@
 (ns whiplash.db.schemas)
 
 (def ^:private schemas
+  ;; Game betting MVP
   {:0 [{:db/doc         "User first name"
         :db/ident       :user/first-name
         :db/valueType   :db.type/string
@@ -117,6 +118,11 @@
         :db/valueType   :db.type/bigint
         :db/cardinality :db.cardinality/one
         }
+       ]
+   ;; Prop betting MVP
+   :1 [{:db/ident :user.status/admin}
+
+
        ]})
 
 (defn migrations->schema-tx

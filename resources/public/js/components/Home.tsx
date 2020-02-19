@@ -26,7 +26,7 @@ const failedToFetch : string = "failed to fetch stream"
 export function Home(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [team, setTeam] = useState<Opponent>(defaultTeam);
-  const [streamURL, setURL] = useState("");
+  const [streamURL, setStreamURL] = useState("");
   const [twitchUsername, setTwitchUsername] = useState("");
   const [matchName, setMatchName] = useState("");
   const [matchID, setMatchID] = useState(-1);
@@ -60,7 +60,7 @@ export function Home(props: any) {
     });
     if (response.status == 200) {
       const resp = await response.json();
-      setURL(resp["live_url"]);
+      setStreamURL(resp["live_url"]);
       setTwitchUsername(resp["twitch/username"]);
       setMatchName(resp["name"]);
       setMatchID(resp["id"]);
@@ -76,7 +76,7 @@ export function Home(props: any) {
       setOpponents(parsedOpponents);
     } else {
       //right now would be a 204
-      setURL(failedToFetch);
+      setStreamURL(failedToFetch);
       setTwitchUsername("");
       setMatchName("");
       setMatchID(-1);

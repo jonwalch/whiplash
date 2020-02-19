@@ -7,7 +7,6 @@ const { gtag } = require('ga-gtag');
 
 export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
-  // const [guessedTeamName, setGuessedTeamName] = useState<string | null>(null);
   const [betAmount, setBetAmount] = useState<number>(0);
 
   useEffect(() => {
@@ -26,39 +25,10 @@ export function Vote(props: any) {
     })
   }, [props.team.teamName])
 
-  // useEffect(() => {
-  //   if (props.currentGame.id && props.matchID && loggedInState.userName) {
-  //     getGuess();
-  //   }
-  // }, [props.currentGame.id, props.matchID, loggedInState.userName]);
-  //
-  // const getGuess = async () => {
-  //   const url =
-  //     baseUrl +
-  //     "user/guess" +
-  //     "?match_id=" +
-  //     props.matchID +
-  //     "&game_id=" +
-  //     props.currentGame.id;
-  //   const response = await fetch(url, {
-  //     headers: { "Content-Type": "application/json" },
-  //     method: "GET",
-  //     mode: "same-origin",
-  //     redirect: "error"
-  //   });
-  //   if (response.status == 200) {
-  //     const resp = await response.json();
-  //     setGuessedTeamName(resp["team/name"]);
-  //   } else if (response.status == 404) {
-  //     setGuessedTeamName("");
-  //   }
-  // };
-
   const makeGuess = async () => {
     const response = await fetch(baseUrl + "user/guess", {
       headers: {
         "Content-Type": "application/json",
-        // "X-CSRF-Token": getCSRFToken()
       },
       method: "POST",
       mode: "same-origin",
@@ -127,7 +97,7 @@ export function Vote(props: any) {
             <p>Loading...</p>
           </div>
         );
-      } else if (!(loggedInState.status == "user.status/active")) {
+      } else if (loggedInState.status == "user.status/pending") {
         return (
           <div className="container">
             <p className="vote__message">Verify your email to bet!</p>

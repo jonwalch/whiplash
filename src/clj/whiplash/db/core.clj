@@ -246,11 +246,26 @@
        vec))
 
 (comment
-  (def test-client (d/client cloud-config))
-  (d/create-database test-client {:db-name "test"})
-  (def conn (d/connect test-client {:db-name "test"}))
 
-  ;(d/transact conn {:tx-data (migration-files->txes)})
+  (defn find-loser-by-email
+    [email conn]
+    (when-let [user (ffirst (find-user-by-email-db (d/db conn) email))]
+      user))
+
+  (defn make-admin
+    [email conn]
+    (let [user (find-loser-by-email email conn)]
+      (d/transact conn {:tx-data [{:db/id       user
+                                   :user/status :user.status/admin}]})))
+
+  (def test-client (d/client cloud-config))
+  ;(d/create-database test-client {:db-name "test"})
+  (def conn (d/connect test-client {:db-name "whiplash"}))
+  (d/transact conn {:tx-data (schemas/migrations->schema-tx)})
+
+  (find-loser-by-email "foobar@whiplashesports.com" conn)
+  (make-admin "foobar@whiplashesports.com" conn)
+
 
   (d/transact conn {:tx-data [{:user/first-name  "testy"
                                :user/last-name "testerino"
