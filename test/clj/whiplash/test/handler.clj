@@ -4,7 +4,9 @@
     [ring.mock.request :as mock]
     [clojure.string :as string]
     [whiplash.test.common :as common]
-    [whiplash.guess-processor :as guess-processor]))
+    [whiplash.guess-processor :as guess-processor]
+    [whiplash.db.core :as db]
+    [datomic.client.api :as d]))
 
 (common/app-fixtures)
 (common/db-fixtures)
@@ -558,3 +560,86 @@
     (let [all-time-leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
       (is (= 10
              (count (common/parse-json-body all-time-leaderboard-resp)))))))
+
+;; Prop betting MVP tests
+
+(deftest fail-admin-create-event
+  (testing "fail to create event because not admin"
+    (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
+          resp ((common/test-app) (-> (mock/request :post "/admin/event")
+                                      (mock/cookie :value auth-token)
+                                      (mock/json-body {:title "poops"
+                                                       :twitch-user "pig boops"})))]
+      (is (= 403 (:status resp))))))
+
+(deftest success-admin-create-event
+  (testing "successfully create and get event with proper admin role"
+    (let [_ (create-user)
+          _ (d/transact (:conn db/datomic-cloud)
+                        {:tx-data [{:db/id       (db/find-user-by-email (:email dummy-user))
+                                    :user/status :user.status/admin}]})
+          {:keys [auth-token] login-resp :response} (login)
+          title "Dirty Dan's Delirious Dance Party"
+          twitch-user "drdisrespect"
+          resp ((common/test-app) (-> (mock/request :post "/admin/event")
+                                      (mock/cookie :value auth-token)
+                                      (mock/json-body {:title title
+                                                       :twitch-user twitch-user})))
+          fail-create-again-resp ((common/test-app) (-> (mock/request :post "/admin/event")
+                                      (mock/cookie :value auth-token)
+                                      (mock/json-body {:title title
+                                                       :twitch-user twitch-user})))
+          get-response ((common/test-app) (-> (mock/request :get "/admin/event")
+                                              (mock/cookie :value auth-token)))
+          get-response-body (common/parse-json-body get-response)
+
+          end-event-resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                                (mock/cookie :value auth-token)))
+          get-after-end-resp ((common/test-app) (-> (mock/request :get "/admin/event")
+                                                    (mock/cookie :value auth-token)))]
+      (is (= 200 (:status resp)))
+      (is (= 405 (:status fail-create-again-resp)))
+      (is (= 200 (:status get-response)))
+      (is (= 200 (:status end-event-resp)))
+      (is (= 404 (:status get-after-end-resp)))
+      (is (string? (:event/start-time get-response-body)))
+      (is (= #:event{:running? true
+                     :title title
+                     :twitch-user twitch-user}
+             (dissoc get-response-body :event/start-time))))))
+
+(deftest fail-admin-get-event
+  (testing "fail to create event because not admin"
+    (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
+          resp ((common/test-app) (-> (mock/request :get "/admin/event")
+                                      (mock/cookie :value auth-token)))]
+      (is (= 403 (:status resp))))))
+
+(deftest success-admin-get-event
+  (testing "successfully get nonexistent event with proper admin role"
+    (let [_ (create-user)
+          _ (d/transact (:conn db/datomic-cloud)
+                        {:tx-data [{:db/id       (db/find-user-by-email (:email dummy-user))
+                                    :user/status :user.status/admin}]})
+          {:keys [auth-token] login-resp :response} (login)
+          resp ((common/test-app) (-> (mock/request :get "/admin/event")
+                                      (mock/cookie :value auth-token)))]
+      (is (= 404 (:status resp))))))
+
+(deftest fail-end-event
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
+        resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                    (mock/cookie :value auth-token)))]
+    (is (= 403 (:status resp)))))
+
+(deftest no-event-to-end
+  (let [_ (create-user)
+        _ (d/transact (:conn db/datomic-cloud)
+                      {:tx-data [{:db/id       (db/find-user-by-email (:email dummy-user))
+                                  :user/status :user.status/admin}]})
+        {:keys [auth-token] login-resp :response} (login)
+        resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                    (mock/cookie :value auth-token)))]
+    (is (= 405 (:status resp)))))
+
+;; TODO: test that disallows ending an event if there's an unresolved prop bet

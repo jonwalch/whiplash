@@ -4,6 +4,7 @@
     [whiplash.middleware :as middleware]
     [ring.util.http-response :as response]
     [whiplash.routes.services.stream :as stream]
+    [whiplash.routes.services.event :as event]
     [whiplash.routes.services.leaderboard :as leaderboard]
     [whiplash.routes.services.user :as user]
     [reitit.ring.middleware.multipart :as multipart]
@@ -44,6 +45,27 @@
    ["/" {:get home-page}]
    ["/about" {:get home-page}]
    ["/account" {:get home-page}]
+
+   ;; admin only endpoints
+   ["/admin"
+    ["/event"
+     [""
+      {:post {:summary    "Create a new event"
+              :middleware [middleware/wrap-admin]
+              :parameters {:body {:title       string?
+                                  :twitch-user string?}}
+              :handler    (fn [req]
+                            (event/create-event req))}
+       :get  {:summary    "Get the current event"
+              :middleware [middleware/wrap-admin]
+              :handler    (fn [req]
+                            (event/get-current-event req))}}]
+
+     ["/end"
+      {:post {:summary "End the current event"
+              :middleware [middleware/wrap-admin]
+              :handler (fn [req]
+                         (event/end-current-event req))}}]]]
 
    ;;endpoints client talks to
    ["/stream"
@@ -123,7 +145,6 @@
                               (user/update-password req))}}]
 
     ["/guess"
-     ;; TODO there may now be more than 1 bet, so we need to return them all
      {:get  {:summary    "get a guess for a user/game-id"
              :parameters {:query {:game_id  int?
                                   :match_id int?}}
@@ -141,5 +162,3 @@
              :middleware [middleware/wrap-restricted]
              :handler    (fn [req]
                            (user/create-bet req))}}]]])
-
-(comment (home-routes))

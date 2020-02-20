@@ -75,10 +75,11 @@
                           :enc :a128gcm}}))
 
 ;; TODO revisit :alg and :enc
-(defn token [user-name]
+(defn token [user-name user-status]
   (let [exp (time/days-delta 30)
         claims {:user user-name
-                :exp  (time/to-millis exp)}]
+                :exp  (time/to-millis exp)
+                :status user-status}]
     {:token (jwt/encrypt claims secret #_{:alg :a256kw :enc :a128gcm})
      :exp-str (time/http-date-str exp)}))
 
@@ -101,11 +102,17 @@
                                       t))))))
 
 (defn valid-cookie-auth?
-  [{:keys [cookies] :as req}]
+  [req]
   (let [{:keys [user exp]} (req->token req)]
     (boolean (and (string? user)
                   (int? exp)
                   (< (time/to-millis) exp)))))
+
+(defn valid-admin-auth?
+  [req]
+  (let [{:keys [status]} (req->token req)]
+    (boolean (and (valid-cookie-auth? req)
+                  (= "user.status/admin" status)))))
 
 (defn authed-req->user-name
   "Only use this if the endpoint is also wrap-restricted"
@@ -124,6 +131,11 @@
 ;; Add on a per route basis
 (defn wrap-restricted [handler]
   (restrict handler {:handler valid-cookie-auth?
+                     :on-error on-error}))
+
+;; Add on a per route basis
+(defn wrap-admin [handler]
+  (restrict handler {:handler valid-admin-auth?
                      :on-error on-error}))
 
 ;; Will add :identity to request if passed in as properly formatted Authorization Header

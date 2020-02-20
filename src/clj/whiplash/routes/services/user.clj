@@ -122,13 +122,15 @@
   (let [{:keys [user_name password]} body-params
         found-user (db/find-user-by-user-name user_name)
         user-entity (when found-user
-                      (d/pull (d/db (:conn db/datomic-cloud))
-                              '[:user/password :user/name]
-                              found-user))
+                      (-> (d/pull (d/db (:conn db/datomic-cloud))
+                                  '[:user/password :user/name :user/status]
+                                  found-user)
+                          (db/resolve-enum :user/status)))
         ;; TODO maybe return not-found if can't find user, right now just return 401
         valid-password (hashers/check password (:user/password user-entity))
         {:keys [exp-str token]} (when valid-password
-                                  (middleware/token (:user/name user-entity)))]
+                                  (middleware/token (:user/name user-entity)
+                                                    (:user/status user-entity)))]
     (if valid-password
       {:status  200
        :headers {}
@@ -148,7 +150,8 @@
    ;; TODO :domain, maybe :path, maybe :secure
    :cookies {:value     "deleted"
              :http-only true
-             :expire    "Thu, 01 Jan 1970 00:00:00 GMT"}})
+             :expire    "Thu, 01 Jan 1970 00:00:00 GMT"
+             :same-site :strict}})
 
 ;; TODO validation
 (defn create-bet

@@ -245,8 +245,35 @@
        (take 10)
        vec))
 
-(comment
+;; Prop betting MVP db functions
 
+(defn find-ongoing-event
+  []
+  (let [db (d/db (:conn datomic-cloud))]
+    (ffirst
+      (d/q {:query '[:find ?event
+                     :where [?event :event/running? true]]
+            :args  [db]}))))
+
+(defn create-event
+  [{:keys [title twitch-user]}]
+  (let [result (d/transact (:conn datomic-cloud)
+                           {:tx-data [{:db/id             "temp"
+                                       :event/title       title
+                                       :event/twitch-user twitch-user
+                                       :event/running?    true
+                                       :event/start-time  (time/to-date)}]})
+        resolved-temp-id (some-> result :tempids (get "temp"))]
+    (d/transact (:conn datomic-cloud)
+                {:tx-data [{:whiplash/events [resolved-temp-id]}]})))
+
+(defn end-event
+  [event-id]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [[:db/cas event-id :event/running? true false]
+                         {:db/id event-id :event/end-time (time/to-date)}]}))
+
+(comment
   (defn find-loser-by-email
     [email conn]
     (when-let [user (ffirst (find-user-by-email-db (d/db conn) email))]

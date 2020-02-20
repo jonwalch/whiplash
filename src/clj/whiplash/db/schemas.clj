@@ -122,6 +122,67 @@
    ;; Prop betting MVP
    :1 [{:db/ident :user.status/admin}
 
+       {:db/doc         "Prop bets"
+        :db/ident       :user/prop-bets
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/many
+        :db/isComponent true}
+
+       {:db/doc         "Events that we've hosted"
+        :db/ident       :whiplash/events
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/many}
+
+       {:db/doc         "Prop bets that we showed to the users during the event"
+        :db/ident       :event/propositions
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/many
+        :db/isComponent true}
+
+       {:db/doc         "Title of the event"
+        :db/ident       :event/title
+        :db/valueType   :db.type/string
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "twitch user to stream for duration of event"
+        :db/ident       :event/twitch-user
+        :db/valueType   :db.type/string
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Is this event still running?"
+        :db/ident       :event/running?
+        :db/valueType   :db.type/boolean
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Event start time"
+        :db/ident       :event/start-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Event end time"
+        :db/ident       :event/end-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "The actual prop bet string"
+        :db/ident       :proposition/prop
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "The outcome of the prop bet"
+        :db/ident       :proposition/result?
+        :db/valueType   :db.type/boolean
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Proposition start time"
+        :db/ident       :proposition/start-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Proposition end time"
+        :db/ident       :proposition/end-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
 
        ]})
 
