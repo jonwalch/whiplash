@@ -738,6 +738,8 @@
 
           get-body2 (common/parse-json-body user-get-prop-bet-resp2)
 
+          current-prop-bets-response  ((common/test-app) (-> (mock/request :get "/leaderboard/prop-bets")))
+
           ;;admin end prop bet
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop/end")
@@ -779,6 +781,21 @@
               #:bet{:amount            400
                     :projected-result? true}]
              (mapv #(dissoc % :bet/time) get-body2)))
+
+      (is (= 200 (:status current-prop-bets-response)))
+      (is (= {:false {:bets  [{:bet/amount 300
+                               :user/name  "donniedarko"}
+                              {:bet/amount 100
+                               :user/name  "kittycuddler420"}]
+                      :odds  2.5
+                      :total 400}
+              :true  {:bets  [{:bet/amount 400
+                               :user/name  "kittycuddler420"}
+                              {:bet/amount 200
+                               :user/name  "donniedarko"}]
+                      :odds  1.666666666666667
+                      :total 600}}
+             (common/parse-json-body current-prop-bets-response)))
 
       (is (= 200 (:status end-prop-bet-resp)))
       (is (= 200 (:status resp))))))

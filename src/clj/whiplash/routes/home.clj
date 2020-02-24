@@ -108,7 +108,11 @@
              :parameters {:query {:game_id  int?
                                   :match_id int?}}
              :handler    (fn [req]
-                           (leaderboard/get-bets req))}}]]
+                           (leaderboard/get-bets req))}}]
+    ["/prop-bets"
+     {:get  {:summary    "get all prop bets for current event"
+             :handler    (fn [req]
+                           (leaderboard/get-prop-bets req))}}]]
 
    ["/user"
 
