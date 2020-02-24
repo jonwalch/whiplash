@@ -164,9 +164,14 @@
         :db/valueType   :db.type/instant
         :db/cardinality :db.cardinality/one}
 
+       {:db/doc         "Is this the current proposition?"
+        :db/ident       :proposition/running?
+        :db/valueType   :db.type/boolean
+        :db/cardinality :db.cardinality/one}
+
        {:db/doc         "The actual prop bet string"
-        :db/ident       :proposition/prop
-        :db/valueType   :db.type/instant
+        :db/ident       :proposition/text
+        :db/valueType   :db.type/string
         :db/cardinality :db.cardinality/one}
 
        {:db/doc         "The outcome of the prop bet"
@@ -184,6 +189,15 @@
         :db/valueType   :db.type/instant
         :db/cardinality :db.cardinality/one}
 
+       {:db/doc         "Reference back to admin prop bet"
+        :db/ident       :bet/proposition
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "User's projected outcome of the proposition"
+        :db/ident       :bet/projected-result?
+        :db/valueType   :db.type/boolean
+        :db/cardinality :db.cardinality/one}
        ]})
 
 (defn migrations->schema-tx

@@ -26,8 +26,15 @@
 
 (defn end-current-event
   [{:keys [body-params] :as req}]
-  ;; TODO: do not allow ending if there's an open prop bet
-  (if-let [event (db/find-ongoing-event)]
-    (do (db/end-event event)
-        (ok))
-    (method-not-allowed {:message "No ongoing event"})))
+  (let [event (db/find-ongoing-event)
+        prop-bet (db/find-ongoing-prop-bet)]
+    (cond
+      (some? prop-bet)
+      (method-not-allowed {:message "Ongoing prop bet, you must end it before ending the event"})
+
+      (nil? event)
+      (method-not-allowed {:message "No ongoing event"})
+
+      :else
+      (do (db/end-event event)
+          (ok)))))

@@ -50,6 +50,13 @@
    :password "foobar2000"
    :user_name "donniedarko"})
 
+(def dummy-user-3
+  {:first_name "Joan"
+   :last_name "Walters"
+   :email "butt@snack.com"
+   :password "foobar2001"
+   :user_name "kittycuddler420"})
+
 (deftest test-user-400s
   (testing "cant get user, not logged in"
     (let [response ((common/test-app) (-> (mock/request :get "/user")))]
@@ -593,6 +600,26 @@
                                               (mock/cookie :value auth-token)))
           get-response-body (common/parse-json-body get-response)
 
+          text "Will Jon wipeout 2+ times this round?"
+          create-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop")
+                                                      (mock/cookie :value auth-token)
+                                                      (mock/json-body {:text text})))
+
+          success-get-running-prop-resp  ((common/test-app) (-> (mock/request :get "/admin/prop")
+                                                                (mock/cookie :value auth-token)))
+
+          success-prop-body (common/parse-json-body success-get-running-prop-resp)
+
+          fail-end-event-resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                                     (mock/cookie :value auth-token)))
+
+          end-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop/end")
+                                                  (mock/cookie :value auth-token)
+                                                  (mock/json-body {:result true})))
+
+          failure-get-running-prop-resp  ((common/test-app) (-> (mock/request :get "/admin/prop")
+                                                                (mock/cookie :value auth-token)))
+
           end-event-resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
                                                 (mock/cookie :value auth-token)))
           get-after-end-resp ((common/test-app) (-> (mock/request :get "/admin/event")
@@ -600,8 +627,19 @@
       (is (= 200 (:status resp)))
       (is (= 405 (:status fail-create-again-resp)))
       (is (= 200 (:status get-response)))
+      (is (= 200 (:status create-prop-bet-resp)))
+      (is (= 200 (:status success-get-running-prop-resp)))
+      (is (= 405 (:status fail-end-event-resp)))
+      (is (= 200 (:status end-prop-bet-resp)))
+      (is (= 404 (:status failure-get-running-prop-resp)))
       (is (= 200 (:status end-event-resp)))
       (is (= 404 (:status get-after-end-resp)))
+
+      (is (string? (:proposition/start-time success-prop-body)))
+      (is (= #:proposition{:running? true
+                           :text text}
+             (dissoc success-prop-body :proposition/start-time)))
+
       (is (string? (:event/start-time get-response-body)))
       (is (= #:event{:running? true
                      :title title
@@ -642,4 +680,105 @@
                                     (mock/cookie :value auth-token)))]
     (is (= 405 (:status resp)))))
 
-;; TODO: test that disallows ending an event if there's an unresolved prop bet
+(deftest admin-and-user-create-prop-bet
+  (testing ""
+    (let [_ (create-user)
+          _ (d/transact (:conn db/datomic-cloud)
+                        {:tx-data [{:db/id       (db/find-user-by-email (:email dummy-user))
+                                    :user/status :user.status/admin}]})
+          {:keys [auth-token] login-resp :response} (login)
+
+          title "Dirty Dan's Delirious Dance Party"
+          twitch-user "drdisrespect"
+          create-event-resp ((common/test-app) (-> (mock/request :post "/admin/event")
+                                                   (mock/cookie :value auth-token)
+                                                   (mock/json-body {:title       title
+                                                                    :twitch-user twitch-user})))
+
+          text "Will Jon wipeout 2+ times this round?"
+          create-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop")
+                                                      (mock/cookie :value auth-token)
+                                                      (mock/json-body {:text text})))
+
+          _ (create-user dummy-user-2)
+          _ (create-user dummy-user-3)
+
+          ;; user 2 bets
+          {:keys [auth-token] login-resp :response} (login dummy-user-2)
+
+
+          user-place-prop-bet-resp ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                                          (mock/cookie :value auth-token)
+                                                          (mock/json-body {:projected_result true
+                                                                           :bet_amount       200})))
+          user-place-prop-bet-resp2 ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                                           (mock/cookie :value auth-token)
+                                                           (mock/json-body {:projected_result false
+                                                                            :bet_amount       300})))
+          user-get-prop-bet-resp ((common/test-app) (-> (mock/request :get "/user/prop-bet")
+                                                        (mock/cookie :value auth-token)))
+
+          get-body (common/parse-json-body user-get-prop-bet-resp)
+
+
+          ;; user 3 bets
+          {:keys [auth-token] login-resp :response} (login dummy-user-3)
+
+
+          user-place-prop-bet-resp3 ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                                           (mock/cookie :value auth-token)
+                                                           (mock/json-body {:projected_result false
+                                                                            :bet_amount       100})))
+          user-place-prop-bet-resp4 ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                                           (mock/cookie :value auth-token)
+                                                           (mock/json-body {:projected_result true
+                                                                            :bet_amount       400})))
+          user-get-prop-bet-resp2 ((common/test-app) (-> (mock/request :get "/user/prop-bet")
+                                                         (mock/cookie :value auth-token)))
+
+          get-body2 (common/parse-json-body user-get-prop-bet-resp2)
+
+          ;;admin end prop bet
+          {:keys [auth-token] login-resp :response} (login)
+          end-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop/end")
+                                                   (mock/cookie :value auth-token)
+                                                   (mock/json-body {:result true})))
+
+          ;;admin didnt bet
+          _ (is (= 500 (-> (get-user auth-token) :body :user/cash)))
+
+          {:keys [auth-token] login-resp :response} (login dummy-user-2)
+          _ (is (= 333 (-> (get-user auth-token) :body :user/cash)))
+
+          {:keys [auth-token] login-resp :response} (login dummy-user-3)
+          _ (is (= 666 (-> (get-user auth-token) :body :user/cash)))
+
+          ;;admin end event
+          {:keys [auth-token] login-resp :response} (login)
+          resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                      (mock/cookie :value auth-token)))]
+
+      (is (= 200 (:status create-event-resp)))
+      (is (= 200 (:status create-prop-bet-resp)))
+      (is (= 200 (:status user-place-prop-bet-resp)))
+      (is (= 200 (:status user-place-prop-bet-resp2)))
+
+      (is (= 200 (:status user-get-prop-bet-resp)))
+      (is (= [#:bet{:amount            200
+                    :projected-result? true}
+              #:bet{:amount            300
+                    :projected-result? false}]
+             (mapv #(dissoc % :bet/time) get-body)))
+
+      (is (= 200 (:status user-place-prop-bet-resp3)))
+      (is (= 200 (:status user-place-prop-bet-resp4)))
+
+      (is (= 200 (:status user-get-prop-bet-resp2)))
+      (is (= [#:bet{:amount            100
+                    :projected-result? false}
+              #:bet{:amount            400
+                    :projected-result? true}]
+             (mapv #(dissoc % :bet/time) get-body2)))
+
+      (is (= 200 (:status end-prop-bet-resp)))
+      (is (= 200 (:status resp))))))

@@ -7,47 +7,8 @@
             [clojure.core.async :as async]
             [mount.core :as mount]
             [whiplash.db.core :refer [datomic-cloud]]
+            [whiplash.payouts :as payouts]
             [clojure.set :as set]))
-
-(defn game-bet-stats
-  [bets group-by-key]
-  (->> bets
-       (group-by group-by-key)
-       (map (fn [[team-id bets]]
-              (hash-map team-id
-                        (hash-map :bet/total
-                                  (apply + (map :bet/amount bets))))))
-       (apply conj)))
-
-(defn team-odds
-  [bet-stats]
-  (let [total-bet-for-game (apply +
-                                  (map (fn [[k v]]
-                                         (:bet/total v))
-                                       bet-stats))]
-    (->> bet-stats
-         (map (fn [[k v]]
-                (hash-map k (assoc v :bet/odds
-                                     (double
-                                       (/ total-bet-for-game (:bet/total v)))))))
-         (apply conj))))
-
-(defn payout-for-user
-  [{:keys [bet-stats bet/amount team/id team/winner]}]
-  (when winner
-    (let [payout (double (* amount
-                            (or (-> bet-stats
-                                    (get winner)
-                                    :bet/odds)
-                                ;; This happens when no one bet for the other team and there are no odds
-                                0.0)))
-          floored-payout (Math/floor payout)]
-      ;;TODO save this casino take somewhere in the DB
-      (when (< 0 (- payout floored-payout))
-        (log/info (format "Casino floored payout take %s dollars" (- payout floored-payout))))
-      (if (= winner id)
-        floored-payout
-        0.0))))
 
 (defn- match-and-game->winner
   [game]
@@ -74,8 +35,8 @@
                                  (map (fn [[k bets]]
                                         (hash-map k (hash-map :bets bets
                                                               :stats (-> bets
-                                                                         (game-bet-stats :team/id)
-                                                                         (team-odds))))))
+                                                                         (payouts/game-bet-stats :team/id)
+                                                                         (payouts/team-odds))))))
                                  (apply merge))
         ;; TODO: what happens if a user makes a new bet while this is running?
         ;; I *think* we'll be ok, if the cas fails, it'll try again in 10 seconds
@@ -83,10 +44,11 @@
                          (fn [[game-info {:keys [stats bets] :as bet-info}]]
                            (keep
                              (fn [bet]
-                               (when-let [user-payout (payout-for-user {:bet-stats   stats
-                                                                        :bet/amount  (:bet/amount bet)
-                                                                        :team/id     (:team/id bet)
-                                                                        :team/winner (get winner-lookup game-info)})]
+                               (when-let [user-payout (payouts/payout-for-bet
+                                                        {:bet-stats    stats
+                                                         :bet/amount  (:bet/amount bet)
+                                                         :team/id     (:team/id bet)
+                                                         :team/winner (get winner-lookup game-info)})]
                                  (let [user-eid (-> bet :user/_bets :db/id)
                                        cash (-> db
                                                 (d/pull '[:user/cash] user-eid)

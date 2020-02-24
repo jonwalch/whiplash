@@ -3,7 +3,7 @@
             [whiplash.db.core :as db]
             [whiplash.time :as time]
             [datomic.client.api :as d]
-            [whiplash.guess-processor :as guess-processor]))
+            [whiplash.payouts :as payouts]))
 
 (defn all-time-top-ten
   [{:keys [params] :as req}]
@@ -33,8 +33,8 @@
                                                                 {:match-id match-id
                                                                  :game-id  game-id})
         total-amounts-and-odds (-> unprocessed-bets
-                                   (guess-processor/game-bet-stats :team/name)
-                                   (guess-processor/team-odds))]
+                                   (payouts/game-bet-stats :team/name)
+                                   (payouts/team-odds))]
     (ok (or (->> unprocessed-bets
                  (group-by :team/name)
                  (map (fn [[team-name bets]]

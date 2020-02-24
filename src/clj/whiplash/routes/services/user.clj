@@ -99,8 +99,7 @@
                                           {:db/id (db/find-user-by-user-name user)
                                            :password     encrypted-password})]
         ;;TODO dont return 200 if db/update-password fails
-        (ok {}))))
-  )
+        (ok {})))))
 
 (defn get-user
   [{:keys [params] :as req}]
@@ -182,6 +181,64 @@
             (catch Throwable t (log/info "cas failed for adding guess: " t)))
         (ok {})
         (conflict {:message "CAS failed"}))
+
+      :else
+      (not-found {:message "User not found."}))))
+
+(defn create-prop-bet
+  [{:keys [body-params] :as req}]
+  (let [{:keys [bet_amount projected_result]} body-params
+        {:keys [user exp]} (middleware/req->token req)
+        db (d/db (:conn db/datomic-cloud))
+        {:keys [db/id user/cash]} (d/pull db
+                                          '[:user/cash :db/id]
+                                          (db/find-user-by-user-name user))
+        ongoing-prop (db/find-ongoing-prop-bet db)]
+    (cond
+      (>= 0 bet_amount)
+      (conflict {:message "Cannot bet less than 1."})
+
+      (> bet_amount cash)
+      (conflict {:message "Bet cannot exceed total user cash."})
+
+      (nil? ongoing-prop)
+      (method-not-allowed {:message "No ongoing prop bet, cannot make bet."})
+
+      (some? id)
+      (if (try
+            (db/add-prop-bet-for-user (:conn db/datomic-cloud)
+                                      {:db/id      id
+                                       :bet/projected-result? projected_result
+                                       :bet/amount bet_amount
+                                       :user/cash       cash
+                                       :bet/proposition ongoing-prop})
+            (catch Throwable t (log/info "cas failed for adding prop bet: " t)))
+        (ok {})
+        (conflict {:message "CAS failed"}))
+
+      :else
+      (not-found {:message "User not found."}))))
+
+(defn get-prop-bets
+  [{:keys [params] :as req}]
+  (let [{:keys [user exp]} (middleware/req->token req)
+        db (d/db (:conn db/datomic-cloud))
+        user-id (db/find-user-by-user-name user)
+        ongoing-prop (db/find-ongoing-prop-bet db)]
+    (cond
+      (nil? ongoing-prop)
+      (not-found {:message "No ongoing prop bet, cannot get bets."})
+
+      (some? user-id)
+      (let [prop-bets (db/find-prop-bets-for-user {:db db
+                                                   :user-id user-id
+                                                   :prop-bet-id ongoing-prop})]
+        (ok (mapv
+              (fn [eid]
+                (d/pull db
+                        '[:bet/amount :bet/time :bet/projected-result?]
+                        eid))
+              prop-bets)))
 
       :else
       (not-found {:message "User not found."}))))

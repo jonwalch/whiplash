@@ -6,6 +6,7 @@
     [whiplash.time :as time]
     [clojure.tools.logging :as log]
     [whiplash.db.schemas :as schemas]
+    [whiplash.payouts :as payouts]
     [clojure.string :as string]))
 
 ;; DO NOT USE DATOMIC ON PREM SCALAR OR COLLECTION FIND SYNTAX, IT'LL WORK LOCALLY BUT NOT IN PRODUCTION
@@ -117,6 +118,15 @@
                                             :team/id        team-id
                                             :bet/amount     (bigint bet-amount)}]}]}))
 
+(defn add-prop-bet-for-user
+  [conn {:keys [db/id bet/amount user/cash bet/projected-result? bet/proposition]}]
+  (d/transact conn {:tx-data [[:db/cas id :user/cash cash (bigint (- cash amount))]
+                              {:db/id id
+                               :user/prop-bets [{:bet/proposition proposition
+                                                 :bet/projected-result? projected-result?
+                                                 :bet/time       (time/to-date)
+                                                 :bet/amount     (bigint amount)}]}]}))
+
 (defn verify-email
   [conn {:keys [db/id]}]
   (d/transact conn {:tx-data [{:db/id       id
@@ -171,6 +181,25 @@
                       [?bet :game/id ?game-id]
                       [?bet :match/id ?match-id]]
              :args [db user-name game-id match-id]})
+       (map first)))
+
+(defn find-prop-bets-for-user
+  [{:keys [db user-id prop-bet-id]}]
+  (->> (d/q
+         {:query '[:find ?bet
+                   :in $ ?user-id ?prop-bet-id
+                   :where [?user-id :user/prop-bets ?bet]
+                   [?bet :bet/proposition ?prop-bet-id]]
+          :args [db user-id prop-bet-id]})
+       (map first)))
+
+(defn find-prop-bets
+  [{:keys [db prop-bet-id]}]
+  (->> (d/q
+         {:query '[:find ?bet
+                   :in $ ?prop-bet-id
+                   :where [?bet :bet/proposition ?prop-bet-id]]
+          :args [db prop-bet-id]})
        (map first)))
 
 ;;; TODO resolve :game/type
@@ -271,7 +300,74 @@
   [event-id]
   (d/transact (:conn datomic-cloud)
               {:tx-data [[:db/cas event-id :event/running? true false]
-                         {:db/id event-id :event/end-time (time/to-date)}]}))
+                         {:db/id event-id
+                          :event/end-time (time/to-date)}]}))
+
+(defn find-ongoing-prop-bet
+  ([]
+   (find-ongoing-prop-bet (d/db (:conn datomic-cloud))))
+  ([db]
+   (ffirst
+     (d/q {:query '[:find ?prop
+                    :where [?prop :proposition/running? true]]
+           :args  [db]}))))
+
+(defn create-prop-bet
+  [{:keys [text event-id]}]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [{:db/id              event-id
+                          :event/propositions [{:proposition/text       text
+                                                :proposition/start-time (time/to-date)
+                                                :proposition/running?   true}]}]}))
+
+(defn end-prop-bet
+  [{:keys [prop-bet-id result?]}]
+  (let [db (d/db (:conn datomic-cloud))
+        bets (->> (find-prop-bets {:db          db
+                                   :prop-bet-id prop-bet-id})
+                  (map
+                    (fn [eid]
+                      (d/pull db
+                              '[:db/id :bet/amount :bet/projected-result? :user/_prop-bets]
+                              eid))))
+        payouts (map
+                  (fn [{:keys [bet/projected-result? bet/amount] :as bet}]
+                    (-> bet
+                        (assoc :bet/payout
+                               (payouts/payout-for-bet
+                                 {:bet-stats   (-> bets
+                                                   (payouts/game-bet-stats :bet/projected-result?)
+                                                   (payouts/team-odds))
+                                  :bet/amount  amount
+                                  :team/id     projected-result?
+                                  :team/winner result?}))))
+                  bets)
+        user-id->total-payout (->> payouts
+                                   (group-by :user/_prop-bets)
+                                   (map (fn [[user-id pbets]]
+                                          {(:db/id user-id) (apply + (map :bet/payout pbets))}))
+                                   (apply merge))
+        payout-txs (mapv #(-> %
+                              (dissoc :user/_prop-bets :bet/amount :bet/projected-result?)
+                              (assoc :bet/processed-time (time/to-date)))
+                         payouts)
+        user-cash-txs (mapv
+                        (fn [[user-id total-payout]]
+                          (let [current-cash (:user/cash (d/pull db '[:user/cash] user-id))]
+                            [:db/cas user-id :user/cash current-cash
+                             (if (< 100 (+ current-cash total-payout))
+                               (+ current-cash total-payout)
+                               (bigint 100))]))
+                        user-id->total-payout)]
+
+    (d/transact (:conn datomic-cloud)
+                {:tx-data (vec
+                            (concat payout-txs
+                                    user-cash-txs
+                                    [[:db/cas prop-bet-id :proposition/running? true false]
+                                     {:db/id                prop-bet-id
+                                      :proposition/end-time (time/to-date)
+                                      :proposition/result?  result?}]))})))
 
 (comment
   (defn find-loser-by-email
