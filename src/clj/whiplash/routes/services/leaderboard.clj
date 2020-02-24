@@ -23,6 +23,20 @@
                                 vec)]
     (ok weekly-leaderboard)))
 
+;; TODO maybe cache this every 10 minutes or so if it takes too long
+(defn weekly-prop-bet-leaderboard
+  [{:keys [params] :as req}]
+  (let [weekly-leaderboard (->> (db/find-this-week-prop-bet-payout-leaderboard (time/to-date (time/last-monday)))
+                                (group-by :user/name)
+                                (map (fn [[k v]]
+                                       (hash-map :user_name k
+                                                 :payout (->> v
+                                                              (map :bet/payout)
+                                                              (apply +)))))
+                                (sort-by :payout #(compare %2 %1))
+                                vec)]
+    (ok weekly-leaderboard)))
+
 (defn get-bets
   [{:keys [params] :as req}]
   (let [{:keys [game_id match_id]} params

@@ -103,6 +103,11 @@
      {:get {:summary "return this week's leaderboard"
             :handler (fn [req]
                        (leaderboard/weekly-leaderboard req))}}]
+
+    ["/weekly-prop-bets"
+     {:get  {:summary    "this week's prop bet leaderboard"
+             :handler    (fn [req]
+                           (leaderboard/weekly-prop-bet-leaderboard req))}}]
     ["/bets"
      {:get  {:summary    "get all bets for current game"
              :parameters {:query {:game_id  int?

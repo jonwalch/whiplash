@@ -755,6 +755,8 @@
           {:keys [auth-token] login-resp :response} (login dummy-user-3)
           _ (is (= 666 (-> (get-user auth-token) :body :user/cash)))
 
+          weekly-leader-resp  ((common/test-app) (-> (mock/request :get "/leaderboard/weekly-prop-bets")))
+
           ;;admin end event
           {:keys [auth-token] login-resp :response} (login)
           resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
@@ -796,6 +798,14 @@
                       :odds  1.666666666666667
                       :total 600}}
              (common/parse-json-body current-prop-bets-response)))
+
+      (is (= 200 (:status weekly-leader-resp)))
+      (is (= [{:payout    666
+               :user_name "kittycuddler420"}
+              {:payout    333
+               :user_name "donniedarko"}]
+             (common/parse-json-body weekly-leader-resp)))
+
 
       (is (= 200 (:status end-prop-bet-resp)))
       (is (= 200 (:status resp))))))

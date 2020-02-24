@@ -254,6 +254,24 @@
                                '[:user/name]
                                (-> bet :user/_bets :db/id))))))))
 
+(defn find-this-week-prop-bet-payout-leaderboard
+  [lower-bound]
+  (let [db (d/db (:conn datomic-cloud))]
+    (->> (d/q
+           {:query '[:find ?bet
+                     :in $ ?lower-bound
+                     :where [?bet :bet/time ?time]
+                     [?bet :bet/payout ?payout]
+                     [(>= ?time ?lower-bound)]
+                     [(> ?payout 0)]]
+            :args  [db lower-bound]})
+         (map #(d/pull db '[:bet/payout :user/_prop-bets] (first %)))
+         (map (fn [bet]
+                (merge bet
+                       (d/pull db
+                               '[:user/name]
+                               (-> bet :user/_prop-bets :db/id))))))))
+
 (defn find-all-time-leaderboard
   []
   (let [db (d/db (:conn datomic-cloud))]
