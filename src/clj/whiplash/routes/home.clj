@@ -5,7 +5,7 @@
     [ring.util.http-response :as response]
     [whiplash.routes.services.stream :as stream]
     [whiplash.routes.services.event :as event]
-    [whiplash.routes.services.prop-bet :as prop-bet]
+    [whiplash.routes.services.proposition :as proposition]
     [whiplash.routes.services.leaderboard :as leaderboard]
     [whiplash.routes.services.user :as user]
     [reitit.ring.middleware.multipart :as multipart]
@@ -56,12 +56,7 @@
               :parameters {:body {:title       string?
                                   :twitch-user string?}}
               :handler    (fn [req]
-                            (event/create-event req))}
-
-       :get  {:summary    "Get the current event"
-              :middleware [middleware/wrap-admin]
-              :handler    (fn [req]
-                            (event/get-current-event req))}}]
+                            (event/create-event req))}}]
 
      ["/end"
       {:post {:summary "End the current event"
@@ -75,28 +70,34 @@
               :middleware [middleware/wrap-admin]
               :parameters {:body {:text string?}}
               :handler    (fn [req]
-                            (prop-bet/admin-create-prop-bet req))}
-
-       :get {:summary    "Get the current prop bet"
-             :middleware [middleware/wrap-admin]
-             :handler    (fn [req]
-                           (prop-bet/get-current-prop-bet req))}}]
+                            (proposition/admin-create-prop-bet req))}}]
      ["/end"
       {:post {:summary "End the current prop bet"
               :middleware [middleware/wrap-admin]
               :parameters {:body {:result boolean?}}
               :handler (fn [req]
-                         (prop-bet/end-current-prop-bet req))}}]]]
+                         (proposition/end-current-prop-bet req))}}]]]
 
    ;;endpoints client talks to
    ["/stream"
-    {:get {:summary "get the current best stream candidate"
-           :handler (fn [req]
-                      (stream/get-stream req))}}]
+    [""
+     {:get {:summary "get the current best stream candidate"
+            :handler (fn [req]
+                       (stream/get-stream req))}}]
+
+    ["/event"
+     {:get  {:summary    "Get the current event"
+             :handler    (fn [req]
+                           (event/get-current-event req))}}]
+
+    ["/prop"
+     {:get {:summary    "Get the current prop bet"
+            :handler    (fn [req]
+                          (proposition/get-current-prop-bet req))}}]]
 
    ["/leaderboard"
     ["/all-time"
-     {:get {:summary "return this highest all time user cash"
+     {:get {:summary "return the highest all time user cash"
             :handler (fn [req]
                        (leaderboard/all-time-top-ten req))}}]
     ["/weekly"

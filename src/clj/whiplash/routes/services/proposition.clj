@@ -1,4 +1,4 @@
-(ns whiplash.routes.services.prop-bet
+(ns whiplash.routes.services.proposition
   (:require  [ring.util.http-response :refer :all]
              [whiplash.db.core :as db]
              [datomic.client.api :as d]))

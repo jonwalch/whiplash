@@ -596,7 +596,7 @@
                                       (mock/cookie :value auth-token)
                                       (mock/json-body {:title title
                                                        :twitch-user twitch-user})))
-          get-response ((common/test-app) (-> (mock/request :get "/admin/event")
+          get-response ((common/test-app) (-> (mock/request :get "/stream/event")
                                               (mock/cookie :value auth-token)))
           get-response-body (common/parse-json-body get-response)
 
@@ -605,7 +605,7 @@
                                                       (mock/cookie :value auth-token)
                                                       (mock/json-body {:text text})))
 
-          success-get-running-prop-resp  ((common/test-app) (-> (mock/request :get "/admin/prop")
+          success-get-running-prop-resp  ((common/test-app) (-> (mock/request :get "/stream/prop")
                                                                 (mock/cookie :value auth-token)))
 
           success-prop-body (common/parse-json-body success-get-running-prop-resp)
@@ -617,12 +617,12 @@
                                                   (mock/cookie :value auth-token)
                                                   (mock/json-body {:result true})))
 
-          failure-get-running-prop-resp  ((common/test-app) (-> (mock/request :get "/admin/prop")
+          failure-get-running-prop-resp  ((common/test-app) (-> (mock/request :get "/stream/prop")
                                                                 (mock/cookie :value auth-token)))
 
           end-event-resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
                                                 (mock/cookie :value auth-token)))
-          get-after-end-resp ((common/test-app) (-> (mock/request :get "/admin/event")
+          get-after-end-resp ((common/test-app) (-> (mock/request :get "/stream/event")
                                                     (mock/cookie :value auth-token)))]
       (is (= 200 (:status resp)))
       (is (= 405 (:status fail-create-again-resp)))
@@ -646,29 +646,19 @@
                      :twitch-user twitch-user}
              (dissoc get-response-body :event/start-time))))))
 
-(deftest fail-admin-get-event
-  (testing "fail to create event because not admin"
-    (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
-          resp ((common/test-app) (-> (mock/request :get "/admin/event")
-                                      (mock/cookie :value auth-token)))]
-      (is (= 403 (:status resp))))))
-
 (deftest success-admin-get-event
-  (testing "successfully get nonexistent event with proper admin role"
-    (let [_ (create-user)
-          _ (d/transact (:conn db/datomic-cloud)
-                        {:tx-data [{:db/id       (db/find-user-by-email (:email dummy-user))
-                                    :user/status :user.status/admin}]})
-          {:keys [auth-token] login-resp :response} (login)
-          resp ((common/test-app) (-> (mock/request :get "/admin/event")
+  (testing "successfully get nonexistent event, don't need admin"
+    (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
+          resp ((common/test-app) (-> (mock/request :get "/stream/event")
                                       (mock/cookie :value auth-token)))]
       (is (= 404 (:status resp))))))
 
 (deftest fail-end-event
-  (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
-        resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
-                                    (mock/cookie :value auth-token)))]
-    (is (= 403 (:status resp)))))
+  (testing "fails because user is not an admin"
+    (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
+          resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                      (mock/cookie :value auth-token)))]
+      (is (= 403 (:status resp))))))
 
 (deftest no-event-to-end
   (let [_ (create-user)
@@ -805,7 +795,6 @@
               {:payout    333
                :user_name "donniedarko"}]
              (common/parse-json-body weekly-leader-resp)))
-
 
       (is (= 200 (:status end-prop-bet-resp)))
       (is (= 200 (:status resp))))))
