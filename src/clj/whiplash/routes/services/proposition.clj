@@ -5,6 +5,7 @@
 
 (defn admin-create-prop-bet
   [{:keys [body-params] :as req}]
+  ;; TODO validation of text
   (let [{:keys [text]} body-params
         ongoing-event (db/find-ongoing-event)
         ongoing-prop-bet (db/find-ongoing-prop-bet)]
@@ -19,7 +20,7 @@
       (do
         (db/create-prop-bet {:text text
                              :event-eid ongoing-event})
-        (ok)))))
+        (ok {})))))
 
 (defn get-current-prop-bet
   [req]
@@ -29,7 +30,7 @@
                   :proposition/text
                   :proposition/running?]
                 prop-bet))
-    (not-found)))
+    (not-found {})))
 
 (defn end-current-prop-bet
   [{:keys [body-params] :as req}]
@@ -37,5 +38,5 @@
     (if-let [prop-bet (db/find-ongoing-prop-bet)]
       (do (db/end-prop-bet {:result?     result
                             :prop-bet-id prop-bet})
-          (ok))
+          (ok {}))
       (method-not-allowed {:message "No ongoing prop bet"}))))

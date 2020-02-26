@@ -133,12 +133,14 @@
     (if valid-password
       {:status  200
        :headers {}
-       :body {}
-       ;; TODO :domain, maybe :path, maybe :secure
-       :cookies {:value     token
-                 :http-only true
-                 :expire exp-str
-                 :same-site :strict}}
+       :body    {}
+       ;; TODO :secure
+       :cookies {"value"
+                 {:value     token
+                  :path      "/"
+                  :http-only true
+                  :expires    exp-str
+                  :same-site :strict}}}
       (unauthorized {:message "Login failed"}))))
 
 (defn logout
@@ -146,11 +148,12 @@
   {:status  200
    :headers {}
    :body    {}
-   ;; TODO :domain, maybe :path, maybe :secure
-   :cookies {:value     "deleted"
-             :http-only true
-             :expire    "Thu, 01 Jan 1970 00:00:00 GMT"
-             :same-site :strict}})
+   ;; TODO :secure
+   :cookies {"value" {:value     "deleted"
+                      :path "/"
+                      :http-only true
+                      :expires    "Thu, 01 Jan 1970 00:00:00 GMT"
+                      :same-site :strict}}})
 
 ;; TODO validation
 (defn create-bet

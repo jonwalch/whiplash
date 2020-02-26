@@ -4,32 +4,42 @@ import { baseUrl } from "../config/const";
 
 export function Bets(props: any) {
   const [bets, setBets] = useState<any>(null);
-  
+
   useEffect(() => {
-    if (props.matchID && props.currentGame && props.currentGame.id) {
-      getBets();
-    } else {
-      setBets(null);
-    }
-  }, [props.matchID, props.currentGame]);
+      getPropBets();
+  }, []);
 
   useInterval(() => {
-    if (props.currentGame && props.currentGame.id) {
-      getBets();
-    } else {
-      setBets(null);
-    }
+    // if (props.currentGame && props.currentGame.id) {
+      getPropBets();
+    // } else {
+    //   setBets(null);
+    // }
   }, 5000);
 
   //show bets for current game
-  const getBets = async () => {
-    const url =
-      baseUrl +
-      "leaderboard/bets" +
-      "?match_id=" +
-      props.matchID +
-      "&game_id=" +
-      props.currentGame.id;
+  // const getBets = async () => {
+  //   const url =
+  //     baseUrl +
+  //     "leaderboard/bets" +
+  //     "?match_id=" +
+  //     props.matchID +
+  //     "&game_id=" +
+  //     props.currentGame.id;
+  //   const response = await fetch(url, {
+  //     headers: { "Content-Type": "application/json" },
+  //     method: "GET",
+  //     mode: "same-origin",
+  //     redirect: "error"
+  //   });
+  //   if (response.status == 200) {
+  //     const resp = await response.json();
+  //     setBets(Object.entries(resp));
+  //   }
+  // };
+
+  const getPropBets = async () => {
+    const url = baseUrl + "leaderboard/prop-bets";
     const response = await fetch(url, {
       headers: { "Content-Type": "application/json" },
       method: "GET",
@@ -39,6 +49,8 @@ export function Bets(props: any) {
     if (response.status == 200) {
       const resp = await response.json();
       setBets(Object.entries(resp));
+    } else {
+      setBets(null)
     }
   };
 
@@ -51,6 +63,7 @@ export function Bets(props: any) {
           </header>
           <table className="bets__table">
             {bets.map((el: any) => {
+              // TODO change teamnames from true and false to yes and no on client side
               const teamName = el[0];
               const teamBets = el[1];
               return (

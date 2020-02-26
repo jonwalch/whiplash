@@ -5,6 +5,7 @@ import { About } from "./components/About";
 import { Verify } from "./components/Verify";
 import {defaultLoggedIn, LoginContext} from "./contexts/LoginContext";
 import { Account } from "./components/Account";
+import { Control } from "./components/Control";
 import {useInterval} from "./common";
 import {getUser} from "./common/getUser";
 
@@ -31,16 +32,15 @@ export const App = () => {
                         <Account match={match} history={history}/>
                     )}
                 />
-                {/* <Route
-          path="/signup"
-          render={({ match, history }) => (
-            <Signup match={match} history={history} />
-          )}
-        /> */}
                 <Route
                     path="/user/verify"
                     render={({ match, history, location }) => (
                         <Verify match={match} history={history} location={location}/>
+                    )}
+                />
+                <Route exact path="/control" render={({ match, history}) =>
+                    (
+                        <Control match={match} history={history}/>
                     )}
                 />
             </BrowserRouter>

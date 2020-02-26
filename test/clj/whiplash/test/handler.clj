@@ -454,7 +454,7 @@
           resp ((common/test-app) (-> (mock/request :post "/user/logout")
                                       (mock/cookie :value auth-token)))
           login-again-resp (login)]
-      (is (= "deleted" (get-token-from-headers (:headers resp))))
+      (is (string/includes? (get-token-from-headers (:headers resp)) "deleted"))
       (is (= 200 (:status resp))))))
 
 (deftest logout-get
@@ -576,7 +576,7 @@
           resp ((common/test-app) (-> (mock/request :post "/admin/event")
                                       (mock/cookie :value auth-token)
                                       (mock/json-body {:title "poops"
-                                                       :twitch-user "pig boops"})))]
+                                                       :twitch_user "pig boops"})))]
       (is (= 403 (:status resp))))))
 
 (deftest success-admin-create-event
@@ -591,11 +591,11 @@
           resp ((common/test-app) (-> (mock/request :post "/admin/event")
                                       (mock/cookie :value auth-token)
                                       (mock/json-body {:title title
-                                                       :twitch-user twitch-user})))
+                                                       :twitch_user twitch-user})))
           fail-create-again-resp ((common/test-app) (-> (mock/request :post "/admin/event")
                                       (mock/cookie :value auth-token)
                                       (mock/json-body {:title title
-                                                       :twitch-user twitch-user})))
+                                                       :twitch_user twitch-user})))
           get-response ((common/test-app) (-> (mock/request :get "/stream/event")
                                               (mock/cookie :value auth-token)))
           get-response-body (common/parse-json-body get-response)
@@ -683,7 +683,7 @@
           create-event-resp ((common/test-app) (-> (mock/request :post "/admin/event")
                                                    (mock/cookie :value auth-token)
                                                    (mock/json-body {:title       title
-                                                                    :twitch-user twitch-user})))
+                                                                    :twitch_user twitch-user})))
 
           text "Will Jon wipeout 2+ times this round?"
           create-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop")
@@ -794,6 +794,158 @@
                :user_name "kittycuddler420"}
               {:payout    333
                :user_name "donniedarko"}]
+             (common/parse-json-body weekly-leader-resp)))
+
+      (is (= 200 (:status end-prop-bet-resp)))
+      (is (= 200 (:status resp))))))
+
+(deftest no-payout-doesnt-break
+  (testing ""
+    (let [_ (create-user)
+          _ (d/transact (:conn db/datomic-cloud)
+                        {:tx-data [{:db/id       (db/find-user-by-email (:email dummy-user))
+                                    :user/status :user.status/admin}]})
+          {:keys [auth-token] login-resp :response} (login)
+
+          title "Dirty Dan's Delirious Dance Party"
+          twitch-user "drdisrespect"
+          create-event-resp ((common/test-app) (-> (mock/request :post "/admin/event")
+                                                   (mock/cookie :value auth-token)
+                                                   (mock/json-body {:title       title
+                                                                    :twitch_user twitch-user})))
+
+          text "Will Jon wipeout 2+ times this round?"
+          create-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop")
+                                                      (mock/cookie :value auth-token)
+                                                      (mock/json-body {:text text})))
+
+          user-place-prop-bet-resp ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                                          (mock/cookie :value auth-token)
+                                                          (mock/json-body {:projected_result true
+                                                                           :bet_amount       500})))
+          user-get-prop-bet-resp ((common/test-app) (-> (mock/request :get "/user/prop-bet")
+                                                        (mock/cookie :value auth-token)))
+
+          get-body (common/parse-json-body user-get-prop-bet-resp)
+
+          current-prop-bets-response  ((common/test-app) (-> (mock/request :get "/leaderboard/prop-bets")))
+
+          ;;admin end prop bet
+          {:keys [auth-token] login-resp :response} (login)
+          end-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop/end")
+                                                   (mock/cookie :value auth-token)
+                                                   (mock/json-body {:result false})))
+
+          ;;admin bet and reset to 100
+          _ (is (= 100 (-> (get-user auth-token) :body :user/cash)))
+
+          weekly-leader-resp  ((common/test-app) (-> (mock/request :get "/leaderboard/weekly-prop-bets")))
+
+          ;;admin end event
+          {:keys [auth-token] login-resp :response} (login)
+          resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                      (mock/cookie :value auth-token)))]
+
+      (is (= 200 (:status create-event-resp)))
+      (is (= 200 (:status create-prop-bet-resp)))
+      (is (= 200 (:status user-place-prop-bet-resp)))
+
+      (is (= 200 (:status user-get-prop-bet-resp)))
+      (is (= [#:bet{:amount            500
+                    :projected-result? true}]
+             (mapv #(dissoc % :bet/time) get-body)))
+
+      (is (= 200 (:status current-prop-bets-response)))
+      (is (= {:true  {:bets  [{:bet/amount 500
+                               :user/name  "queefburglar"}]
+                      :odds  1.00
+                      :total 500}}
+             (common/parse-json-body current-prop-bets-response)))
+
+      (is (= 200 (:status weekly-leader-resp)))
+      (is (= []
+             (common/parse-json-body weekly-leader-resp)))
+
+      (is (= 200 (:status end-prop-bet-resp)))
+      (is (= 200 (:status resp))))))
+
+
+(deftest bet-both-sides-doesnt-break
+  (testing ""
+    (let [_ (create-user)
+          _ (d/transact (:conn db/datomic-cloud)
+                        {:tx-data [{:db/id       (db/find-user-by-email (:email dummy-user))
+                                    :user/status :user.status/admin}]})
+          {:keys [auth-token] login-resp :response} (login)
+
+          title "Dirty Dan's Delirious Dance Party"
+          twitch-user "drdisrespect"
+          create-event-resp ((common/test-app) (-> (mock/request :post "/admin/event")
+                                                   (mock/cookie :value auth-token)
+                                                   (mock/json-body {:title       title
+                                                                    :twitch_user twitch-user})))
+
+          text "Will Jon wipeout 2+ times this round?"
+          create-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop")
+                                                      (mock/cookie :value auth-token)
+                                                      (mock/json-body {:text text})))
+
+          user-place-prop-bet-resp ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                                          (mock/cookie :value auth-token)
+                                                          (mock/json-body {:projected_result true
+                                                                           :bet_amount       300})))
+
+          user-place-prop-bet-resp2 ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                                          (mock/cookie :value auth-token)
+                                                          (mock/json-body {:projected_result false
+                                                                           :bet_amount       200})))
+          user-get-prop-bet-resp ((common/test-app) (-> (mock/request :get "/user/prop-bet")
+                                                        (mock/cookie :value auth-token)))
+
+          get-body (common/parse-json-body user-get-prop-bet-resp)
+
+          current-prop-bets-response  ((common/test-app) (-> (mock/request :get "/leaderboard/prop-bets")))
+
+          ;;admin end prop bet
+          {:keys [auth-token] login-resp :response} (login)
+          end-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop/end")
+                                                   (mock/cookie :value auth-token)
+                                                   (mock/json-body {:result false})))
+
+          _ (is (= 500 (-> (get-user auth-token) :body :user/cash)))
+
+          weekly-leader-resp  ((common/test-app) (-> (mock/request :get "/leaderboard/weekly-prop-bets")))
+
+          ;;admin end event
+          {:keys [auth-token] login-resp :response} (login)
+          resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                      (mock/cookie :value auth-token)))]
+
+      (is (= 200 (:status create-event-resp)))
+      (is (= 200 (:status create-prop-bet-resp)))
+      (is (= 200 (:status user-place-prop-bet-resp)))
+
+      (is (= 200 (:status user-get-prop-bet-resp)))
+      (is (= [#:bet{:amount            300
+                    :projected-result? true}
+              #:bet{:amount            200
+                    :projected-result? false}]
+             (mapv #(dissoc % :bet/time) get-body)))
+
+      (is (= 200 (:status current-prop-bets-response)))
+      (is (= {:false {:bets  [{:bet/amount 200
+                              :user/name  "queefburglar"}]
+                     :odds  2.5
+                     :total 200}
+             :true  {:bets  [{:bet/amount 300
+                              :user/name  "queefburglar"}]
+                     :odds  1.666666666666667
+                     :total 300}}
+             (common/parse-json-body current-prop-bets-response)))
+
+      (is (= 200 (:status weekly-leader-resp)))
+      (is (= [{:payout    500
+               :user_name "queefburglar"}]
              (common/parse-json-body weekly-leader-resp)))
 
       (is (= 200 (:status end-prop-bet-resp)))

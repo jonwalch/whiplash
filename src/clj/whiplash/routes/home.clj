@@ -46,6 +46,7 @@
    ["/" {:get home-page}]
    ["/about" {:get home-page}]
    ["/account" {:get home-page}]
+   ["/control" {:get home-page}]
 
    ;; admin only endpoints
    ["/admin"
@@ -54,7 +55,7 @@
       {:post {:summary    "Create a new event"
               :middleware [middleware/wrap-admin]
               :parameters {:body {:title       string?
-                                  :twitch-user string?}}
+                                  :twitch_user string?}}
               :handler    (fn [req]
                             (event/create-event req))}}]
 
@@ -172,6 +173,7 @@
     ["/password"
      {:post    {:summary    "update a user's password"
                 :parameters {:body {:password   string?}}
+                :middleware [middleware/wrap-restricted]
                 :handler    (fn [req]
                               (user/update-password req))}}]
 

@@ -18,14 +18,4 @@ const defaultShitState: loggedInState = {
 };
 
 const LoginContext = createContext<loggedInState>(defaultShitState);
-
-// const LoginProvider = (props: any) => {
-//   const [loggedInState, setLoggedInState] = useState(defaultLoggedIn);
-//   return (
-//     <LoginContext.Provider value={{loggedInState: loggedInState, setLoggedInState: setLoggedInState}}>
-//       {props.children}
-//     </LoginContext.Provider>
-//   );
-// };
-
 export { LoginContext};

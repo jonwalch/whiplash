@@ -26,7 +26,7 @@
 
 (defn payout-for-bet
   [{:keys [bet-stats bet/amount team/id team/winner]}]
-  (when winner
+  (when-not (nil? winner)
     (let [payout (double (* amount
                             (or (-> bet-stats
                                     (get winner)

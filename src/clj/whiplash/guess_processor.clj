@@ -101,7 +101,7 @@
 
 (def ten-seconds (* 1000 10))
 
-(mount/defstate guess-processor
+#_(mount/defstate guess-processor
                 :start
                 (set-interval process-bets ten-seconds)
 

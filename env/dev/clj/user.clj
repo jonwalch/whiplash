@@ -21,11 +21,15 @@
                                    :email      email
                                    :password   "11111111"
                                    :user_name  user-name}})
-  (let [{:keys [user/verify-token] :as user} (d/pull (d/db (:conn db/datomic-cloud))
+  (let [user (db/find-user-by-email email)
+        {:keys [user/verify-token]} (d/pull (d/db (:conn db/datomic-cloud))
                                                      '[:user/verify-token]
-                                                     (db/find-user-by-email email))]
+                                                     user)]
     (user/verify-email {:body-params {:email email
-                                      :token verify-token}})))
+                                      :token verify-token}})
+    (d/transact (:conn db/datomic-cloud)
+                {:tx-data [{:db/id user
+                            :user/status :user.status/admin}]})))
 
 (defn- add-many-users
   [num-users]
@@ -53,6 +57,7 @@
   (start))
 
 (comment
+  (restart)
   (start)
   (stop)
   (add-many-users 10)

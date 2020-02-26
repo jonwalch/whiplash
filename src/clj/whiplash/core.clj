@@ -4,7 +4,7 @@
     [whiplash.nrepl :as nrepl]
     [luminus.http-server :as http]
     [whiplash.config :refer [env]]
-    [whiplash.guess-processor :refer [guess-processor]]
+    ;[whiplash.guess-processor :refer [guess-processor]]
     [whiplash.routes.services.stream :refer [cached-streams]]
     [clojure.tools.cli :refer [parse-opts]]
     [whiplash.db.core :refer [datomic-cloud]]

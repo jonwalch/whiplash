@@ -5,12 +5,13 @@
 
 (defn create-event
   [{:keys [body-params] :as req}]
-  (let [{:keys [title twitch-user]} body-params]
+  ;; TODO validation of twitch and twitch_user
+  (let [{:keys [title twitch_user]} body-params]
     (if (nil? (db/find-ongoing-event))
       (do
         (db/create-event {:title       title
-                          :twitch-user twitch-user})
-        (ok))
+                          :twitch-user twitch_user})
+        (ok {}))
       (method-not-allowed {:message "Cannot create event, one is already ongoing"}))))
 
 (defn get-current-event
@@ -22,7 +23,7 @@
                   :event/twitch-user
                   :event/title]
                 event))
-    (not-found)))
+    (not-found {})))
 
 (defn end-current-event
   [{:keys [body-params] :as req}]
@@ -37,4 +38,4 @@
 
       :else
       (do (db/end-event event)
-          (ok)))))
+          (ok {})))))

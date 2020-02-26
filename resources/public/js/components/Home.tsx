@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import {Header} from "./Header";
 import {Footer} from "./Footer";
 import {getUser} from "../common/getUser";
+import {getEvent, getProp} from "../common/stream";
 
 const { install } = require('ga-gtag');
 
@@ -19,20 +20,14 @@ export interface Opponent {
   teamID: number;
 }
 
-export const defaultTeam : Opponent = { teamName: "", teamID: -1 }
-
-const failedToFetch : string = "failed to fetch stream"
+const failedToFetch : string = "failed to fetch"
 
 export function Home(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
-  const [team, setTeam] = useState<Opponent>(defaultTeam);
-  const [streamURL, setStreamURL] = useState("");
-  const [twitchUsername, setTwitchUsername] = useState("");
+  const [twitchUsername, setTwitchUsername] = useState<null | string>(null);
   const [matchName, setMatchName] = useState("");
-  const [matchID, setMatchID] = useState(-1);
-  const [currentGame, setCurrentGame] = useState<any>({});
-  const [opponents, setOpponents] = useState<Opponent[]>([]);
-  const [chatIsOpen, setChatIsOpen] = useState<boolean>(true)
+  const [chatIsOpen, setChatIsOpen] = useState<boolean>(true);
+  const [propText, setPropText] = useState<null | string>(null);
 
   const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
@@ -41,52 +36,71 @@ export function Home(props: any) {
       // Install Google tag manager
       install('UA-154430212-2')
     }
-    getStream();
+
+    getEvent().then((event) => {
+      setTwitchUsername(event["event/twitch-user"] || failedToFetch)
+      setMatchName(event["event/title"])
+
+    });
+    getProp().then((event) => {
+      setPropText(event["proposition/text"])
+    });
+    //getStream();
   }, []);
 
-  useEffect(() => {
-    if (loggedInState.userName) {
-      getUser(setLoggedInState);
-    } //teamName changes when a user makes a guess
-  }, [team.teamName]);
+  // useEffect(() => {
+  //   if (loggedInState.userName) {
+  //     getUser(setLoggedInState);
+  //   } //teamName changes when a user makes a guess
+  // }, [team.teamName]);
 
   useInterval(() => {
-    getStream();
+    // getStream();
+    getProp().then((event) => {
+      setPropText(event["proposition/text"])
+    });
+  }, 3000);
+
+  useInterval(() => {
+    getEvent().then((event) => {
+      setTwitchUsername(event["event/twitch-user"] || failedToFetch)
+      setMatchName(event["event/title"])
+    });
   }, 10000);
 
-  const getStream = async () => {
-    const response = await fetch(baseUrl + "stream", {
-      headers: { "Content-Type": "application/json" }
-    });
-    if (response.status == 200) {
-      const resp = await response.json();
-      setStreamURL(resp["live_url"]);
-      setTwitchUsername(resp["twitch/username"]);
-      setMatchName(resp["name"]);
-      setMatchID(resp["id"]);
-      setCurrentGame(resp["whiplash/current-game"]);
-
-      let parsedOpponents: Opponent[] = [];
-      resp["opponents"].forEach((element: any) => {
-        parsedOpponents.push({
-          teamID: element.opponent.id,
-          teamName: element.opponent.name
-        });
-      });
-      setOpponents(parsedOpponents);
-    } else {
-      //right now would be a 204
-      setStreamURL(failedToFetch);
-      setTwitchUsername("");
-      setMatchName("");
-      setMatchID(-1);
-      setCurrentGame({});
-    }
-  };
+  // const getStream = async () => {
+  //   const response = await fetch(baseUrl + "stream", {
+  //     headers: { "Content-Type": "application/json" }
+  //   });
+  //   if (response.status == 200) {
+  //     const resp = await response.json();
+  //     // setStreamURL(resp["live_url"]);
+  //     setTwitchUsername(resp["twitch/username"]);
+  //     setMatchName(resp["name"]);
+  //     setMatchID(resp["id"]);
+  //     setCurrentGame(resp["whiplash/current-game"]);
+  //
+  //     let parsedOpponents: Opponent[] = [];
+  //     resp["opponents"].forEach((element: any) => {
+  //       parsedOpponents.push({
+  //         teamID: element.opponent.id,
+  //         teamName: element.opponent.name
+  //       });
+  //     });
+  //     setOpponents(parsedOpponents);
+  //   } else {
+  //     //right now would be a 204
+  //     // setStreamURL(failedToFetch);
+  //     setTwitchUsername("");
+  //     setMatchName("");
+  //     setMatchID(-1);
+  //     setCurrentGame({});
+  //   }
+  // };
 
   const renderContent = () => {
     // Loading
-    if (streamURL == "") {
+    if (twitchUsername == null) {
       return (
           <div className="twitch is-inactive">
             <div className="container">
@@ -98,13 +112,13 @@ export function Home(props: any) {
           </div>
       );
       // No stream to show
-    } else if (streamURL == failedToFetch) {
+    } else if (twitchUsername == failedToFetch) {
       return (
           <div className="twitch is-inactive">
             <div className="container">
               <h2 className="twitch__title">Whiplash is taking a nap</h2>
               <div className="twitch__placeholder">
-                <p className="twitch__subtitle">Hang tight, we'll find a CS:GO match for you soon.</p>
+                <p className="twitch__subtitle">Hang tight, we'll have a watch party soon.</p>
                 <p>In the meantime, bookmark this page and check back often for new chances to win while watching.</p>
               </div>
             </div>
@@ -143,12 +157,13 @@ export function Home(props: any) {
               }
             </div>
             <Vote
-                opponents={opponents}
-                team={team}
-                setTeam={setTeam}
-                matchID={matchID}
+                propText={propText}
+                // opponents={opponents}
+                // team={team}
+                // setTeam={setTeam}
+                // matchID={matchID}
                 matchName={matchName}
-                currentGame={currentGame}
+                // currentGame={currentGame}
                 isProduction={isProduction}
             />
           </>
@@ -163,8 +178,8 @@ export function Home(props: any) {
           <div className="home__layout">
             {renderContent()}
             <Bets
-              matchID={matchID}
-              currentGame={currentGame}
+              // matchID={matchID}
+              // currentGame={currentGame}
             />
             <Leaderboard />
           </div>

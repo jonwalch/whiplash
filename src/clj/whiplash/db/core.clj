@@ -352,18 +352,20 @@
                   (fn [{:keys [bet/projected-result? bet/amount] :as bet}]
                     (-> bet
                         (assoc :bet/payout
-                               (payouts/payout-for-bet
-                                 {:bet-stats   (-> bets
-                                                   (payouts/game-bet-stats :bet/projected-result?)
-                                                   (payouts/team-odds))
-                                  :bet/amount  amount
-                                  :team/id     projected-result?
-                                  :team/winner result?}))))
+                               (or (payouts/payout-for-bet
+                                     {:bet-stats   (-> bets
+                                                       (payouts/game-bet-stats :bet/projected-result?)
+                                                       (payouts/team-odds))
+                                      :bet/amount  amount
+                                      :team/id     projected-result?
+                                      :team/winner result?})
+                                   (bigint 0)))))
                   bets)
         user-id->total-payout (->> payouts
                                    (group-by :user/_prop-bets)
                                    (map (fn [[user-id pbets]]
-                                          {(:db/id user-id) (apply + (map :bet/payout pbets))}))
+                                          {(:db/id user-id) (or (apply + (map :bet/payout pbets))
+                                                                0)}))
                                    (apply merge))
         payout-txs (mapv #(-> %
                               (dissoc :user/_prop-bets :bet/amount :bet/projected-result?)
@@ -371,11 +373,13 @@
                          payouts)
         user-cash-txs (mapv
                         (fn [[user-id total-payout]]
-                          (let [current-cash (:user/cash (d/pull db '[:user/cash] user-id))]
-                            [:db/cas user-id :user/cash current-cash
-                             (if (< 100 (+ current-cash total-payout))
-                               (+ current-cash total-payout)
-                               (bigint 100))]))
+                          (let [current-cash (:user/cash (d/pull db '[:user/cash] user-id))
+                                new-balance (+ current-cash total-payout)]
+                            (do
+                              [:db/cas user-id :user/cash current-cash
+                               (if (< 100 new-balance)
+                                 new-balance
+                                 (bigint 100))])))
                         user-id->total-payout)]
 
     (d/transact (:conn datomic-cloud)

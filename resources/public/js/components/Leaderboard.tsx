@@ -19,13 +19,13 @@ export function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState<Leader[]>([]);
 
   useEffect(() => {
-    getWeeklyLeaderboard();
+    getWeeklyPropLeaderboard();
     getLeaderboard();
   }, []);
 
   //every 5 minutes
   useInterval(() => {
-    getWeeklyLeaderboard();
+    getWeeklyPropLeaderboard();
     getLeaderboard();
   }, 300000);
 
@@ -65,6 +65,17 @@ export function Leaderboard() {
 
   const getWeeklyLeaderboard = async () => {
     const response = await fetch(baseUrl + "leaderboard/weekly", {
+      headers: { "Content-Type": "application/json" },
+      method: "GET",
+      mode: "same-origin",
+      redirect: "error"
+    });
+    const resp = await response.json();
+    setWeeklyLeaderboard(resp);
+  };
+
+  const getWeeklyPropLeaderboard = async () => {
+    const response = await fetch(baseUrl + "leaderboard/weekly-prop-bets", {
       headers: { "Content-Type": "application/json" },
       method: "GET",
       mode: "same-origin",

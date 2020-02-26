@@ -110,8 +110,10 @@
 
 (defn valid-admin-auth?
   [req]
-  (let [{:keys [status]} (req->token req)]
-    (boolean (and (valid-cookie-auth? req)
+  (let [{:keys [user exp status]} (req->token req)]
+    (boolean (and (string? user)
+                  (int? exp)
+                  (< (time/to-millis) exp)
                   (= "user.status/admin" status)))))
 
 (defn authed-req->user-name
