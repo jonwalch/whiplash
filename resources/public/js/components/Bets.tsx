@@ -54,6 +54,15 @@ export function Bets(props: any) {
     }
   };
 
+  const boolStringToDisplay = (str : string) => {
+    if (str == "true") {
+      return "Yes";
+    } else if (str == "false") {
+      return "No";
+    }
+    return str;
+  };
+
   const renderBets = () => {
     return (
       <div className="bets">
@@ -63,8 +72,7 @@ export function Bets(props: any) {
           </header>
           <table className="bets__table">
             {bets.map((el: any) => {
-              // TODO change teamnames from true and false to yes and no on client side
-              const teamName = el[0];
+              const teamName = boolStringToDisplay(el[0]);
               const teamBets = el[1];
               return (
                 <tbody>
