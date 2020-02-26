@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useInterval } from "../common";
 import { baseUrl } from "../config/const";
+import {failedToFetch} from "./Home";
 
 export function Bets(props: any) {
   const [bets, setBets] = useState<any>(null);
@@ -9,9 +10,13 @@ export function Bets(props: any) {
       getPropBets();
   }, []);
 
+  // TODO: only when there's an event
   useInterval(() => {
     // if (props.currentGame && props.currentGame.id) {
+
+    if (props.twitchUsername != failedToFetch) {
       getPropBets();
+    }
     // } else {
     //   setBets(null);
     // }

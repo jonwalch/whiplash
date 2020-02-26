@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: whiplash
-          image: 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:0.1.62
+          image: 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:0.1.63
           imagePullPolicy: IfNotPresent
           ports:
             - name: container-port
@@ -26,7 +26,8 @@ spec:
               path: /v1/healthz
               port: container-port
             initialDelaySeconds: 60
-            periodSeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /v1/healthz

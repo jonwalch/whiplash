@@ -20,7 +20,7 @@ export interface Opponent {
   teamID: number;
 }
 
-const failedToFetch : string = "failed to fetch"
+export const failedToFetch : string = "failed to fetch"
 
 export function Home(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
@@ -55,10 +55,11 @@ export function Home(props: any) {
   // }, [team.teamName]);
 
   useInterval(() => {
-    // getStream();
-    getProp().then((event) => {
-      setPropText(event["proposition/text"])
-    });
+    if (twitchUsername != failedToFetch) {
+        getProp().then((event) => {
+            setPropText(event["proposition/text"])
+        });
+    }
   }, 3000);
 
   useInterval(() => {
@@ -178,6 +179,7 @@ export function Home(props: any) {
           <div className="home__layout">
             {renderContent()}
             <Bets
+                twitchUsername={twitchUsername}
               // matchID={matchID}
               // currentGame={currentGame}
             />

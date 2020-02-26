@@ -13,8 +13,7 @@ export function Vote(props: any) {
     if (projectedResult == null) {
       return "none"
     }
-    else if (projectedResult)
-    {
+    else if (projectedResult) {
       return 'Yes';
     }
     return 'No';
