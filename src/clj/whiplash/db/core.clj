@@ -382,6 +382,14 @@
                                  (bigint 100))])))
                         user-id->total-payout)]
 
+    (log/info (vec
+                (concat payout-txs
+                        user-cash-txs
+                        [[:db/cas prop-bet-id :proposition/running? true false]
+                         {:db/id                prop-bet-id
+                          :proposition/end-time (time/to-date)
+                          :proposition/result?  result?}])))
+
     (d/transact (:conn datomic-cloud)
                 {:tx-data (vec
                             (concat payout-txs
