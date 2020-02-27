@@ -82,20 +82,24 @@
           total-amounts-and-odds (-> current-bets
                                      (payouts/game-bet-stats :bet/projected-result?)
                                      (payouts/team-odds))]
-      (ok (or (->> current-bets
-                   (group-by :bet/projected-result?)
-                   (map (fn [[result bets]]
-                          (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
-                            {result {:bets (sort-by :bet/amount
-                                                    #(compare %2 %1)
-                                                    (->> bets
-                                                         (group-by :user/name)
-                                                         (mapv (fn [[user-name bets]]
-                                                                 {:user/name user-name
-                                                                  :bet/amount (apply +
-                                                                                     (map :bet/amount bets))}))))
-                                     :total total
-                                     :odds  odds}})))
-                   (apply merge))
-              {})))
-    (not-found {:message "no ongoing prop bet"})))
+      {:status 200
+       :headers {"Cache-Control" "max-age=3"}
+       :body (or (->> current-bets
+                     (group-by :bet/projected-result?)
+                     (map (fn [[result bets]]
+                            (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
+                              {result {:bets (sort-by :bet/amount
+                                                      #(compare %2 %1)
+                                                      (->> bets
+                                                           (group-by :user/name)
+                                                           (mapv (fn [[user-name bets]]
+                                                                   {:user/name user-name
+                                                                    :bet/amount (apply +
+                                                                                       (map :bet/amount bets))}))))
+                                       :total total
+                                       :odds  odds}})))
+                     (apply merge))
+                {})})
+    {:status 404
+     :headers {"Cache-Control" "max-age=3"}
+     :body {:message "no ongoing prop bet"}}))
