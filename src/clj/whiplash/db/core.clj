@@ -394,8 +394,8 @@
                 {:tx-data (vec
                             (concat payout-txs
                                     user-cash-txs
-                                    [[:db/cas prop-bet-id :proposition/running? true false]
-                                     {:db/id                prop-bet-id
+                                    [{:db/id                prop-bet-id
+                                      :proposition/running? false
                                       :proposition/end-time (time/to-date)
                                       :proposition/result?  result?}]))})))
 
