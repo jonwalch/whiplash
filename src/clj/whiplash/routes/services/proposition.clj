@@ -34,8 +34,7 @@
                       prop-bet)}
     {:status 404
      :headers {"Cache-Control" "max-age=3"}
-     :body {}}
-    (not-found {})))
+     :body {}}))
 
 (defn end-current-prop-bet
   [{:keys [body-params] :as req}]
