@@ -317,8 +317,8 @@
 (defn end-event
   [event-id]
   (d/transact (:conn datomic-cloud)
-              {:tx-data [[:db/cas event-id :event/running? true false]
-                         {:db/id event-id
+              {:tx-data [{:db/id event-id
+                          :event/running? false
                           :event/end-time (time/to-date)}]}))
 
 (defn find-ongoing-prop-bet
@@ -381,14 +381,6 @@
                                  new-balance
                                  (bigint 100))])))
                         user-id->total-payout)]
-
-    (log/info (vec
-                (concat payout-txs
-                        user-cash-txs
-                        [[:db/cas prop-bet-id :proposition/running? true false]
-                         {:db/id                prop-bet-id
-                          :proposition/end-time (time/to-date)
-                          :proposition/result?  result?}])))
 
     (d/transact (:conn datomic-cloud)
                 {:tx-data (vec
