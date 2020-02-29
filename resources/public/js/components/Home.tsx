@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { Vote } from "./Vote";
 import { baseUrl } from "../config/const";
-import { Leaderboard } from "./Leaderboard";
+import {EventScore, Leaderboard} from "./Leaderboard";
 import { useInterval, getCSRFToken, scrollToTop } from "../common";
 import { LoginContext } from "../contexts/LoginContext";
 import { Bets } from "./Bets";
@@ -13,22 +13,23 @@ import {getEvent, getProp} from "../common/stream";
 
 const { install } = require('ga-gtag');
 
-declare const Twitch: any;
-
-export interface Opponent {
-  teamName: string;
-  teamID: number;
-}
+// declare const Twitch: any;
+//
+// export interface Opponent {
+//   teamName: string;
+//   teamID: number;
+// }
 
 export const failedToFetch : string = "failed to fetch"
 
 export function Home(props: any) {
-  const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [twitchUsername, setTwitchUsername] = useState<null | string>(null);
   const [matchName, setMatchName] = useState("");
   const [chatIsOpen, setChatIsOpen] = useState<boolean>(true);
   const [propText, setPropText] = useState<null | string>(null);
 
+  // child state
+  const [eventScoreLeaderboard, setEventScoreLeaderboard] = useState<EventScore[]>([]);
   const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
   useEffect(() => {
@@ -40,7 +41,6 @@ export function Home(props: any) {
     getEvent().then((event) => {
       setTwitchUsername(event["event/twitch-user"] || failedToFetch)
       setMatchName(event["event/title"])
-
     });
     getProp().then((event) => {
       setPropText(event["proposition/text"])
@@ -99,6 +99,14 @@ export function Home(props: any) {
   //   }
   // };
 
+  const lastWinner = () => {
+      const winner: EventScore = eventScoreLeaderboard[0];
+      if (winner) {
+          return winner.user_name
+      }
+      return "";
+  };
+
   const renderContent = () => {
     // Loading
     if (twitchUsername == null) {
@@ -107,7 +115,7 @@ export function Home(props: any) {
             <div className="container">
               <h2 className="twitch__title">Loading...</h2>
               <div className="twitch__placeholder">
-                <p className="twitch__subtitle">Hang tight, your CS:GO match is loading.</p>
+                <p className="twitch__subtitle">Hang tight, your event is loading.</p>
               </div>
             </div>
           </div>
@@ -118,10 +126,11 @@ export function Home(props: any) {
           <div className="twitch is-inactive">
             <div className="container">
               <h2 className="twitch__title">Whiplash is taking a nap</h2>
-              <div className="twitch__placeholder">
-                <p className="twitch__subtitle">Hang tight, we'll have a watch party soon.</p>
-                <p>In the meantime, bookmark this page and check back often for new chances to win while watching.</p>
-              </div>
+                <div className="twitch__placeholder">
+                    <p className="twitch__subtitle">Last Event Winner: {lastWinner()}</p>
+                    <p>Hang tight, we'll have a watch party soon.</p>
+                    <p>In the meantime, bookmark this page and check back often for new chances to win while watching.</p>
+                </div>
             </div>
           </div>
       );
@@ -183,7 +192,11 @@ export function Home(props: any) {
               // matchID={matchID}
               // currentGame={currentGame}
             />
-            <Leaderboard />
+              <Leaderboard
+                  twitchUsername={twitchUsername}
+                  eventScoreLeaderboard={eventScoreLeaderboard}
+                  setEventScoreLeaderboard={setEventScoreLeaderboard}
+              />
           </div>
         </main>
         <Footer/>

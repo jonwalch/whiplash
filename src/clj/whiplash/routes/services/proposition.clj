@@ -25,16 +25,12 @@
 (defn get-current-prop-bet
   [req]
   (if-let [prop-bet (db/find-ongoing-prop-bet)]
-    {:status  200
-     :headers {"Cache-Control" "max-age=3"}
-     :body    (d/pull (d/db (:conn db/datomic-cloud))
-                      '[:proposition/start-time
-                        :proposition/text
-                        :proposition/running?]
-                      prop-bet)}
-    {:status 404
-     :headers {"Cache-Control" "max-age=3"}
-     :body {}}))
+    (ok (d/pull (d/db (:conn db/datomic-cloud))
+                '[:proposition/start-time
+                  :proposition/text
+                  :proposition/running?]
+                prop-bet))
+    (not-found {})))
 
 (defn end-current-prop-bet
   [{:keys [body-params] :as req}]

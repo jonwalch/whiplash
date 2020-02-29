@@ -17,17 +17,13 @@
 (defn get-current-event
   [{:keys [body-params] :as req}]
   (if-let [event (db/find-ongoing-event)]
-    {:status 200
-     :headers {"Cache-Control" "max-age=3"}
-     :body (d/pull (d/db (:conn db/datomic-cloud))
-                   '[:event/start-time
-                     :event/running?
-                     :event/twitch-user
-                     :event/title]
-                   event)}
-    {:status 404
-     :headers {"Cache-Control" "max-age=3"}
-     :body {}}))
+    (ok (d/pull (d/db (:conn db/datomic-cloud))
+                '[:event/start-time
+                  :event/running?
+                  :event/twitch-user
+                  :event/title]
+                event))
+    (not-found {})))
 
 (defn end-current-event
   [{:keys [body-params] :as req}]

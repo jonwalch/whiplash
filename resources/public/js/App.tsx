@@ -20,7 +20,7 @@ export const App = () => {
         if (loggedInState.userName) {
             getUser(setLoggedInState);
         }
-    }, 10000);
+    }, 5000);
 
     return (
         <LoginContext.Provider value={{loggedInState: loggedInState, setLoggedInState: setLoggedInState}}>

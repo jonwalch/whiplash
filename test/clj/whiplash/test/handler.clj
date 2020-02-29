@@ -678,6 +678,8 @@
                                     :user/status :user.status/admin}]})
           {:keys [auth-token] login-resp :response} (login)
 
+          event-score-before-event-creation ((common/test-app)
+                                            (-> (mock/request :get "/leaderboard/event")))
           title "Dirty Dan's Delirious Dance Party"
           twitch-user "drdisrespect"
           create-event-resp ((common/test-app) (-> (mock/request :post "/admin/event")
@@ -685,6 +687,8 @@
                                                    (mock/json-body {:title       title
                                                                     :twitch_user twitch-user})))
 
+          event-score-before-prop-creation ((common/test-app)
+                                            (-> (mock/request :get "/leaderboard/event")))
           text "Will Jon wipeout 2+ times this round?"
           create-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop")
                                                       (mock/cookie :value auth-token)
@@ -730,12 +734,14 @@
 
           current-prop-bets-response  ((common/test-app) (-> (mock/request :get "/leaderboard/prop-bets")))
 
+          event-score-before-bets ((common/test-app) (-> (mock/request :get "/leaderboard/event")))
           ;;admin end prop bet
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp ((common/test-app) (-> (mock/request :post "/admin/prop/end")
                                                    (mock/cookie :value auth-token)
                                                    (mock/json-body {:result true})))
 
+          event-score-before-end ((common/test-app) (-> (mock/request :get "/leaderboard/event")))
           ;;admin didnt bet
           _ (is (= 500 (-> (get-user auth-token) :body :user/cash)))
 
@@ -749,8 +755,10 @@
 
           ;;admin end event
           {:keys [auth-token] login-resp :response} (login)
-          resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
-                                      (mock/cookie :value auth-token)))]
+          end-event-resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                      (mock/cookie :value auth-token)))
+
+          event-score-after-end ((common/test-app) (-> (mock/request :get "/leaderboard/event")))]
 
       (is (= 200 (:status create-event-resp)))
       (is (= 200 (:status create-prop-bet-resp)))
@@ -772,7 +780,9 @@
                     :projected-result? false}
               #:bet{:amount            400
                     :projected-result? true}]
-             (mapv #(dissoc % :bet/time) get-body2)))
+             (->> get-body2
+                  (mapv #(dissoc % :bet/time))
+                  (sort-by :bet/amount))))
 
       (is (= 200 (:status current-prop-bets-response)))
       (is (= {:false {:bets  [{:bet/amount 300
@@ -797,7 +807,31 @@
              (common/parse-json-body weekly-leader-resp)))
 
       (is (= 200 (:status end-prop-bet-resp)))
-      (is (= 200 (:status resp))))))
+      (is (= 200 (:status end-event-resp)))
+
+      (is (= 404
+             (:status event-score-before-event-creation)
+             (:status event-score-before-prop-creation)))
+
+      (is (= []
+             (common/parse-json-body event-score-before-event-creation)
+             (common/parse-json-body event-score-before-prop-creation)))
+
+      (is (= 200 (:status event-score-before-bets)))
+      (is (= [{:score     0
+               :user_name "donniedarko"}
+              {:score     0
+               :user_name "kittycuddler420"}]
+             (common/parse-json-body event-score-before-bets)))
+
+      (is (= 200 (:status event-score-before-end)))
+      (is (= 200 (:status event-score-after-end)))
+      (is (= [{:score     166
+               :user_name "kittycuddler420"}
+              {:score     -167
+               :user_name "donniedarko"}]
+             (common/parse-json-body event-score-before-end)
+             (common/parse-json-body event-score-after-end))))))
 
 (deftest no-payout-doesnt-break
   (testing ""
@@ -918,12 +952,14 @@
 
           ;;admin end event
           {:keys [auth-token] login-resp :response} (login)
-          resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
-                                      (mock/cookie :value auth-token)))]
+          end-event-resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+                                      (mock/cookie :value auth-token)))
+          event-score-resp ((common/test-app) (-> (mock/request :get "/leaderboard/event")))]
 
       (is (= 200 (:status create-event-resp)))
       (is (= 200 (:status create-prop-bet-resp)))
       (is (= 200 (:status user-place-prop-bet-resp)))
+      (is (= 200 (:status user-place-prop-bet-resp2)))
 
       (is (= 200 (:status user-get-prop-bet-resp)))
       (is (= [#:bet{:amount            300
@@ -949,4 +985,9 @@
              (common/parse-json-body weekly-leader-resp)))
 
       (is (= 200 (:status end-prop-bet-resp)))
-      (is (= 200 (:status resp))))))
+      (is (= 200 (:status end-event-resp)))
+
+      (is (= 200 (:status event-score-resp)))
+      (is (= [{:score     0
+               :user_name "queefburglar"}]
+             (common/parse-json-body event-score-resp))))))

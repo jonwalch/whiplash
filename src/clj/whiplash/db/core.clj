@@ -292,27 +292,38 @@
        (take 10)
        vec))
 
+(defn find-last-event
+  ([]
+   (find-last-event (d/db (:conn datomic-cloud))))
+  ([db]
+   (->>
+     (d/q {:query '[:find ?event ?end-time
+                    :where [?event :event/running? false]
+                    [?event :event/end-time ?end-time]]
+           :args  [db]})
+     (sort-by second #(compare %2 %1))
+     ffirst)))
+
 ;; Prop betting MVP db functions
 
 (defn find-ongoing-event
-  []
-  (let [db (d/db (:conn datomic-cloud))]
-    (ffirst
-      (d/q {:query '[:find ?event
-                     :where [?event :event/running? true]]
-            :args  [db]}))))
+  ([]
+   (find-ongoing-event (d/db (:conn datomic-cloud))))
+  ([db]
+   (ffirst
+     (d/q {:query '[:find ?event
+                    :where [?event :event/running? true]]
+           :args  [db]}))))
 
 (defn create-event
   [{:keys [title twitch-user]}]
-  (let [result (d/transact (:conn datomic-cloud)
-                           {:tx-data [{:db/id             "temp"
-                                       :event/title       title
-                                       :event/twitch-user twitch-user
-                                       :event/running?    true
-                                       :event/start-time  (time/to-date)}]})
-        resolved-temp-id (some-> result :tempids (get "temp"))]
-    (d/transact (:conn datomic-cloud)
-                {:tx-data [{:whiplash/events [resolved-temp-id]}]})))
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [{:db/id             "temp"
+                          :event/title       title
+                          :event/twitch-user twitch-user
+                          :event/running?    true
+                          :event/start-time  (time/to-date)}
+                         {:whiplash/events ["temp"]}]}))
 
 (defn end-event
   [event-id]
@@ -321,6 +332,7 @@
                           :event/running? false
                           :event/end-time (time/to-date)}]}))
 
+;; TODO make this depend on an event
 (defn find-ongoing-prop-bet
   ([]
    (find-ongoing-prop-bet (d/db (:conn datomic-cloud))))
@@ -331,9 +343,9 @@
            :args  [db]}))))
 
 (defn create-prop-bet
-  [{:keys [text event-id]}]
+  [{:keys [text event-eid]}]
   (d/transact (:conn datomic-cloud)
-              {:tx-data [{:db/id              event-id
+              {:tx-data [{:db/id              event-eid
                           :event/propositions [{:proposition/text       text
                                                 :proposition/start-time (time/to-date)
                                                 :proposition/running?   true}]}]}))
@@ -364,8 +376,9 @@
         user-id->total-payout (->> payouts
                                    (group-by :user/_prop-bets)
                                    (map (fn [[user-id pbets]]
-                                          {(:db/id user-id) (or (apply + (map :bet/payout pbets))
-                                                                0)}))
+                                          {(:db/id user-id) (apply +
+                                                                   0
+                                                                   (keep :bet/payout pbets))}))
                                    (apply merge))
         payout-txs (mapv #(-> %
                               (dissoc :user/_prop-bets :bet/amount :bet/projected-result?)

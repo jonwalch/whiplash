@@ -3,13 +3,14 @@
             [whiplash.db.core :as db]
             [whiplash.time :as time]
             [datomic.client.api :as d]
-            [whiplash.payouts :as payouts]))
+            [whiplash.payouts :as payouts]
+            [clojure.set :as set]
+            [clojure.tools.logging :as log]))
 
 (defn all-time-top-ten
   [{:keys [params] :as req}]
   (ok (db/find-top-ten)))
 
-;; TODO maybe cache this every 10 minutes or so if it takes too long
 (defn weekly-leaderboard
   [{:keys [params] :as req}]
   (let [weekly-leaderboard (->> (db/find-this-week-payout-leaderboard (time/to-date (time/last-monday)))
@@ -23,7 +24,6 @@
                                 vec)]
     (ok weekly-leaderboard)))
 
-;; TODO maybe cache this every 10 minutes or so if it takes too long
 (defn weekly-prop-bet-leaderboard
   [{:keys [params] :as req}]
   (let [weekly-leaderboard (->> (db/find-this-week-prop-bet-payout-leaderboard (time/to-date (time/last-monday)))
@@ -36,6 +36,40 @@
                                 (sort-by :payout #(compare %2 %1))
                                 vec)]
     (ok weekly-leaderboard)))
+
+(defn event-score-leaderboard
+  [{:keys [params] :as req}]
+  (let [db (d/db (:conn db/datomic-cloud))
+        props (:event/propositions (d/pull db
+                                           '[:event/propositions]
+                                           (or (db/find-ongoing-event db)
+                                               (db/find-last-event db))))]
+    (if props
+      (ok
+        (->> props
+             (mapcat (fn [{:keys [db/id]}]
+                       (:bet/_proposition
+                         (d/pull db '[:bet/_proposition] id))))
+             (map :db/id)
+             (map (fn [id]
+                    (-> db
+                        (d/pull '[:bet/amount :bet/payout :user/_prop-bets] id)
+                        (set/rename-keys {:user/_prop-bets :user/name})
+                        (update :user/name (fn [{:keys [db/id] :as user}]
+                                             (:user/name
+                                               (d/pull db '[:user/name] id)))))))
+             (group-by :user/name)
+             (map (fn [[user bets]]
+                    {:user_name user
+                     :score     (apply +
+                                       0
+                                       (keep (fn [{:keys [bet/amount bet/payout]}]
+                                              (when (number? payout)
+                                                (- payout amount)))
+                                            bets))}))
+             (sort-by :score #(compare %2 %1))
+             vec))
+      (not-found []))))
 
 (defn get-bets
   [{:keys [params] :as req}]
@@ -82,24 +116,20 @@
           total-amounts-and-odds (-> current-bets
                                      (payouts/game-bet-stats :bet/projected-result?)
                                      (payouts/team-odds))]
-      {:status 200
-       :headers {"Cache-Control" "max-age=3"}
-       :body (or (->> current-bets
-                     (group-by :bet/projected-result?)
-                     (map (fn [[result bets]]
-                            (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
-                              {result {:bets (sort-by :bet/amount
-                                                      #(compare %2 %1)
-                                                      (->> bets
-                                                           (group-by :user/name)
-                                                           (mapv (fn [[user-name bets]]
-                                                                   {:user/name user-name
-                                                                    :bet/amount (apply +
-                                                                                       (map :bet/amount bets))}))))
-                                       :total total
-                                       :odds  odds}})))
-                     (apply merge))
-                {})})
-    {:status 404
-     :headers {"Cache-Control" "max-age=3"}
-     :body {:message "no ongoing prop bet"}}))
+      (ok (or (->> current-bets
+                   (group-by :bet/projected-result?)
+                   (map (fn [[result bets]]
+                          (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
+                            {result {:bets  (sort-by :bet/amount
+                                                     #(compare %2 %1)
+                                                     (->> bets
+                                                          (group-by :user/name)
+                                                          (mapv (fn [[user-name bets]]
+                                                                  {:user/name  user-name
+                                                                   :bet/amount (apply +
+                                                                                      (map :bet/amount bets))}))))
+                                     :total total
+                                     :odds  odds}})))
+                   (apply merge))
+              {})))
+    (not-found {:message "no ongoing prop bet"})))

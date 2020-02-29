@@ -119,7 +119,11 @@
     ["/prop-bets"
      {:get  {:summary    "get all prop bets for current event"
              :handler    (fn [req]
-                           (leaderboard/get-prop-bets req))}}]]
+                           (leaderboard/get-prop-bets req))}}]
+    ["/event"
+     {:get  {:summary    "get scores from current or most recent event"
+             :handler    (fn [req]
+                           (leaderboard/event-score-leaderboard req))}}]]
 
    ["/user"
 
