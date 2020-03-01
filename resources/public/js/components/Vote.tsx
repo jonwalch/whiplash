@@ -129,7 +129,7 @@ export function Vote(props: any) {
 
   const renderPropositionText = () => {
     if (props.propText) {
-      return <p>Current Proposition: {props.propText}</p>;
+      return <p>{props.propText}</p>;
     } else {
       return <p>Next proposition soon!</p>;
     }
