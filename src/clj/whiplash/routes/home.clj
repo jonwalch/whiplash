@@ -8,6 +8,7 @@
     [whiplash.routes.services.proposition :as proposition]
     [whiplash.routes.services.leaderboard :as leaderboard]
     [whiplash.routes.services.user :as user]
+    [whiplash.routes.services.suggestion :as suggestion]
     [reitit.ring.middleware.multipart :as multipart]
     [reitit.ring.coercion :as coercion]
     [reitit.ring.middleware.muuntaja :as muuntaja]
@@ -77,7 +78,18 @@
               :middleware [middleware/wrap-admin]
               :parameters {:body {:result boolean?}}
               :handler (fn [req]
-                         (proposition/end-current-prop-bet req))}}]]]
+                         (proposition/end-current-prop-bet req))}}]]
+
+    ["/suggestion"
+     {:get  {:summary    "get prop suggestions for current event"
+             :middleware [middleware/wrap-admin]
+             :handler    (fn [req]
+                           (suggestion/get-suggestions req))}
+
+      :post {:summary    "Dismiss prop suggestions"
+             :middleware [middleware/wrap-admin]
+             :handler    (fn [req]
+                           (suggestion/dismiss-suggestions req))}}]]
 
    ;;endpoints client talks to
    ["/stream"
@@ -211,5 +223,10 @@
                                  :bet_amount int?}}
              :middleware [middleware/wrap-restricted]
              :handler    (fn [req]
-                           (user/create-prop-bet req))}}
-     ]]])
+                           (user/create-prop-bet req))}}]
+    ["/suggestion"
+     {:post {:summary    "create a prop bet suggestion"
+             :parameters {:body {:text string?}}
+             :middleware [middleware/wrap-restricted]
+             :handler    (fn [req]
+                           (user/create-suggestion req))}}]]])

@@ -222,6 +222,37 @@
       :else
       (not-found {:message "User not found."}))))
 
+(defn create-suggestion
+  [{:keys [body-params] :as req}]
+  (let [{:keys [text]} body-params
+        {:keys [user exp]} (middleware/req->token req)
+        user-eid (db/find-user-by-user-name user)
+        ongoing-event (db/find-ongoing-event)]
+    (cond
+      (nil? ongoing-event)
+      (method-not-allowed {:message "No ongoing event, cannot make suggestion"})
+
+      (empty? text)
+      (method-not-allowed {:message "Invalid text"})
+
+      (nil? user-eid)
+      (not-found {:message "User not found"})
+
+      (> (count text) 100)
+      (method-not-allowed {:message "Text is too long"})
+
+      (some? ongoing-event)
+      (if (try
+            (db/add-user-suggestion-to-event {:event-eid ongoing-event
+                                              :text text
+                                              :user-eid user-eid})
+            (catch Throwable t (log/info "transaction failed: " t)))
+        (ok {})
+        (conflict {:message "Transaction failed"}))
+
+      :else
+      (not-found {:message ""}))))
+
 (defn get-prop-bets
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)

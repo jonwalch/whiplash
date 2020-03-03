@@ -7,7 +7,8 @@
     [clojure.tools.logging :as log]
     [whiplash.db.schemas :as schemas]
     [whiplash.payouts :as payouts]
-    [clojure.string :as string]))
+    [clojure.string :as string]
+    [clj-uuid :as uuid]))
 
 ;; DO NOT USE DATOMIC ON PREM SCALAR OR COLLECTION FIND SYNTAX, IT'LL WORK LOCALLY BUT NOT IN PRODUCTION
 ;; https://github.com/ComputeSoftware/datomic-client-memdb#caveats
@@ -362,16 +363,16 @@
                               eid))))
         payouts (map
                   (fn [{:keys [bet/projected-result? bet/amount] :as bet}]
-                    (-> bet
-                        (assoc :bet/payout
-                               (or (payouts/payout-for-bet
-                                     {:bet-stats   (-> bets
-                                                       (payouts/game-bet-stats :bet/projected-result?)
-                                                       (payouts/team-odds))
-                                      :bet/amount  amount
-                                      :team/id     projected-result?
-                                      :team/winner result?})
-                                   (bigint 0)))))
+                    (assoc bet
+                      :bet/payout
+                      (or (payouts/payout-for-bet
+                            {:bet-stats   (-> bets
+                                              (payouts/game-bet-stats :bet/projected-result?)
+                                              (payouts/team-odds))
+                             :bet/amount  amount
+                             :team/id     projected-result?
+                             :team/winner result?})
+                          (bigint 0))))
                   bets)
         user-id->total-payout (->> payouts
                                    (group-by :user/_prop-bets)
@@ -380,9 +381,10 @@
                                                                    0
                                                                    (keep :bet/payout pbets))}))
                                    (apply merge))
+        processed-time (time/to-date)
         payout-txs (mapv #(-> %
                               (dissoc :user/_prop-bets :bet/amount :bet/projected-result?)
-                              (assoc :bet/processed-time (time/to-date)))
+                              (assoc :bet/processed-time processed-time))
                          payouts)
         user-cash-txs (mapv
                         (fn [[user-id total-payout]]
@@ -403,6 +405,38 @@
                                       :proposition/running? false
                                       :proposition/end-time (time/to-date)
                                       :proposition/result?  result?}]))})))
+
+(defn add-user-suggestion-to-event
+  [{:keys [text event-eid user-eid]}]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [{:db/id              event-eid
+                          :event/suggestions [{:suggestion/text       text
+                                               :suggestion/submission-time (time/to-date)
+                                               :suggestion/dismissed?   false
+                                               :suggestion/user user-eid
+                                               :suggestion/uuid (uuid/v4)}]}]}))
+
+(defn find-target-suggestions
+  [{:keys [db uuids]}]
+  (->>
+    (d/q {:query '[:find ?suggestion
+                   :in $ ?uuids
+                   :where [?suggestion :suggestion/dismissed? false]
+                   [?suggestion :suggestion/uuid ?uuid]
+                   [(contains? ?uuids ?uuid)]]
+          :args  [db (set uuids)]})
+    (mapcat identity)))
+
+(defn dismiss-suggestions
+  [suggestion-eids]
+  (let [dismissed-time (time/to-date)
+        txs (mapv
+              (fn [eid]
+                {:db/id                 eid
+                 :suggestion/dismissed? true
+                 :suggestion/dismissed-time dismissed-time})
+              suggestion-eids)]
+    (d/transact (:conn datomic-cloud) {:tx-data txs})))
 
 (comment
   (defn find-loser-by-email

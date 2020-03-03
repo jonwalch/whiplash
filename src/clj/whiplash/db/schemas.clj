@@ -189,7 +189,7 @@
         :db/valueType   :db.type/instant
         :db/cardinality :db.cardinality/one}
 
-       {:db/doc         "Reference back to admin prop bet"
+       {:db/doc         "Reference to admin prop bet"
         :db/ident       :bet/proposition
         :db/valueType   :db.type/ref
         :db/cardinality :db.cardinality/one}
@@ -197,6 +197,43 @@
        {:db/doc         "User's projected outcome of the proposition"
         :db/ident       :bet/projected-result?
         :db/valueType   :db.type/boolean
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "User submitted suggestions for upcoming propositions"
+        :db/ident       :event/suggestions
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/many
+        :db/isComponent true}
+
+       {:db/doc         "The actual user suggestion string"
+        :db/ident       :suggestion/text
+        :db/valueType   :db.type/string
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Has this suggestion been dismissed by an admin?"
+        :db/ident       :suggestion/dismissed?
+        :db/valueType   :db.type/boolean
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "The time the user suggestion was submitted"
+        :db/ident       :suggestion/submission-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "The time the admin dismissed the suggestion"
+        :db/ident       :suggestion/dismissed-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Suggestion's uuid to surface to the admin tool"
+        :db/ident       :suggestion/uuid
+        :db/unique      :db.unique/identity
+        :db/valueType   :db.type/uuid
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Reference to user that submitted the suggestion"
+        :db/ident       :suggestion/user
+        :db/valueType   :db.type/ref
         :db/cardinality :db.cardinality/one}
        ]})
 
