@@ -119,19 +119,25 @@ export function Vote(props: any) {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
     const numbers = /^[0-9]*$/;
     if (numbers.test(e.target.value)) {
       const amount = parseInt(e.target.value, 10) || 0;
       setBetAmount(amount);
-    } 
+    }
   };
 
   const renderPropositionText = () => {
     if (props.propText) {
-      return <p>{props.propText}</p>;
+      return props.propText;
     } else {
-      return <p>Next proposition soon!</p>;
+      return "Next proposition soon!";
+    }
+  };
+
+  const betOnKeyPress = (e: any) => {
+    const key = e.key;
+    if (key == "Enter" && !toggleValid()) {
+      makePropBet();
     }
   };
 
@@ -147,7 +153,6 @@ export function Vote(props: any) {
                   key="Yes"
                   onClick={() => {
                     setProjectedResult(true)
-
                     // handleClick(opponent)
                   }}>
                 Yes
@@ -184,7 +189,9 @@ export function Vote(props: any) {
                   onChange={e => {
                     handleInputChange(e);
                   }}
-                  type="number"
+                  onKeyPress={e => betOnKeyPress(e)}
+                  type="text"
+                  pattern="/^[0-9]*$/"
                   min="1"
                   name="betAmount"
                   id="betAmount"
@@ -214,15 +221,18 @@ export function Vote(props: any) {
       } else if (loggedInState.status == "user.status/pending") {
         return (
           <div className="container">
-            <p className="vote__message">Verify your email to bet!</p>
+            <p className="vote__message"> {renderPropositionText()}</p>
+            <p className="vote__message">Verify your email to participate!</p>
           </div>
         );
       } else {
         return (
           <div className="container">
-            <form className="form form--vote">
+            <form className="form form--vote"
+                  onSubmit={(e: any) => e.preventDefault()}
+            >
               <fieldset className="form__fieldset">
-                {renderPropositionText()}
+                <p>{renderPropositionText()}</p>
                 {renderBettingOptions()}
               </fieldset>
             </form>
@@ -233,7 +243,7 @@ export function Vote(props: any) {
       return (
         <div className="container">
           <p className="vote__message"> {renderPropositionText()}</p>
-          <p className="vote__message">Login to bet!</p>
+          <p className="vote__message">Login to participate!</p>
         </div>
       );
     }

@@ -22,7 +22,7 @@ export function About() {
             <p>To place a bet, simply enter the amount you want to bet in the "Bet Amount" box and click one of the two "Bet" buttons to select your projected outcome. You may place as many bets as you want while the proposition is open. You can bet on both sides of the proposition. After placing a bet, it will be displayed on the screen in the “Current Bets” section.</p>
             <p>All players, bets, and winnings will not be deleted. If you drop below $100 Whiplash Cash you will receive a small bailout.</p>
             <h3>How does Whiplash pick what the current proposition is?</h3>
-            <p>We take live suggestions from the community!</p>
+            <p>We take live suggestions from the community! Enter your suggestion into the text box below the stream and press Make Suggestion!</p>
             <h3>How are odds and payouts calculated?</h3>
             <p>Odds and payouts update in real-time and are based on <a href="https://en.wikipedia.org/wiki/Parimutuel_betting">parimutuel betting</a>.</p>
             <p>Payouts are rounded down to the nearest whole dollar.</p>

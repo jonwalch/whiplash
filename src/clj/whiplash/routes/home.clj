@@ -88,6 +88,7 @@
 
       :post {:summary    "Dismiss prop suggestions"
              :middleware [middleware/wrap-admin]
+             :parameters {:suggestions [string?]}
              :handler    (fn [req]
                            (suggestion/dismiss-suggestions req))}}]]
 

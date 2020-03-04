@@ -10,6 +10,7 @@ import {Header} from "./Header";
 import {Footer} from "./Footer";
 import {getUser} from "../common/getUser";
 import {getEvent, getProp} from "../common/stream";
+import {Suggestion} from "./Suggestion";
 
 const { install } = require('ga-gtag');
 
@@ -181,25 +182,27 @@ export function Home(props: any) {
     }
   };
 
-  return (
-      <>
-        <Header/>
-        <main id="content" role="main">
-          <div className="home__layout">
-            {renderContent()}
-            <Bets
-                twitchUsername={twitchUsername}
-              // matchID={matchID}
-              // currentGame={currentGame}
-            />
-              <Leaderboard
-                  twitchUsername={twitchUsername}
-                  eventScoreLeaderboard={eventScoreLeaderboard}
-                  setEventScoreLeaderboard={setEventScoreLeaderboard}
-              />
-          </div>
-        </main>
-        <Footer/>
-      </>
-  );
+    return (
+        <>
+            <Header/>
+            <main id="content" role="main">
+                <div className="home__layout">
+                    {renderContent()}
+                    <Bets
+                        twitchUsername={twitchUsername}
+                        // matchID={matchID}
+                        // currentGame={currentGame}
+                    />
+                    <Suggestion
+                        twitchUsername={twitchUsername}/>
+                    <Leaderboard
+                        twitchUsername={twitchUsername}
+                        eventScoreLeaderboard={eventScoreLeaderboard}
+                        setEventScoreLeaderboard={setEventScoreLeaderboard}
+                    />
+                </div>
+            </main>
+            <Footer/>
+        </>
+    );
 }

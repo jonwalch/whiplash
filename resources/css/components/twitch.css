@@ -80,7 +80,7 @@
     grid-template-rows: unset;
 
     @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
-      grid-template-rows: auto auto minmax(300px, auto);
+      grid-template-rows: auto auto minmax(0, auto);
     }
 
     @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
