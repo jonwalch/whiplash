@@ -1,7 +1,8 @@
 (ns whiplash.routes.services.proposition
-  (:require  [ring.util.http-response :refer :all]
-             [whiplash.db.core :as db]
-             [datomic.client.api :as d]))
+  (:require [ring.util.http-response :refer :all]
+            [whiplash.db.core :as db]
+            [datomic.client.api :as d]
+            [clojure.tools.logging :as log]))
 
 (defn admin-create-proposition
   [{:keys [body-params] :as req}]
@@ -42,7 +43,8 @@
       (method-not-allowed {:message "No ongoing proposition"})
 
       (some? (d/pull db '[:proposition/betting-end-time] prop))
-      (method-not-allowed {:message "Already ended betting for this prop"})
+      (do (log/info (d/pull db '[:proposition/betting-end-time] prop))
+        (method-not-allowed {:message "Already ended betting for this prop"}))
 
       :else
       (do
