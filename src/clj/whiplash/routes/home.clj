@@ -70,7 +70,8 @@
      [""
       {:post {:summary    "Create a new proposition"
               :middleware [middleware/wrap-admin]
-              :parameters {:body {:text string?}}
+              :parameters {:body {:text string?
+                                  :end-betting-secs int?}}
               :handler    (fn [req]
                             (proposition/admin-create-proposition req))}}]
      ["/end"
@@ -79,12 +80,7 @@
                :middleware [middleware/wrap-admin]
                :parameters {:body {:result boolean?}}
                :handler    (fn [req]
-                             (proposition/end-current-proposition req))}}]
-      ["/betting"
-       {:post {:summary    "End the betting window for the current proposition"
-               :middleware [middleware/wrap-admin]
-               :handler    (fn [req]
-                             (proposition/end-betting-for-prop req))}}]]]
+                             (proposition/end-current-proposition req))}}]]]
 
     ["/suggestion"
      {:get  {:summary    "get prop suggestions for current event"

@@ -343,13 +343,17 @@
                     :where [?prop :proposition/running? true]]
            :args  [db]}))))
 
-(defn create-prop-bet
-  [{:keys [text event-eid]}]
-  (d/transact (:conn datomic-cloud)
-              {:tx-data [{:db/id              event-eid
-                          :event/propositions [{:proposition/text       text
-                                                :proposition/start-time (time/to-date)
-                                                :proposition/running?   true}]}]}))
+(defn create-proposition
+  [{:keys [text event-eid end-betting-secs]}]
+  (let [now (time/now)]
+    (d/transact (:conn datomic-cloud)
+                {:tx-data
+                 [{:db/id              event-eid
+                   :event/propositions [{:proposition/text       text
+                                         :proposition/start-time (time/to-date now)
+                                         :proposition/betting-end-time (time/to-date
+                                                                         (time/seconds-delta now end-betting-secs))
+                                         :proposition/running?   true}]}]})))
 
 (defn end-betting-for-proposition
   [{:keys [proposition-eid]}]

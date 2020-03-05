@@ -7,7 +7,7 @@
 (defn admin-create-proposition
   [{:keys [body-params] :as req}]
   ;; TODO validation of text
-  (let [{:keys [text]} body-params
+  (let [{:keys [text end-betting-secs]} body-params
         ongoing-event (db/find-ongoing-event)
         ongoing-prop (db/find-ongoing-proposition)]
     (cond
@@ -19,8 +19,9 @@
 
       :else
       (do
-        (db/create-prop-bet {:text text
-                             :event-eid ongoing-event})
+        (db/create-proposition {:text   text
+                                :event-eid ongoing-event
+                                :end-betting-secs end-betting-secs})
         (ok {})))))
 
 (defn get-current-proposition

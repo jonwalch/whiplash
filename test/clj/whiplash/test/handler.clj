@@ -7,7 +7,8 @@
     [whiplash.guess-processor :as guess-processor]
     [whiplash.db.core :as db]
     [datomic.client.api :as d]
-    [clj-uuid :as uuid]))
+    [clj-uuid :as uuid]
+    [whiplash.time :as time]))
 
 (common/app-fixtures)
 (common/db-fixtures)
@@ -597,10 +598,12 @@
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn- admin-create-prop
-  [{:keys [auth-token text]}]
+  [{:keys [auth-token text end-betting-secs]}]
   (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop")
                                     (mock/cookie :value auth-token)
-                                    (mock/json-body {:text text})))]
+                                    (mock/json-body {:text             text
+                                                     :end-betting-secs (or end-betting-secs
+                                                                           30)})))]
     (is (= 200 (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
@@ -695,15 +698,6 @@
            (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
-(defn- admin-end-betting-for-prop
-  [{:keys [auth-token status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop/end/betting")
-                                    (mock/cookie :value auth-token)))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
 (deftest fail-admin-create-event
   (testing "fail to create event because not admin"
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login)]
@@ -735,7 +729,7 @@
 
           success-get-running-prop-resp  (get-prop)
 
-          success-prop-body (:body success-get-running-prop-resp)
+          success-get-prop-body (:body success-get-running-prop-resp)
 
           fail-end-event-resp (admin-end-event {:auth-token auth-token
                                                 :status 405})
@@ -748,10 +742,11 @@
           end-event-resp (admin-end-event {:auth-token auth-token})
           get-after-end-resp (get-event {:status 404})]
 
-      (is (string? (:proposition/start-time success-prop-body)))
+      (is (string? (:proposition/start-time success-get-prop-body)))
+      (is (string? (:proposition/betting-end-time success-get-prop-body)))
       (is (= #:proposition{:running? true
                            :text text}
-             (dissoc success-prop-body :proposition/start-time)))
+             (dissoc success-get-prop-body :proposition/start-time :proposition/betting-end-time)))
 
       (is (string? (:event/start-time get-response-body)))
       (is (= #:event{:running? true
@@ -1088,17 +1083,6 @@
                         (string? (:suggestion/uuid %)))
                   (:body get-suggestions-after-dismiss-resp))))))
 
-(deftest cant-end-betting-not-admin
-  (let [{:keys [auth-token]} (create-user-and-login)]
-    (admin-end-betting-for-prop {:auth-token auth-token
-                                 :status 403})))
-
-(deftest cant-end-betting-no-prop
-  (let [{:keys [auth-token]} (create-user-and-login
-                               (assoc dummy-user :admin? true))]
-    (admin-end-betting-for-prop {:auth-token auth-token
-                                 :status 405})))
-
 (deftest end-betting-for-proposition
   (let [{:keys [auth-token]} (create-user-and-login
                                (assoc dummy-user :admin? true))
@@ -1108,19 +1092,23 @@
                                                :title title
                                                :twitch-user twitch-user})
         text "Will Jon wipeout 2+ times this round?"
+        end-betting-secs 30
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text text})]
+                                                 :text text
+                                                 :end-betting-secs end-betting-secs})
+        now (time/now)]
     (user-place-prop-bet {:auth-token auth-token
                           :projected-result true
                           :bet-amount 300})
-    (admin-end-betting-for-prop {:auth-token auth-token})
     (is (string? (-> (get-prop) :body :proposition/betting-end-time)))
-    (user-place-prop-bet {:auth-token auth-token
-                          :projected-result true
-                          :bet-amount 200
-                          :status 405})
-    (admin-end-betting-for-prop {:auth-token auth-token
-                                 :status 405})
+    ;; TODO: change tests so we can move time forward more sanely
+    ;; User cannot place a bet after the betting window is over
+    (with-redefs [whiplash.time/now (fn []
+                                      (time/seconds-delta now end-betting-secs))]
+      (user-place-prop-bet {:auth-token       auth-token
+                            :projected-result true
+                            :bet-amount       200
+                            :status           405}))
     (admin-end-prop {:auth-token auth-token
                      :result true})
     (admin-end-event {:auth-token auth-token

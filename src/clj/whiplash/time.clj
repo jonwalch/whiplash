@@ -29,6 +29,12 @@
   ([start days]
    (time/truncate-to (days-delta start days) :days)))
 
+(defn seconds-delta
+  ([seconds]
+   (seconds-delta (now) seconds))
+  ([start seconds]
+   (time/plus start (time/seconds seconds))))
+
 (defn minutes-delta
   ([minutes]
    (minutes-delta (now) minutes))

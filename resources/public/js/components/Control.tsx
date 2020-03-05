@@ -79,6 +79,7 @@ export function Control(props: any) {
             redirect: "error",
             body: JSON.stringify({
                 text: propText,
+                "end-betting-secs": 30,
             })
         });
         const resp = await response.json();
@@ -104,23 +105,6 @@ export function Control(props: any) {
         const resp = await response.json();
         if (response.status == 200) {
             alert("Successfully ended proposition")
-        } else {
-            alert(resp.message)
-        }
-    };
-
-    const endBettingForProp = async () => {
-        const response = await fetch(baseUrl + "admin/prop/end/betting", {
-            headers: {
-                "Content-Type": "application/json",
-            },
-            method: "POST",
-            mode: "same-origin",
-            redirect: "error",
-        });
-        const resp = await response.json();
-        if (response.status == 200) {
-            alert("Successfully ended betting for proposition")
         } else {
             alert(resp.message)
         }
@@ -188,7 +172,6 @@ export function Control(props: any) {
                             onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                 setEventTitle(e.currentTarget.value);
                             }}
-                            // type="password"
                             maxLength={100}
                             minLength= {5}
                             name="eventTitle"
@@ -203,7 +186,6 @@ export function Control(props: any) {
                             onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                 setTwitchUser(e.currentTarget.value);
                             }}
-                            // type="password"
                             maxLength={50}
                             minLength= {4}
                             name="twitchUser"
@@ -261,15 +243,6 @@ export function Control(props: any) {
                             createProp()
                         }}>
                         Create Proposition
-                    </button>
-                    <button
-                        className="button twitch__button"
-                        style = {{marginRight: "30px"}}
-                        type="button"
-                        onClick={() => {
-                            endBettingForProp()
-                        }}>
-                        End Betting for this prop
                     </button>
                     <button
                         className="button twitch__button"

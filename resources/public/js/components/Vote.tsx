@@ -20,6 +20,7 @@ export function Vote(props: any) {
   };
 
   useEffect(() => {
+    // TODO: Refactor and use useRef
     const buttons = document.querySelectorAll('.button--vote');
 
     buttons.forEach((button) => {
@@ -33,7 +34,7 @@ export function Vote(props: any) {
         button.classList.remove('is-active')
       }
     })
-  }, [projectedResult])
+  }, [projectedResult]);
 
   const makePropBet = async () => {
     const response = await fetch(baseUrl + "user/prop-bet", {
@@ -63,7 +64,7 @@ export function Vote(props: any) {
       // setGuessedTeamName(props.team.teamName);
       alert(`You successfully bet $${betAmount} on outcome ${booleanToButton()}.`);
       // reset local state to no longer have a selected team
-      setProjectedResult(null)
+      setProjectedResult(null);
       // update user's cash
       getUser(setLoggedInState)
     } else {
