@@ -42,9 +42,9 @@
       (nil? prop)
       (method-not-allowed {:message "No ongoing proposition"})
 
-      (some? (d/pull db '[:proposition/betting-end-time] prop))
-      (do (log/info (d/pull db '[:proposition/betting-end-time] prop))
-        (method-not-allowed {:message "Already ended betting for this prop"}))
+      (some? (:proposition/betting-end-time
+               (d/pull db '[:proposition/betting-end-time] prop)))
+      (method-not-allowed {:message "Already ended betting for this prop"})
 
       :else
       (do
