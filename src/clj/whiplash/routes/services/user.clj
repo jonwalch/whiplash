@@ -5,7 +5,9 @@
             [whiplash.middleware :as middleware]
             [datomic.client.api :as d]
             [whiplash.integrations.amazon-ses :as ses]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [whiplash.time :as time]
+            [java-time :as jtime])
   (:import (java.security MessageDigest)))
 
 ;; https://www.regular-expressions.info/email.html
@@ -196,7 +198,10 @@
         {:keys [db/id user/cash]} (d/pull db
                                           '[:user/cash :db/id]
                                           (db/find-user-by-user-name user))
-        ongoing-prop (db/find-ongoing-prop-bet db)]
+        ongoing-prop (db/find-ongoing-proposition db)
+        prop-betting-end-time (when ongoing-prop
+                                (:proposition/betting-end-time
+                                  (d/pull db '[:proposition/betting-end-time] ongoing-prop)))]
     (cond
       (>= 0 bet_amount)
       (conflict {:message "Cannot bet less than 1."})
@@ -206,6 +211,11 @@
 
       (nil? ongoing-prop)
       (method-not-allowed {:message "No ongoing prop bet, cannot make bet."})
+
+      (and (inst? prop-betting-end-time)
+           (jtime/after? (time/now)
+                         (time/date-to-zdt prop-betting-end-time)))
+      (method-not-allowed {:message "Betting for proposition has ended."})
 
       (some? id)
       (if (try
@@ -225,7 +235,7 @@
 (defn create-suggestion
   [{:keys [body-params] :as req}]
   (let [{:keys [text]} body-params
-        {:keys [user exp]} (middleware/req->token req)
+        {:keys [user]} (middleware/req->token req)
         user-eid (db/find-user-by-user-name user)
         ongoing-event (db/find-ongoing-event)]
     (cond
@@ -258,7 +268,7 @@
   (let [{:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
         user-id (db/find-user-by-user-name user)
-        ongoing-prop (db/find-ongoing-prop-bet db)]
+        ongoing-prop (db/find-ongoing-proposition db)]
     (cond
       (nil? ongoing-prop)
       (not-found {:message "No ongoing prop bet, cannot get bets."})

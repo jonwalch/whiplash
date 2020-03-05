@@ -102,7 +102,7 @@
 
 (defn get-prop-bets
   [{:keys [params] :as req}]
-  (if-let [current-prop-bet (db/find-ongoing-prop-bet)]
+  (if-let [current-prop-bet (db/find-ongoing-proposition)]
     (let [db (d/db (:conn db/datomic-cloud))
           current-bets (->> (db/find-prop-bets {:db          db
                                                 :prop-bet-id current-prop-bet})

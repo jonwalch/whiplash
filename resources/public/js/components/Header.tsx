@@ -86,7 +86,7 @@ export function Header() {
       return (
         <>
           <li className="navigation__item"><Link to="/account">{loggedInState.userName}</Link></li>
-          <li className="navigation__item"><span className="navigation__highlight">Whiplash Cash:</span> ${loggedInState.cash}</li>
+          <li className="navigation__item"><span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}</li>
           <li>{renderLogoutButton()}</li>
         </>
       )

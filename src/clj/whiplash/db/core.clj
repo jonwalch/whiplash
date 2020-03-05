@@ -334,9 +334,9 @@
                           :event/end-time (time/to-date)}]}))
 
 ;; TODO make this depend on an event
-(defn find-ongoing-prop-bet
+(defn find-ongoing-proposition
   ([]
-   (find-ongoing-prop-bet (d/db (:conn datomic-cloud))))
+   (find-ongoing-proposition (d/db (:conn datomic-cloud))))
   ([db]
    (ffirst
      (d/q {:query '[:find ?prop
@@ -351,7 +351,13 @@
                                                 :proposition/start-time (time/to-date)
                                                 :proposition/running?   true}]}]}))
 
-(defn end-prop-bet
+(defn end-betting-for-proposition
+  [{:keys [proposition-eid]}]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [{:db/id                        proposition-eid
+                          :proposition/betting-end-time (time/to-date)}]}))
+
+(defn end-proposition
   [{:keys [prop-bet-id result?]}]
   (let [db (d/db (:conn datomic-cloud))
         bets (->> (find-prop-bets {:db          db
@@ -395,16 +401,21 @@
                                (if (< 100 new-balance)
                                  new-balance
                                  (bigint 100))])))
-                        user-id->total-payout)]
+                        user-id->total-payout)
+        end-time (time/to-date)
+        betting-end-time (:proposition/betting-end-time
+                           (d/pull db '[:proposition/betting-end-time] prop-bet-id))]
 
     (d/transact (:conn datomic-cloud)
                 {:tx-data (vec
                             (concat payout-txs
                                     user-cash-txs
-                                    [{:db/id                prop-bet-id
-                                      :proposition/running? false
-                                      :proposition/end-time (time/to-date)
-                                      :proposition/result?  result?}]))})))
+                                    [(merge {:db/id                prop-bet-id
+                                             :proposition/running? false
+                                             :proposition/end-time end-time
+                                             :proposition/result?  result?}
+                                            (when-not betting-end-time
+                                              {:proposition/betting-end-time end-time}))]))})))
 
 (defn add-user-suggestion-to-event
   [{:keys [text event-eid user-eid]}]

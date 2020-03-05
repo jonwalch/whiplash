@@ -48,7 +48,7 @@ export function Leaderboard(props:any) {
         <thead className="leaderboard__thead">
           <tr className="leaderboard__tr">
             <th className="leaderboard__th">User</th>
-            <th className="leaderboard__th">Total Whiplash Cash</th>
+            <th className="leaderboard__th">Total Whipcash</th>
           </tr>
         </thead>
         <tbody>

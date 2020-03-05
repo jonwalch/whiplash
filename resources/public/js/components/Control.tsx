@@ -109,6 +109,23 @@ export function Control(props: any) {
         }
     };
 
+    const endBettingForProp = async () => {
+        const response = await fetch(baseUrl + "admin/prop/end/betting", {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "POST",
+            mode: "same-origin",
+            redirect: "error",
+        });
+        const resp = await response.json();
+        if (response.status == 200) {
+            alert("Successfully ended betting for proposition")
+        } else {
+            alert(resp.message)
+        }
+    };
+
     const getSuggestions = async () => {
         const response = await fetch(baseUrl + "admin/suggestion", {
             headers: {
@@ -244,6 +261,15 @@ export function Control(props: any) {
                             createProp()
                         }}>
                         Create Proposition
+                    </button>
+                    <button
+                        className="button twitch__button"
+                        style = {{marginRight: "30px"}}
+                        type="button"
+                        onClick={() => {
+                            endBettingForProp()
+                        }}>
+                        End Betting for this prop
                     </button>
                     <button
                         className="button twitch__button"

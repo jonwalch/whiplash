@@ -28,7 +28,7 @@
 (defn end-current-event
   [{:keys [body-params] :as req}]
   (let [event (db/find-ongoing-event)
-        prop-bet (db/find-ongoing-prop-bet)]
+        prop-bet (db/find-ongoing-proposition)]
     (cond
       (some? prop-bet)
       (method-not-allowed {:message "Ongoing prop bet, you must end it before ending the event"})

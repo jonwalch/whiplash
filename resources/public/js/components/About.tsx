@@ -12,15 +12,15 @@ export function About() {
             <div className="article__container">
               <h2>About Us</h2>
               <h3>What is Whiplash?</h3>
-              <p>Whiplash is a free game that allows you to place virtual bets on live competitive events. Whiplash is purely for entertainment purposes and no real money will be paid out. Whiplash Cash is only used to play Whiplash, it is not an actual currency and does not have value.</p>
+              <p>Whiplash is a free game that allows you to place virtual bets on live competitive events. Whiplash is purely for entertainment purposes and no real money will be paid out. Whipcash is only used to play Whiplash, it is not an actual currency and does not have value.</p>
             </div>
           </header>
           <div className="article__container">
             <h2>FAQ</h2>
             <h3>How do I play?</h3>
-            <p>After creating an account and verifying your email, you will start with $500 in Whiplash Cash that can be used to place bets on live competitive event streams. Bets are open for the duration of the proposition.</p>
+            <p>After creating an account and verifying your email, you will start with $500 in Whipcash that can be used to place bets on live competitive event streams. Bets are open for the duration of the proposition.</p>
             <p>To place a bet, simply enter the amount you want to bet in the "Bet Amount" box and click one of the two "Bet" buttons to select your projected outcome. You may place as many bets as you want while the proposition is open. You can bet on both sides of the proposition. After placing a bet, it will be displayed on the screen in the “Current Bets” section.</p>
-            <p>All players, bets, and winnings will not be deleted. If you drop below $100 Whiplash Cash you will receive a small bailout.</p>
+            <p>All players, bets, and winnings will not be deleted. If you drop below $100 Whipcash you will receive a small bailout.</p>
             <h3>How does Whiplash pick what the current proposition is?</h3>
             <p>We take live suggestions from the community! Enter your suggestion into the text box below the stream and press Make Suggestion!</p>
             <h3>How are odds and payouts calculated?</h3>

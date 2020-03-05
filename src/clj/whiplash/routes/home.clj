@@ -68,17 +68,23 @@
 
     ["/prop"
      [""
-      {:post {:summary    "Create a new prop bet"
+      {:post {:summary    "Create a new proposition"
               :middleware [middleware/wrap-admin]
               :parameters {:body {:text string?}}
               :handler    (fn [req]
-                            (proposition/admin-create-prop-bet req))}}]
+                            (proposition/admin-create-proposition req))}}]
      ["/end"
-      {:post {:summary "End the current prop bet"
-              :middleware [middleware/wrap-admin]
-              :parameters {:body {:result boolean?}}
-              :handler (fn [req]
-                         (proposition/end-current-prop-bet req))}}]]
+      [""
+       {:post {:summary    "End the current proposition"
+               :middleware [middleware/wrap-admin]
+               :parameters {:body {:result boolean?}}
+               :handler    (fn [req]
+                             (proposition/end-current-proposition req))}}]
+      ["/betting"
+       {:post {:summary    "End the betting window for the current proposition"
+               :middleware [middleware/wrap-admin]
+               :handler    (fn [req]
+                             (proposition/end-betting-for-prop req))}}]]]
 
     ["/suggestion"
      {:get  {:summary    "get prop suggestions for current event"
@@ -105,9 +111,9 @@
                            (event/get-current-event req))}}]
 
     ["/prop"
-     {:get {:summary    "Get the current prop bet"
-            :handler    (fn [req]
-                          (proposition/get-current-prop-bet req))}}]]
+     {:get {:summary "Get the current prop bet"
+            :handler (fn [req]
+                       (proposition/get-current-proposition req))}}]]
 
    ["/leaderboard"
     ["/all-time"

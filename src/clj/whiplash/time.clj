@@ -1,5 +1,6 @@
 (ns whiplash.time
-  (:require [java-time :as time]))
+  (:require [java-time :as time])
+  (:import [java.time ZonedDateTime ZoneId]))
 
 ;; TODO unit tests
 
@@ -65,11 +66,16 @@
   (.with (days-delta-trunc 7) (time/day-of-week :monday)))
 
 (defn to-date
-  "Takes a zoned date time and turns it into a java.util.Date"
+  "Takes a zoned date time and turns it into a java.util.Date/clojure inst"
   ([]
    (to-date (now)))
   ([start]
    (time/java-date start)))
+
+(defn date-to-zdt
+  "Takes a java.util.Date/clojure inst and turns it into a ZonedDateTime"
+  [date]
+  (ZonedDateTime/ofInstant (.toInstant date) (ZoneId/of "UTC")))
 
 (comment
   (minutes-delta 1)

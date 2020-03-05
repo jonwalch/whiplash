@@ -67,7 +67,7 @@ export function Vote(props: any) {
       // update user's cash
       getUser(setLoggedInState)
     } else {
-      alert(resp);
+      alert(resp.message);
     }
   };
 

@@ -643,12 +643,14 @@
      (assoc resp :body (common/parse-json-body resp)))))
 
 (defn- user-place-prop-bet
-  [{:keys [auth-token projected-result bet-amount]}]
+  [{:keys [auth-token projected-result bet-amount status]}]
   (let [resp ((common/test-app) (-> (mock/request :post "/user/prop-bet")
                                     (mock/cookie :value auth-token)
                                     (mock/json-body {:projected_result projected-result
                                                      :bet_amount       bet-amount})))]
-    (is (= 200 (:status resp)))
+    (is (= (or status
+               200)
+           (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn- user-get-prop-bets
@@ -688,6 +690,15 @@
   (let [resp ((common/test-app) (-> (mock/request :post "/admin/suggestion")
                                     (mock/cookie :value auth-token)
                                     (mock/json-body {:suggestions suggestions})))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    (assoc resp :body (common/parse-json-body resp))))
+
+(defn- admin-end-betting-for-prop
+  [{:keys [auth-token status]}]
+  (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop/end/betting")
+                                    (mock/cookie :value auth-token)))]
     (is (= (or status
                200)
            (:status resp)))
@@ -1076,3 +1087,41 @@
           (every? #(and (string? (:suggestion/submission-time %))
                         (string? (:suggestion/uuid %)))
                   (:body get-suggestions-after-dismiss-resp))))))
+
+(deftest cant-end-betting-not-admin
+  (let [{:keys [auth-token]} (create-user-and-login)]
+    (admin-end-betting-for-prop {:auth-token auth-token
+                                 :status 403})))
+
+(deftest cant-end-betting-no-prop
+  (let [{:keys [auth-token]} (create-user-and-login
+                               (assoc dummy-user :admin? true))]
+    (admin-end-betting-for-prop {:auth-token auth-token
+                                 :status 405})))
+
+(deftest end-betting-for-proposition
+  (let [{:keys [auth-token]} (create-user-and-login
+                               (assoc dummy-user :admin? true))
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title title
+                                               :twitch-user twitch-user})
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text text})]
+    (user-place-prop-bet {:auth-token auth-token
+                          :projected-result true
+                          :bet-amount 300})
+    (admin-end-betting-for-prop {:auth-token auth-token})
+    (is (string? (-> (get-prop) :body :proposition/betting-end-time)))
+    (user-place-prop-bet {:auth-token auth-token
+                          :projected-result true
+                          :bet-amount 200
+                          :status 405})
+    (admin-end-betting-for-prop {:auth-token auth-token
+                                 :status 405})
+    (admin-end-prop {:auth-token auth-token
+                     :result true})
+    (admin-end-event {:auth-token auth-token
+                     :result true})))

@@ -189,6 +189,11 @@
         :db/valueType   :db.type/instant
         :db/cardinality :db.cardinality/one}
 
+       {:db/doc         "When we stopped accepting bets for this proposition"
+        :db/ident       :proposition/betting-end-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
        {:db/doc         "Reference to admin prop bet"
         :db/ident       :bet/proposition
         :db/valueType   :db.type/ref
