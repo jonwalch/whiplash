@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Vote } from "./Vote";
-import { baseUrl } from "../config/const";
 import {EventScore, Leaderboard} from "./Leaderboard";
-import { useInterval, getCSRFToken, scrollToTop } from "../common";
-import { LoginContext } from "../contexts/LoginContext";
+import { useInterval } from "../common";
 import { Bets } from "./Bets";
-import { Link } from "react-router-dom";
 import {Header} from "./Header";
 import {Footer} from "./Footer";
-import {getUser} from "../common/getUser";
 import {getEvent, getProp} from "../common/stream";
 import {Suggestion} from "./Suggestion";
 

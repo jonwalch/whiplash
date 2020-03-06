@@ -1,6 +1,5 @@
-import React, { useState, useEffect, ChangeEvent, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "../../css/App.css";
-import { Link } from "react-router-dom";
 import { baseUrl } from "../config/const"
 import { useInterval } from "../common";
 import {LoginContext} from "../contexts/LoginContext";

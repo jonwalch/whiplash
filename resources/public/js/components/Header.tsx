@@ -1,8 +1,8 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useState} from "react";
 import {Link} from "react-router-dom";
 import {Login} from "./Login";
 import {Signup} from "./Signup";
-import {getCSRFToken, scrollToTop, useInterval} from "../common";
+import {scrollToTop} from "../common";
 import {LoginContext} from "../contexts/LoginContext";
 import {baseUrl} from "../config/const";
 import {logout} from "../common/logout";

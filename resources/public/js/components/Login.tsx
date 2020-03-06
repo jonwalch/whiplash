@@ -1,9 +1,7 @@
-import React, { useState, useEffect, ChangeEvent, useContext } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, ChangeEvent, useContext } from "react";
 import "../../css/App.css";
-import { LoginContext, defaultLoggedIn } from "../contexts/LoginContext";
+import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const"
-import { getCSRFToken } from "../common";
 import {getUser} from "../common/getUser";
 
 export function Login(props: any) {

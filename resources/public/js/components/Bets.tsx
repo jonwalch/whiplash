@@ -12,36 +12,10 @@ export function Bets(props: any) {
 
   // TODO: only when there's an event
   useInterval(() => {
-    // if (props.currentGame && props.currentGame.id) {
-
     if (props.twitchUsername != failedToFetch) {
       getPropBets();
     }
-    // } else {
-    //   setBets(null);
-    // }
   }, 5000);
-
-  //show bets for current game
-  // const getBets = async () => {
-  //   const url =
-  //     baseUrl +
-  //     "leaderboard/bets" +
-  //     "?match_id=" +
-  //     props.matchID +
-  //     "&game_id=" +
-  //     props.currentGame.id;
-  //   const response = await fetch(url, {
-  //     headers: { "Content-Type": "application/json" },
-  //     method: "GET",
-  //     mode: "same-origin",
-  //     redirect: "error"
-  //   });
-  //   if (response.status == 200) {
-  //     const resp = await response.json();
-  //     setBets(Object.entries(resp));
-  //   }
-  // };
 
   const getPropBets = async () => {
     const url = baseUrl + "leaderboard/prop-bets";

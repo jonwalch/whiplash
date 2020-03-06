@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import queryString from "query-string";
 import { baseUrl } from "../config/const";
-import { getCSRFToken } from "../common";
-import { Link } from "react-router-dom";
 import {Header} from "./Header";
 import {Footer} from "./Footer";
 

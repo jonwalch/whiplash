@@ -1,6 +1,5 @@
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, ChangeEvent } from "react";
 import { baseUrl } from "../config/const";
-import { getCSRFToken } from "../common";
 
 export function Signup(props: any) {
   const [firstName, setFirstName] = useState("");
