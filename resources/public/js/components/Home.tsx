@@ -14,23 +14,17 @@ import {Suggestion} from "./Suggestion";
 
 const { install } = require('ga-gtag');
 
-// declare const Twitch: any;
-//
-// export interface Opponent {
-//   teamName: string;
-//   teamID: number;
-// }
-
 export const failedToFetch : string = "failed to fetch"
 
 export function Home(props: any) {
   const [twitchUsername, setTwitchUsername] = useState<null | string>(null);
   const [matchName, setMatchName] = useState("");
   const [chatIsOpen, setChatIsOpen] = useState<boolean>(true);
-  const [propText, setPropText] = useState<null | string>(null);
+  const [proposition, setProposition] = useState<any>(null);
 
   // child state
   const [eventScoreLeaderboard, setEventScoreLeaderboard] = useState<EventScore[]>([]);
+
   const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
   useEffect(() => {
@@ -44,21 +38,14 @@ export function Home(props: any) {
       setMatchName(event["event/title"])
     });
     getProp().then((event) => {
-      setPropText(event["proposition/text"])
+      setProposition(event);
     });
-    //getStream();
   }, []);
-
-  // useEffect(() => {
-  //   if (loggedInState.userName) {
-  //     getUser(setLoggedInState);
-  //   } //teamName changes when a user makes a guess
-  // }, [team.teamName]);
 
   useInterval(() => {
     if (twitchUsername != failedToFetch) {
         getProp().then((event) => {
-            setPropText(event["proposition/text"])
+            setProposition(event);
         });
     }
   }, 3000);
@@ -69,36 +56,6 @@ export function Home(props: any) {
       setMatchName(event["event/title"])
     });
   }, 10000);
-
-  // const getStream = async () => {
-  //   const response = await fetch(baseUrl + "stream", {
-  //     headers: { "Content-Type": "application/json" }
-  //   });
-  //   if (response.status == 200) {
-  //     const resp = await response.json();
-  //     // setStreamURL(resp["live_url"]);
-  //     setTwitchUsername(resp["twitch/username"]);
-  //     setMatchName(resp["name"]);
-  //     setMatchID(resp["id"]);
-  //     setCurrentGame(resp["whiplash/current-game"]);
-  //
-  //     let parsedOpponents: Opponent[] = [];
-  //     resp["opponents"].forEach((element: any) => {
-  //       parsedOpponents.push({
-  //         teamID: element.opponent.id,
-  //         teamName: element.opponent.name
-  //       });
-  //     });
-  //     setOpponents(parsedOpponents);
-  //   } else {
-  //     //right now would be a 204
-  //     // setStreamURL(failedToFetch);
-  //     setTwitchUsername("");
-  //     setMatchName("");
-  //     setMatchID(-1);
-  //     setCurrentGame({});
-  //   }
-  // };
 
   const lastWinner = () => {
       const winner: EventScore = eventScoreLeaderboard[0];
@@ -168,13 +125,8 @@ export function Home(props: any) {
               }
             </div>
             <Vote
-                propText={propText}
-                // opponents={opponents}
-                // team={team}
-                // setTeam={setTeam}
-                // matchID={matchID}
+                proposition={proposition}
                 matchName={matchName}
-                // currentGame={currentGame}
                 isProduction={isProduction}
             />
           </>

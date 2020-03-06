@@ -8,6 +8,7 @@ export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [betAmount, setBetAmount] = useState<number>(0);
   const [projectedResult, setProjectedResult] = useState<null | boolean>(null);
+  const [secondsLeftToBet, setSecondLeftToBet] = useState<number>(0);
 
   const booleanToButton = () => {
     if (projectedResult == null) {
@@ -18,6 +19,18 @@ export function Vote(props: any) {
     }
     return 'No';
   };
+
+  useEffect(() => {
+    if (props.proposition && props.proposition["proposition/betting-end-time"]) {
+      setTimeout(() => {
+        setSecondLeftToBet(calculateSecondsLeftToBet())
+      }, 1000)
+    }
+  });
+
+  useEffect(() => {
+    setSecondLeftToBet(calculateSecondsLeftToBet())
+  }, [props.proposition]);
 
   useEffect(() => {
     // TODO: Refactor and use useRef
@@ -35,6 +48,18 @@ export function Vote(props: any) {
       }
     })
   }, [projectedResult]);
+
+  const endBettingDate = () => {
+    if (props.proposition && props.proposition["proposition/betting-end-time"]){
+      return Date.parse(props.proposition["proposition/betting-end-time"]);
+    } else {
+      return Infinity;
+    }
+  };
+
+  const calculateSecondsLeftToBet = () => {
+    return Math.trunc((endBettingDate() - Date.now()) / 1000);;
+  };
 
   const makePropBet = async () => {
     const response = await fetch(baseUrl + "user/prop-bet", {
@@ -61,7 +86,6 @@ export function Vote(props: any) {
 
     const resp = await response.json();
     if (response.status == 200) {
-      // setGuessedTeamName(props.team.teamName);
       alert(`You successfully bet $${betAmount} on outcome ${booleanToButton()}.`);
       // reset local state to no longer have a selected team
       setProjectedResult(null);
@@ -71,48 +95,6 @@ export function Vote(props: any) {
       alert(resp.message);
     }
   };
-
-  // const makeGuess = async () => {
-  //   const response = await fetch(baseUrl + "user/guess", {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     method: "POST",
-  //     mode: "same-origin",
-  //     redirect: "error",
-  //     body: JSON.stringify({
-  //       match_name: props.matchName,
-  //       match_id: props.matchID,
-  //       game_id: props.currentGame.id,
-  //       team_name: props.team.teamName,
-  //       team_id: props.team.teamID,
-  //       bet_amount: betAmount,
-  //     })
-  //   });
-  //
-  //   if (props.isProduction) {
-  //     // Trigger Google Analytics event
-  //     gtag('event', 'bet', {
-  //       event_category: 'Betting',
-  //       event_label: loggedInState.userName,
-  //       value: betAmount
-  //     })
-  //   }
-  //
-  //   const resp = await response.json();
-  //   if (response.status == 200) {
-  //     // setGuessedTeamName(props.team.teamName);
-  //     alert(`You successfully bet $${betAmount} on ${props.team.teamName}`)
-  //     // reset local state to no longer have a selected team
-  //     props.setTeam(defaultTeam);
-  //   } else {
-  //     alert(resp);
-  //   }
-  // };
-  //
-  // function handleClick (team: Opponent) {
-  //   props.setTeam(team)
-  // };
 
   const toggleValid = () => {
     // means the user hasn't select a team yet
@@ -128,8 +110,8 @@ export function Vote(props: any) {
   };
 
   const renderPropositionText = () => {
-    if (props.propText) {
-      return props.propText;
+    if (props.proposition && props.proposition["proposition/text"]) {
+      return props.proposition["proposition/text"];
     } else {
       return "Next proposition soon!";
     }
@@ -143,71 +125,62 @@ export function Vote(props: any) {
   };
 
   const renderBettingOptions = () => {
-
-    if (props.propText != null){
-      return (
-          <>
-            <div className="form__button-group">
+    if (props.proposition &&
+        props.proposition["proposition/text"] &&
+        props.proposition["proposition/betting-end-time"]){
+      if (Date.now() < endBettingDate()) {
+        return (
+            <>
+              <p>Seconds left to bet: {secondsLeftToBet}</p>
+              <div className="form__button-group">
+                <button
+                    className="button button--vote"
+                    type="button"
+                    key="Yes"
+                    onClick={() => {
+                      setProjectedResult(true)
+                    }}>
+                  Yes
+                </button>
+                <button
+                    className="button button--vote"
+                    type="button"
+                    key="No"
+                    onClick={() => {
+                      setProjectedResult(false)
+                    }}>
+                  No
+                </button>
+              </div>
+              <div className="form__group">
+                <label className="form__label" htmlFor="betAmount">Bet Amount</label>
+                <input
+                    className="form__input"
+                    value={betAmount > 0 ? betAmount : ""}
+                    onChange={e => {
+                      handleInputChange(e);
+                    }}
+                    onKeyPress={e => betOnKeyPress(e)}
+                    type="text"
+                    pattern="/^[0-9]*$/"
+                    min="1"
+                    name="betAmount"
+                    id="betAmount"
+                />
+              </div>
               <button
-                  className="button button--vote"
+                  className={"button button--make-bet " + (!toggleValid() ? "is-active" : "")}
                   type="button"
-                  key="Yes"
-                  onClick={() => {
-                    setProjectedResult(true)
-                    // handleClick(opponent)
-                  }}>
-                Yes
+                  disabled={toggleValid()}
+                  onClick={() => makePropBet()}
+              >
+                Make Bet
               </button>
-              <button
-                  className="button button--vote"
-                  type="button"
-                  key="No"
-                  onClick={() => {
-                    setProjectedResult(false)
-                    // handleClick(opponent)
-                  }}>
-                No
-              </button>
-              {/*{props.opponents.map((opponent: Opponent) => {*/}
-              {/*  return (*/}
-              {/*    <button*/}
-              {/*      className="button button--vote"*/}
-              {/*      type="button"*/}
-              {/*      key={opponent.teamID}*/}
-              {/*      onClick={() => {*/}
-              {/*          handleClick(opponent)*/}
-              {/*      }}>*/}
-              {/*      {opponent.teamName}*/}
-              {/*    </button>*/}
-              {/*  );*/}
-              {/*})}*/}
-            </div>
-            <div className="form__group">
-              <label className="form__label" htmlFor="betAmount">Bet Amount</label>
-              <input
-                  className="form__input"
-                  value={betAmount > 0 ? betAmount : ""}
-                  onChange={e => {
-                    handleInputChange(e);
-                  }}
-                  onKeyPress={e => betOnKeyPress(e)}
-                  type="text"
-                  pattern="/^[0-9]*$/"
-                  min="1"
-                  name="betAmount"
-                  id="betAmount"
-              />
-            </div>
-            <button
-                className={"button button--make-bet " + (!toggleValid() ? "is-active": "")}
-                type="button"
-                disabled={toggleValid()}
-                onClick={() => makePropBet()}
-            >
-              Make Bet
-            </button>
-          </>
-      );
+            </>
+        );
+      } else {
+        return(<p>Bets are locked for this proposition!</p>);
+      }
     }
   };
 
@@ -244,7 +217,7 @@ export function Vote(props: any) {
       return (
         <div className="container">
           <p className="vote__message"> {renderPropositionText()}</p>
-          <p className="vote__message">Login to participate!</p>
+          <p className="vote__message">Log in to participate!</p>
         </div>
       );
     }
