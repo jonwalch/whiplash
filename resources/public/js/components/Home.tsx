@@ -150,6 +150,7 @@ export function Home(props: any) {
                         twitchUsername={twitchUsername}/>
                     <Leaderboard
                         twitchUsername={twitchUsername}
+                        proposition={proposition}
                         eventScoreLeaderboard={eventScoreLeaderboard}
                         setEventScoreLeaderboard={setEventScoreLeaderboard}
                     />

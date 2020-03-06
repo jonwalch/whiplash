@@ -23,13 +23,12 @@ export function Leaderboard(props:any) {
   useEffect(() => {
     getEventScoreLeaderboard();
     getLeaderboard();
-  }, [loggedInState.cash]);
+  }, [loggedInState.cash, props.proposition]);
 
-  //every 5 minutes
   useInterval(() => {
     getEventScoreLeaderboard();
     getLeaderboard();
-  }, 300000);
+  }, 5000);
 
   const getLeaderboard = async () => {
     const response = await fetch(baseUrl + "leaderboard/all-time", {

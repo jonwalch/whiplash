@@ -1,7 +1,6 @@
 .form {
 
   &_suggestion{
-
      display: flex;
      margin-top: 1em;
 
@@ -91,14 +90,16 @@
 
   &__input {
     background: $pale-blue;
-    border: none;
+    border: 0.25em solid $pale-blue;
+    outline: none;
     color: $light-black;
     padding: 0.25em 0.5em;
+    transition: .3s ease-in-out;
 
     &:hover,
     &:focus {
       background: $dark-white;
-      outline: 0.25em solid $purple;
+      border: 0.25em solid $purple;
     }
   }
 
