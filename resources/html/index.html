@@ -49,10 +49,7 @@
     <!-- TODO (paulshryock): Add better noscript experience -->
     You need to enable JavaScript to run this app.
   </noscript>
-  {% csrf-field %}
   <div class="root" id="root"></div>
-  <!-- TODO (paulshryock): Get minified Twitch script in production, or remove -->
-  <!-- <script src="https://embed.twitch.tv/embed/v1.js"></script> -->
   <!-- TODO (paulshryock): Minify JS bundle in production -->
   <script src="/dist/bundle.js"></script>
 

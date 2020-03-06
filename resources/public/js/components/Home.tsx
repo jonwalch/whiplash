@@ -115,14 +115,15 @@ export function Home(props: any) {
                     allowFullScreen={true}>
                 </iframe>
               </div>
-              {chatIsOpen && <div className="twitch__chat">
-                <iframe
-                    frameBorder="0"
-                    scrolling="true"
-                    src={"https://www.twitch.tv/embed/" + twitchUsername + "/chat?darkpopout"}>
-                </iframe>
-              </div>
-              }
+                {chatIsOpen &&
+                <div className="twitch__chat">
+                    <iframe
+                        frameBorder="0"
+                        scrolling="true"
+                        src={"https://www.twitch.tv/embed/" + twitchUsername + "/chat?darkpopout"}>
+                    </iframe>
+                </div>
+                }
             </div>
             <Vote
                 proposition={proposition}

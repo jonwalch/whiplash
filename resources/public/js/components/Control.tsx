@@ -12,7 +12,7 @@ export function Control(props: any) {
     const [twitchUser, setTwitchUser] = useState("");
     const [propText, setPropText] = useState("");
     const [propInfo, setPropInfo] = useState({});
-    const [eventInfo, setEventInfo] = useState({});
+    const [eventInfo, setEventInfo] = useState<any>({});
     const [suggestions, setSuggestions] = useState([]);
     const [selectedSuggestions, setSelectedSuggestions] = useState<any>([]);
 
@@ -210,6 +210,19 @@ export function Control(props: any) {
                         }}>
                         End Event
                     </button>
+                    {eventInfo && eventInfo["event/twitch-user"] &&
+                    <div
+                        className="aspect-ratio-wide twitch__video"
+                        //TODO: remove inline style
+                        style = {{paddingTop: "600px"}}
+                    >
+                        <iframe
+                            src={"https://player.twitch.tv/?channel=" + eventInfo["event/twitch-user"]}
+                            frameBorder="0"
+                            allowFullScreen={true}>
+                        </iframe>
+                    </div>
+                    }
                     <div
                         // TODO: remove inline style
                         style = {{marginTop: "30px"}}
