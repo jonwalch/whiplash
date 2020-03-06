@@ -1,9 +1,8 @@
 const path = require("path");
 const webpack = require("webpack");
 
-module.exports = {
+let config = {
   entry: "./resources/public/js/index.tsx",
-  mode: "development",
   module: {
     rules: [
       {
@@ -36,7 +35,6 @@ module.exports = {
       }
     ]
   },
-  devtool: "source-map",
   resolve: { extensions: ["*", ".js", ".jsx", ".ts", ".tsx"] },
   output: {
     path: path.resolve(__dirname, "resources/public/dist/"),
@@ -48,4 +46,17 @@ module.exports = {
   //          "react": "React",
   //          "react-dom": "ReactDOM"
   //      }
+};
+
+module.exports = (env, argv) => {
+  if (argv.mode === 'development') {
+    config.devtool = 'source-map';
+    config.mode = 'development'
+  }
+
+  else {
+    config.mode = 'production'
+  }
+
+  return config;
 };
