@@ -30,7 +30,6 @@ export function Control(props: any) {
         }
     }, 3000);
 
-
     const createEvent = async () => {
         const response = await fetch(baseUrl + "admin/event", {
             headers: {

@@ -1,21 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useContext} from "react";
 import { useInterval } from "../common";
 import { baseUrl } from "../config/const";
 import {failedToFetch} from "./Home";
+import {LoginContext} from "../contexts/LoginContext";
 
 export function Bets(props: any) {
+  const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [bets, setBets] = useState<any>(null);
 
   useEffect(() => {
       getPropBets();
-  }, []);
+  }, [loggedInState.cash]);
 
   // TODO: only when there's an event
   useInterval(() => {
     if (props.twitchUsername != failedToFetch) {
       getPropBets();
     }
-  }, 5000);
+  }, 3000);
 
   const getPropBets = async () => {
     const url = baseUrl + "leaderboard/prop-bets";
