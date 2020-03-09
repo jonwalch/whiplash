@@ -41,7 +41,10 @@ let config = {
     publicPath: "/dist/",
     filename: "bundle.js"
   },
-  plugins: [new webpack.HotModuleReplacementPlugin()]
+  plugins: [
+    // ignore locale, see https://github.com/jmblog/how-to-optimize-momentjs-with-webpack#using-ignoreplugin
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+  ]
   //      externals: {
   //          "react": "React",
   //          "react-dom": "ReactDOM"
@@ -51,7 +54,8 @@ let config = {
 module.exports = (env, argv) => {
   if (argv.mode === 'development') {
     config.devtool = 'source-map';
-    config.mode = 'development'
+    config.mode = 'development';
+    config.plugins.push(new webpack.HotModuleReplacementPlugin())
   }
 
   else {
