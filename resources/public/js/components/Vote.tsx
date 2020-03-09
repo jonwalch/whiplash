@@ -3,6 +3,7 @@ import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
 import {getUser} from "../common/getUser";
 import {useInterval} from "../common";
+import moment from "moment";
 const { gtag } = require('ga-gtag');
 
 export function Vote(props: any) {
@@ -50,14 +51,16 @@ export function Vote(props: any) {
 
   const endBettingDate = () => {
     if (props.proposition && props.proposition["proposition/betting-end-time"]){
-      return Date.parse(props.proposition["proposition/betting-end-time"]);
+      return moment(props.proposition["proposition/betting-end-time"],
+          "YYYY-MM-DDTHH:mm:ssZ");;
     } else {
       return Infinity;
     }
   };
 
   const calculateSecondsLeftToBet = () => {
-    return Math.trunc((endBettingDate() - Date.now()) / 1000);;
+    return Math.trunc(moment(props.proposition["proposition/betting-end-time"],
+        "YYYY-MM-DDTHH:mm:ssZ").diff(moment.utc()) / 1000);
   };
 
   const makePropBet = async () => {
@@ -131,7 +134,7 @@ export function Vote(props: any) {
     if (props.proposition &&
         props.proposition["proposition/text"] &&
         props.proposition["proposition/betting-end-time"]){
-      if (Date.now() < endBettingDate()) {
+      if (moment.utc().isBefore(endBettingDate())) {
         return (
             <>
               <p>Seconds left to bet: {secondsLeftToBet}</p>

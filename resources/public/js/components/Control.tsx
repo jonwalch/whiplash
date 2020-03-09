@@ -13,7 +13,7 @@ export function Control(props: any) {
     const [propText, setPropText] = useState("");
     const [propInfo, setPropInfo] = useState({});
     const [eventInfo, setEventInfo] = useState<any>({});
-    const [suggestions, setSuggestions] = useState([]);
+    const [suggestions, setSuggestions] = useState<any[]>([]);
     const [selectedSuggestions, setSelectedSuggestions] = useState<any>([]);
 
     useEffect(() => {
@@ -291,7 +291,7 @@ export function Control(props: any) {
                                         .map((o: any) => o.value))
                             }}
                         >
-                            {suggestions.map((suggestion: any) => {
+                            {suggestions.length > 0 && suggestions.map((suggestion: any) => {
                                 return (
                                     <option
                                         value={suggestion["suggestion/uuid"]}
