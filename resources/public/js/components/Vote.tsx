@@ -10,6 +10,7 @@ export function Vote(props: any) {
   const [betAmount, setBetAmount] = useState<number>(0);
   const [projectedResult, setProjectedResult] = useState<null | boolean>(null);
   const [secondsLeftToBet, setSecondsLeftToBet] = useState<number>(0);
+  const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
 
   const booleanToButton = () => {
     if (projectedResult == null) {
@@ -60,6 +61,7 @@ export function Vote(props: any) {
   };
 
   const makePropBet = async () => {
+    setBetWaitingForResp(true);
     const response = await fetch(baseUrl + "user/prop-bet", {
       headers: {
         "Content-Type": "application/json",
@@ -85,18 +87,21 @@ export function Vote(props: any) {
     const resp = await response.json();
     if (response.status == 200) {
       alert(`You successfully bet $${betAmount} on outcome ${booleanToButton()}.`);
-      // reset local state to no longer have a selected team
-      setProjectedResult(null);
       // update user's cash
       getUser(setLoggedInState)
     } else {
       alert(resp.message);
     }
+    setProjectedResult(null);
+    setBetWaitingForResp(false);
   };
 
   const toggleValid = () => {
     // means the user hasn't select a team yet
-    return projectedResult == null || betAmount == 0 || betAmount > loggedInState.cash;
+    return projectedResult == null ||
+        betAmount == 0 ||
+        betAmount > loggedInState.cash ||
+        betWaitingForResp;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

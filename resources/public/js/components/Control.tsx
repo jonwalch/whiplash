@@ -78,7 +78,7 @@ export function Control(props: any) {
             redirect: "error",
             body: JSON.stringify({
                 text: propText,
-                "end-betting-secs": 30,
+                "end-betting-secs": 33,
             })
         });
         const resp = await response.json();

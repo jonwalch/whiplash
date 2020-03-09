@@ -5,5 +5,11 @@
      }
      &__button {
           width: auto;
-      }
+
+        &:not(.is-active) {
+            background: $medium-gray;
+            border-color: $gray;
+            outline: none;
+        }
+    }
 }

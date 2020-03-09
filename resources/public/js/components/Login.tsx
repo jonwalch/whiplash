@@ -18,7 +18,6 @@ export function Login(props: any) {
     const response = await fetch(baseUrl + "user/login", {
       headers: {
         "Content-Type": "application/json",
-        // "X-CSRF-Token": getCSRFToken()
       },
       method: "POST",
       mode: "same-origin",
@@ -88,7 +87,8 @@ export function Login(props: any) {
               <button
                   className="button form__button"
                   type="button"
-                  onClick={login} disabled={toggleValid()}>
+                  onClick={login}
+                  disabled={toggleValid()}>
                 Log In
               </button>
             </fieldset>

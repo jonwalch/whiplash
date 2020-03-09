@@ -74,6 +74,7 @@
 .button--make-bet:not(.is-active) {
   background: $medium-gray;
   border-color: $gray;
+  outline: none;
 
 &:hover,
 &:focus,

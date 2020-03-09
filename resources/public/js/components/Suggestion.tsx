@@ -6,8 +6,10 @@ import {LoginContext} from "../contexts/LoginContext";
 export function Suggestion(props: any) {
     const [suggestion, setSuggestion] = useState<string>("");
     const { loggedInState, setLoggedInState } = useContext(LoginContext);
+    const [suggestWaitingForResp, setSuggestWaitingForResp] = useState<boolean>(false);
 
     const createSuggestion = async () => {
+        setSuggestWaitingForResp(true);
         const response = await fetch(baseUrl + "user/suggestion", {
             headers: {
                 "Content-Type": "application/json",
@@ -25,7 +27,8 @@ export function Suggestion(props: any) {
         } else {
             alert(resp.message);
         }
-        setSuggestion("")
+        setSuggestion("");
+        setSuggestWaitingForResp(false);
     };
 
     const suggestionOnKeyPress = (e: any) => {
@@ -37,7 +40,10 @@ export function Suggestion(props: any) {
 
     const toggleValid = () => {
         //TODO: add validation
-        return suggestion === null || suggestion === "";
+        return suggestion === null ||
+            suggestion === "" ||
+            suggestion.length < 5 ||
+            suggestWaitingForResp;
     };
 
     const renderSuggestion = () => {
@@ -59,7 +65,7 @@ export function Suggestion(props: any) {
                     id="suggestion"
                 />
                 <button
-                    className="button form__button suggestion__button"
+                    className={"button form__button suggestion__button " + (!toggleValid() ? "is-active" : "")}
                     type="button"
                     onClick={createSuggestion}
                     disabled={toggleValid()}>
