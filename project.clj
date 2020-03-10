@@ -68,8 +68,7 @@
                                     [prone "2019-07-08"]
                                     [ring/ring-devel "1.7.1"]
                                     [ring/ring-mock "0.4.0"]
-                                    [peridot "0.5.1"]
-                                    [datomic-client-memdb "0.2.0" :exclusions [org.slf4j/log4j-over-slf4j org.slf4j/slf4j-nop com.google.guava/guava]]]
+                                    [computesoftware/datomic-client-memdb "1.0.0" :exclusions [org.slf4j/log4j-over-slf4j org.slf4j/slf4j-nop com.google.guava/guava]]]
                    :plugins        [[com.jakemccrary/lein-test-refresh "0.24.1"]]
 
                    :source-paths   ["env/dev/clj"]

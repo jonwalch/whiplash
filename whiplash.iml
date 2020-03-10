@@ -83,11 +83,11 @@
     <orderEntry type="library" name="Leiningen: commons-fileupload:1.3.3" level="project" />
     <orderEntry type="library" name="Leiningen: commons-io:2.6" level="project" />
     <orderEntry type="library" name="Leiningen: commons-logging:1.2" level="project" />
+    <orderEntry type="library" name="Leiningen: computesoftware/datomic-client-memdb:1.0.0" level="project" />
     <orderEntry type="library" name="Leiningen: cprop:0.1.14" level="project" />
     <orderEntry type="library" name="Leiningen: crypto-equality:1.0.0" level="project" />
     <orderEntry type="library" name="Leiningen: crypto-random:1.2.0" level="project" />
     <orderEntry type="library" name="Leiningen: danlentz/clj-uuid:0.1.9" level="project" />
-    <orderEntry type="library" name="Leiningen: datomic-client-memdb:0.2.0" level="project" />
     <orderEntry type="library" name="Leiningen: expiring-map:0.1.9" level="project" />
     <orderEntry type="library" name="Leiningen: expound:0.7.2" level="project" />
     <orderEntry type="library" name="Leiningen: fipp:0.6.18" level="project" />
@@ -173,7 +173,6 @@
     <orderEntry type="library" name="Leiningen: org.clojure/core.memoize:0.5.9" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/core.rrb-vector:0.0.14" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/core.specs.alpha:0.2.44" level="project" />
-    <orderEntry type="library" name="Leiningen: org.clojure/data.codec:0.1.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/data.json:0.2.6" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/data.priority-map:0.0.7" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/google-closure-library-third-party:0.0-20170809-b9c14c6b" level="project" />
@@ -211,14 +210,12 @@
     <orderEntry type="library" name="Leiningen: org.webjars/webjars-locator-core:0.37" level="project" />
     <orderEntry type="library" name="Leiningen: org.webjars/webjars-locator:0.36" level="project" />
     <orderEntry type="library" name="Leiningen: org.yaml/snakeyaml:1.24" level="project" />
-    <orderEntry type="library" name="Leiningen: peridot:0.5.1" level="project" />
     <orderEntry type="library" name="Leiningen: potemkin:0.4.5" level="project" />
     <orderEntry type="library" name="Leiningen: primitive-math:0.1.6" level="project" />
     <orderEntry type="library" name="Leiningen: prismatic/schema:1.1.11" level="project" />
     <orderEntry type="library" name="Leiningen: prone:2019-07-08" level="project" />
     <orderEntry type="library" name="Leiningen: realize:2019-04-24" level="project" />
     <orderEntry type="library" name="Leiningen: riddley:0.1.12" level="project" />
-    <orderEntry type="library" name="Leiningen: ring-mock:0.1.5" level="project" />
     <orderEntry type="library" name="Leiningen: ring-webjars:0.2.0" level="project" />
     <orderEntry type="library" name="Leiningen: ring/ring-anti-forgery:1.3.0" level="project" />
     <orderEntry type="library" name="Leiningen: ring/ring-codec:1.1.1" level="project" />
