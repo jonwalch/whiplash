@@ -35,6 +35,8 @@ let config = {
       }
     ]
   },
+  // actually encouraged in all envs by webpack https://webpack.js.org/guides/production/#source-mapping
+  devtool: 'source-map',
   resolve: { extensions: ["*", ".js", ".jsx", ".ts", ".tsx"] },
   output: {
     path: path.resolve(__dirname, "resources/public/dist/"),
@@ -42,7 +44,7 @@ let config = {
     filename: "bundle.js"
   },
   plugins: [
-    // ignore locale, see https://github.com/jmblog/how-to-optimize-momentjs-with-webpack#using-ignoreplugin
+    // ignore moment.js locales, see https://github.com/jmblog/how-to-optimize-momentjs-with-webpack#using-ignoreplugin
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
   ]
   //      externals: {
@@ -53,7 +55,6 @@ let config = {
 
 module.exports = (env, argv) => {
   if (argv.mode === 'development') {
-    config.devtool = 'source-map';
     config.mode = 'development';
     config.plugins.push(new webpack.HotModuleReplacementPlugin())
   }

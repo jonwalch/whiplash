@@ -11,10 +11,10 @@ export function Control(props: any) {
     const [eventTitle, setEventTitle] = useState("");
     const [twitchUser, setTwitchUser] = useState("");
     const [propText, setPropText] = useState("");
-    const [propInfo, setPropInfo] = useState({});
+    const [propInfo, setPropInfo] = useState<any>({});
     const [eventInfo, setEventInfo] = useState<any>({});
     const [suggestions, setSuggestions] = useState<any[]>([]);
-    const [selectedSuggestions, setSelectedSuggestions] = useState<any>([]);
+    const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
 
     useEffect(() => {
         getEvent().then((event) => {setEventInfo(event)});
@@ -160,9 +160,10 @@ export function Control(props: any) {
                 <form className="container">
                     <div>Current Event:</div>
                     <div>{JSON.stringify(eventInfo)}</div>
+                    {!eventInfo["event/twitch-user"] &&
                     <div className="form__group"
                         // TODO: remove inline style
-                         style = {{marginTop: "30px"}}
+                         style={{marginTop: "30px"}}
                     >
                         <label className="form__label" htmlFor="eventTitle">Event Title</label>
                         <input
@@ -172,55 +173,62 @@ export function Control(props: any) {
                                 setEventTitle(e.currentTarget.value);
                             }}
                             maxLength={100}
-                            minLength= {5}
+                            minLength={5}
                             name="eventTitle"
                             id="eventTitle"
                         />
                     </div>
-                    <div className="form__group">
-                        <label className="form__label" htmlFor="twitchUser">Event Twitch User</label>
-                        <input
-                            className="form__input"
-                            value={twitchUser}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                setTwitchUser(e.currentTarget.value);
-                            }}
-                            maxLength={50}
-                            minLength= {4}
-                            name="twitchUser"
-                            id="twitchUser"
-                        />
-                    </div>
-                    <button
-                        className="button twitch__button"
-                        // TODO: remove inline style
-                        style = {{marginRight: "30px"}}
-                        type="button"
-                        onClick={() => {
-                            createEvent()
-                        }}>
-                        Create Event
-                    </button>
-                    <button
-                        className="button twitch__button"
-                        type="button"
-                        onClick={() => {
+                    }
+                    {!eventInfo["event/twitch-user"] &&
+                    <>
+                        <div className="form__group">
+                            <label className="form__label" htmlFor="twitchUser">Event Twitch User</label>
+                            <input
+                                className="form__input"
+                                value={twitchUser}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                    setTwitchUser(e.currentTarget.value);
+                                }}
+                                maxLength={50}
+                                minLength={4}
+                                name="twitchUser"
+                                id="twitchUser"
+                            />
+                        </div>
+                        < button
+                            className="button twitch__button"
+                            // TODO: remove inline style
+                            style = {{marginRight: "30px"}}
+                            type="button"
+                            onClick={() => {
+                                createEvent()
+                            }}>
+                            Create Event
+                        </button>
+                    </>
+                    }
+                    {eventInfo["event/twitch-user"] &&
+                    <>
+                        <button
+                            className="button twitch__button"
+                            type="button"
+                            onClick={() => {
                             endEvent()
                         }}>
-                        End Event
-                    </button>
-                    {eventInfo && eventInfo["event/twitch-user"] &&
-                    <div
-                        className="aspect-ratio-wide twitch__video"
-                        //TODO: remove inline style
-                        style = {{paddingTop: "600px"}}
-                    >
-                        <iframe
-                            src={"https://player.twitch.tv/?channel=" + eventInfo["event/twitch-user"]}
-                            frameBorder="0"
-                            allowFullScreen={true}>
-                        </iframe>
-                    </div>
+                            End Event
+                        </button>
+                        <div
+                            className="aspect-ratio-wide twitch__video"
+                            //TODO: remove inline style
+                            style = {{paddingTop: "600px"}}
+                        >
+                            <iframe
+                                src={"https://player.twitch.tv/?channel=" + eventInfo["event/twitch-user"]}
+                                frameBorder="0"
+                                allowFullScreen={true}>
+                            </iframe>
+                        </div>
+                    </>
                     }
                     <div
                         // TODO: remove inline style
@@ -229,50 +237,58 @@ export function Control(props: any) {
                         Current Proposition:
                     </div>
                     <div>{JSON.stringify(propInfo)}</div>
-                    <div className="form__group"
-                        // TODO: remove inline style
-                         style = {{marginTop: "30px"}}
-                    >
-                        <label className="form__label" htmlFor="propText">Proposition Text</label>
-                        <input
-                            className="form__input"
-                            value={propText}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                setPropText(e.currentTarget.value);
-                            }}
-                            maxLength={100}
-                            minLength= {5}
-                            name="propText"
-                            id="propText"
-                        />
-                    </div>
-                    <button
-                        className="button twitch__button"
-                        // TODO: remove inline style
-                        style = {{marginRight: "30px"}}
-                        type="button"
-                        onClick={() => {
-                            createProp()
-                        }}>
-                        Create Proposition
-                    </button>
-                    <button
-                        className="button twitch__button"
-                        style = {{marginRight: "30px"}}
-                        type="button"
-                        onClick={() => {
-                            endProp(true)
-                        }}>
-                        Proposition outcome: True
-                    </button>
-                    <button
-                        className="button twitch__button"
-                        type="button"
-                        onClick={() => {
-                            endProp(false)
-                        }}>
-                        Proposition outcome: False
-                    </button>
+                    {!propInfo["proposition/text"] &&
+                    <>
+                        <div className="form__group"
+                            // TODO: remove inline style
+                             style = {{marginTop: "30px"}}
+                        >
+                            <label className="form__label" htmlFor="propText">Proposition Text</label>
+                            <input
+                                className="form__input"
+                                value={propText}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                    setPropText(e.currentTarget.value);
+                                }}
+                                maxLength={100}
+                                minLength= {5}
+                                name="propText"
+                                id="propText"
+                            />
+                        </div>
+                        <button
+                            className="button twitch__button"
+                            // TODO: remove inline style
+                            style = {{marginRight: "30px"}}
+                            type="button"
+                            onClick={() => {
+                                createProp()
+                            }}>
+                            Create Proposition
+                        </button>
+                    </>
+                    }
+                    {propInfo["proposition/text"] &&
+                    <>
+                        <button
+                            className="button twitch__button"
+                            style={{marginRight: "30px"}}
+                            type="button"
+                            onClick={() => {
+                                endProp(true)
+                            }}>
+                            Proposition outcome: True
+                        </button>
+                        <button
+                            className="button twitch__button"
+                            type="button"
+                            onClick={() => {
+                                endProp(false)
+                            }}>
+                            Proposition outcome: False
+                        </button>
+                    </>
+                    }
                     <div
                         // TODO: remove inline style
                         style = {{marginTop: "30px"}}>
@@ -302,32 +318,36 @@ export function Control(props: any) {
                             })}
                         </select>
                     </div>
-                    <button
-                        // TODO: gray out this button when clicking it is invalid
-                        className="button twitch__button"
-                        // TODO: remove inline style
-                        style = {{marginRight: "30px"}}
-                        type="button"
-                        disabled={toggleValid()}
-                        onClick={() => {
-                            dismissSuggestions()
-                        }}
-                    >
-                        Dismiss Suggestions
-                    </button>
-                    <button
-                        // TODO: gray out this button when clicking it is invalid
-                        className="button twitch__button"
-                        type="button"
-                        onClick={() => {
-                            const targetSuggestion = suggestions
-                                .filter((suggestion : any) =>
-                                    suggestion["suggestion/uuid"] == selectedSuggestions[0])[0];
-                            setPropText(suggestionToPropString(targetSuggestion) || "")
-                        }}
-                    >
-                        Move to Prop
-                    </button>
+                    {selectedSuggestions.length > 0 &&
+                    <>
+                        <button
+                            // TODO: gray out this button when clicking it is invalid
+                            className="button twitch__button"
+                            // TODO: remove inline style
+                            style = {{marginRight: "30px"}}
+                            type="button"
+                            disabled={toggleValid()}
+                            onClick={() => {
+                                dismissSuggestions()
+                            }}
+                        >
+                            Dismiss Suggestions
+                        </button>
+                        <button
+                            // TODO: gray out this button when clicking it is invalid
+                            className="button twitch__button"
+                            type="button"
+                            onClick={() => {
+                                const targetSuggestion = suggestions
+                                    .filter((suggestion : any) =>
+                                        suggestion["suggestion/uuid"] == selectedSuggestions[0])[0];
+                                setPropText(suggestionToPropString(targetSuggestion) || "")
+                            }}
+                        >
+                            Move to Prop
+                        </button>
+                    </>
+                    }
                 </form>
             );
         }
