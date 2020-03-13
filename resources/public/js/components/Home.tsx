@@ -31,7 +31,7 @@ export function Home(props: any) {
     }
 
     getEvent().then((event) => {
-      setTwitchUsername(event["event/twitch-user"] || failedToFetch);
+      setTwitchUsername(event["event/channel-id"] || failedToFetch);
       setMatchName(event["event/title"])
     });
 
@@ -68,7 +68,7 @@ export function Home(props: any) {
 
   useInterval(() => {
     getEvent().then((event) => {
-      setTwitchUsername(event["event/twitch-user"] || failedToFetch);
+      setTwitchUsername(event["event/channel-id"] || failedToFetch);
       setMatchName(event["event/title"])
     });
   }, 10000);

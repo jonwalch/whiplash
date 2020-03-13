@@ -90,7 +90,6 @@
 
 (defn add-user
   [conn {:keys [first-name last-name status email password user-name verify-token]}]
-  ;; TODO :user/signup-time
   (d/transact conn {:tx-data [{:user/first-name   first-name
                                :user/last-name    last-name
                                :user/name         user-name
@@ -98,6 +97,7 @@
                                :user/verify-token verify-token
                                :user/email        email
                                :user/password     password
+                               :user/sign-up-time (time/to-date)
                                :user/cash         (bigint 500)}]}))
 
 (defn update-password
@@ -131,7 +131,8 @@
 (defn verify-email
   [conn {:keys [db/id]}]
   (d/transact conn {:tx-data [{:db/id       id
-                               :user/status :user.status/active}]}))
+                               :user/status :user.status/active
+                               :user/verified-email-time (time/to-date)}]}))
 
 (defn find-one-by
   [db attr val]
@@ -317,13 +318,16 @@
            :args  [db]}))))
 
 (defn create-event
-  [{:keys [title twitch-user]}]
+  [{:keys [title channel-id source]}]
+  (assert (or (= :event.stream-source/twitch source)
+              (= :event.stream-source/youtube source)))
   (d/transact (:conn datomic-cloud)
-              {:tx-data [{:db/id             "temp"
-                          :event/title       title
-                          :event/twitch-user twitch-user
-                          :event/running?    true
-                          :event/start-time  (time/to-date)}
+              {:tx-data [{:db/id            "temp"
+                          :event/title      title
+                          :event/channel-id channel-id
+                          :event/stream-source source
+                          :event/running?   true
+                          :event/start-time (time/to-date)}
                          {:whiplash/events ["temp"]}]}))
 
 (defn end-event

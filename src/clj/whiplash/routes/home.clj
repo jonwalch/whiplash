@@ -56,7 +56,8 @@
       {:post {:summary    "Create a new event"
               :middleware [middleware/wrap-admin]
               :parameters {:body {:title       string?
-                                  :twitch_user string?}}
+                                  :channel-id string?
+                                  :source string?}}
               :handler    (fn [req]
                             (event/create-event req))}}]
 

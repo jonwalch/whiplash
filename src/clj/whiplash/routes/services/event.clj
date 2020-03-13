@@ -6,23 +6,37 @@
 (defn create-event
   [{:keys [body-params] :as req}]
   ;; TODO validation of twitch and twitch_user
-  (let [{:keys [title twitch_user]} body-params]
-    (if (nil? (db/find-ongoing-event))
+  (let [{:keys [title channel-id source]} body-params
+        source-valid? (or (= source "twitch")
+                          (= source "youtube"))]
+    (cond
+      (some? (db/find-ongoing-event))
+      (method-not-allowed {:message "Cannot create event, one is already ongoing"})
+
+      (not source-valid?)
+      (bad-request {:message "Source is incorrect."})
+
+      :else
       (do
         (db/create-event {:title       title
-                          :twitch-user twitch_user})
-        (ok {}))
-      (method-not-allowed {:message "Cannot create event, one is already ongoing"}))))
+                          :channel-id channel-id
+                          :source (if (= "twitch" source)
+                                    :event.stream-source/twitch
+                                    :event.stream-source/youtube)})
+        (ok {})))))
 
 (defn get-current-event
   [{:keys [body-params] :as req}]
   (if-let [event (db/find-ongoing-event)]
-    (ok (d/pull (d/db (:conn db/datomic-cloud))
-                '[:event/start-time
-                  :event/running?
-                  :event/twitch-user
-                  :event/title]
-                event))
+    (ok (db/resolve-enum
+          (d/pull (d/db (:conn db/datomic-cloud))
+                  '[:event/start-time
+                    :event/running?
+                    :event/channel-id
+                    :event/title
+                    :event/stream-source]
+                  event)
+          :event/stream-source))
     (not-found {})))
 
 (defn end-current-event

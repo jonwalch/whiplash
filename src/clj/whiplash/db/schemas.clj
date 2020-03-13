@@ -39,9 +39,9 @@
         :db/valueType   :db.type/string
         :db/cardinality :db.cardinality/one
         }
-       {:db/doc "User's cash"
-        :db/ident :user/cash
-        :db/valueType :db.type/bigint
+       {:db/doc         "User's cash"
+        :db/ident       :user/cash
+        :db/valueType   :db.type/bigint
         :db/cardinality :db.cardinality/one
         }
        ;; example of enumeration in Datomic
@@ -119,7 +119,7 @@
         :db/cardinality :db.cardinality/one
         }
        ]
-   ;; Prop betting MVP
+
    :1 [{:db/ident :user.status/admin}
 
        {:db/doc         "Prop bets"
@@ -144,6 +144,7 @@
         :db/valueType   :db.type/string
         :db/cardinality :db.cardinality/one}
 
+       ;; TODO: properly retire
        {:db/doc         "twitch user to stream for duration of event"
         :db/ident       :event/twitch-user
         :db/valueType   :db.type/string
@@ -239,6 +240,34 @@
        {:db/doc         "Reference to user that submitted the suggestion"
         :db/ident       :suggestion/user
         :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/one}]
+
+   :2 [{:db/doc         "Enum of where the stream is sourced from"
+        :db/ident       :event/stream-source
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/one}
+
+       {:db/ident :event.stream-source/twitch}
+       {:db/ident :event.stream-source/youtube}
+
+       {:db/doc         "Time the user signed up"
+        :db/ident       :user/sign-up-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Time that the user verified their email address"
+        :db/ident       :user/verified-email-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
+       ;; TODO: handle this properly
+       #_{:db/doc   "Rename :event/twitch-user to :event/channel-id"
+        :db/id    :event/twitch-user
+        :db/ident :event/channel-id}
+
+       {:db/doc         "New attribute to replace event/twitch-user"
+        :db/ident       :event/channel-id
+        :db/valueType   :db.type/string
         :db/cardinality :db.cardinality/one}
        ]})
 

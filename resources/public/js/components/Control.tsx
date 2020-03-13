@@ -9,14 +9,16 @@ import { getEvent, getProp} from "../common/stream"
 export interface Event {
     "event/start-time": string;
     "event/running?": boolean;
-    "event/twitch-user" : string;
+    "event/channel-id" : string;
+    "event/stream-source" : string;
     "event/title": string;
 }
 
 export const defaultEvent = {
     "event/start-time": "",
     "event/running?": false,
-    "event/twitch-user": "",
+    "event/channel-id": "",
+    "event/stream-source": "",
     "event/title": "",
 };
 
@@ -93,7 +95,8 @@ export function Control(props: any) {
             redirect: "error",
             body: JSON.stringify({
                 title: eventTitle,
-                twitch_user: twitchUser,
+                "channel-id": twitchUser,
+                "source": "twitch"
             })
         });
         const resp = await response.json();
@@ -213,7 +216,7 @@ export function Control(props: any) {
                 <form className="container">
                     <div>Current Event:</div>
                     <div>{JSON.stringify(eventInfo)}</div>
-                    {!eventInfo["event/twitch-user"] &&
+                    {!eventInfo["event/channel-id"] &&
                     <div className="form__group"
                         // TODO: remove inline style
                          style={{marginTop: "30px"}}
@@ -232,7 +235,7 @@ export function Control(props: any) {
                         />
                     </div>
                     }
-                    {!eventInfo["event/twitch-user"] &&
+                    {!eventInfo["event/channel-id"] &&
                     <>
                         <div className="form__group">
                             <label className="form__label" htmlFor="twitchUser">Event Twitch User</label>
@@ -260,7 +263,7 @@ export function Control(props: any) {
                         </button>
                     </>
                     }
-                    {eventInfo["event/twitch-user"] &&
+                    {eventInfo["event/channel-id"] &&
                     <>
                         <button
                             className="button twitch__button"
@@ -276,7 +279,8 @@ export function Control(props: any) {
                             style = {{paddingTop: "600px"}}
                         >
                             <iframe
-                                src={"https://player.twitch.tv/?channel=" + eventInfo["event/twitch-user"]}
+                                // TODO: change this
+                                src={"https://player.twitch.tv/?channel=" + eventInfo["event/channel-id"]}
                                 frameBorder="0"
                                 allowFullScreen={true}>
                             </iframe>

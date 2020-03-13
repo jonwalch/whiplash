@@ -578,11 +578,13 @@
 ;; Prop betting MVP tests
 
 (defn- admin-create-event
-  [{:keys [auth-token title twitch-user status]}]
+  [{:keys [auth-token title channel-id source status]}]
   (let [resp ((common/test-app) (-> (mock/request :post "/admin/event")
                                     (mock/cookie :value auth-token)
-                                    (mock/json-body {:title title
-                                                     :twitch_user twitch-user})))]
+                                    (mock/json-body {:title      title
+                                                     :channel-id channel-id
+                                                     :source     (or source
+                                                                     "twitch")})))]
     (is (= (or status
                200)
            (:status resp)))
@@ -703,7 +705,7 @@
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login)]
       (admin-create-event {:auth-token auth-token
                            :title "poops"
-                           :twitch-user "pig boops"
+                           :channel-id "pig boops"
                            :status 403}))))
 
 (deftest success-admin-create-event
@@ -714,10 +716,10 @@
           twitch-user "drdisrespect"
           resp (admin-create-event {:auth-token auth-token
                                     :title title
-                                    :twitch-user twitch-user})
+                                    :channel-id twitch-user})
           fail-create-again-resp (admin-create-event {:auth-token auth-token
                                                       :title title
-                                                      :twitch-user twitch-user
+                                                      :channel-id twitch-user
                                                       :status 405})
 
           get-event-response (get-event)
@@ -750,7 +752,8 @@
       (is (string? (:event/start-time get-response-body)))
       (is (= #:event{:running? true
                      :title title
-                     :twitch-user twitch-user}
+                     :stream-source "event.stream-source/twitch"
+                     :channel-id twitch-user}
              (dissoc get-response-body :event/start-time))))))
 
 (deftest success-get-event
@@ -780,7 +783,7 @@
           twitch-user "drdisrespect"
           create-event-resp (admin-create-event {:auth-token auth-token
                                                  :title title
-                                                 :twitch-user twitch-user})
+                                                 :channel-id twitch-user})
 
           event-score-before-prop-creation (get-event-leaderboard {:status 404})
 
@@ -897,7 +900,7 @@
           twitch-user "drdisrespect"
           create-event-resp (admin-create-event {:auth-token auth-token
                                                  :title title
-                                                 :twitch-user twitch-user})
+                                                 :channel-id twitch-user})
 
           text "Will Jon wipeout 2+ times this round?"
           create-prop-bet-resp (admin-create-prop {:auth-token auth-token
@@ -943,7 +946,7 @@
           twitch-user "drdisrespect"
           create-event-resp (admin-create-event {:auth-token auth-token
                                                  :title title
-                                                 :twitch-user twitch-user})
+                                                 :channel-id twitch-user})
 
           text "Will Jon wipeout 2+ times this round?"
           create-prop-bet-resp (admin-create-prop {:auth-token auth-token
@@ -1014,7 +1017,7 @@
                                                       (assoc dummy-user :admin? true))]
       (admin-create-event {:auth-token auth-token
                            :title "hi"
-                           :twitch-user "donnie"})
+                           :channel-id "donnie"})
       (user-submit-suggestion {:auth-token auth-token
                                :text ""
                                :status 405})
@@ -1027,7 +1030,7 @@
                                                     (assoc dummy-user :admin? true))
         _ (admin-create-event {:auth-token  auth-token
                                :title       "hi"
-                               :twitch-user "donnie"})
+                               :channel-id "donnie"})
         _ (user-submit-suggestion {:auth-token auth-token
                                    :text       "Captain Falcon gets 2 or more dunks this round."})
         _ (user-submit-suggestion {:auth-token auth-token
@@ -1089,7 +1092,7 @@
         twitch-user "drdisrespect"
         create-event-resp (admin-create-event {:auth-token auth-token
                                                :title title
-                                               :twitch-user twitch-user})
+                                               :channel-id twitch-user})
         text "Will Jon wipeout 2+ times this round?"
         end-betting-secs 30
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
@@ -1120,7 +1123,7 @@
         twitch-user "drdisrespect"
         create-event-resp (admin-create-event {:auth-token auth-token
                                                :title title
-                                               :twitch-user twitch-user})
+                                               :channel-id twitch-user})
         text "Will Jon wipeout 2+ times this round?"
         end-betting-secs 30
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
@@ -1158,3 +1161,31 @@
 
     (admin-end-event {:auth-token auth-token
                       :result true})))
+
+(deftest create-youtube-live-event
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+        title "Dirty Dan's Delirious Dirty Dancing Watch Party"
+        youtube-channel-id "x135bZ6G"
+        resp (admin-create-event {:auth-token auth-token
+                                  :title      title
+                                  :channel-id youtube-channel-id
+                                  :source "youtube"})
+        fail-create-again-resp (admin-create-event {:auth-token auth-token
+                                                    :title      title
+                                                    :channel-id youtube-channel-id
+                                                    :source "youtube"
+                                                    :status     405})
+
+        get-event-response (get-event)
+        get-response-body (:body get-event-response)
+
+        end-event-resp (admin-end-event {:auth-token auth-token})
+        get-after-end-resp (get-event {:status 404})]
+
+    (is (string? (:event/start-time get-response-body)))
+    (is (= #:event{:running?      true
+                   :title         title
+                   :stream-source "event.stream-source/youtube"
+                   :channel-id    youtube-channel-id}
+           (dissoc get-response-body :event/start-time)))))
