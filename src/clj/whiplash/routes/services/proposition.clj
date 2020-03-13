@@ -1,8 +1,7 @@
 (ns whiplash.routes.services.proposition
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
-            [datomic.client.api :as d]
-            [clojure.tools.logging :as log]))
+            [datomic.client.api :as d]))
 
 (defn admin-create-proposition
   [{:keys [body-params] :as req}]
@@ -26,16 +25,25 @@
 
 (defn get-current-proposition
   [req]
-  (if-let [prop (db/find-ongoing-proposition)]
-    (ok (d/pull (d/db (:conn db/datomic-cloud))
-                '[:proposition/start-time
-                  :proposition/text
-                  :proposition/running?
-                  :proposition/betting-end-time]
-                prop))
-    (not-found {})))
+  (let [db (d/db (:conn db/datomic-cloud))
+        ongoing-event (db/find-ongoing-event db)
+        ongoing-prop (when ongoing-event
+                       (db/find-ongoing-proposition db))
+        previous-prop (when ongoing-event
+                        (db/find-previous-proposition {:db db
+                                                       :event-eid ongoing-event}))
+        prop-fields-to-pull '[:proposition/start-time
+                              :proposition/text
+                              :proposition/running?
+                              :proposition/betting-end-time]]
+    (if (or ongoing-prop previous-prop)
+      (ok {:current-prop  (d/pull db prop-fields-to-pull ongoing-prop)
+           :previous-prop (d/pull db
+                                  (conj prop-fields-to-pull :proposition/result?)
+                                  previous-prop)})
+      (not-found {}))))
 
-(defn end-betting-for-prop
+#_(defn end-betting-for-prop
   [{:keys [body-params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
         prop (db/find-ongoing-proposition db)]

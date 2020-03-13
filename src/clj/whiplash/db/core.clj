@@ -343,6 +343,17 @@
                     :where [?prop :proposition/running? true]]
            :args  [db]}))))
 
+(defn find-previous-proposition
+  [{:keys [db event-eid]}]
+  (->> (d/q {:query '[:find ?prop ?ts
+                      :in $ ?event-eid
+                      :where [?event-eid :event/propositions ?prop]
+                      [?prop :proposition/running? false]
+                      [?prop :proposition/end-time ?ts]]
+             :args  [db event-eid]})
+       (sort-by second #(compare %2 %1))
+       ffirst))
+
 (defn create-proposition
   [{:keys [text event-eid end-betting-secs]}]
   (let [now (time/now)]

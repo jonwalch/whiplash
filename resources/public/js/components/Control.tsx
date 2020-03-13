@@ -6,26 +6,79 @@ import {baseUrl} from "../config/const";
 import {useInterval} from "../common";
 import { getEvent, getProp} from "../common/stream"
 
+export interface Event {
+    "event/start-time": string;
+    "event/running?": boolean;
+    "event/twitch-user" : string;
+    "event/title": string;
+}
+
+export const defaultEvent = {
+    "event/start-time": "",
+    "event/running?": false,
+    "event/twitch-user": "",
+    "event/title": "",
+};
+
+export interface Proposition {
+    "proposition/start-time" : string;
+    "proposition/text" : string;
+    "proposition/running?" : boolean;
+    "proposition/betting-end-time" : string;
+    "proposition/result?" : boolean;
+}
+
+export const defaultProposition = {
+    "proposition/start-time": "",
+    "proposition/text": "",
+    "proposition/running?": false,
+    "proposition/betting-end-time" : "",
+    "proposition/result?": false
+};
+
 export function Control(props: any) {
     const { loggedInState, setLoggedInState } = useContext(LoginContext);
     const [eventTitle, setEventTitle] = useState("");
     const [twitchUser, setTwitchUser] = useState("");
     const [propText, setPropText] = useState("");
-    const [propInfo, setPropInfo] = useState<any>({});
-    const [eventInfo, setEventInfo] = useState<any>({});
+    const [proposition, setProposition] = useState<Proposition>(defaultProposition);
+    const [prevProposition, setPrevProposition] = useState<Proposition>(defaultProposition);
+    const [eventInfo, setEventInfo] = useState<Event>(defaultEvent);
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
 
     useEffect(() => {
         getEvent().then((event) => {setEventInfo(event)});
-        getProp().then((event) => {setPropInfo(event)});
+        getProp().then((event) => {
+            if (event["current-prop"]){
+                setProposition(event["current-prop"]);
+            } else {
+                setProposition(defaultProposition)
+            }
+            if (event["previous-prop"]) {
+                setPrevProposition(event["previous-prop"]);
+            } else {
+                setPrevProposition(defaultProposition);
+            }
+        });
         getSuggestions().then((event) => {setSuggestions(event)});
     }, []);
 
     useInterval(async () => {
         if (loggedInState.status == "user.status/admin") {
             setEventInfo(await getEvent());
-            setPropInfo(await getProp());
+            getProp().then((event) => {
+                if (event["current-prop"]){
+                    setProposition(event["current-prop"]);
+                } else {
+                    setProposition(defaultProposition)
+                }
+                if (event["previous-prop"]) {
+                    setPrevProposition(event["previous-prop"]);
+                } else {
+                    setPrevProposition(defaultProposition)
+                }
+            });
             setSuggestions(await getSuggestions());
         }
     }, 3000);
@@ -236,8 +289,8 @@ export function Control(props: any) {
                     >
                         Current Proposition:
                     </div>
-                    <div>{JSON.stringify(propInfo)}</div>
-                    {!propInfo["proposition/text"] &&
+                    <div>{JSON.stringify(proposition)}</div>
+                    {!proposition["proposition/text"] &&
                     <>
                         <div className="form__group"
                             // TODO: remove inline style
@@ -268,7 +321,7 @@ export function Control(props: any) {
                         </button>
                     </>
                     }
-                    {propInfo["proposition/text"] &&
+                    {proposition["proposition/text"] &&
                     <>
                         <button
                             className="button twitch__button"

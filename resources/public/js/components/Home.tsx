@@ -16,7 +16,8 @@ export function Home(props: any) {
   const [twitchUsername, setTwitchUsername] = useState<null | string>(null);
   const [matchName, setMatchName] = useState("");
   const [chatIsOpen, setChatIsOpen] = useState<boolean>(true);
-  const [proposition, setProposition] = useState<any>(null);
+  const [proposition, setProposition] = useState<Object>({});
+  const [prevProposition, setPrevProposition] = useState<Object>({});
 
   // child state
   const [eventScoreLeaderboard, setEventScoreLeaderboard] = useState<EventScore[]>([]);
@@ -30,25 +31,44 @@ export function Home(props: any) {
     }
 
     getEvent().then((event) => {
-      setTwitchUsername(event["event/twitch-user"] || failedToFetch)
+      setTwitchUsername(event["event/twitch-user"] || failedToFetch);
       setMatchName(event["event/title"])
     });
+
     getProp().then((event) => {
-      setProposition(event);
+          if (event["current-prop"]){
+              setProposition(event["current-prop"]);
+          } else {
+              setProposition({});
+          }
+          if (event["previous-prop"]) {
+              setPrevProposition(event["previous-prop"]);
+          } else {
+              setPrevProposition({});
+          }
     });
   }, []);
 
   useInterval(() => {
     if (twitchUsername != failedToFetch) {
         getProp().then((event) => {
-            setProposition(event);
+            if (event["current-prop"]){
+                setProposition(event["current-prop"]);
+            } else {
+                setProposition({});
+            }
+            if (event["previous-prop"]) {
+                setPrevProposition(event["previous-prop"]);
+            } else {
+                setPrevProposition({});
+            }
         });
     }
   }, 3000);
 
   useInterval(() => {
     getEvent().then((event) => {
-      setTwitchUsername(event["event/twitch-user"] || failedToFetch)
+      setTwitchUsername(event["event/twitch-user"] || failedToFetch);
       setMatchName(event["event/title"])
     });
   }, 10000);
@@ -123,6 +143,7 @@ export function Home(props: any) {
             </div>
             <Vote
                 proposition={proposition}
+                prevProposition={prevProposition}
                 matchName={matchName}
                 isProduction={isProduction}
             />
@@ -139,8 +160,6 @@ export function Home(props: any) {
                     {renderContent()}
                     <Bets
                         twitchUsername={twitchUsername}
-                        // matchID={matchID}
-                        // currentGame={currentGame}
                     />
                     <Suggestion
                         twitchUsername={twitchUsername}/>

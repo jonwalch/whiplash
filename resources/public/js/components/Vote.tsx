@@ -24,7 +24,7 @@ export function Vote(props: any) {
   };
 
   useInterval(() => {
-        if (props.proposition && props.proposition["proposition/betting-end-time"]) {
+        if (props.proposition["proposition/betting-end-time"]) {
           setSecondsLeftToBet(calculateSecondsLeftToBet())
         }}, 1000);
 
@@ -50,7 +50,7 @@ export function Vote(props: any) {
   }, [projectedResult]);
 
   const endBettingDate = () => {
-    if (props.proposition && props.proposition["proposition/betting-end-time"]){
+    if (props.proposition["proposition/betting-end-time"]){
       return moment(props.proposition["proposition/betting-end-time"],
           "YYYY-MM-DDTHH:mm:ssZ");;
     } else {
@@ -115,11 +115,24 @@ export function Vote(props: any) {
     }
   };
 
-  const renderPropositionText = () => {
-    if (props.proposition && props.proposition["proposition/text"]) {
-      return props.proposition["proposition/text"];
+  const renderPropositionText = (useClass : boolean) => {
+    let nameOfClass = "vote__message";
+    if (props.proposition["proposition/text"]) {
+      return (<p className={useClass ? nameOfClass : ""}>{props.proposition["proposition/text"]}</p>);
+    } else if (props.prevProposition["proposition/text"]){
+      return (
+          <>
+            <p className={useClass ? nameOfClass : ""}>
+              {"Last proposition: " + props.prevProposition["proposition/text"]}
+            </p>
+            <p className={useClass ? nameOfClass : ""}>
+              {"Outcome: " + (props.prevProposition["proposition/result?"] ? "Yes" : "No")}
+            </p>
+            <p className={useClass ? nameOfClass : ""}>Next proposition soon!</p>
+          </>
+      );
     } else {
-      return "Next proposition soon!";
+      return <p className={useClass ? nameOfClass : ""}>Next proposition soon!</p>;
     }
   };
 
@@ -131,8 +144,7 @@ export function Vote(props: any) {
   };
 
   const renderBettingOptions = () => {
-    if (props.proposition &&
-        props.proposition["proposition/text"] &&
+    if (props.proposition["proposition/text"] &&
         props.proposition["proposition/betting-end-time"]){
       if (moment.utc().isBefore(endBettingDate())) {
         return (
@@ -201,7 +213,7 @@ export function Vote(props: any) {
       } else if (loggedInState.status == "user.status/pending") {
         return (
           <div className="container">
-            <p className="vote__message"> {renderPropositionText()}</p>
+            {renderPropositionText(true)}
             <p className="vote__message">Verify your email to participate!</p>
           </div>
         );
@@ -212,7 +224,7 @@ export function Vote(props: any) {
                   onSubmit={(e: any) => e.preventDefault()}
             >
               <fieldset className="form__fieldset">
-                <p>{renderPropositionText()}</p>
+                {renderPropositionText(false)}
                 {renderBettingOptions()}
               </fieldset>
             </form>
@@ -222,7 +234,7 @@ export function Vote(props: any) {
     } else {
       return (
         <div className="container">
-          <p className="vote__message"> {renderPropositionText()}</p>
+          {renderPropositionText(true)}
           <p className="vote__message">Log in to participate!</p>
         </div>
       );

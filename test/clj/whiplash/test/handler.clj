@@ -730,6 +730,7 @@
           success-get-running-prop-resp  (get-prop)
 
           success-get-prop-body (:body success-get-running-prop-resp)
+          current-prop (:current-prop success-get-prop-body)
 
           fail-end-event-resp (admin-end-event {:auth-token auth-token
                                                 :status 405})
@@ -737,16 +738,14 @@
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
                                              :result true})
 
-          failure-get-running-prop-resp  (get-prop {:status 404})
-
           end-event-resp (admin-end-event {:auth-token auth-token})
           get-after-end-resp (get-event {:status 404})]
 
-      (is (string? (:proposition/start-time success-get-prop-body)))
-      (is (string? (:proposition/betting-end-time success-get-prop-body)))
+      (is (string? (:proposition/start-time current-prop)))
+      (is (string? (:proposition/betting-end-time current-prop)))
       (is (= #:proposition{:running? true
                            :text text}
-             (dissoc success-get-prop-body :proposition/start-time :proposition/betting-end-time)))
+             (dissoc current-prop :proposition/start-time :proposition/betting-end-time)))
 
       (is (string? (:event/start-time get-response-body)))
       (is (= #:event{:running? true
@@ -1100,7 +1099,7 @@
     (user-place-prop-bet {:auth-token auth-token
                           :projected-result true
                           :bet-amount 300})
-    (is (string? (-> (get-prop) :body :proposition/betting-end-time)))
+    (is (string? (-> (get-prop) :body :current-prop :proposition/betting-end-time)))
     ;; TODO: change tests so we can move time forward more sanely
     ;; User cannot place a bet after the betting window is over
     (with-redefs [whiplash.time/now (fn []
@@ -1113,3 +1112,49 @@
                      :result true})
     (admin-end-event {:auth-token auth-token
                      :result true})))
+
+(deftest get-previous-prop
+  (let [{:keys [auth-token]} (create-user-and-login
+                               (assoc dummy-user :admin? true))
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title title
+                                               :twitch-user twitch-user})
+        text "Will Jon wipeout 2+ times this round?"
+        end-betting-secs 30
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text text
+                                                 :end-betting-secs end-betting-secs})]
+
+    ;; asserts about current prop is good and previous prop is empty
+    (is (empty? (-> (get-prop) :body :previous-prop)))
+    (is (= text
+           (-> (get-prop) :body :current-prop :proposition/text)))
+
+    (admin-end-prop {:auth-token auth-token
+                     :result true})
+    (admin-create-prop {:auth-token auth-token
+                        :text "foo"
+                        :end-betting-secs end-betting-secs})
+
+    ;; asserts about current prop and previous prop
+    (is (= text
+           (-> (get-prop) :body :previous-prop :proposition/text)))
+    (is (= true
+           (-> (get-prop) :body :previous-prop :proposition/result?)))
+    (is (= "foo"
+           (-> (get-prop) :body :current-prop :proposition/text)))
+
+    (admin-end-prop {:auth-token auth-token
+                     :result false})
+
+    ;;asserts about prev prop but no current prop
+    (is (= "foo"
+           (-> (get-prop) :body :previous-prop :proposition/text)))
+    (is (= false
+           (-> (get-prop) :body :previous-prop :proposition/result?)))
+    (is (empty? (-> (get-prop) :body :current-prop)))
+
+    (admin-end-event {:auth-token auth-token
+                      :result true})))
