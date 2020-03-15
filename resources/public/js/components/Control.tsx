@@ -249,6 +249,7 @@ export function Control(props: any) {
                                 }}
                                 maxLength={50}
                                 minLength={4}
+                                placeholder="This is not used for CNN unauth"
                                 name="channelID"
                                 id="channelID"
                             />
@@ -275,6 +276,14 @@ export function Control(props: any) {
                                     onChange={() => {setEventSource("youtube")}}>
                                 </input>
                                 <label htmlFor="youTubeRadioButton">YouTube Live</label>
+                                <input
+                                    type='radio'
+                                    value={eventSource}
+                                    name="cnnUnAuthRadioButton"
+                                    key="cnnUnAuthRadioButton"
+                                    onChange={() => {setEventSource("cnn-unauth")}}>
+                                </input>
+                                <label htmlFor="youTubeRadioButton">CNN Unauth</label>
                             </div>
                             < button
                                 className="button twitch__button"

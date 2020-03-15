@@ -5,10 +5,11 @@
 
 (defn create-event
   [{:keys [body-params] :as req}]
-  ;; TODO validation of twitch and twitch_user
+  ;; TODO: don't require channel-id for cnn-unauth
   (let [{:keys [title channel-id source]} body-params
         source-valid? (or (= source "twitch")
-                          (= source "youtube"))]
+                          (= source "youtube")
+                          (= source "cnn-unauth"))]
     (cond
       (some empty? [title channel-id source])
       (bad-request {:message "No args can be empty."})
@@ -23,9 +24,10 @@
       (do
         (db/create-event {:title       title
                           :channel-id channel-id
-                          :source (if (= "twitch" source)
-                                    :event.stream-source/twitch
-                                    :event.stream-source/youtube)})
+                          :source (case source
+                                    "twitch" :event.stream-source/twitch
+                                    "youtube" :event.stream-source/youtube
+                                    "cnn-unauth" :event.stream-source/cnn-unauth)})
         (ok {})))))
 
 (defn get-current-event

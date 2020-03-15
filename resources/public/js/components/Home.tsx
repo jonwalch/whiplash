@@ -36,7 +36,8 @@ export function Home(props: any) {
       setMatchName(event["event/title"]);
       setStreamSource(event["event/stream-source"])
 
-      if (event["event/stream-source"] == "event.stream-source/youtube") {
+      // disable chat for non twitch
+      if (event["event/stream-source"] != "event.stream-source/twitch") {
         setChatIsOpen(false)
       }
     });
@@ -88,7 +89,10 @@ export function Home(props: any) {
   };
 
   const streamSourceToStreamUrl = () => {
-      if (streamSource == "event.stream-source/youtube") {
+      if (streamSource == "event.stream-source/cnn-unauth") {
+          return "https://fave.api.cnn.io/v1/fav/?video=cvplive/cvpstream0&customer=cnn&edition=domestic&env=prod&isLive=true";
+      }
+      else if (streamSource == "event.stream-source/youtube") {
           return "https://www.youtube.com/embed/live_stream?channel=" + channelID;
       }
       else if (streamSource == "event.stream-source/twitch") {
@@ -158,6 +162,7 @@ export function Home(props: any) {
                     allowFullScreen={true}>
                 </iframe>
               </div>
+                {/*disable chat for non twitch*/}
                 {chatIsOpen && streamSource == "event.stream-source/twitch" &&
                 <div className="twitch__chat">
                     <iframe

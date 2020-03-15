@@ -249,6 +249,7 @@
 
        {:db/ident :event.stream-source/twitch}
        {:db/ident :event.stream-source/youtube}
+       {:db/ident :event.stream-source/cnn-unauth}
 
        {:db/doc         "Time the user signed up"
         :db/ident       :user/sign-up-time

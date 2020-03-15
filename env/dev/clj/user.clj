@@ -57,8 +57,8 @@
   (start))
 
 (comment
-  (restart)
   (start)
+  (restart)
   (stop)
   (add-many-users 10)
   )

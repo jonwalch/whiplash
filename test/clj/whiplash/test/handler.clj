@@ -1223,3 +1223,31 @@
                            :channel-id youtube-channel-id
                            :source     "youtube"
                            :status     400}))))
+
+(deftest create-cnn-unauth-event
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+        title "Dirty Dan's Delirious Dirty Dancing Watch Party"
+        cnn-channel-id "doesnt matter what this is"
+        resp (admin-create-event {:auth-token auth-token
+                                  :title      title
+                                  :channel-id cnn-channel-id
+                                  :source "cnn-unauth"})
+        fail-create-again-resp (admin-create-event {:auth-token auth-token
+                                                    :title      title
+                                                    :channel-id cnn-channel-id
+                                                    :source "cnn-unauth"
+                                                    :status     405})
+
+        get-event-response (get-event)
+        get-response-body (:body get-event-response)
+
+        end-event-resp (admin-end-event {:auth-token auth-token})
+        get-after-end-resp (get-event {:status 404})]
+
+    (is (string? (:event/start-time get-response-body)))
+    (is (= #:event{:running?      true
+                   :title         title
+                   :stream-source "event.stream-source/cnn-unauth"
+                   :channel-id    cnn-channel-id}
+           (dissoc get-response-body :event/start-time)))))

@@ -320,7 +320,8 @@
 (defn create-event
   [{:keys [title channel-id source]}]
   (assert (or (= :event.stream-source/twitch source)
-              (= :event.stream-source/youtube source)))
+              (= :event.stream-source/youtube source)
+              (= :event.stream-source/cnn-unauth source)))
   (d/transact (:conn datomic-cloud)
               {:tx-data [{:db/id            "temp"
                           :event/title      title
