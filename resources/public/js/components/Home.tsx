@@ -13,8 +13,9 @@ const { install } = require('ga-gtag');
 export const failedToFetch : string = "failed to fetch"
 
 export function Home(props: any) {
-  const [twitchUsername, setTwitchUsername] = useState<null | string>(null);
-  const [matchName, setMatchName] = useState("");
+  const [channelID, setChannelID] = useState<null | string>(null);
+  const [matchName, setMatchName] = useState<string>("");
+  const [streamSource, setStreamSource] = useState<string>("");
   const [chatIsOpen, setChatIsOpen] = useState<boolean>(true);
   const [proposition, setProposition] = useState<Object>({});
   const [prevProposition, setPrevProposition] = useState<Object>({});
@@ -31,8 +32,13 @@ export function Home(props: any) {
     }
 
     getEvent().then((event) => {
-      setTwitchUsername(event["event/channel-id"] || failedToFetch);
-      setMatchName(event["event/title"])
+      setChannelID(event["event/channel-id"] || failedToFetch);
+      setMatchName(event["event/title"]);
+      setStreamSource(event["event/stream-source"])
+
+      if (event["event/stream-source"] == "event.stream-source/youtube") {
+        setChatIsOpen(false)
+      }
     });
 
     getProp().then((event) => {
@@ -50,7 +56,7 @@ export function Home(props: any) {
   }, []);
 
   useInterval(() => {
-    if (twitchUsername != failedToFetch) {
+    if (channelID != failedToFetch) {
         getProp().then((event) => {
             if (event["current-prop"]){
                 setProposition(event["current-prop"]);
@@ -68,7 +74,7 @@ export function Home(props: any) {
 
   useInterval(() => {
     getEvent().then((event) => {
-      setTwitchUsername(event["event/channel-id"] || failedToFetch);
+      setChannelID(event["event/channel-id"] || failedToFetch);
       setMatchName(event["event/title"])
     });
   }, 10000);
@@ -81,9 +87,28 @@ export function Home(props: any) {
       return "";
   };
 
+  const streamSourceToStreamUrl = () => {
+      if (streamSource == "event.stream-source/youtube") {
+          return "https://www.youtube.com/embed/live_stream?channel=" + channelID;
+      }
+      else if (streamSource == "event.stream-source/twitch") {
+         return "https://player.twitch.tv/?channel=" + channelID;
+      }
+  };
+
+    const streamSourceToChatUrl = () => {
+        // TODO: youtube live chat seems to need the video id, not the channel id
+        if (streamSource == "event.stream-source/youtube") {
+            return "https://www.youtube.com/live_chat?channel=" + channelID;
+        }
+        else if (streamSource == "event.stream-source/twitch") {
+            return "https://www.twitch.tv/embed/" + channelID + "/chat?darkpopout";
+        }
+    };
+
   const renderContent = () => {
     // Loading
-    if (twitchUsername == null) {
+    if (channelID == null) {
       return (
           <div className="twitch is-inactive">
             <div className="container">
@@ -95,7 +120,7 @@ export function Home(props: any) {
           </div>
       );
       // No stream to show
-    } else if (twitchUsername == failedToFetch) {
+    } else if (channelID == failedToFetch) {
       return (
           <div className="twitch is-inactive">
             <div className="container">
@@ -114,29 +139,31 @@ export function Home(props: any) {
           <>
             <div className={"twitch" + (!chatIsOpen ? " chat-is-closed" : "")}>
               <header className="container twitch__header">
-                <h2 className="twitch__title">{matchName}</h2>
-                <button
-                    className="button twitch__button"
-                    type="button"
-                    onClick={() => {
-                      setChatIsOpen(!chatIsOpen)
-                    }}>
-                  {chatIsOpen ? 'Close Chat' : 'Open Chat'}
-                </button>
+                  <h2 className="twitch__title">{matchName}</h2>
+                  {streamSource == "event.stream-source/twitch" &&
+                  <button
+                      className="button twitch__button"
+                      type="button"
+                      onClick={() => {
+                          setChatIsOpen(!chatIsOpen)
+                      }}>
+                      {chatIsOpen ? 'Close Chat' : 'Open Chat'}
+                  </button>
+                  }
               </header>
               <div className="aspect-ratio-wide twitch__video">
                 <iframe
-                    src={"https://player.twitch.tv/?channel=" + twitchUsername}
+                    src={streamSourceToStreamUrl()}
                     frameBorder="0"
                     allowFullScreen={true}>
                 </iframe>
               </div>
-                {chatIsOpen &&
+                {chatIsOpen && streamSource == "event.stream-source/twitch" &&
                 <div className="twitch__chat">
                     <iframe
                         frameBorder="0"
                         scrolling="true"
-                        src={"https://www.twitch.tv/embed/" + twitchUsername + "/chat?darkpopout"}>
+                        src={streamSourceToChatUrl()}>
                     </iframe>
                 </div>
                 }
@@ -159,12 +186,12 @@ export function Home(props: any) {
                 <div className="home__layout">
                     {renderContent()}
                     <Bets
-                        twitchUsername={twitchUsername}
+                        twitchUsername={channelID}
                     />
                     <Suggestion
-                        twitchUsername={twitchUsername}/>
+                        twitchUsername={channelID}/>
                     <Leaderboard
-                        twitchUsername={twitchUsername}
+                        twitchUsername={channelID}
                         proposition={proposition}
                         eventScoreLeaderboard={eventScoreLeaderboard}
                         setEventScoreLeaderboard={setEventScoreLeaderboard}

@@ -10,6 +10,9 @@
         source-valid? (or (= source "twitch")
                           (= source "youtube"))]
     (cond
+      (some empty? [title channel-id source])
+      (bad-request {:message "No args can be empty."})
+
       (some? (db/find-ongoing-event))
       (method-not-allowed {:message "Cannot create event, one is already ongoing"})
 

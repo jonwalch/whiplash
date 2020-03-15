@@ -1201,3 +1201,25 @@
                                     :channel-id youtube-channel-id
                                     :source "blarp"
                                     :status 400})])))
+
+(deftest empty-create-event-params
+  (testing "can't create event because source is invalid"
+    (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                      (assoc dummy-user :admin? true))
+          title "Dirty Dan's Delirious Dirty Dancing Watch Party"
+          youtube-channel-id "x135bZ6G"
+          resp (admin-create-event {:auth-token auth-token
+                                    :title      title
+                                    :channel-id youtube-channel-id
+                                    :source     ""
+                                    :status     400})]
+      (admin-create-event {:auth-token auth-token
+                           :title      title
+                           :channel-id ""
+                           :source     "youtube"
+                           :status     400})
+      (admin-create-event {:auth-token auth-token
+                           :title      ""
+                           :channel-id youtube-channel-id
+                           :source     "youtube"
+                           :status     400}))))

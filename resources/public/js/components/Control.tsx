@@ -41,13 +41,14 @@ export const defaultProposition = {
 export function Control(props: any) {
     const { loggedInState, setLoggedInState } = useContext(LoginContext);
     const [eventTitle, setEventTitle] = useState("");
-    const [twitchUser, setTwitchUser] = useState("");
+    const [channelID, setChannelID] = useState("");
     const [propText, setPropText] = useState("");
     const [proposition, setProposition] = useState<Proposition>(defaultProposition);
     const [prevProposition, setPrevProposition] = useState<Proposition>(defaultProposition);
     const [eventInfo, setEventInfo] = useState<Event>(defaultEvent);
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
+    const [eventSource, setEventSource] = useState<string>("");
 
     useEffect(() => {
         getEvent().then((event) => {setEventInfo(event)});
@@ -95,8 +96,8 @@ export function Control(props: any) {
             redirect: "error",
             body: JSON.stringify({
                 title: eventTitle,
-                "channel-id": twitchUser,
-                "source": "twitch"
+                "channel-id": channelID,
+                "source": eventSource
             })
         });
         const resp = await response.json();
@@ -105,6 +106,7 @@ export function Control(props: any) {
         } else {
             alert(resp.message)
         }
+        setEventSource("");
     };
 
     const endEvent = async () => {
@@ -238,29 +240,53 @@ export function Control(props: any) {
                     {!eventInfo["event/channel-id"] &&
                     <>
                         <div className="form__group">
-                            <label className="form__label" htmlFor="twitchUser">Event Twitch User</label>
+                            <label className="form__label" htmlFor="twitchUser">Event Channel ID</label>
                             <input
                                 className="form__input"
-                                value={twitchUser}
+                                value={channelID}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                    setTwitchUser(e.currentTarget.value);
+                                    setChannelID(e.currentTarget.value);
                                 }}
                                 maxLength={50}
                                 minLength={4}
-                                name="twitchUser"
-                                id="twitchUser"
+                                name="channelID"
+                                id="channelID"
                             />
                         </div>
-                        < button
-                            className="button twitch__button"
-                            // TODO: remove inline style
-                            style = {{marginRight: "30px"}}
-                            type="button"
-                            onClick={() => {
-                                createEvent()
-                            }}>
-                            Create Event
-                        </button>
+                        {/*TODO: remove inline style*/}
+                        <div style={{display: "flex",
+                            flexDirection: "column"
+                        }}
+                        >
+                            <div>
+                                <input
+                                    type='radio'
+                                    value={eventSource}
+                                    name="twitchRadioButton"
+                                    key="twitchRadioButton"
+                                    onChange={() => {setEventSource("twitch")}}>
+                                </input>
+                                <label htmlFor="twitchRadioButton">Twitch</label>
+                                <input
+                                    type='radio'
+                                    value={eventSource}
+                                    name="youTubeRadioButton"
+                                    key="youTubeRadioButton"
+                                    onChange={() => {setEventSource("youtube")}}>
+                                </input>
+                                <label htmlFor="youTubeRadioButton">YouTube Live</label>
+                            </div>
+                            < button
+                                className="button twitch__button"
+                                // TODO: remove inline style
+                                style = {{marginRight: "30px"}}
+                                type="button"
+                                onClick={() => {
+                                    createEvent()
+                                }}>
+                                Create Event
+                            </button>
+                        </div>
                     </>
                     }
                     {eventInfo["event/channel-id"] &&
@@ -273,18 +299,6 @@ export function Control(props: any) {
                         }}>
                             End Event
                         </button>
-                        <div
-                            className="aspect-ratio-wide twitch__video"
-                            //TODO: remove inline style
-                            style = {{paddingTop: "600px"}}
-                        >
-                            <iframe
-                                // TODO: change this
-                                src={"https://player.twitch.tv/?channel=" + eventInfo["event/channel-id"]}
-                                frameBorder="0"
-                                allowFullScreen={true}>
-                            </iframe>
-                        </div>
                     </>
                     }
                     <div
