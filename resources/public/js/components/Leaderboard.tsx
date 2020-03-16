@@ -36,8 +36,10 @@ export function Leaderboard(props:any) {
       mode: "same-origin",
       redirect: "error"
     });
-    const resp = await response.json();
-    setLeaderboard(resp);
+    if (response.status == 200) {
+      const resp = await response.json();
+      setLeaderboard(resp);
+    }
   };
 
   const renderLeaderboard = () => {
@@ -70,8 +72,10 @@ export function Leaderboard(props:any) {
       mode: "same-origin",
       redirect: "error"
     });
-    const resp = await response.json();
-    props.setEventScoreLeaderboard(resp);
+    if (response.status == 200) {
+      const resp = await response.json();
+      props.setEventScoreLeaderboard(resp);
+    }
   };
 
   const renderEventScoreLeaderboard = () => {
