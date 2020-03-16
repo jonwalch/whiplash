@@ -25,13 +25,13 @@ export function Home(props: any) {
 
   const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
-  const getEventWrapper = (event) => {
+  const getEventWrapper = (event:any) => {
       setChannelID(event["event/channel-id"] || failedToFetch);
       setMatchName(event["event/title"]);
       setStreamSource(event["event/stream-source"]);
     };
 
-  const getPropWrapper = (event) => {
+  const getPropWrapper = (event:any) => {
       if (event["current-prop"]){
           setProposition(event["current-prop"]);
       } else {
