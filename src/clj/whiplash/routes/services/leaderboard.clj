@@ -40,10 +40,13 @@
 (defn event-score-leaderboard
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
-        props (:event/propositions (d/pull db
-                                           '[:event/propositions]
-                                           (or (db/find-ongoing-event db)
-                                               (db/find-last-event db))))]
+        ongoing-event (db/find-ongoing-event db)
+        last-event (db/find-last-event db)
+        props (when (or ongoing-event
+                        last-event)
+                (:event/propositions
+                  (d/pull db '[:event/propositions] (or ongoing-event
+                                                        last-event))))]
     (if props
       (ok
         (->> props
