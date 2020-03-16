@@ -1,15 +1,27 @@
 (ns whiplash.payouts
   (:require [clojure.tools.logging :as log]))
 
-(defn game-bet-stats
+(defn game-bet-totals
   [bets group-by-key]
-  (->> bets
-       (group-by group-by-key)
-       (map (fn [[team-id bets]]
-              (hash-map team-id
-                        (hash-map :bet/total
-                                  (apply + (map :bet/amount bets))))))
-       (apply conj)))
+  (let [result
+        (->> bets
+             (group-by group-by-key)
+             (map (fn [[team-id bets]]
+                    (hash-map team-id
+                              (hash-map :bet/total
+                                        (apply + (map :bet/amount bets))))))
+             (apply conj))]
+    (cond
+      (and (nil? (get result true))
+           (some? (get result false)))
+      (merge result {true {:bet/total 0N}})
+
+      (and (some? (get result true))
+           (nil? (get result false)))
+      (merge result {false {:bet/total 0N}})
+
+      :else
+      result)))
 
 (defn team-odds
   [bet-stats]
@@ -18,10 +30,12 @@
                                          (:bet/total v))
                                        bet-stats))]
     (->> bet-stats
-         (map (fn [[k v]]
+         (map (fn [[k {:keys [bet/total] :as v}]]
                 (hash-map k (assoc v :bet/odds
                                      (double
-                                       (/ total-bet-for-game (:bet/total v)))))))
+                                       (if (not= 0N total)  ;; 0N means no bets on that side
+                                         (/ total-bet-for-game total)
+                                         total-bet-for-game))))))
          (apply conj))))
 
 (defn payout-for-bet

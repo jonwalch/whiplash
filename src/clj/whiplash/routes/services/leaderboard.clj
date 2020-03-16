@@ -84,7 +84,7 @@
                                                                 {:match-id match-id
                                                                  :game-id  game-id})
         total-amounts-and-odds (-> unprocessed-bets
-                                   (payouts/game-bet-stats :team/name)
+                                   (payouts/game-bet-totals :team/name)
                                    (payouts/team-odds))]
     (ok (or (->> unprocessed-bets
                  (group-by :team/name)
@@ -105,34 +105,46 @@
 
 (defn get-prop-bets
   [{:keys [params] :as req}]
-  (if-let [current-prop-bet (db/find-ongoing-proposition)]
-    (let [db (d/db (:conn db/datomic-cloud))
-          current-bets (->> (db/find-prop-bets {:db          db
-                                                :prop-bet-id current-prop-bet})
-                            (map #(d/pull db '[:bet/amount :bet/projected-result? :user/_prop-bets] %))
-                            (mapv (fn [bet]
-                                    (-> bet
-                                        (merge (d/pull db
-                                                       '[:user/name]
-                                                       (-> bet :user/_prop-bets :db/id)))
-                                        (dissoc :user/_prop-bets)))))
-          total-amounts-and-odds (-> current-bets
-                                     (payouts/game-bet-stats :bet/projected-result?)
-                                     (payouts/team-odds))]
-      (ok (or (->> current-bets
-                   (group-by :bet/projected-result?)
-                   (map (fn [[result bets]]
-                          (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
-                            {result {:bets  (sort-by :bet/amount
-                                                     #(compare %2 %1)
-                                                     (->> bets
-                                                          (group-by :user/name)
-                                                          (mapv (fn [[user-name bets]]
-                                                                  {:user/name  user-name
-                                                                   :bet/amount (apply +
-                                                                                      (map :bet/amount bets))}))))
-                                     :total total
-                                     :odds  odds}})))
-                   (apply merge))
-              {})))
-    (not-found {:message "no ongoing prop bet"})))
+  (let [db (d/db (:conn db/datomic-cloud))
+        current-prop-bet (db/find-ongoing-proposition db)]
+    (if current-prop-bet
+      (let [current-bets (->> (db/find-prop-bets {:db          db
+                                                  :prop-bet-id current-prop-bet})
+                              (map #(d/pull db '[:bet/amount :bet/projected-result? :user/_prop-bets] %))
+                              (mapv (fn [bet]
+                                      (-> bet
+                                          (merge (d/pull db
+                                                         '[:user/name]
+                                                         (-> bet :user/_prop-bets :db/id)))
+                                          (dissoc :user/_prop-bets)))))
+            total-amounts-and-odds (-> current-bets
+                                       (payouts/game-bet-totals :bet/projected-result?)
+                                       (payouts/team-odds))
+            grouped-bets (group-by :bet/projected-result? current-bets)
+            add-other-side (cond
+                             (and (nil? (get grouped-bets true))
+                                  (some? (get grouped-bets false)))
+                             (assoc grouped-bets true [])
+
+                             (and (some? (get grouped-bets true))
+                                  (nil? (get grouped-bets false)))
+                             (assoc grouped-bets false [])
+
+                             :else
+                             grouped-bets)]
+        (ok (or (->> add-other-side
+                     (map (fn [[result bets]]
+                            (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
+                              {result {:bets  (sort-by :bet/amount
+                                                       #(compare %2 %1)
+                                                       (->> bets
+                                                            (group-by :user/name)
+                                                            (mapv (fn [[user-name bets]]
+                                                                    {:user/name  user-name
+                                                                     :bet/amount (apply +
+                                                                                        (map :bet/amount bets))}))))
+                                       :total total
+                                       :odds  odds}})))
+                     (apply merge))
+                {})))
+      (not-found {:message "no ongoing prop bet"}))))

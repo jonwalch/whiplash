@@ -934,7 +934,10 @@
       (is (= {:true  {:bets  [{:bet/amount 500
                                :user/name  "queefburglar"}]
                       :odds  1.00
-                      :total 500}}
+                      :total 500}
+              :false {:bets []
+                      :odds 500.00
+                      :total 0}}
              (:body current-prop-bets-response))))))
 
 (deftest bet-both-sides-doesnt-break
@@ -1251,3 +1254,17 @@
                    :stream-source "event.stream-source/cnn-unauth"
                    :channel-id    cnn-channel-id}
            (dissoc get-response-body :event/start-time)))))
+
+(deftest prop-bets-leaderboard-empty
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title title
+                                               :channel-id twitch-user})
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text text})
+        current-prop-bets-response  (get-prop-bets-leaderboard)]
+   (is (= {} (:body current-prop-bets-response)))))

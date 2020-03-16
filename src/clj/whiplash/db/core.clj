@@ -393,7 +393,7 @@
                       :bet/payout
                       (or (payouts/payout-for-bet
                             {:bet-stats   (-> bets
-                                              (payouts/game-bet-stats :bet/projected-result?)
+                                              (payouts/game-bet-totals :bet/projected-result?)
                                               (payouts/team-odds))
                              :bet/amount  amount
                              :team/id     projected-result?

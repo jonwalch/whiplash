@@ -35,7 +35,7 @@
                                  (map (fn [[k bets]]
                                         (hash-map k (hash-map :bets bets
                                                               :stats (-> bets
-                                                                         (payouts/game-bet-stats :team/id)
+                                                                         (payouts/game-bet-totals :team/id)
                                                                          (payouts/team-odds))))))
                                  (apply merge))
         ;; TODO: what happens if a user makes a new bet while this is running?
