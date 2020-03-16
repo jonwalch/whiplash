@@ -37,7 +37,7 @@
                               :proposition/running?
                               :proposition/betting-end-time]]
     (if (or ongoing-prop previous-prop)
-      (ok {:current-prop  (if current-prop
+      (ok {:current-prop  (if ongoing-prop
                             (d/pull db prop-fields-to-pull ongoing-prop)
                             {})
            :previous-prop (if previous-prop
