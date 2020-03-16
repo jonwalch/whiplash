@@ -37,10 +37,14 @@
                               :proposition/running?
                               :proposition/betting-end-time]]
     (if (or ongoing-prop previous-prop)
-      (ok {:current-prop  (d/pull db prop-fields-to-pull ongoing-prop)
-           :previous-prop (d/pull db
-                                  (conj prop-fields-to-pull :proposition/result?)
-                                  previous-prop)})
+      (ok {:current-prop  (if current-prop
+                            (d/pull db prop-fields-to-pull ongoing-prop)
+                            {})
+           :previous-prop (if previous-prop
+                            (d/pull db
+                                    (conj prop-fields-to-pull :proposition/result?)
+                                    previous-prop)
+                            {})})
       (not-found {}))))
 
 #_(defn end-betting-for-prop
