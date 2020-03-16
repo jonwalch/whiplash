@@ -484,14 +484,8 @@
   (def test-client (d/client cloud-config))
   ;(d/create-database test-client {:db-name "test"})
   (def conn (d/connect test-client {:db-name "whiplash"}))
-  (d/transact conn {:tx-data (schemas/migrations->schema-tx)})
 
   (find-loser-by-email "foobar@whiplashesports.com" conn)
   (make-admin "foobar@whiplashesports.com" conn)
-
-
-  (d/transact conn {:tx-data [{:user/first-name  "testy"
-                               :user/last-name "testerino"
-                               :user/bets   []}]})
 
   (d/delete-database test-client {:db-name "foo"}))
