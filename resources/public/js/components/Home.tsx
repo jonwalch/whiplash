@@ -16,7 +16,7 @@ export function Home(props: any) {
   const [channelID, setChannelID] = useState<null | string>(null);
   const [matchName, setMatchName] = useState<string>("");
   const [streamSource, setStreamSource] = useState<string>("");
-  const [chatIsOpen, setChatIsOpen] = useState<boolean>(true);
+  const [chatIsOpen, setChatIsOpen] = useState<boolean>(false);
   const [proposition, setProposition] = useState<Object>({});
   const [prevProposition, setPrevProposition] = useState<Object>({});
 
@@ -25,58 +25,51 @@ export function Home(props: any) {
 
   const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
-  useEffect(() => {
-    if (isProduction) {
+  const getEventWrapper = (event) => {
+      setChannelID(event["event/channel-id"] || failedToFetch);
+      setMatchName(event["event/title"]);
+      setStreamSource(event["event/stream-source"]);
+    };
+
+  const getPropWrapper = (event) => {
+      if (event["current-prop"]){
+          setProposition(event["current-prop"]);
+      } else {
+          setProposition({});
+      }
+      if (event["previous-prop"]) {
+          setPrevProposition(event["previous-prop"]);
+      } else {
+          setPrevProposition({});
+      }
+  };
+
+    useEffect(() => {
+        if (isProduction) {
       // Install Google tag manager
       install('UA-154430212-2')
     }
 
     getEvent().then((event) => {
-      setChannelID(event["event/channel-id"] || failedToFetch);
-      setMatchName(event["event/title"]);
-      setStreamSource(event["event/stream-source"])
-
-      // disable chat for non twitch
-      if (event["event/stream-source"] != "event.stream-source/twitch") {
-        setChatIsOpen(false)
-      }
+        getEventWrapper(event)
     });
 
     getProp().then((event) => {
-          if (event["current-prop"]){
-              setProposition(event["current-prop"]);
-          } else {
-              setProposition({});
-          }
-          if (event["previous-prop"]) {
-              setPrevProposition(event["previous-prop"]);
-          } else {
-              setPrevProposition({});
-          }
+        getPropWrapper(event)
     });
   }, []);
 
   useInterval(() => {
     if (channelID != failedToFetch) {
         getProp().then((event) => {
-            if (event["current-prop"]){
-                setProposition(event["current-prop"]);
-            } else {
-                setProposition({});
-            }
-            if (event["previous-prop"]) {
-                setPrevProposition(event["previous-prop"]);
-            } else {
-                setPrevProposition({});
-            }
+            getPropWrapper(event)
         });
     }
   }, 3000);
 
   useInterval(() => {
     getEvent().then((event) => {
-      setChannelID(event["event/channel-id"] || failedToFetch);
-      setMatchName(event["event/title"])
+        getEventWrapper(event)
     });
   }, 10000);
 
