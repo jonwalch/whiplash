@@ -35,41 +35,37 @@
                                 (sort-by :payout #(compare %2 %1)))]
     (ok weekly-leaderboard)))
 
-;; TODO refactor out all `pull`s in `map`s
 (defn event-score-leaderboard
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
         ongoing-event (db/find-ongoing-event db)
         last-event (db/find-last-event db)
-        props (when (or ongoing-event
-                        last-event)
-                (:event/propositions
-                  (d/pull db '[:event/propositions] (or ongoing-event
-                                                        last-event))))]
-    (if props
+        bets (when (or ongoing-event
+                       last-event)
+               (ffirst
+                 (db/find-all-user-bets-for-event {:db db
+                                                   :event-id (or ongoing-event
+                                                                 last-event)})))]
+    (if bets
       (ok
-        (->> props
-             (mapcat (fn [{:keys [db/id]}]
-                       (:bet/_proposition
-                         (d/pull db '[:bet/_proposition] id))))
-             (map :db/id)
-             (map (fn [id]
-                    (-> db
-                        (d/pull '[:bet/amount :bet/payout :user/_prop-bets] id)
-                        (set/rename-keys {:user/_prop-bets :user/name})
-                        (update :user/name (fn [{:keys [db/id] :as user}]
-                                             (:user/name
-                                               (d/pull db '[:user/name] id)))))))
-             (group-by :user/name)
-             (map (fn [[user bets]]
-                    {:user_name user
-                     :score     (apply +
-                                       0
-                                       (keep (fn [{:keys [bet/amount bet/payout]}]
-                                              (when (number? payout)
-                                                (- payout amount)))
-                                            bets))}))
-             (sort-by :score #(compare %2 %1))))
+        (let [transformed-bets (->> bets
+                                    :event/propositions
+                                    (mapcat :bet/_proposition)
+                                    (map (fn [bet]
+                                           (-> bet
+                                               (assoc :user/name (get-in bet [:user/_prop-bets :user/name]))
+                                               (dissoc :user/_prop-bets)))))]
+          (->> transformed-bets
+               (group-by :user/name)
+               (map (fn [[user bets]]
+                      {:user_name user
+                       :score     (apply +
+                                         0
+                                         (keep (fn [{:keys [bet/amount bet/payout]}]
+                                                 (when (number? payout)
+                                                   (- payout amount)))
+                                               bets))}))
+               (sort-by :score #(compare %2 %1)))))
       (not-found []))))
 
 (defn get-bets
@@ -101,21 +97,18 @@
                  (apply merge))
             {}))))
 
-;; TODO refactor out all `pull`s in `map`s
 (defn get-prop-bets
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
-        current-prop-bet (db/find-ongoing-proposition db)]
-    (if current-prop-bet
-      (let [current-bets (->> (db/find-prop-bets {:db          db
-                                                  :prop-bet-id current-prop-bet})
-                              (map #(d/pull db '[:bet/amount :bet/projected-result? :user/_prop-bets] %))
-                              (mapv (fn [bet]
-                                      (-> bet
-                                          (merge (d/pull db
-                                                         '[:user/name]
-                                                         (-> bet :user/_prop-bets :db/id)))
-                                          (dissoc :user/_prop-bets)))))
+        current-proposition (db/find-ongoing-proposition db)]
+    (if current-proposition
+      (let [current-bets (->> (db/find-all-user-bets-for-proposition {:db db
+                                                                      :prop-bet-id current-proposition})
+                              (apply concat)
+                              (map (fn [bet]
+                                     (-> bet
+                                         (assoc :user/name (get-in bet [:user/_prop-bets :user/name]))
+                                         (dissoc :user/_prop-bets)))))
             total-amounts-and-odds (-> current-bets
                                        (payouts/game-bet-totals :bet/projected-result?)
                                        (payouts/team-odds))

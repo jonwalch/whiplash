@@ -824,7 +824,7 @@
 
           current-prop-bets-response  (get-prop-bets-leaderboard)
 
-          event-score-before-bets (get-event-leaderboard)
+          event-score-before-prop-result (get-event-leaderboard)
           ;;admin end prop bet
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
@@ -882,7 +882,7 @@
                :user_name "donniedarko"}
               {:score     0
                :user_name "kittycuddler420"}]
-             (:body event-score-before-bets)))
+             (:body event-score-before-prop-result)))
 
       (is (= [{:score     166
                :user_name "kittycuddler420"}
@@ -1268,3 +1268,142 @@
                                                  :text text})
         current-prop-bets-response  (get-prop-bets-leaderboard)]
    (is (= {} (:body current-prop-bets-response)))))
+
+(deftest multiple-propositions-correct-score
+  (testing ""
+    (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                      (assoc dummy-user :admin? true))
+
+          title "Dirty Dan's Delirious Dance Party"
+          twitch-user "drdisrespect"
+          create-event-resp (admin-create-event {:auth-token auth-token
+                                                 :title title
+                                                 :channel-id twitch-user})
+
+          text "Will Jon wipeout 2+ times this round?"
+          create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                   :text text})
+
+          _ (create-user dummy-user-2)
+          _ (create-user dummy-user-3)
+
+          ;; user 2 bets
+          {:keys [auth-token] login-resp :response} (login dummy-user-2)
+
+          user-place-prop-bet-resp (user-place-prop-bet {:auth-token auth-token
+                                                         :projected-result true
+                                                         :bet-amount 200})
+
+          user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token auth-token
+                                                          :projected-result false
+                                                          :bet-amount 300})
+
+          ;; user 3 bets
+          {:keys [auth-token] login-resp :response} (login dummy-user-3)
+
+          user-place-prop-bet-resp3 (user-place-prop-bet {:auth-token auth-token
+                                                          :projected-result false
+                                                          :bet-amount 100})
+          user-place-prop-bet-resp4 (user-place-prop-bet {:auth-token auth-token
+                                                          :projected-result true
+                                                          :bet-amount 400})
+
+          current-prop-bets-response  (get-prop-bets-leaderboard)
+
+          event-score-before-prop-result (get-event-leaderboard)
+          ;;admin end prop bet
+          {:keys [auth-token] login-resp :response} (login)
+          end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                             :result true})
+          all-time-leaderboard-first-prop ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))
+
+          event-score-first-prop (get-event-leaderboard)
+
+          create-second-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                          :text "zoinks"})
+
+          ;; user 2 bets
+          {:keys [auth-token] login-resp :response} (login dummy-user-2)
+
+          user-place-second-prop-bet-resp (user-place-prop-bet {:auth-token auth-token
+                                                                :projected-result true
+                                                                :bet-amount 50})
+
+          ;; user 3 bets
+          {:keys [auth-token] login-resp :response} (login dummy-user-3)
+
+          user-place-second-prop-bet-resp2 (user-place-prop-bet {:auth-token auth-token
+                                                                 :projected-result false
+                                                                 :bet-amount 70})
+
+          prop-bets-second-response  (get-prop-bets-leaderboard)
+
+          ;; login as admin
+          {:keys [auth-token] login-resp :response} (login)
+          end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                             :result false})
+
+          event-score-second-prop (get-event-leaderboard)
+          ;;admin end event
+          {:keys [auth-token] login-resp :response} (login)
+          end-event-resp (admin-end-event {:auth-token auth-token})
+
+          all-time-leaderboard-end ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
+
+      (is (= {:false {:bets  [{:bet/amount 300
+                               :user/name  "donniedarko"}
+                              {:bet/amount 100
+                               :user/name  "kittycuddler420"}]
+                      :odds  2.5
+                      :total 400}
+              :true  {:bets  [{:bet/amount 400
+                               :user/name  "kittycuddler420"}
+                              {:bet/amount 200
+                               :user/name  "donniedarko"}]
+                      :odds  1.666666666666667
+                      :total 600}}
+             (:body current-prop-bets-response)))
+
+      (is (= [{:score     0
+               :user_name "donniedarko"}
+              {:score     0
+               :user_name "kittycuddler420"}]
+             (:body event-score-before-prop-result)))
+
+      (is (= [{:score     166
+               :user_name "kittycuddler420"}
+              {:score     -167
+               :user_name "donniedarko"}]
+             (:body event-score-first-prop)))
+
+      (is (= [{:cash      666
+               :user_name "kittycuddler420"}
+              {:cash      500
+               :user_name "queefburglar"}
+              {:cash      333
+               :user_name "donniedarko"}]
+             (common/parse-json-body all-time-leaderboard-first-prop)))
+
+      (is (= {:false {:bets  [{:bet/amount 70
+                               :user/name  "kittycuddler420"}]
+                      :odds  1.714285714285714
+                      :total 70}
+              :true  {:bets  [{:bet/amount 50
+                               :user/name  "donniedarko"}]
+                      :odds  2.4
+                      :total 50}}
+             (:body prop-bets-second-response)))
+
+      (is (= [{:score     215
+               :user_name "kittycuddler420"}
+              {:score     -217
+               :user_name "donniedarko"}]
+             (:body event-score-second-prop)))
+
+      (is (= [{:cash      715
+               :user_name "kittycuddler420"}
+              {:cash      500
+               :user_name "queefburglar"}
+              {:cash      283
+               :user_name "donniedarko"}]
+             (common/parse-json-body all-time-leaderboard-end))))))

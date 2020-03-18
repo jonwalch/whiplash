@@ -204,6 +204,27 @@
           :args [db prop-bet-id]})
        (map first)))
 
+(defn find-all-user-bets-for-proposition
+  [{:keys [db prop-bet-id]}]
+  (d/q
+    {:query '[:find (pull ?bet [:bet/amount
+                                :bet/projected-result?
+                                {:user/_prop-bets [:user/name]}])
+              :in $ ?prop-bet-id
+              :where [?bet :bet/proposition ?prop-bet-id]]
+     :args  [db prop-bet-id]}))
+
+(defn find-all-user-bets-for-event
+  [{:keys [db event-id]}]
+  (d/q
+    {:query '[:find (pull ?event-id [{:event/propositions
+                                      [{:bet/_proposition [:bet/amount
+                                                           :bet/payout
+                                                           :bet/projected-result?
+                                                           {:user/_prop-bets [:user/name]}]}]}])
+              :in $ ?event-id]
+     :args  [db event-id]}))
+
 ;;; TODO resolve :game/type
 (defn find-all-unprocessed-bets-for-game
   [db {:keys [game-id match-id]}]
