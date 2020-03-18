@@ -20,8 +20,7 @@
                                                  :payout (->> v
                                                               (map :bet/payout)
                                                               (apply +)))))
-                                (sort-by :payout #(compare %2 %1))
-                                vec)]
+                                (sort-by :payout #(compare %2 %1)))]
     (ok weekly-leaderboard)))
 
 (defn weekly-prop-bet-leaderboard
@@ -33,10 +32,10 @@
                                                  :payout (->> v
                                                               (map :bet/payout)
                                                               (apply +)))))
-                                (sort-by :payout #(compare %2 %1))
-                                vec)]
+                                (sort-by :payout #(compare %2 %1)))]
     (ok weekly-leaderboard)))
 
+;; TODO refactor out all `pull`s in `map`s
 (defn event-score-leaderboard
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
@@ -70,8 +69,7 @@
                                               (when (number? payout)
                                                 (- payout amount)))
                                             bets))}))
-             (sort-by :score #(compare %2 %1))
-             vec))
+             (sort-by :score #(compare %2 %1))))
       (not-found []))))
 
 (defn get-bets
@@ -103,6 +101,7 @@
                  (apply merge))
             {}))))
 
+;; TODO refactor out all `pull`s in `map`s
 (defn get-prop-bets
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))

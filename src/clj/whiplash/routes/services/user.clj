@@ -263,6 +263,7 @@
       :else
       (not-found {:message ""}))))
 
+;; TODO refactor out all `pull`s in `map`s
 (defn get-prop-bets
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)

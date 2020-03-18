@@ -4,6 +4,7 @@
             [datomic.client.api :as d]
             [clj-uuid :as uuid]))
 
+;; TODO refactor out all `pull`s in `map`s
 (defn get-suggestions
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))

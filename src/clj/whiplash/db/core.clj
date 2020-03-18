@@ -256,6 +256,7 @@
                                '[:user/name]
                                (-> bet :user/_bets :db/id))))))))
 
+;; TODO refactor out all `pull`s in `map`s
 (defn find-this-week-prop-bet-payout-leaderboard
   [lower-bound]
   (let [db (d/db (:conn datomic-cloud))]
@@ -285,14 +286,12 @@
             :args  [db]})
          (map #(hash-map :user_name (first %)
                          :cash (second %)))
-         (sort-by :cash #(compare %2 %1))
-         (vec))))
+         (sort-by :cash #(compare %2 %1)))))
 
 (defn find-top-ten
   []
   (->> (find-all-time-leaderboard)
-       (take 10)
-       vec))
+       (take 10)))
 
 (defn find-last-event
   ([]
@@ -377,6 +376,7 @@
               {:tx-data [{:db/id                        proposition-eid
                           :proposition/betting-end-time (time/to-date)}]}))
 
+;; TODO refactor out all `pull`s in `map`s
 (defn end-proposition
   [{:keys [prop-bet-id result?]}]
   (let [db (d/db (:conn datomic-cloud))
