@@ -10,7 +10,7 @@
             [whiplash.payouts :as payouts]
             [clojure.set :as set]))
 
-(defn- match-and-game->winner
+#_(defn- match-and-game->winner
   [game]
   (->> (pandascore/get-matches game)
        (map :games)
@@ -22,7 +22,7 @@
                        (get-in % [:winner :id])))
        (apply merge)))
 
-(defn process-bets
+#_(defn process-bets
   []
   (log/debug "Processing bets")
   (let [db (d/db (:conn db/datomic-cloud))
@@ -85,7 +85,7 @@
       (do (log/info "Transacting processed bet updates %s" txs)
           (d/transact (:conn db/datomic-cloud) {:tx-data txs})))))
 
-(defn set-interval
+#_(defn set-interval
   [f time-in-ms]
   (let [stop (async/chan)]
     (async/go-loop []

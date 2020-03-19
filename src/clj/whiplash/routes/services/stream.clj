@@ -1,12 +1,12 @@
 (ns whiplash.routes.services.stream
   (:require [ring.util.http-response :refer :all]
-            [whiplash.integrations.pandascore :as pandascore]
+            ;[whiplash.integrations.pandascore :as pandascore]
             [mount.core :as mount]
             [java-time :as java-time]
             [whiplash.time :as time]
             [clojure.tools.logging :as log]))
 
-(mount/defstate cached-streams
+#_(mount/defstate cached-streams
                 :start
                 (atom {})
 
@@ -18,7 +18,7 @@
 ;; (with-redefs [whiplash.integrations.pandascore/get-matches-request whiplash.test.common/pandascore-running-fake
 ;;               whiplash.integrations.twitch/views-per-twitch-stream whiplash.test.common/twitch-view-fake]
 ;; )
-(defn get-stream
+#_(defn get-stream
   [{:keys [params] :as req}]
   (let [{:keys [streams/last-fetch streams/ordered-candidates]} (deref cached-streams)
         return-fn (fn [{:keys [stream cached?]}]

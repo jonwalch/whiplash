@@ -20,11 +20,11 @@
     (fn [f]
       (mount/start #'whiplash.config/env
                    #'whiplash.handler/app-routes
-                   #'whiplash.routes.services.stream/cached-streams)
+                   #_#'whiplash.routes.services.stream/cached-streams)
       (f)
       (mount/stop #'whiplash.config/env
                   #'whiplash.handler/app-routes
-                  #'whiplash.routes.services.stream/cached-streams))))
+                  #_#'whiplash.routes.services.stream/cached-streams))))
 
 (defn db-fixtures
   []

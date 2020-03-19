@@ -97,7 +97,7 @@
 
    ;;endpoints client talks to
    ["/stream"
-    [""
+    #_[""
      {:get {:summary "get the current best stream candidate"
             :handler (fn [req]
                        (stream/get-stream req))}}]
@@ -117,7 +117,7 @@
      {:get {:summary "return the highest all time user cash"
             :handler (fn [req]
                        (leaderboard/all-time-top-ten req))}}]
-    ["/weekly"
+    #_["/weekly"
      {:get {:summary "return this week's leaderboard"
             :handler (fn [req]
                        (leaderboard/weekly-leaderboard req))}}]
@@ -126,7 +126,7 @@
      {:get  {:summary    "this week's prop bet leaderboard"
              :handler    (fn [req]
                            (leaderboard/weekly-prop-bet-leaderboard req))}}]
-    ["/bets"
+    #_["/bets"
      {:get  {:summary    "get all bets for current game"
              :parameters {:query {:game_id  int?
                                   :match_id int?}}
@@ -197,7 +197,7 @@
                 :handler    (fn [req]
                               (user/update-password req))}}]
 
-    ["/guess"
+    #_["/guess"
      {:get  {:summary    "get a guess for a user/game-id"
              :parameters {:query {:game_id  int?
                                   :match_id int?}}
