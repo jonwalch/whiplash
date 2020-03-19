@@ -538,7 +538,6 @@
       (is (= {:message (format "Successfully verified %s" email)}
              (common/parse-json-body verify-resp)))
 
-
       (is (= 200 (:status try-verify-again-resp)))
       (is (= {:message (format "Already verified %s" email)}
              (common/parse-json-body try-verify-again-resp)))
@@ -1407,3 +1406,20 @@
               {:cash      283
                :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-end))))))
+
+(deftest end-proposition-no-bets
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title title
+                                               :channel-id twitch-user})
+
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text text})
+        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                           :result false})
+        end-event-resp (admin-end-event {:auth-token auth-token})]))

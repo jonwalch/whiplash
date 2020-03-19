@@ -23,28 +23,25 @@
                                 :end-betting-secs end-betting-secs})
         (ok {})))))
 
+;; TODO: remove separate query for event, can do all previous pull in one query instead of 2
 (defn get-current-proposition
   [req]
-  (let [db (d/db (:conn db/datomic-cloud))
-        ongoing-event (db/find-ongoing-event db)
-        ongoing-prop (when ongoing-event
-                       (db/find-ongoing-proposition db))
-        previous-prop (when ongoing-event
-                        (db/find-previous-proposition {:db db
-                                                       :event-eid ongoing-event}))
-        prop-fields-to-pull '[:proposition/start-time
+  (let [prop-fields-to-pull '[:proposition/start-time
                               :proposition/text
                               :proposition/running?
-                              :proposition/betting-end-time]]
+                              :proposition/betting-end-time]
+        db (d/db (:conn db/datomic-cloud))
+        ongoing-event (db/find-ongoing-event db)
+        ongoing-prop (when ongoing-event
+                       (db/pull-ongoing-proposition {:db db
+                                                     :attrs prop-fields-to-pull}))
+        previous-prop (when ongoing-event
+                        (db/pull-previous-proposition {:db db
+                                                       :attrs (conj prop-fields-to-pull :proposition/result?)
+                                                       :event-eid ongoing-event}))]
     (if (or ongoing-prop previous-prop)
-      (ok {:current-prop  (if ongoing-prop
-                            (d/pull db prop-fields-to-pull ongoing-prop)
-                            {})
-           :previous-prop (if previous-prop
-                            (d/pull db
-                                    (conj prop-fields-to-pull :proposition/result?)
-                                    previous-prop)
-                            {})})
+      (ok {:current-prop  (if ongoing-prop ongoing-prop {})
+           :previous-prop (if previous-prop previous-prop {})})
       (not-found {}))))
 
 #_(defn end-betting-for-prop
@@ -66,9 +63,13 @@
 
 (defn end-current-proposition
   [{:keys [body-params] :as req}]
-  (let [{:keys [result]} body-params]
-    (if-let [prop (db/find-ongoing-proposition)]
+  (let [{:keys [result]} body-params
+        db (d/db (:conn db/datomic-cloud))]
+    (if-let [prop (db/pull-ongoing-proposition {:db db
+                                                :attrs [:proposition/betting-end-time
+                                                        :db/id]})]
       (do (db/end-proposition {:result?  result
-                               :prop-bet-id prop})
+                               :proposition prop
+                               :db db})
           (ok {}))
       (method-not-allowed {:message "No ongoing proposition"}))))

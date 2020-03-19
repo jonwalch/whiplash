@@ -27,7 +27,7 @@ export function Leaderboard(props:any) {
   useInterval(() => {
     getEventScoreLeaderboard();
     getLeaderboard();
-  }, 5000);
+  }, 10000);
 
   const getLeaderboard = async () => {
     const response = await fetch(baseUrl + "leaderboard/all-time", {

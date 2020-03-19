@@ -106,11 +106,10 @@
 (defn get-user
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
-        user-entity (-> (d/pull (d/db (:conn db/datomic-cloud))
-                                '[:user/first-name :user/last-name :user/email :user/status
-                                  :user/name :user/verify-token :user/cash]
-                                (db/find-user-by-user-name user))
-                        (db/resolve-enum :user/status))]
+        user-entity (db/pull-user {:user/name user
+                                   :attrs [{:user/status [:db/ident]}
+                                           :user/first-name :user/last-name :user/email
+                                           :user/name :user/verify-token :user/cash]})]
     (if (some? user-entity)
       ;; TODO don't return verify-token, currently only exposing it for testing purposes
       ;; A user could falsely verify their email if they poked around and reconstructed the
@@ -118,6 +117,7 @@
       (ok user-entity)
       (not-found {:message (format "User %s not found" user)}))))
 
+;; TODO refactor for one user db query
 (defn login
   [{:keys [body-params] :as req}]
   (let [{:keys [user_name password]} body-params
@@ -195,13 +195,12 @@
   (let [{:keys [bet_amount projected_result]} body-params
         {:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        {:keys [db/id user/cash]} (d/pull db
-                                          '[:user/cash :db/id]
-                                          (db/find-user-by-user-name user))
-        ongoing-prop (db/find-ongoing-proposition db)
-        prop-betting-end-time (when ongoing-prop
-                                (:proposition/betting-end-time
-                                  (d/pull db '[:proposition/betting-end-time] ongoing-prop)))]
+        {:keys [db/id user/cash]} (db/pull-user {:db db
+                                                 :user/name user
+                                                 :attrs [:user/cash :db/id]})
+        {:keys [proposition/betting-end-time] :as ongoing-prop} (db/pull-ongoing-proposition
+                                                                  {:db db
+                                                                   :attrs [:db/id :proposition/betting-end-time]})]
     (cond
       (>= 0 bet_amount)
       (conflict {:message "Cannot bet less than 1."})
@@ -209,12 +208,12 @@
       (> bet_amount cash)
       (conflict {:message "Bet cannot exceed total user cash."})
 
-      (nil? ongoing-prop)
+      (nil? (:db/id ongoing-prop))
       (method-not-allowed {:message "No ongoing prop bet, cannot make bet."})
 
-      (and (inst? prop-betting-end-time)
+      (and (inst? betting-end-time)
            (jtime/after? (time/now)
-                         (time/date-to-zdt prop-betting-end-time)))
+                         (time/date-to-zdt betting-end-time)))
       (method-not-allowed {:message "Betting for proposition has ended."})
 
       (some? id)
@@ -314,6 +313,7 @@
 (defn verify-email
   [{:keys [body-params] :as req}]
   (let [{:keys [email token]} body-params
+        ;; TODO refactor user lookup to be 1 query instead of 3
         {:keys [db/id user/verify-token user/status] :as user} (-> (d/pull (d/db (:conn db/datomic-cloud))
                                                                            '[:db/id :user/status :user/verify-token]
                                                                            (db/find-user-by-email email))

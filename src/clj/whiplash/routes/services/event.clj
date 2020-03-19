@@ -32,16 +32,8 @@
 
 (defn get-current-event
   [{:keys [body-params] :as req}]
-  (if-let [event (db/find-ongoing-event)]
-    (ok (db/resolve-enum
-          (d/pull (d/db (:conn db/datomic-cloud))
-                  '[:event/start-time
-                    :event/running?
-                    :event/channel-id
-                    :event/title
-                    :event/stream-source]
-                  event)
-          :event/stream-source))
+  (if-let [event (db/pull-ongoing-event)]
+    (ok event)
     (not-found {})))
 
 (defn end-current-event

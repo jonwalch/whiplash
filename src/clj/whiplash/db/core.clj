@@ -72,6 +72,7 @@
            [((comp not contains?) ?system-ns ?ns)]]
          (d/db conn) system-ns)))
 
+;; TODO: deprecate, this is an anti-pattern
 (defn resolve-enum
   [entity keyw]
   (when entity
@@ -174,6 +175,22 @@
     (when-let [user (ffirst (find-user-by-user-name-db db user-name))]
       user)))
 
+(defn pull-user
+  [{:keys [user/name db attrs]}]
+  (let [db (or db (d/db (:conn datomic-cloud)))
+        result (ffirst
+                 (d/q {:query '[:find (pull ?user [{:user/status [:db/ident]}
+                                                   :user/first-name :user/last-name :user/email
+                                                   :user/name :user/verify-token :user/cash
+                                                   :db/id])
+                                :in $ ?user-name
+                                :where [?user :user/name ?original-name]
+                                [(.toLowerCase ^String ?original-name) ?lowercase-name]
+                                [(= ?lowercase-name ?user-name)]]
+                       :args  [db (string/lower-case name)]}))]
+    (when result
+      (update result :user/status #(:db/ident %)))))
+
 (defn find-bets
   [db user-name game-id match-id]
   (->> (d/q {:query '[:find ?bet
@@ -203,6 +220,22 @@
                    :where [?bet :bet/proposition ?prop-bet-id]]
           :args [db prop-bet-id]})
        (map first)))
+
+(defn pull-bet-payout-info
+  [{:keys [db prop-bet-id attrs]}]
+  (->> (d/q
+         {:query '[:find (pull ?bet [:db/id :bet/amount :bet/projected-result?
+                                     {:user/_prop-bets [:user/cash :db/id]}])
+                   :in $ ?prop-bet-id
+                   :where [?bet :bet/proposition ?prop-bet-id]]
+          :args  [db prop-bet-id attrs]})
+       (map
+         (comp (fn [bet]
+                 (-> bet
+                     (assoc :user/db-id (get-in bet [:user/_prop-bets :db/id])
+                            :user/cash (get-in bet [:user/_prop-bets :user/cash]))
+                     (dissoc :user/_prop-bets)))
+               first))))
 
 (defn find-all-user-bets-for-proposition
   [{:keys [db prop-bet-id]}]
@@ -278,7 +311,7 @@
                                (-> bet :user/_bets :db/id))))))))
 
 ;; TODO refactor out all `pull`s in `map`s
-(defn find-this-week-prop-bet-payout-leaderboard
+#_(defn find-this-week-prop-bet-payout-leaderboard
   [lower-bound]
   (let [db (d/db (:conn datomic-cloud))]
     (->> (d/q
@@ -337,6 +370,21 @@
                     :where [?event :event/running? true]]
            :args  [db]}))))
 
+(defn pull-ongoing-event
+  ([]
+   (pull-ongoing-event (d/db (:conn datomic-cloud))))
+  ([db]
+   (let [result (ffirst
+                  (d/q {:query '[:find (pull ?event [:event/start-time
+                                                     :event/running?
+                                                     :event/channel-id
+                                                     :event/title
+                                                     {:event/stream-source [:db/ident]}])
+                                 :where [?event :event/running? true]]
+                        :args  [db]}))]
+     (when result
+       (update result :event/stream-source #(:db/ident %))))))
+
 (defn create-event
   [{:keys [title channel-id source]}]
   (assert (or (= :event.stream-source/twitch source)
@@ -368,6 +416,14 @@
                     :where [?prop :proposition/running? true]]
            :args  [db]}))))
 
+(defn pull-ongoing-proposition
+  [{:keys [db attrs]}]
+  (ffirst
+    (d/q {:query '[:find (pull ?prop attrs)
+                   :in $ attrs
+                   :where [?prop :proposition/running? true]]
+          :args  [db attrs]})))
+
 (defn find-previous-proposition
   [{:keys [db event-eid]}]
   (->> (d/q {:query '[:find ?prop ?ts
@@ -376,6 +432,17 @@
                       [?prop :proposition/running? false]
                       [?prop :proposition/end-time ?ts]]
              :args  [db event-eid]})
+       (sort-by second #(compare %2 %1))
+       ffirst))
+
+(defn pull-previous-proposition
+  [{:keys [db event-eid attrs]}]
+  (->> (d/q {:query '[:find (pull ?prop attrs) ?ts
+                      :in $ ?event-eid attrs
+                      :where [?event-eid :event/propositions ?prop]
+                      [?prop :proposition/running? false]
+                      [?prop :proposition/end-time ?ts]]
+             :args  [db event-eid attrs]})
        (sort-by second #(compare %2 %1))
        ffirst))
 
@@ -397,17 +464,11 @@
               {:tx-data [{:db/id                        proposition-eid
                           :proposition/betting-end-time (time/to-date)}]}))
 
-;; TODO refactor out all `pull`s in `map`s
 (defn end-proposition
-  [{:keys [prop-bet-id result?]}]
-  (let [db (d/db (:conn datomic-cloud))
-        bets (->> (find-prop-bets {:db          db
-                                   :prop-bet-id prop-bet-id})
-                  (map
-                    (fn [eid]
-                      (d/pull db
-                              '[:db/id :bet/amount :bet/projected-result? :user/_prop-bets]
-                              eid))))
+  [{:keys [proposition result? db]}]
+  (let [betting-end-time (:proposition/betting-end-time proposition)
+        bets (pull-bet-payout-info {:db db
+                                    :prop-bet-id        (:db/id proposition)})
         payouts (map
                   (fn [{:keys [bet/projected-result? bet/amount] :as bet}]
                     (assoc bet
@@ -422,41 +483,35 @@
                           (bigint 0))))
                   bets)
         user-id->total-payout (->> payouts
-                                   (group-by :user/_prop-bets)
-                                   (map (fn [[user-id pbets]]
-                                          {(:db/id user-id) (apply +
-                                                                   0
-                                                                   (keep :bet/payout pbets))}))
+                                   (group-by :user/db-id)
+                                   (map (fn [[db-id pbets]]
+                                          {db-id {:user/total-payout (apply +
+                                                                            0
+                                                                            (keep :bet/payout pbets))
+                                                  :user/cash (:user/cash (first pbets))}}))
                                    (apply merge))
         processed-time (time/to-date)
         payout-txs (mapv #(-> %
-                              (dissoc :user/_prop-bets :bet/amount :bet/projected-result?)
+                              (dissoc :user/cash :user/db-id :bet/amount :bet/projected-result?)
                               (assoc :bet/processed-time processed-time))
                          payouts)
         user-cash-txs (mapv
-                        (fn [[user-id total-payout]]
-                          (let [current-cash (:user/cash (d/pull db '[:user/cash] user-id))
-                                new-balance (+ current-cash total-payout)]
-                            (do
-                              [:db/cas user-id :user/cash current-cash
-                               (if (< 100 new-balance)
-                                 new-balance
-                                 (bigint 100))])))
-                        user-id->total-payout)
-        end-time (time/to-date)
-        betting-end-time (:proposition/betting-end-time
-                           (d/pull db '[:proposition/betting-end-time] prop-bet-id))]
-
+                        (fn [[user-id {:keys [user/cash user/total-payout]}]]
+                          (let [new-balance (+ cash total-payout)]
+                            [:db/cas user-id :user/cash cash (if (< 100 new-balance)
+                                                               new-balance
+                                                               (bigint 100))]))
+                        user-id->total-payout)]
     (d/transact (:conn datomic-cloud)
                 {:tx-data (vec
                             (concat payout-txs
                                     user-cash-txs
-                                    [(merge {:db/id                prop-bet-id
+                                    [(merge {:db/id                (:db/id proposition)
                                              :proposition/running? false
-                                             :proposition/end-time end-time
+                                             :proposition/end-time processed-time
                                              :proposition/result?  result?}
                                             (when-not betting-end-time
-                                              {:proposition/betting-end-time end-time}))]))})))
+                                              {:proposition/betting-end-time processed-time}))]))})))
 
 (defn add-user-suggestion-to-event
   [{:keys [text event-eid user-eid]}]

@@ -23,7 +23,7 @@
                                 (sort-by :payout #(compare %2 %1)))]
     (ok weekly-leaderboard)))
 
-(defn weekly-prop-bet-leaderboard
+#_(defn weekly-prop-bet-leaderboard
   [{:keys [params] :as req}]
   (let [weekly-leaderboard (->> (db/find-this-week-prop-bet-payout-leaderboard (time/to-date (time/last-monday)))
                                 (group-by :user/name)

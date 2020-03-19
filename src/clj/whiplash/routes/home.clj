@@ -122,7 +122,7 @@
             :handler (fn [req]
                        (leaderboard/weekly-leaderboard req))}}]
 
-    ["/weekly-prop-bets"
+    #_["/weekly-prop-bets"
      {:get  {:summary    "this week's prop bet leaderboard"
              :handler    (fn [req]
                            (leaderboard/weekly-prop-bet-leaderboard req))}}]
