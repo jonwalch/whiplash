@@ -316,38 +316,7 @@ export function Control(props: any) {
                     >
                         Current Proposition:
                     </div>
-                    <div>{JSON.stringify(proposition)}</div>
-                    {!proposition["proposition/text"] &&
-                    <>
-                        <div className="form__group"
-                            // TODO: remove inline style
-                             style = {{marginTop: "30px"}}
-                        >
-                            <label className="form__label" htmlFor="propText">Proposition Text</label>
-                            <input
-                                className="form__input"
-                                value={propText}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                    setPropText(e.currentTarget.value);
-                                }}
-                                maxLength={100}
-                                minLength= {5}
-                                name="propText"
-                                id="propText"
-                            />
-                        </div>
-                        <button
-                            className="button twitch__button"
-                            // TODO: remove inline style
-                            style = {{marginRight: "30px"}}
-                            type="button"
-                            onClick={() => {
-                                createProp()
-                            }}>
-                            Create Proposition
-                        </button>
-                    </>
-                    }
+                    <div>{proposition["proposition/text"] || "N/A"}</div>
                     {proposition["proposition/text"] &&
                     <>
                         <button
@@ -368,6 +337,35 @@ export function Control(props: any) {
                             Proposition outcome: False
                         </button>
                     </>
+                    }
+                    <div className="form__group"
+                        // TODO: remove inline style
+                         style = {{marginTop: "30px"}}
+                    >
+                        <label className="form__label" htmlFor="propText">Proposition Text</label>
+                        <input
+                            className="form__input"
+                            value={propText}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                setPropText(e.currentTarget.value);
+                            }}
+                            maxLength={150}
+                            minLength= {5}
+                            name="propText"
+                            id="propText"
+                        />
+                    </div>
+                    {!proposition["proposition/text"] &&
+                    <button
+                        className="button twitch__button"
+                        // TODO: remove inline style
+                        style = {{marginRight: "30px"}}
+                        type="button"
+                        onClick={() => {
+                            createProp()
+                        }}>
+                        Create Proposition
+                    </button>
                     }
                     <div
                         // TODO: remove inline style
