@@ -49,7 +49,6 @@
   []
   (md5 (rand-str 100)))
 
-;; TODO sanitize fields
 (defn create-user
   [{:keys [body-params] :as req}]
   (let [{:keys [first_name last_name email password user_name]} body-params
@@ -88,7 +87,7 @@
 (defn update-password
   [{:keys [body-params] :as req}]
   (let [{:keys [password]} body-params
-        invalid-input (when (not (re-matches valid-password password))
+        invalid-input (when-not (re-matches valid-password password)
                         "Password must be at least 8 characters")]
     (cond
       (some? invalid-input)
@@ -106,7 +105,7 @@
 (defn get-user
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
-        user-entity (db/pull-user {:user/name user
+        user-entity (db/pull-user {:user/name          user
                                    :attrs [{:user/status [:db/ident]}
                                            :user/first-name :user/last-name :user/email
                                            :user/name :user/verify-token :user/cash]})]
@@ -117,18 +116,14 @@
       (ok user-entity)
       (not-found {:message (format "User %s not found" user)}))))
 
-;; TODO refactor for one user db query
 (defn login
   [{:keys [body-params] :as req}]
   (let [{:keys [user_name password]} body-params
-        found-user (db/find-user-by-user-name user_name)
-        user-entity (when found-user
-                      (-> (d/pull (d/db (:conn db/datomic-cloud))
-                                  '[:user/password :user/name :user/status]
-                                  found-user)
-                          (db/resolve-enum :user/status)))
-        ;; TODO maybe return not-found if can't find user, right now just return 401
-        valid-password (hashers/check password (:user/password user-entity))
+        user-entity (db/pull-user
+                      {:user/name user_name
+                       :attrs [:user/password :user/name {:user/status [:db/ident]}]})
+        valid-password (when user-entity
+                         (hashers/check password (:user/password user-entity)))
         {:keys [exp-str token]} (when valid-password
                                   (middleware/token (:user/name user-entity)
                                                     (:user/status user-entity)))]
@@ -195,9 +190,10 @@
   (let [{:keys [bet_amount projected_result]} body-params
         {:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        {:keys [db/id user/cash]} (db/pull-user {:db db
-                                                 :user/name user
-                                                 :attrs [:user/cash :db/id]})
+        {:keys [db/id user/cash] :as poop} (db/pull-user
+                                             {:db db
+                                              :user/name       user
+                                              :attrs           [:user/cash :db/id]})
         {:keys [proposition/betting-end-time] :as ongoing-prop} (db/pull-ongoing-proposition
                                                                   {:db db
                                                                    :attrs [:db/id :proposition/betting-end-time]})]
@@ -262,7 +258,6 @@
       :else
       (not-found {:message ""}))))
 
-;; TODO refactor out all `pull`s in `map`s
 (defn get-prop-bets
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
@@ -274,15 +269,9 @@
       (not-found {:message "No ongoing prop bet, cannot get bets."})
 
       (some? user-id)
-      (let [prop-bets (db/find-prop-bets-for-user {:db db
-                                                   :user-id user-id
-                                                   :prop-bet-id ongoing-prop})]
-        (ok (mapv
-              (fn [eid]
-                (d/pull db
-                        '[:bet/amount :bet/time :bet/projected-result?]
-                        eid))
-              prop-bets)))
+      (ok (db/find-prop-bets-for-user {:db          db
+                                       :user-id     user-id
+                                       :prop-bet-id ongoing-prop}))
 
       :else
       (not-found {:message "User not found."}))))
@@ -314,10 +303,11 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [email token]} body-params
         ;; TODO refactor user lookup to be 1 query instead of 3
-        {:keys [db/id user/verify-token user/status] :as user} (-> (d/pull (d/db (:conn db/datomic-cloud))
-                                                                           '[:db/id :user/status :user/verify-token]
-                                                                           (db/find-user-by-email email))
-                                                                   (db/resolve-enum :user/status))]
+        {:keys [db/id user/verify-token user/status] :as user} (db/pull-user
+                                                                 {:user/email email
+                                                                  :attrs [:db/id
+                                                                          {:user/status [:db/ident]}
+                                                                          :user/verify-token]})]
     (cond
       (and (= token verify-token)
            (= :user.status/pending status))

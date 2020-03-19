@@ -198,7 +198,6 @@
         logout-resp ((common/test-app) (-> (mock/request :post "/user/logout")))]
     (login {:user_name (:user_name dummy-user) :password new-password})))
 
-
 (deftest create-user-and-change-password-failure
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login)]
     (is (= 409 (:status ((common/test-app) (-> (mock/request :post "/user/password")
@@ -1086,6 +1085,23 @@
           (every? #(and (string? (:suggestion/submission-time %))
                         (string? (:suggestion/uuid %)))
                   (:body get-suggestions-after-dismiss-resp))))))
+
+(deftest admin-get-empty-suggestion-ongoing-event
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+        _ (admin-create-event {:auth-token  auth-token
+                               :title       "hi"
+                               :channel-id "donnie"})
+        get-suggestions (admin-get-suggestions {:auth-token auth-token
+                                                :status 404})]
+    (is (= [] (:body get-suggestions)))))
+
+(deftest admin-get-empty-suggestion-no-event
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+        get-suggestions (admin-get-suggestions {:auth-token auth-token
+                                                :status 404})]
+    (is (= [] (:body get-suggestions)))))
 
 (deftest end-betting-for-proposition
   (let [{:keys [auth-token]} (create-user-and-login

@@ -4,25 +4,20 @@
             [datomic.client.api :as d]
             [clj-uuid :as uuid]))
 
-;; TODO refactor out all `pull`s in `map`s
 (defn get-suggestions
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
-        ongoing-event (db/find-ongoing-event db)]
-    (if (nil? ongoing-event)
-      (not-found [])
-      (->> (d/pull db '[:event/suggestions] ongoing-event)
-           :event/suggestions
-           (filter #(false? (:suggestion/dismissed? %)))
-           (map (fn [{:keys [suggestion/user] :as suggestion}]
-                  (assoc suggestion :user/name (:user/name
-                                                 (d/pull db
-                                                         '[:user/name]
-                                                         (:db/id user))))))
-           (map #(dissoc % :db/id :suggestion/user
-                         :suggestion/dismissed?))
-           (sort-by :suggestion/submission-time #(compare %2 %1))
-           (ok)))))
+        suggestions (db/pull-undismissed-suggestions-for-ongoing-event
+                      {:db    db
+                       :attrs [:suggestion/text
+                               :suggestion/submission-time
+                               :suggestion/uuid
+                               {:suggestion/user [:user/name]}]})]
+    (if-not (empty? suggestions)
+      (ok (sort-by :suggestion/submission-time
+                   #(compare %2 %1)
+                   suggestions))
+      (not-found []))))
 
 (defn dismiss-suggestions
   [{:keys [body-params] :as req}]

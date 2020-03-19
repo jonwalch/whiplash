@@ -32,7 +32,7 @@
                      :title "Something very bad has happened!"
                      :message "We've dispatched a team of highly trained gnomes to take care of the problem."})))))
 
-(defn wrap-csrf [handler]
+#_(defn wrap-csrf [handler]
   (wrap-anti-forgery
     handler
     {:error-response

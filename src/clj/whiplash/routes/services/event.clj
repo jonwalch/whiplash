@@ -32,7 +32,12 @@
 
 (defn get-current-event
   [{:keys [body-params] :as req}]
-  (if-let [event (db/pull-ongoing-event)]
+  (if-let [event (db/pull-ongoing-event {:attrs
+                                         [:event/start-time
+                                          :event/running?
+                                          :event/channel-id
+                                          :event/title
+                                          {:event/stream-source [:db/ident]}]})]
     (ok event)
     (not-found {})))
 

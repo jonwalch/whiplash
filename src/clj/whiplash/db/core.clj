@@ -164,11 +164,13 @@
   (when-let [user (ffirst (find-one-by (d/db (:conn datomic-cloud)) :db/id id))]
     user))
 
+;; TODO deprecate
 (defn find-user-by-email
   [email]
   (when-let [user (ffirst (find-user-by-email-db (d/db (:conn datomic-cloud)) email))]
     user))
 
+;; TODO deprecate
 (defn find-user-by-user-name
   [user-name]
   (let [db (d/db (:conn datomic-cloud))]
@@ -176,20 +178,26 @@
       user)))
 
 (defn pull-user
-  [{:keys [user/name db attrs]}]
-  (let [db (or db (d/db (:conn datomic-cloud)))
+  [{:keys [user/name user/email db attrs]}]
+  (assert (or name email))
+  (let [lookup (if name
+                 [:user/name name]
+                 [:user/email email])
+        db (or db
+               (d/db (:conn datomic-cloud)))
         result (ffirst
-                 (d/q {:query '[:find (pull ?user [{:user/status [:db/ident]}
-                                                   :user/first-name :user/last-name :user/email
-                                                   :user/name :user/verify-token :user/cash
-                                                   :db/id])
-                                :in $ ?user-name
-                                :where [?user :user/name ?original-name]
+                 (d/q {:query '[:find (pull ?user attrs)
+                                :in $ ?keyw ?user-identifier attrs
+                                :where [?user ?keyw ?original-name]
                                 [(.toLowerCase ^String ?original-name) ?lowercase-name]
-                                [(= ?lowercase-name ?user-name)]]
-                       :args  [db (string/lower-case name)]}))]
-    (when result
-      (update result :user/status #(:db/ident %)))))
+                                [(= ?lowercase-name ?user-identifier)]]
+                       :args  [db
+                               (first lookup)
+                               (string/lower-case (second lookup))
+                               attrs]}))]
+    (if (contains? result :user/status)
+      (update result :user/status #(:db/ident %))
+      result)))
 
 (defn find-bets
   [db user-name game-id match-id]
@@ -205,11 +213,11 @@
 (defn find-prop-bets-for-user
   [{:keys [db user-id prop-bet-id]}]
   (->> (d/q
-         {:query '[:find ?bet
+         {:query '[:find (pull ?bet [:bet/amount :bet/time :bet/projected-result?])
                    :in $ ?user-id ?prop-bet-id
                    :where [?user-id :user/prop-bets ?bet]
                    [?bet :bet/proposition ?prop-bet-id]]
-          :args [db user-id prop-bet-id]})
+          :args  [db user-id prop-bet-id]})
        (map first)))
 
 (defn find-prop-bets
@@ -371,19 +379,33 @@
            :args  [db]}))))
 
 (defn pull-ongoing-event
-  ([]
-   (pull-ongoing-event (d/db (:conn datomic-cloud))))
-  ([db]
-   (let [result (ffirst
-                  (d/q {:query '[:find (pull ?event [:event/start-time
-                                                     :event/running?
-                                                     :event/channel-id
-                                                     :event/title
-                                                     {:event/stream-source [:db/ident]}])
-                                 :where [?event :event/running? true]]
-                        :args  [db]}))]
-     (when result
-       (update result :event/stream-source #(:db/ident %))))))
+  [{:keys [db attrs]}]
+  (let [db (or db (d/db (:conn datomic-cloud)))
+        result (ffirst
+                 (d/q {:query '[:find (pull ?event attrs)
+                                :in $ attrs
+                                :where [?event :event/running? true]]
+                       :args  [db attrs]}))]
+    (if (contains? result :event/stream-source)
+      (update result :event/stream-source #(:db/ident %))
+      result)))
+
+(defn pull-undismissed-suggestions-for-ongoing-event
+  [{:keys [db attrs]}]
+  (let [db (or db (d/db (:conn datomic-cloud)))]
+    (->> (d/q {:query '[:find (pull ?suggestions attrs)
+                          :in $ attrs
+                          :where [?event :event/running? true]
+                          [?event :event/suggestions ?suggestions]
+                          [?suggestions :suggestion/dismissed? false]]
+                 :args  [db attrs]})
+         (apply concat)
+         (map (fn [{:keys [suggestion/user] :as suggestion}]
+                (if user
+                  (-> suggestion
+                      (assoc :user/name (:user/name user))
+                      (dissoc :suggestion/user))
+                  suggestion))))))
 
 (defn create-event
   [{:keys [title channel-id source]}]
