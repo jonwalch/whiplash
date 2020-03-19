@@ -15,7 +15,7 @@
                 :stop
                 (atom {}))
 
-(defn- access-token-req
+#_(defn- access-token-req
   []
   (log/info "Getting new Abios access token")
   (let [{:keys [status] :as resp}
@@ -30,7 +30,7 @@
 
 (comment (access-token-req))
 
-(defn access-token
+#_(defn access-token
   "grants a new one every 50 minutes, good for an hour"
   []
   (let [{:keys [abios/token abios/token-expiry-date]} (deref cached-token)]
@@ -51,7 +51,7 @@
       (do (log/info (format "using cached Abios token, expiry date %s" token-expiry-date))
           token))))
 
-(defn get-csgo-series-request
+#_(defn get-csgo-series-request
   [{:keys [page-number is-over? token]}]
   ;; TODO starts after and starts before as parameters
   (let [{:keys [body status] :as resp}
@@ -69,7 +69,7 @@
       (log/error "Abios Series CSGO get failure" resp))
     (assoc resp :body (common/resp->body resp))))
 
-(defn get-all-series
+#_(defn get-all-series
   []
   (let [token (access-token)
         args {:page-number 1
@@ -91,7 +91,7 @@
   (get-all-series)
          )
 
-(defn best-caster
+#_(defn best-caster
   "take a series' casters and return the most relevant one"
   [{:keys [casters] :as series}]
   (->> casters
@@ -105,7 +105,7 @@
        (sort-by :twitch/viewer-count #(compare %2 %1))
        first))
 
-(defn current-match
+#_(defn current-match
   "takes a series and picks the match that is happening
   soonest or is currently happening"
   [{:keys [matches] :as series}]
@@ -113,7 +113,7 @@
            %)
         matches))
 
-(defn get-match-pbp-light-summary
+#_(defn get-match-pbp-light-summary
   [{:keys [match-id token]}]
   (let [{:keys [status] :as resp}
         (client/get (format "https://api.abiosgaming.com/v2/matches/%s/light_summary"
@@ -124,7 +124,7 @@
       (log/error "Abios light summary CSGO get failure" resp))
     (assoc resp :body (common/resp->body resp))))
 
-(defn get-round-info
+#_(defn get-round-info
   "outputs a map with key: round number, and value: team id"
   [{:keys [match-id token] :as args}]
   (let [{:keys [body] :as resp} (get-match-pbp-light-summary args)
@@ -147,7 +147,7 @@
 
 (comment (get-round-info {:match-id 379650 :token (access-token)}))
 
-(defn best-stream-candidates
+#_(defn best-stream-candidates
   []
   (let [all-relevant-series (->> (get-all-series)
                                  (filter :streamed)
