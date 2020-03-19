@@ -138,7 +138,7 @@
                   :http-only true
                   :expires    exp-str
                   :same-site :strict}}}
-      (unauthorized {:message "Login failed"}))))
+      (unauthorized {:message "Invalid user name or password"}))))
 
 (defn logout
   [{:keys [body-params] :as req}]
