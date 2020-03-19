@@ -83,11 +83,7 @@
                                             (mock/json-body {:user_name (:user_name dummy-user)
                                                              :password (:password dummy-user)})))]
 
-      (is (= 401 (:status login-resp)))))
-
-  (testing "not authed"
-    (let [response ((common/test-app) (-> (mock/request :get "/user/login")))]
-      (is (= 403 (:status response))))))
+      (is (= 401 (:status login-resp))))))
 
 (defn get-token-from-headers
   [headers]
@@ -164,17 +160,10 @@
                                      (mock/json-body {:user_name   user_name
                                                       :password password})))
          parsed-body (common/parse-json-body resp)
-         auth-token (-> resp :headers get-token-from-headers)
-
-         authed-resp ((common/test-app) (-> (mock/request :get "/user/login")
-                                            (mock/cookie :value auth-token)))]
+         auth-token (-> resp :headers get-token-from-headers)]
 
      (is (= 200 (:status resp)))
      (is (string? auth-token))
-
-     (is (= 200 (:status authed-resp)))
-     (is (= #:user{:name user_name}
-            (common/parse-json-body authed-resp)))
 
      {:auth-token auth-token
       :response (assoc resp :body parsed-body)})))
@@ -248,7 +237,7 @@
       (is (= 401 (:status login-fail-resp)))
       (is (= 409 (:status create-again-fail))))))
 
-(def dummy-guess
+#_(def dummy-guess
   {;;:game-type "csgo"
    :match_name "Grand Final: Liquid vs ATK"
    :game_id   9388
@@ -257,7 +246,7 @@
    :team_id   3213
    :bet_amount 75})
 
-(def dummy-guess-2
+#_(def dummy-guess-2
   {;;:game-type "csgo"
    :match_name "Grand Final: Liquid vs ATK"
    :game_id   9389
@@ -470,14 +459,6 @@
           login-again-resp (login)]
       (is (string/includes? (get-token-from-headers (:headers resp)) "deleted"))
       (is (= 200 (:status resp))))))
-
-(deftest logout-get
-  (testing "doing a get to login after logging out doesn't 500"
-    (let [{:keys [auth-token] :as login-resp} (create-user-and-login)
-          resp ((common/test-app) (-> (mock/request :post "/user/logout")
-                                      (mock/cookie :value auth-token)))
-          get-login-resp ((common/test-app) (-> (mock/request :get "/user/login")))]
-      (is (= 403 (:status get-login-resp))))))
 
 (defn- create-user-failure
   ([]

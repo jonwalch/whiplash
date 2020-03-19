@@ -11,7 +11,7 @@
   [{:keys [params] :as req}]
   (ok (db/find-top-ten)))
 
-(defn weekly-leaderboard
+#_(defn weekly-leaderboard
   [{:keys [params] :as req}]
   (let [weekly-leaderboard (->> (db/find-this-week-payout-leaderboard (time/to-date (time/last-monday)))
                                 (group-by :user/name)
@@ -68,7 +68,7 @@
                (sort-by :score #(compare %2 %1)))))
       (not-found []))))
 
-(defn get-bets
+#_(defn get-bets
   [{:keys [params] :as req}]
   (let [{:keys [game_id match_id]} params
         ;; TODO figure out why this isnt getting casted by middleware

@@ -151,14 +151,7 @@
                            (user/get-user req))}}]
 
     ["/login"
-     {:get  {:summary    "is the user's cookie valid?"
-             :middleware [middleware/wrap-restricted]
-             ;; wrap-restricted will return unauthorized if the cookie is no longer valid
-             :handler    (fn [req]
-                           (response/ok {:user/name
-                                         (middleware/authed-req->user-name req)}))}
-
-      :post {:summary    "login as user"
+     {:post {:summary    "login as user"
              :parameters {:body {:user_name string?
                                  :password    string?}}
              :handler    (fn [req]

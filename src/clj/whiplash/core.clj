@@ -8,12 +8,11 @@
     ;[whiplash.routes.services.stream :refer [cached-streams]]
     [clojure.tools.cli :refer [parse-opts]]
     [whiplash.db.core :refer [datomic-cloud]]
-    [whiplash.integrations.abios :refer [cached-token]]
+    ;[whiplash.integrations.abios :refer [cached-token]]
     [clojure.tools.logging :as log]
     [mount.core :as mount])
   (:gen-class))
 
-;; TODO maybe bring the whole server down if this happens instead of logging
 ;; log uncaught exceptions in threads
 (Thread/setDefaultUncaughtExceptionHandler
   (reify Thread$UncaughtExceptionHandler

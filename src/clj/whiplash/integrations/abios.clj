@@ -8,7 +8,7 @@
     [mount.core :as mount]
     [java-time :as java-time]))
 
-(mount/defstate cached-token
+#_(mount/defstate cached-token
                 :start
                 (atom {})
 

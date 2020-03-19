@@ -73,7 +73,7 @@
          (d/db conn) system-ns)))
 
 ;; TODO: deprecate, this is an anti-pattern
-(defn resolve-enum
+#_(defn resolve-enum
   [entity keyw]
   (when entity
     (update entity keyw #(:db/ident
@@ -159,10 +159,6 @@
                  [(.toLowerCase ^String ?original-name) ?lowercase-name]
                  [(= ?lowercase-name ?user-name)]]
         :args  [db (string/lower-case user-name)]}))
-
-(defn find-user [id]
-  (when-let [user (ffirst (find-one-by (d/db (:conn datomic-cloud)) :db/id id))]
-    user))
 
 ;; TODO deprecate
 (defn find-user-by-email
@@ -267,7 +263,7 @@
      :args  [db event-id]}))
 
 ;;; TODO resolve :game/type
-(defn find-all-unprocessed-bets-for-game
+#_(defn find-all-unprocessed-bets-for-game
   [db {:keys [game-id match-id]}]
   (->> (d/q
          {:query '[:find ?bet
@@ -286,7 +282,7 @@
                   ;; for now dissoc game/type
                   (dissoc :user/_bets :game/type))))))
 
-(defn find-all-unprocessed-bets
+#_(defn find-all-unprocessed-bets
   [db]
   (->> (d/q {:query '[:find ?bet
                       :where [?bet :bet/processed? false]]
@@ -299,7 +295,7 @@
                      :db/id :game/type :user/_bets :team/id]
                    (first bet))))))
 
-(defn find-this-week-payout-leaderboard
+#_(defn find-this-week-payout-leaderboard
   [lower-bound]
   (let [db (d/db (:conn datomic-cloud))]
     (->> (d/q

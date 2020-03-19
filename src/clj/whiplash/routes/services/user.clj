@@ -153,7 +153,7 @@
                       :same-site :strict}}})
 
 ;; TODO validation
-(defn create-bet
+#_(defn create-bet
   [{:keys [body-params] :as req}]
   (let [{:keys [match_name game_id team_name team_id match_id bet_amount]} body-params
         {:keys [user exp]} (middleware/req->token req)
@@ -276,7 +276,7 @@
       :else
       (not-found {:message "User not found."}))))
 
-(defn get-bets
+#_(defn get-bets
   [{:keys [params] :as req}]
   (let [{:keys [game_id match_id]} params
         ;; TODO figure out why this isnt getting casted by middleware

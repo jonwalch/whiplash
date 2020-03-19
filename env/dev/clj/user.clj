@@ -21,14 +21,12 @@
                                    :email      email
                                    :password   "11111111"
                                    :user_name  user-name}})
-  (let [user (db/find-user-by-email email)
-        {:keys [user/verify-token]} (d/pull (d/db (:conn db/datomic-cloud))
-                                                     '[:user/verify-token]
-                                                     user)]
+  (let [{:keys [user/verify-token db/id]} (db/pull-user {:user/email email
+                                                         :attrs [:db/id :user/verify-token]})]
     (user/verify-email {:body-params {:email email
                                       :token verify-token}})
     (d/transact (:conn db/datomic-cloud)
-                {:tx-data [{:db/id user
+                {:tx-data [{:db/id id
                             :user/status :user.status/admin}]})))
 
 (defn- add-many-users
