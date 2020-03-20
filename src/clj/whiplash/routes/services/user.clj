@@ -34,7 +34,9 @@
     (not (re-matches valid-password password))
     "Password must be at least 8 characters"
 
-    (not (re-matches valid-user-name user-name))
+    (or (not (re-matches valid-user-name user-name))
+        ;; user name should not be of email format
+        (re-matches valid-email user-name))
     "User name invalid"))
 
 (defn md5 [^String s]
@@ -119,9 +121,14 @@
 (defn login
   [{:keys [body-params] :as req}]
   (let [{:keys [user_name password]} body-params
-        user-entity (db/pull-user
-                      {:user/name user_name
-                       :attrs [:user/password :user/name {:user/status [:db/ident]}]})
+        attrs [:user/password :user/name {:user/status [:db/ident]}]
+        ;; try to find user by their user name or their email
+        ;; client will pass as user_name either way, we don't allow users to have user names
+        ;; that are of email address format, so we won't ever pull the wrong user
+        user-entity (or (db/pull-user {:user/name user_name
+                                       :attrs     attrs})
+                        (db/pull-user {:user/email user_name
+                                       :attrs attrs}))
         valid-password (when user-entity
                          (hashers/check password (:user/password user-entity)))
         {:keys [exp-str token]} (when valid-password

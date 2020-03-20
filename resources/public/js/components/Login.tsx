@@ -51,7 +51,7 @@ export function Login(props: any) {
             </header>
             <fieldset className="form__fieldset">
               <div className="form__group">
-                <label className="form__label" htmlFor="userName">Username</label>
+                <label className="form__label" htmlFor="userName">Username or Email</label>
                 <input
                     className="form__input"
                     value={userName}

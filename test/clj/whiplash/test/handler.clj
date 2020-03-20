@@ -111,7 +111,9 @@
 
        (when admin?
          (d/transact (:conn db/datomic-cloud)
-                     {:tx-data [{:db/id       (db/find-user-by-email email)
+                     {:tx-data [{:db/id (:db/id
+                                          (db/pull-user {:user/email email
+                                                         :attrs      [:db/id]}))
                                  :user/status :user.status/admin}]}))
 
        (is (= 1 (count (filter #(= email (:user/email %))
@@ -460,6 +462,11 @@
       (is (string/includes? (get-token-from-headers (:headers resp)) "deleted"))
       (is (= 200 (:status resp))))))
 
+(deftest login-with-email-address
+  (create-user)
+  (login {:user_name (:email dummy-user)
+          :password (:password dummy-user)}))
+
 (defn- create-user-failure
   ([]
    (create-user dummy-user))
@@ -485,6 +492,10 @@
              :message)))
   (is (= "User name invalid"
          (-> (create-user-failure (assoc dummy-user :user_name ""))
+             :body
+             :message)))
+  (is (= "User name invalid"
+         (-> (create-user-failure (assoc dummy-user :user_name "donnie@ronnie.com"))
              :body
              :message)))
   (is (= "Password must be at least 8 characters"
