@@ -220,14 +220,15 @@
 
 (defn find-all-user-bets-for-event
   [{:keys [db event-id]}]
-  (d/q
-    {:query '[:find (pull ?event-id [{:event/propositions
-                                      [{:bet/_proposition [:bet/amount
-                                                           :bet/payout
-                                                           :bet/projected-result?
-                                                           {:user/_prop-bets [:user/name]}]}]}])
-              :in $ ?event-id]
-     :args  [db event-id]}))
+  (ffirst
+    (d/q
+      {:query '[:find (pull ?event-id [{:event/propositions
+                                        [{:bet/_proposition [:bet/amount
+                                                             :bet/payout
+                                                             :bet/projected-result?
+                                                             {:user/_prop-bets [:user/name]}]}]}])
+                :in $ ?event-id]
+       :args  [db event-id]})))
 
 ;;; TODO resolve :game/type
 #_(defn find-all-unprocessed-bets-for-game

@@ -1,10 +1,8 @@
 (ns whiplash.routes.services.leaderboard
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
-            [whiplash.time :as time]
             [datomic.client.api :as d]
             [whiplash.payouts :as payouts]
-            [clojure.set :as set]
             [clojure.tools.logging :as log]))
 
 (defn all-time-top-ten
@@ -43,10 +41,9 @@
                      (db/find-last-event db))
         bets (when (or ongoing-event
                        last-event)
-               (ffirst
-                 (db/find-all-user-bets-for-event {:db db
-                                                   :event-id (or ongoing-event
-                                                                 last-event)})))]
+               (db/find-all-user-bets-for-event {:db       db
+                                                 :event-id (or ongoing-event
+                                                               last-event)}))]
     (if bets
       (ok
         (let [transformed-bets (->> bets
