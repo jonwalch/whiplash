@@ -10,19 +10,17 @@
     [clojure.string :as string]
     [clj-uuid :as uuid]))
 
-;; DO NOT USE DATOMIC ON PREM SCALAR OR COLLECTION FIND SYNTAX, IT'LL WORK LOCALLY BUT NOT IN PRODUCTION
-;; https://github.com/ComputeSoftware/datomic-client-memdb#caveats
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DO NOT USE DATOMIC ON PREM SCALAR OR COLLECTION FIND SYNTAX, IT'LL WORK LOCALLY BUT NOT IN PRODUCTION ;;
+;; https://github.com/ComputeSoftware/datomic-client-memdb#caveats                                       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^:private cloud-config
   {:server-type :cloud
    :region "us-west-2"
    :system "prod-whiplash-datomic"
    #_#_:creds-profile "<your_aws_profile_if_not_using_the_default>"
-   :endpoint "http://vpce-083453c598589f6ba-s7g7d18a.vpce-svc-079c04a696f355e37.us-west-2.vpce.amazonaws.com:8182"
-   ;; for local tunnel
-   #_#_:endpoint "http://entry.prod-whiplash-datomic.us-west-2.datomic.net:8182"
-   ;; :proxy-port is only for local tunnel my guy
-   #_#_:proxy-port 8182})
+   :endpoint "http://vpce-083453c598589f6ba-s7g7d18a.vpce-svc-079c04a696f355e37.us-west-2.vpce.amazonaws.com:8182"})
 
 (defn create-client
   [datomic-config]
@@ -56,21 +54,6 @@
 (defstate datomic-cloud
           :start (create-datomic-cloud)
           :stop (destroy-datomic-cloud datomic-cloud))
-
-(defn show-schema
-  "Show currenly installed schema"
-  [conn]
-  (let [system-ns #{"db" "db.type" "db.install" "db.part"
-                    "db.lang" "fressian" "db.unique" "db.excise"
-                    "db.cardinality" "db.fn" "db.sys" "db.bootstrap"
-                    "db.alter"}]
-    (d/q '[:find ?ident
-           :in $ ?system-ns
-           :where
-           [?e :db/ident ?ident]
-           [(namespace ?ident) ?ns]
-           [((comp not contains?) ?system-ns ?ns)]]
-         (d/db conn) system-ns)))
 
 ;; TODO: deprecate, this is an anti-pattern
 #_(defn resolve-enum
@@ -134,13 +117,6 @@
   (d/transact conn {:tx-data [{:db/id       id
                                :user/status :user.status/active
                                :user/verified-email-time (time/to-date)}]}))
-
-(defn find-one-by
-  [db attr val]
-  (d/q {:query '[:find ?e
-                 :in $ ?attr ?val
-                 :where [?e ?attr ?val]]
-        :args  [db attr val]}))
 
 (defn- find-user-by-email-db
   [db email]
@@ -515,8 +491,9 @@
                          payouts)
         user-cash-txs (mapv
                         (fn [[user-id {:keys [user/cash user/total-payout]}]]
-                          (let [new-balance (+ cash total-payout)]
-                            [:db/cas user-id :user/cash cash (if (< 100 new-balance)
+                          (let [new-balance (+ cash total-payout)
+                                bailout? (> 100 new-balance)]
+                            [:db/cas user-id :user/cash cash (if-not bailout?
                                                                new-balance
                                                                (bigint 100))]))
                         user-id->total-payout)]
@@ -564,6 +541,19 @@
     (d/transact (:conn datomic-cloud) {:tx-data txs})))
 
 (comment
+
+  (def ^:private local-tunnel-cloud-config
+    {:server-type :cloud
+     :region "us-west-2"
+     :system "prod-whiplash-datomic"
+     ;; for local tunnel
+     :endpoint "http://entry.prod-whiplash-datomic.us-west-2.datomic.net:8182"
+     ;; :proxy-port is only for local tunnel
+     :proxy-port 8182})
+
+  (def test-client (d/client local-tunnel-cloud-config))
+  (def conn (d/connect test-client {:db-name "whiplash"}))
+
   (defn find-loser-by-email
     [email conn]
     (when-let [user (ffirst (find-user-by-email-db (d/db conn) email))]
@@ -575,11 +565,8 @@
       (d/transact conn {:tx-data [{:db/id       user
                                    :user/status :user.status/admin}]})))
 
-  (def test-client (d/client cloud-config))
-  ;(d/create-database test-client {:db-name "test"})
-  (def conn (d/connect test-client {:db-name "whiplash"}))
-
   (find-loser-by-email "foobar@whiplashesports.com" conn)
   (make-admin "foobar@whiplashesports.com" conn)
 
-  (d/delete-database test-client {:db-name "foo"}))
+  #_(d/create-database test-client {:db-name "test"})
+  #_(d/delete-database test-client {:db-name "foo"}))
