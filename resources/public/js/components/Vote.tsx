@@ -52,15 +52,15 @@ export function Vote(props: any) {
   const endBettingDate = () => {
     if (props.proposition["proposition/betting-end-time"]){
       return moment(props.proposition["proposition/betting-end-time"],
-          "YYYY-MM-DDTHH:mm:ssZ");;
+          "YYYY-MM-DDTHH:mm:ssZ");
     } else {
       return Infinity;
     }
   };
 
   const calculateSecondsLeftToBet = () => {
-    return Math.trunc(moment(props.proposition["proposition/betting-end-time"],
-        "YYYY-MM-DDTHH:mm:ssZ").diff(moment.utc()) / 1000);
+    return moment(props.proposition["proposition/betting-end-time"], "YYYY-MM-DDTHH:mm:ssZ")
+        .diff(moment().utc(), "seconds");
   };
 
   const makePropBet = async () => {
@@ -146,7 +146,7 @@ export function Vote(props: any) {
   const renderBettingOptions = () => {
     if (props.proposition["proposition/text"] &&
         props.proposition["proposition/betting-end-time"]){
-      if (moment.utc().isBefore(endBettingDate())) {
+      if (moment().utc().isBefore(endBettingDate())) {
         return (
             <>
               <p>Seconds left to bet: {secondsLeftToBet}</p>
