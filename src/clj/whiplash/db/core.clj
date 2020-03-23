@@ -319,15 +319,21 @@
   (->> (find-all-time-leaderboard)
        (take 10)))
 
+;; TODO: adjust threshold at a later time and add a test that won't return n days later
+;; We're pull n and then figuring out the largest because aggregation doesn't work with :db/ids
 (defn find-last-event
   ([]
    (find-last-event (d/db (:conn datomic-cloud))))
   ([db]
-   (ffirst
-     (d/q {:query '[:find (max ?event) (max ?end-time)
-                    :where [?event :event/running? false]
-                    [?event :event/end-time ?end-time]]
-           :args  [db]}))))
+   (->>
+     (d/q {:query '[:find ?event ?end-time
+                    :in $ ?threshold
+                    :where [?event :event/end-time ?end-time]
+                    [(> ?end-time ?threshold)]
+                    [?event :event/running? false]]
+           :args  [db (time/to-date (time/days-delta -60))]})
+     (sort-by second #(compare %2 %1))
+     ffirst)))
 
 ;; Prop betting MVP db functions
 
@@ -535,10 +541,11 @@
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
   (let [db (d/db conn)]
-    (d/q {:query '[:find (pull (max ?event) ) (max ?end-time)
-                   :where [?event :event/running? false]
-                   [?event :event/end-time ?end-time]]
-          :args  [db]}))
+    (d/pull db '[*]
+            (ffirst (d/q {:query '[:find ?event ?end-time
+                                   :where [?event :event/running? false]
+                                   [?event :event/end-time ?end-time]]
+                          :args  [db]}))))
 
   (defn find-loser-by-email
     [email conn]
