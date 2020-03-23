@@ -39,7 +39,8 @@
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
         ongoing-event (db/find-ongoing-event db)
-        last-event (db/find-last-event db)
+        last-event (when-not ongoing-event
+                     (db/find-last-event db))
         bets (when (or ongoing-event
                        last-event)
                (ffirst

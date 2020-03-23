@@ -192,15 +192,6 @@
           :args  [db user-id prop-bet-id]})
        (map first)))
 
-(defn find-prop-bets
-  [{:keys [db prop-bet-id]}]
-  (->> (d/q
-         {:query '[:find ?bet
-                   :in $ ?prop-bet-id
-                   :where [?bet :bet/proposition ?prop-bet-id]]
-          :args [db prop-bet-id]})
-       (map first)))
-
 (defn pull-bet-payout-info
   [{:keys [db prop-bet-id attrs]}]
   (->> (d/q
@@ -331,13 +322,11 @@
   ([]
    (find-last-event (d/db (:conn datomic-cloud))))
   ([db]
-   (->>
-     (d/q {:query '[:find ?event ?end-time
+   (ffirst
+     (d/q {:query '[:find (max ?event) (max ?end-time)
                     :where [?event :event/running? false]
                     [?event :event/end-time ?end-time]]
-           :args  [db]})
-     (sort-by second #(compare %2 %1))
-     ffirst)))
+           :args  [db]}))))
 
 ;; Prop betting MVP db functions
 
@@ -410,6 +399,7 @@
                     :where [?prop :proposition/running? true]]
            :args  [db]}))))
 
+;; TODO make this depend on an event
 (defn pull-ongoing-proposition
   [{:keys [db attrs]}]
   (ffirst
@@ -417,17 +407,6 @@
                    :in $ attrs
                    :where [?prop :proposition/running? true]]
           :args  [db attrs]})))
-
-(defn find-previous-proposition
-  [{:keys [db event-eid]}]
-  (->> (d/q {:query '[:find ?prop ?ts
-                      :in $ ?event-eid
-                      :where [?event-eid :event/propositions ?prop]
-                      [?prop :proposition/running? false]
-                      [?prop :proposition/end-time ?ts]]
-             :args  [db event-eid]})
-       (sort-by second #(compare %2 %1))
-       ffirst))
 
 (defn pull-previous-proposition
   [{:keys [db event-eid attrs]}]
@@ -553,6 +532,12 @@
 
   (def test-client (d/client local-tunnel-cloud-config))
   (def conn (d/connect test-client {:db-name "whiplash"}))
+
+  (let [db (d/db conn)]
+    (d/q {:query '[:find (pull (max ?event) ) (max ?end-time)
+                   :where [?event :event/running? false]
+                   [?event :event/end-time ?end-time]]
+          :args  [db]}))
 
   (defn find-loser-by-email
     [email conn]

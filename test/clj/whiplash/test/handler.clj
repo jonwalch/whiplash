@@ -1291,6 +1291,13 @@
 
           title "Dirty Dan's Delirious Dance Party"
           twitch-user "drdisrespect"
+          ;; Create and end to test event score leaderboard at end
+          create-event-resp (admin-create-event {:auth-token auth-token
+                                                 :title title
+                                                 :channel-id twitch-user})
+
+          end-event-resp (admin-end-event {:auth-token auth-token})
+
           create-event-resp (admin-create-event {:auth-token auth-token
                                                  :title title
                                                  :channel-id twitch-user})
@@ -1421,7 +1428,14 @@
                :user_name "queefburglar"}
               {:cash      283
                :user_name "donniedarko"}]
-             (common/parse-json-body all-time-leaderboard-end))))))
+             (common/parse-json-body all-time-leaderboard-end)))
+
+      ;; Pulling from previous event since current event is over
+      (is (= [{:score     215
+               :user_name "kittycuddler420"}
+              {:score     -217
+               :user_name "donniedarko"}]
+             (:body (get-event-leaderboard)))))))
 
 (deftest end-proposition-no-bets
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
