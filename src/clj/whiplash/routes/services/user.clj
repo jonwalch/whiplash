@@ -104,18 +104,73 @@
         ;;TODO dont return 200 if db/update-password fails
         (ok {})))))
 
+(defn- retrieve-and-ack-user-notifications
+  [db user-db-id]
+  (let [notifications (db/pull-unacked-notifications
+                        {:db/id              user-db-id
+                         :db                 db
+                         :attrs              [:db/id
+                                              {:notification/type [:db/ident]}
+                                              {:notification/trigger [:bet/payout
+                                                                      {:bet/proposition [:db/id
+                                                                                         :proposition/text
+                                                                                         :proposition/result?]}]}]
+                         :notification/types #{:notification.type/bailout
+                                               :notification.type/payout}})
+        ;; ack notifications, dubious because this makes this GET no longer idempotent
+        ack-time (time/to-date)
+        ack-tx (when notifications
+                 (d/transact (:conn db/datomic-cloud)
+                             {:tx-data (mapv (fn [{:keys [db/id]}]
+                                               {:db/id                      id
+                                                :notification/acknowledged? true
+                                                :notification/acknowledged-time ack-time})
+                                             notifications)}))]
+    (->> notifications
+         (map
+           (comp
+             (fn [{:keys [notification/type] :as munged-notif}]
+               (if (= :notification.type/bailout type)
+                 (dissoc munged-notif :proposition/text :bet/payout :proposition/result?)
+                 munged-notif))
+             ;; munge db results
+             (fn [{:keys [notification/trigger] :as notif}]
+               (-> notif
+                   (assoc :bet/payout (:bet/payout trigger)
+                          :proposition/text (get-in trigger [:bet/proposition :proposition/text])
+                          :proposition/result? (get-in trigger [:bet/proposition :proposition/result?])
+                          :proposition/db-id (get-in trigger [:bet/proposition :db/id]))
+                   (dissoc :notification/trigger :db/id)))))
+         (group-by :proposition/db-id)
+         (map (fn [[id notifications]]
+                ;; assuming there won't ever be a bailout and a payout notification at the same time
+                (let [{:keys [notification/type] :as flat-notification}
+                      (-> notifications
+                          first
+                          (assoc :bet/payout (apply + 0 (keep :bet/payout notifications)))
+                          (dissoc :proposition/db-id))]
+                  (if (= :notification.type/bailout type)
+                    (dissoc flat-notification :bet/payout)
+                    flat-notification)))))))
+
 (defn get-user
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
+        db (d/db (:conn db/datomic-cloud))
         user-entity (db/pull-user {:user/name          user
+                                   :db db
                                    :attrs [{:user/status [:db/ident]}
                                            :user/first-name :user/last-name :user/email
-                                           :user/name :user/verify-token :user/cash]})]
+                                           :user/name :user/verify-token :user/cash :db/id]})
+        notifications (when user-entity
+                        (retrieve-and-ack-user-notifications db (:db/id user-entity)))]
     (if (some? user-entity)
       ;; TODO don't return verify-token, currently only exposing it for testing purposes
       ;; A user could falsely verify their email if they poked around and reconstructed the
       ;; correct route and query params
-      (ok user-entity)
+      (ok (-> user-entity
+              (dissoc :db/id)
+              (assoc :user/notifications notifications)))
       (not-found {:message (format "User %s not found" user)}))))
 
 (defn login
@@ -276,9 +331,11 @@
       (not-found {:message "No ongoing prop bet, cannot get bets."})
 
       (some? user-id)
-      (ok (db/find-prop-bets-for-user {:db          db
-                                       :user-id     user-id
-                                       :prop-bet-id ongoing-prop}))
+      (ok (sort-by :bet/amount
+                   #(compare %2 %1)
+                   (db/find-prop-bets-for-user {:db          db
+                                                :user-id     user-id
+                                                :prop-bet-id ongoing-prop})))
 
       :else
       (not-found {:message "User not found."}))))
@@ -309,7 +366,6 @@
 (defn verify-email
   [{:keys [body-params] :as req}]
   (let [{:keys [email token]} body-params
-        ;; TODO refactor user lookup to be 1 query instead of 3
         {:keys [db/id user/verify-token user/status] :as user} (db/pull-user
                                                                  {:user/email email
                                                                   :attrs [:db/id

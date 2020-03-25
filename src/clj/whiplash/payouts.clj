@@ -53,4 +53,4 @@
         (log/info (format "Casino floored payout take %s dollars" (- payout floored-payout))))
       (if (= winner id)
         (bigint floored-payout)
-        (bigint 0.0)))))
+        0N))))

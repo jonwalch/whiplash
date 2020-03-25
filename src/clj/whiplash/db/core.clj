@@ -26,10 +26,10 @@
   [datomic-config]
   (if (:prod env)
     (do
-      (log/info "using prod client with config: %s" cloud-config)
+      (log/debug "using prod client with config: %s" cloud-config)
       (d/client datomic-config))
     (do
-      (log/info "using dev memdb client")
+      (log/debug "using dev memdb client")
       (require 'compute.datomic-client-memdb.core)
       (if-let [v (resolve 'compute.datomic-client-memdb.core/client)]
         (@v datomic-config)
@@ -40,6 +40,7 @@
   (let [client (create-client cloud-config)
         created? (d/create-database client {:db-name "whiplash"})
         conn (d/connect client {:db-name "whiplash"})
+        ;; TODO: read current schema and only transact the schema if it has changed
         schema-tx-result (d/transact conn {:tx-data (schemas/migrations->schema-tx)})]
     (log/debug "Migration to transact " (schemas/migrations->schema-tx))
     (log/debug "Schema transaction result " schema-tx-result)
@@ -82,7 +83,7 @@
                                :user/email        email
                                :user/password     password
                                :user/sign-up-time (time/to-date)
-                               :user/cash         (bigint 500)}]}))
+                               :user/cash         500N}]}))
 
 (defn update-password
   [conn {:keys [db/id password]}]
@@ -155,8 +156,7 @@
   (let [lookup (if name
                  [:user/name name]
                  [:user/email email])
-        db (or db
-               (d/db (:conn datomic-cloud)))
+        db (or db (d/db (:conn datomic-cloud)))
         result (ffirst
                  (d/q {:query '[:find (pull ?user attrs)
                                 :in $ ?keyw ?user-identifier attrs
@@ -170,6 +170,20 @@
     (if (contains? result :user/status)
       (update result :user/status #(:db/ident %))
       result)))
+
+(defn pull-unacked-notifications
+  [{:keys [db/id db attrs notification/types]}]
+  (assert db)
+  (->> (d/q {:query '[:find (pull ?notif attrs)
+                      :in $ ?id attrs ?types
+                      :where [?id :user/notifications ?notif]
+                      [?notif :notification/acknowledged? false]
+                      [?notif :notification/type ?type]
+                      [?type :db/ident ?atype]
+                      [(contains? ?types ?atype)]]
+             :args  [db id attrs types]})
+       (map (fn [notif]
+              (-> notif first (update :notification/type #(:db/ident %)))))))
 
 (defn find-bets
   [db user-name game-id match-id]
@@ -460,7 +474,7 @@
                              :bet/amount  amount
                              :team/id     projected-result?
                              :team/winner result?})
-                          (bigint 0))))
+                          0N)))
                   bets)
         user-id->total-payout (->> payouts
                                    (group-by :user/db-id)
@@ -471,18 +485,38 @@
                                                   :user/cash (:user/cash (first pbets))}}))
                                    (apply merge))
         processed-time (time/to-date)
-        payout-txs (mapv #(-> %
-                              (dissoc :user/cash :user/db-id :bet/amount :bet/projected-result?)
-                              (assoc :bet/processed-time processed-time))
-                         payouts)
-        user-cash-txs (mapv
-                        (fn [[user-id {:keys [user/cash user/total-payout]}]]
-                          (let [new-balance (+ cash total-payout)
-                                bailout? (> 100 new-balance)]
-                            [:db/cas user-id :user/cash cash (if-not bailout?
-                                                               new-balance
-                                                               (bigint 100))]))
-                        user-id->total-payout)]
+        payout-txs (->> payouts
+                        (map
+                          (fn [{:keys [bet/payout user/db-id db/id] :as p}]
+                            (let [tx (-> p
+                                         (dissoc :user/cash :user/db-id :bet/amount :bet/projected-result?)
+                                         (assoc :bet/processed-time processed-time))]
+                              (if (> payout 0N)
+                                [tx
+                                 {:db/id              db-id
+                                  :user/notifications [{:notification/type          :notification.type/payout
+                                                        :notification/trigger       id
+                                                        :notification/acknowledged? false}]}]
+                                [tx]))))
+                        (apply concat)
+                        (into []))
+        user-cash-txs (->> user-id->total-payout
+                           (map
+                             (fn [[user-id {:keys [user/cash user/total-payout]}]]
+                               (let [new-balance (+ cash total-payout)
+                                     bailout? (> 100 new-balance)
+                                     cas [:db/cas user-id :user/cash cash (if-not bailout?
+                                                                            new-balance
+                                                                            100N)]]
+                                 (if-not bailout?
+                                   [cas]
+                                   [cas
+                                    {:db/id              user-id
+                                     :user/notifications [{:notification/type :notification.type/bailout
+                                                           :notification/acknowledged? false}]}]))))
+                           (apply concat)
+                           (into []))]
+
     (d/transact (:conn datomic-cloud)
                 {:tx-data (vec
                             (concat payout-txs
