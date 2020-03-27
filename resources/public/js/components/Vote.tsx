@@ -91,7 +91,11 @@ export function Vote(props: any) {
     if (response.status == 200) {
       alert(`You successfully bet $${betAmount} on outcome ${booleanToButton()}.`);
       // update user's cash
-      getUser(setLoggedInState)
+      setLoggedInState(
+          { userName: loggedInState.userName,
+            status: loggedInState.status,
+            cash: loggedInState.cash - betAmount,
+            notifications: loggedInState.notifications})
     } else {
       alert(resp.message);
     }

@@ -118,7 +118,7 @@ export function Account(props: any) {
   return (
     <>
       <Header/>
-      <main id="content" role="main" className="article">
+      <main id="content" role="main" className="article main">
       {renderAccountMarkup()}
       </main>
       <Footer/>

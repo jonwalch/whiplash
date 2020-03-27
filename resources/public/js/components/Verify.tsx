@@ -38,7 +38,7 @@ export function Verify(props: any) {
   return (
       <>
         <Header/>
-        <p>{verifyMessage}</p>
+        <p className="main">{verifyMessage}</p>
         <Footer/>
       </>
   );

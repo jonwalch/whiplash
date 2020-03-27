@@ -12,7 +12,8 @@ export const getUser = async (setLoggedInState: Function) => {
         setLoggedInState({
             userName: resp["user/name"],
             status: resp["user/status"],
-            cash: resp["user/cash"]
+            cash: resp["user/cash"],
+            notifications: resp["user/notifications"]
         });
     };
 };
