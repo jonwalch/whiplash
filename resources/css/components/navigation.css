@@ -32,15 +32,21 @@
   }
 
   &__fade-in {
-   animation: fadeIn ease 1s;
+   animation: fading 5s;
   }
 
-  @keyframes fadeIn {
+  @keyframes fading {
     0% {
-      opacity:0;
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
     }
     100% {
-      opacity:1;
+      opacity: 0;
     }
   }
 
