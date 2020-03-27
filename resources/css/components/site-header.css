@@ -4,7 +4,7 @@
   color: $dark-white;
 
 /*  stick to top */
-  z-index: 999;
+  z-index: 1;
   position: sticky;
   top: 0;
   width: 100%;
