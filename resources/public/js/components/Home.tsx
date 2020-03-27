@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useContext} from "react";
 import { Vote } from "./Vote";
 import {EventScore, Leaderboard} from "./Leaderboard";
 import { useInterval } from "../common";
@@ -7,12 +7,15 @@ import {Header} from "./Header";
 import {Footer} from "./Footer";
 import {getEvent, getProp} from "../common/stream";
 import {Suggestion} from "./Suggestion";
+import {defaultLoggedIn, LoginContext} from "../contexts/LoginContext";
+import {getUser} from "../common/getUser";
 
 const { install } = require('ga-gtag');
 
-export const failedToFetch : string = "failed to fetch"
+export const failedToFetch : string = "failed to fetch";
 
 export function Home(props: any) {
+  const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [channelID, setChannelID] = useState<null | string>(null);
   const [matchName, setMatchName] = useState<string>("");
   const [streamSource, setStreamSource] = useState<string>("");
@@ -44,8 +47,17 @@ export function Home(props: any) {
       }
   };
 
+  // keep user's cash and notifications up to date
+  // the other pages don't need to do this regularly, because it doesn't matter if their cash is out of date
+  // we also only need to fetch regularly if an event is happening, because that's the only time payouts happens
+  useInterval(() => {
+    if (loggedInState.userName && channelID != failedToFetch) {
+        getUser(setLoggedInState);
+    }
+  }, 5000);
+
     useEffect(() => {
-        if (isProduction) {
+    if (isProduction) {
       // Install Google tag manager
       install('UA-154430212-2')
     }

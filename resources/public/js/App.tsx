@@ -16,12 +16,6 @@ export const App = () => {
         getUser(setLoggedInState)
     }, []);
 
-    useInterval(() => {
-        if (loggedInState.userName) {
-            getUser(setLoggedInState);
-        }
-    }, 5000);
-
     return (
         <LoginContext.Provider value={{loggedInState: loggedInState, setLoggedInState: setLoggedInState}}>
             <BrowserRouter>

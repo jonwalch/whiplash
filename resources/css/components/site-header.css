@@ -2,4 +2,9 @@
   background: $dark-blue;
   border-top: 0.25em solid $orange;
   color: $dark-white;
+
+/*  stick to top */
+  z-index: 1;
+  position: sticky;
+  top: 0;
 }

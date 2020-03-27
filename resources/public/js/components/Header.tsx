@@ -93,9 +93,35 @@ export function Header() {
     }
   };
 
+    const renderNotifications = () => {
+        return (
+            <>
+                {loggedInState.notifications.map((notif: any) => {
+                    if (notif["notification/type"] == "notification.type/bailout") {
+                        return (
+                            <li className="navigation__item navigation__fade-in">
+                                <span className="navigation__highlight">You got bailed out! Your Whipcash was set to $100!</span>
+                            </li>
+                        );
+                    } else if (notif["notification/type"] == "notification.type/payout") {
+                        const text = "You won $" + notif["bet/payout"] +
+                            " Whipcash because you bet " + (notif["proposition/result?"] ? "Yes" : "No") +
+                            " on '" + notif["proposition/text"] + "'!";
+                        return (
+                            <li className="navigation__item navigation__fade-in">
+                                <span className="navigation__highlight">{text}</span>
+                            </li>
+                        );
+                    }
+                })
+                }
+            </>
+        );
+    };
+
   return (
     <header role="banner" className="site-header">
-      <div className="site-navigation container">
+      <div className="site-navigation">
         <div className="site-branding">
           <h1 className="site-branding__title">
             <a href="/">
@@ -117,6 +143,7 @@ export function Header() {
         </nav>
         <nav className="navigation navigation--cta">
           <ul className="navigation__list">
+            {renderNotifications()}
             {renderNavCtaButtons()}
           </ul>
         </nav>

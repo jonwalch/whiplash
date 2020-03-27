@@ -31,6 +31,25 @@
     color: $orange;
   }
 
+  &__fade-in {
+   animation: fading 5s;
+  }
+
+  @keyframes fading {
+    0% {
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
   &__link {
     background: none;
     border: none;
