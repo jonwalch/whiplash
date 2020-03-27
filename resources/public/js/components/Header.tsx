@@ -121,7 +121,7 @@ export function Header() {
 
   return (
     <header role="banner" className="site-header">
-      <div className="site-navigation container">
+      <div className="site-navigation">
         <div className="site-branding">
           <h1 className="site-branding__title">
             <a href="/">

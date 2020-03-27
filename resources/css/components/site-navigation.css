@@ -1,9 +1,10 @@
 .site-navigation {
-  @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+  padding: 0.5rem;
+
+@media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     align-content: center;
     display: flex;
     justify-content: flex-start;
-    padding: 0.5rem;
   }
 
   a {
