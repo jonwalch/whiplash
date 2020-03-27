@@ -439,7 +439,7 @@ export function Control(props: any) {
     return (
         <>
             <Header/>
-            <main id="content" role="main" className="article main">
+            <main id="content" role="main" className="article">
                 {renderControlMarkup()}
             </main>
             <Footer/>

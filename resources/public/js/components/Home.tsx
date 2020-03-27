@@ -192,7 +192,7 @@ export function Home(props: any) {
     return (
         <>
             <Header/>
-            <main id="content" className="main" role="main">
+            <main id="content" role="main">
                 <div className="home__layout">
                     {renderContent()}
                     <Bets

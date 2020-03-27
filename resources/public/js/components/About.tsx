@@ -6,7 +6,7 @@ export function About() {
   return (
     <>
       <Header/>
-      <main id="content" role="main" className="article main">
+      <main id="content" role="main" className="article">
         <article>
           <header className="article__header">
             <div className="article__container">

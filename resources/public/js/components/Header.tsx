@@ -94,13 +94,6 @@ export function Header() {
   };
 
     const renderNotifications = () => {
-        //return (<div><p>{"You got bailed out! Your Whipcash was set to $100!"}</p></div>);
-        // return (
-        //     <li className="navigation__item navigation__fade-in">
-        //         <span className="navigation__highlight">You got bailed out! Your Whipcash was set to $100!</span>
-        //     </li>
-        // );
-
         return (
             <>
                 {loggedInState.notifications.map((notif: any) => {
