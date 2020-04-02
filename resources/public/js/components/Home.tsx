@@ -68,7 +68,7 @@ export function Home(props: any) {
       return {days: days, hours: hours, minutes: minutes, seconds: seconds}
   };
 
-    // keep user's cash and notifications up to date
+  // keep user's cash and notifications up to date
   // the other pages don't need to do this regularly, because it doesn't matter if their cash is out of date
   // we also only need to fetch regularly if an event is happening, because that's the only time payouts happens
   useInterval(() => {
