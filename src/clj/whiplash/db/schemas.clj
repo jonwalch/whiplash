@@ -296,7 +296,12 @@
         :db/ident       :notification/acknowledged-time
         :db/valueType   :db.type/instant
         :db/cardinality :db.cardinality/one}
-       ]})
+       ]
+
+   :4 [{:db/doc         "Time of next event"
+        :db/ident       :whiplash/next-event-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}]})
 
 (defn migrations->schema-tx
   []

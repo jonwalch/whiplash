@@ -14,6 +14,11 @@ export interface Event {
     "event/title": string;
 }
 
+
+export interface NextEvent {
+    "whiplash/next-event-time": string;
+}
+
 export const defaultEvent = {
     "event/start-time": "",
     "event/running?": false,
@@ -40,12 +45,14 @@ export const defaultProposition = {
 
 export function Control(props: any) {
     const { loggedInState, setLoggedInState } = useContext(LoginContext);
+    const [nextEventTs, setNextEventTs] = useState("");
     const [eventTitle, setEventTitle] = useState("");
     const [channelID, setChannelID] = useState("");
     const [propText, setPropText] = useState("");
     const [proposition, setProposition] = useState<Proposition>(defaultProposition);
     const [prevProposition, setPrevProposition] = useState<Proposition>(defaultProposition);
-    const [eventInfo, setEventInfo] = useState<Event>(defaultEvent);
+    // any is here to shut up the ts compiler
+    const [eventInfo, setEventInfo] = useState<Event | NextEvent | any>(defaultEvent);
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
     const [eventSource, setEventSource] = useState<string>("");
@@ -202,6 +209,27 @@ export function Control(props: any) {
         setSelectedSuggestions([])
     };
 
+    const createCountdown = async () => {
+        const response = await fetch(baseUrl + "admin/event/countdown", {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "POST",
+            mode: "same-origin",
+            body: JSON.stringify({
+                ts: nextEventTs,
+            }),
+            redirect: "error",
+        });
+        const resp = await response.json();
+        if (response.status == 200) {
+            alert("successfully created countdown")
+        }
+        else {
+            alert("failed to crete countdown, error message: " + resp.message)
+        }
+    };
+
     const toggleValid = () => {
         return !(selectedSuggestions.length > 0);
     };
@@ -219,11 +247,36 @@ export function Control(props: any) {
                     <div>Current Event:</div>
                     <div>{JSON.stringify(eventInfo)}</div>
                     {!eventInfo["event/channel-id"] &&
+                    <>
                     <div className="form__group"
                         // TODO: remove inline style
-                         style={{marginTop: "30px"}}
-                    >
-                        <label className="form__label" htmlFor="eventTitle">Event Title</label>
+                         style={{marginTop: "30px"}}>
+                        <label className="form__label" htmlFor="eventTitle">Next Event Countdown</label>
+                        <input
+                            className="form__input"
+                            value={nextEventTs}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                setNextEventTs(e.currentTarget.value);
+                            }}
+                            placeholder="Must be ISO 8601 format in UTC time zone. i.e. 2020-04-01T22:56:01Z"
+                            maxLength={20}
+                            name="nextEventTs"
+                            id="nextEventTs"
+                        />
+                        < button
+                            className="button twitch__button"
+                            // TODO: remove inline style
+                            style = {{marginRight: "30px"}}
+                            type="button"
+                            onClick={() => {
+                                createCountdown()
+                            }}>
+                            Create Countdown
+                        </button>
+                        <label style={{marginTop: "30px"}}
+                               // TODO remove inline style
+                               className="form__label"
+                               htmlFor="eventTitle">Event Title</label>
                         <input
                             className="form__input"
                             value={eventTitle}
@@ -236,9 +289,6 @@ export function Control(props: any) {
                             id="eventTitle"
                         />
                     </div>
-                    }
-                    {!eventInfo["event/channel-id"] &&
-                    <>
                         <div className="form__group">
                             <label className="form__label" htmlFor="twitchUser">Event Channel ID</label>
                             <input

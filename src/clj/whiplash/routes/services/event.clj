@@ -1,7 +1,9 @@
 (ns whiplash.routes.services.event
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
-            [datomic.client.api :as d]))
+            [datomic.client.api :as d]
+            [whiplash.time :as time]
+            [clojure.tools.logging :as log]))
 
 (defn create-event
   [{:keys [body-params] :as req}]
@@ -32,14 +34,27 @@
 
 (defn get-current-event
   [{:keys [body-params] :as req}]
-  (if-let [event (db/pull-ongoing-event {:attrs
-                                         [:event/start-time
-                                          :event/running?
-                                          :event/channel-id
-                                          :event/title
-                                          {:event/stream-source [:db/ident]}]})]
-    (ok event)
-    (not-found {})))
+  (let [db (d/db (:conn db/datomic-cloud))
+        event (db/pull-ongoing-event {:db db
+                                      :attrs [:event/start-time
+                                              :event/running?
+                                              :event/channel-id
+                                              :event/title
+                                              {:event/stream-source [:db/ident]}]})
+        next-event-time (when-not event
+                          (db/pull-next-event-time {:db    db
+                                                    :attrs [:whiplash/next-event-time]}))]
+    (cond
+      (some? event)
+      (ok event)
+
+      (and (some? next-event-time)
+           (java-time/after? (time/date-to-zdt (:whiplash/next-event-time next-event-time))
+                             (time/now)))
+      (ok next-event-time)
+
+      :else
+      (not-found {}))))
 
 (defn end-current-event
   [{:keys [body-params] :as req}]
@@ -55,3 +70,27 @@
       :else
       (do (db/end-event event)
           (ok {})))))
+
+(defn create-countdown
+  [{:keys [body-params] :as req}]
+  (let [{:keys [ts]} body-params
+        parsed-date (try (time/timestamp-to-zdt ts)
+                         (catch Throwable _ nil))
+        existing-countdown (when parsed-date
+                             (db/pull-next-event-time {:attrs
+                                                       [:db/id :whiplash/next-event-time]}))]
+    (cond
+      (nil? parsed-date)
+      (bad-request {:message "Couldn't parse date ISO 8601 string"})
+
+      (java-time/before? parsed-date (time/now))
+      (bad-request {:message "Date must be in the future"})
+
+      :else
+      (do
+        (d/transact (:conn db/datomic-cloud)
+                    {:tx-data [(merge
+                                 {:whiplash/next-event-time (time/to-date parsed-date)}
+                                 (when existing-countdown
+                                   {:db/id (:db/id existing-countdown)}))]})
+        (ok {})))))
