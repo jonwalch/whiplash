@@ -4,7 +4,7 @@
     [ring.mock.request :as mock]
     [clojure.string :as string]
     [whiplash.test.common :as common]
-    [whiplash.guess-processor :as guess-processor]
+    ;[whiplash.guess-processor :as guess-processor]
     [whiplash.db.core :as db]
     [datomic.client.api :as d]
     [clj-uuid :as uuid]
@@ -694,6 +694,16 @@
   (let [resp ((common/test-app) (-> (mock/request :post "/admin/suggestion")
                                     (mock/cookie :value auth-token)
                                     (mock/json-body {:suggestions suggestions})))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    (assoc resp :body (common/parse-json-body resp))))
+
+(defn- admin-create-next-event-ts
+  [{:keys [auth-token status ts]}]
+  (let [resp ((common/test-app) (-> (mock/request :post "/admin/event/countdown")
+                                    (mock/cookie :value auth-token)
+                                    (mock/json-body {:ts ts})))]
     (is (= (or status
                200)
            (:status resp)))
@@ -1574,3 +1584,63 @@
              :proposition/result? true
              :proposition/text    "third one"}]
            (-> get-user-resp :body :user/notifications)))))
+
+(deftest cant-create-next-event-ts-invalid-ts
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))]
+    (admin-create-next-event-ts {:auth-token auth-token
+                                 :status 400
+                                 :ts "foobar"})))
+
+(deftest cant-create-next-event-ts-in-past
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))]
+    (admin-create-next-event-ts {:auth-token auth-token
+                                 :status 400
+                                 :ts "2000-04-01T22:56:01Z"})))
+
+(deftest get-event-doesn't-return-old-next-event-ts
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+        ts "2100-04-01T22:56:01Z"
+        now (time/now)]
+    (admin-create-next-event-ts {:auth-token auth-token :ts ts})
+
+    (is (= {:whiplash/next-event-time ts}
+           (:body (get-event))))
+
+    ;; TODO: change tests so we can move time forward more sanely
+    (with-redefs [whiplash.time/now (fn []
+                                      (time/days-delta now (* 365 100)))]
+      (get-event {:status 404}))))
+
+(deftest create-next-event-ts
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+        ts "2100-04-01T22:56:01Z"
+        ts-2 "2200-04-01T22:56:01Z"]
+    (admin-create-next-event-ts {:auth-token auth-token :ts ts})
+
+    (is (= {:whiplash/next-event-time ts}
+           (:body (get-event))))
+
+    ;;implicitly tests that we're overwriting the original attribute, and not making a new entity
+    (admin-create-next-event-ts {:auth-token auth-token :ts ts-2})
+    (is (= {:whiplash/next-event-time ts-2}
+           (:body (get-event))))))
+
+(deftest get-event-returns-event-over-ts
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+        ts "2100-04-01T22:56:01Z"]
+    (admin-create-next-event-ts {:auth-token auth-token :ts ts})
+
+    (is (= {:whiplash/next-event-time ts}
+           (:body (get-event))))
+
+    (admin-create-event {:auth-token auth-token
+                         :title "poops"
+                         :channel-id "pig boops"})
+
+    (is (not= {:whiplash/next-event-time ts}
+              (:body (get-event))))))

@@ -90,5 +90,7 @@
   (inst?
     (time/java-date (now)))
   (time/before? (now) (days-delta 1))
+
+  (to-date (timestamp-to-zdt "2019-10-12T07:47:11Z"))
   )
 

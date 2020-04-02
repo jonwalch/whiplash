@@ -9,6 +9,7 @@ import {getEvent, getProp} from "../common/stream";
 import {Suggestion} from "./Suggestion";
 import {defaultLoggedIn, LoginContext} from "../contexts/LoginContext";
 import {getUser} from "../common/getUser";
+import moment from "moment";
 
 const { install } = require('ga-gtag');
 
@@ -22,6 +23,8 @@ export function Home(props: any) {
   const [chatIsOpen, setChatIsOpen] = useState<boolean>(false);
   const [proposition, setProposition] = useState<Object>({});
   const [prevProposition, setPrevProposition] = useState<Object>({});
+  const [nextEventTime, setNextEventTime] = useState<string>("");
+  const [countdown, setCountdown] = useState<any>(null);
 
   // child state
   const [eventScoreLeaderboard, setEventScoreLeaderboard] = useState<EventScore[]>([]);
@@ -32,6 +35,8 @@ export function Home(props: any) {
       setChannelID(event["event/channel-id"] || failedToFetch);
       setMatchName(event["event/title"]);
       setStreamSource(event["event/stream-source"]);
+      setNextEventTime(event["whiplash/next-event-time"] || "");
+      setCountdown(setCountdownWrapper(event["whiplash/next-event-time"] || ""));
     };
 
   const getPropWrapper = (event:any) => {
@@ -47,7 +52,23 @@ export function Home(props: any) {
       }
   };
 
-  // keep user's cash and notifications up to date
+  const setCountdownWrapper = (arg: string) => {
+      if (arg == "") {
+          return null
+      }
+
+      const now = moment();
+      let exp = moment(arg, "YYYY-MM-DDTHH:mm:ssZ");
+
+      const days = exp.diff(now, 'days');
+      const hours = exp.subtract(days, 'days').diff(now, 'hours');
+      const minutes = exp.subtract(hours, 'hours').diff(now, 'minutes');
+      const seconds = exp.subtract(minutes, 'minutes').diff(now, 'seconds');
+
+      return {days: days, hours: hours, minutes: minutes, seconds: seconds}
+  };
+
+    // keep user's cash and notifications up to date
   // the other pages don't need to do this regularly, because it doesn't matter if their cash is out of date
   // we also only need to fetch regularly if an event is happening, because that's the only time payouts happens
   useInterval(() => {
@@ -85,6 +106,11 @@ export function Home(props: any) {
     });
   }, 10000);
 
+  useInterval(() => {
+    if (nextEventTime != "") {
+        setCountdown(setCountdownWrapper(nextEventTime))
+    }}, 1000);
+
   const lastWinner = () => {
       const winner: EventScore = eventScoreLeaderboard[0];
       if (winner) {
@@ -93,7 +119,14 @@ export function Home(props: any) {
       return "";
   };
 
-  const streamSourceToStreamUrl = () => {
+    const displayCountDown = () => {
+        return countdown.days + " days, "
+            + countdown.hours + " hours, "
+            + countdown.minutes + " minutes, "
+            + countdown.seconds + " seconds!";
+    };
+
+    const streamSourceToStreamUrl = () => {
       if (streamSource == "event.stream-source/cnn-unauth") {
           return "https://fave.api.cnn.io/v1/fav/?video=cvplive/cvpstream0&customer=cnn&edition=domestic&env=prod&isLive=true";
       }
@@ -118,17 +151,30 @@ export function Home(props: any) {
   const renderContent = () => {
     // Loading
     if (channelID == null) {
-      return (
-          <div className="twitch is-inactive">
-            <div className="container">
-              <h2 className="twitch__title">Loading...</h2>
-              <div className="twitch__placeholder">
-                <p className="twitch__subtitle">Hang tight, your event is loading.</p>
-              </div>
+        return (
+            <div className="twitch is-inactive">
+                <div className="container">
+                    <h2 className="twitch__title">Loading...</h2>
+                    <div className="twitch__placeholder">
+                        <p className="twitch__subtitle">Hang tight, your event is loading.</p>
+                    </div>
+                </div>
             </div>
-          </div>
-      );
-      // No stream to show
+        );
+    // no stream but countdown
+    } else if (channelID == failedToFetch && countdown != null) {
+        return (
+            <div className="twitch is-inactive">
+                <div className="container">
+                    <div className="twitch__placeholder">
+                        <p className="twitch__subtitle">Last Event Winner: {lastWinner()}</p>
+                        <h2 className="twitch__subtitle">Next Event in {displayCountDown()}</h2>
+                    </div>
+                </div>
+            </div>
+        );
+
+      // No stream and no countdown to show
     } else if (channelID == failedToFetch) {
       return (
           <div className="twitch is-inactive">

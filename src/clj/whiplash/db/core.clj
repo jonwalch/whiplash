@@ -372,6 +372,16 @@
       (update result :event/stream-source #(:db/ident %))
       result)))
 
+(defn pull-next-event-time
+  "assumes only one of these exists in the db"
+  [{:keys [db attrs]}]
+  (let [db (or db (d/db (:conn datomic-cloud)))]
+    (ffirst
+      (d/q {:query '[:find (pull ?e attrs)
+                     :in $ attrs
+                     :where [?e :whiplash/next-event-time _]]
+            :args  [db attrs]}))))
+
 (defn pull-undismissed-suggestions-for-ongoing-event
   [{:keys [db attrs]}]
   (let [db (or db (d/db (:conn datomic-cloud)))]

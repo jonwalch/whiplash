@@ -65,7 +65,13 @@
       {:post {:summary "End the current event"
               :middleware [middleware/wrap-admin]
               :handler (fn [req]
-                         (event/end-current-event req))}}]]
+                         (event/end-current-event req))}}]
+     ["/countdown"
+      {:post {:summary "Set the timestamp of the next event to show countdown on home page"
+              :middleware [middleware/wrap-admin]
+              :parameters {:body {:ts string?}}
+              :handler (fn [req]
+                         (event/create-countdown req))}}]]
 
     ["/prop"
      [""
