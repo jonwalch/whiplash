@@ -196,7 +196,9 @@ export function Vote(props: any) {
                   disabled={toggleValid()}
                   onClick={() => makePropBet()}
               >
-                Make Bet
+                <div className={betWaitingForResp ? "loading" : ""}>
+                  {betWaitingForResp ? "" : "Make Bet"}
+                </div>
               </button>
             </>
         );

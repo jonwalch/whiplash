@@ -8,6 +8,7 @@ export function Login(props: any) {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
+  const [logInWaitingForResp, setLogInWaitingForResp] = useState<boolean>(false);
 
   const toggleValid = () => {
     //TODO: add validation
@@ -15,6 +16,7 @@ export function Login(props: any) {
   };
 
   const login = async () => {
+    setLogInWaitingForResp(true);
     const response = await fetch(baseUrl + "user/login", {
       headers: {
         "Content-Type": "application/json",
@@ -31,6 +33,7 @@ export function Login(props: any) {
       const resp = await response.json();
       alert(resp.message);
     }
+    setLogInWaitingForResp(false);
   };
 
   const loginOnKeyPress = (e: any) => {
@@ -89,7 +92,9 @@ export function Login(props: any) {
                   type="button"
                   onClick={login}
                   disabled={toggleValid()}>
-                Log In
+                <div className={logInWaitingForResp ? "loading" : ""}>
+                  {logInWaitingForResp ? "" : "Log In"}
+                </div>
               </button>
             </fieldset>
           </form>

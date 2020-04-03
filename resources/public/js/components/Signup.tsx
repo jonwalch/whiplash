@@ -8,6 +8,7 @@ export function Signup(props: any) {
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [signUpWaitingForResp, setSignUpWaitingForResp] = useState<boolean>(false);
 
   const toggleValid = () => {
     //TODO: add validation
@@ -23,6 +24,7 @@ export function Signup(props: any) {
   };
 
   const createUser = async () => {
+    setSignUpWaitingForResp(true);
     const response = await fetch(baseUrl + "user/create", {
       headers: {
         "Content-Type": "application/json",
@@ -46,6 +48,7 @@ export function Signup(props: any) {
     } else {
       alert(resp.message);
     }
+    setSignUpWaitingForResp(false);
   };
   
   const signupOnKeyPress = (e: any) => {
@@ -164,7 +167,9 @@ export function Signup(props: any) {
           type="button"
           onClick={submitSignUp}
           disabled={toggleValid()}>
-          Sign Up
+          <div className={signUpWaitingForResp ? "loading" : ""}>
+            {signUpWaitingForResp ? "" : "Log In"}
+          </div>
         </button>
       </fieldset>
     </form>

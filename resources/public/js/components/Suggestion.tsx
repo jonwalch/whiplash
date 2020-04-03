@@ -69,7 +69,9 @@ export function Suggestion(props: any) {
                     type="button"
                     onClick={createSuggestion}
                     disabled={toggleValid()}>
-                    Submit Suggestion
+                    <div className={suggestWaitingForResp ? "loading" : ""}>
+                        {suggestWaitingForResp ? "" : "Submit Suggestion"}
+                    </div>
                 </button>
             </form>
         );
