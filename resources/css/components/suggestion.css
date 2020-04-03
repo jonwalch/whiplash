@@ -5,6 +5,7 @@
      }
      &__button {
           width: auto;
+          font-size: 0.75rem;
 
         &:not(.is-active) {
             background: $medium-gray;

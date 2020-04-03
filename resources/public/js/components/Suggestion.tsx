@@ -48,7 +48,7 @@ export function Suggestion(props: any) {
 
     const renderSuggestion = () => {
         return (
-            <form className="form form_suggestion"
+            <form className="form form__suggestion"
                  onSubmit={(e: any) => e.preventDefault()}
             >
                 <input
@@ -60,7 +60,7 @@ export function Suggestion(props: any) {
                     onKeyPress={(e) => {suggestionOnKeyPress(e)}}
                     maxLength={100}
                     minLength={5}
-                    placeholder="Type your prop bet suggestion here!"
+                    placeholder="Type your proposition suggestion here!"
                     name="suggestion"
                     id="suggestion"
                 />

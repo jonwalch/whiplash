@@ -1,7 +1,7 @@
 .site-navigation {
-  padding: 0.5rem 1rem;
+  padding: 0.35rem 1rem;
 
-  /*TODO DROP SHADOW COLOR*/
+  /*TODO DROP SHADOW COLOR, this also adds a shadow to the top which we dont want*/
   /*drop shadow*/
   /*box-shadow: 0 0.125em 0.5em 0 hsl( 0, 0%, 10% ),*/
   /*0 0.125em 0.25em 0 hsla( 0, 0%, 10%, 50% );*/

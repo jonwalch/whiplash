@@ -38,7 +38,7 @@ export function Header() {
           setShowLogin(!showLogin);
           setShowSignup(false);
         }}>
-        Log In
+          {showLogin ? "Cancel" : "Log In"}
       </button>
     );
   };
@@ -67,7 +67,7 @@ export function Header() {
           setShowSignup(!showSignup);
           setShowLogin(false);
         }}>
-        Sign Up
+          {showSignup ? "Cancel" : "Sign Up"}
       </button>
     );
   };

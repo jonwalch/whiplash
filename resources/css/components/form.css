@@ -1,8 +1,8 @@
 .form {
 
-  &_suggestion{
+  &__suggestion{
      display: flex;
-     margin-top: 1em;
+     margin: 1rem 0 0 0.5rem;
 
 @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-column: span 4;
@@ -85,13 +85,12 @@
     font-family: $font-stack-code;
     font-size: 0.75em;
     line-height: 1;
-    margin: 0 0 0.5rem 0.5rem;
+    margin: 0.5rem 0 0.5rem 0.5rem;
   }
 
   &__input {
     background: $pale-blue;
-    border: 0.25em solid $pale-blue;
-    outline: none;
+    border: none;
     color: $light-black;
     padding: 0.25em 0.5em;
     transition: .3s ease-in-out;
@@ -99,12 +98,16 @@
     &:hover,
     &:focus {
       background: $dark-white;
-      border: 0.25em solid $purple;
+      outline: 0.25em solid $purple;
     }
   }
 
   &__button {
     align-self: end;
     justify-self: start;
+
+    &__margin-top {
+      margin-top: 0.5rem;
+     }
   }
 }

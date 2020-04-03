@@ -85,7 +85,7 @@ export function Login(props: any) {
                 />
               </div>
               <button
-                  className="button form__button"
+                  className="button form__button form__button__margin-top"
                   type="button"
                   onClick={login}
                   disabled={toggleValid()}>

@@ -160,7 +160,7 @@ export function Signup(props: any) {
           />
         </div>
         <button
-          className="button form__button"
+          className="button form__button form__button__margin-top"
           type="button"
           onClick={submitSignUp}
           disabled={toggleValid()}>
