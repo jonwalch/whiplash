@@ -1,13 +1,12 @@
-import React, { useEffect, useState} from "react";
+import React, { useEffect, useState, lazy, Suspense} from "react";
 import { BrowserRouter, Route } from "react-router-dom";
 import { Home } from "./components/Home";
 import { About } from "./components/About";
 import { Verify } from "./components/Verify";
 import {defaultLoggedIn, LoginContext} from "./contexts/LoginContext";
 import { Account } from "./components/Account";
-import { Control } from "./components/Control";
-import {useInterval} from "./common";
 import {getUser} from "./common/getUser";
+const Control = lazy(() => import("./components/Control").then(({ Control }) => ({default: Control})));
 
 export const App = () => {
     const [loggedInState, setLoggedInState] = useState(defaultLoggedIn);
@@ -34,7 +33,9 @@ export const App = () => {
                 />
                 <Route exact path="/control" render={({ match, history}) =>
                     (
-                        <Control match={match} history={history}/>
+                        <Suspense fallback={<div>Loading...</div>}>
+                            <Control match={match} history={history}/>
+                        </Suspense>
                     )}
                 />
             </BrowserRouter>
