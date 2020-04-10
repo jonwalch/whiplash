@@ -48,8 +48,12 @@ let config = {
     // ignore moment.js locales, see https://github.com/jmblog/how-to-optimize-momentjs-with-webpack#using-ignoreplugin
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new HtmlWebpackPlugin({
-      hash: true,
       template: "resources/html/index.html",
+    }),
+    new HtmlWebpackPlugin({
+      filename: "error.html",
+      template: "resources/html/error.html",
+      inject: false,
     })
   ]
   //      externals: {

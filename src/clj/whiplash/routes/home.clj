@@ -16,7 +16,7 @@
     [reitit.coercion.spec :as spec-coercion]))
 
 (defn home-page [request]
-  (layout/render request "../public/dist/index.html")
+  (layout/render request "index.html")
   #_(layout/render request "home.html" {:docs (-> "docs/docs.md" io/resource slurp)}))
 
 (defn home-routes []
