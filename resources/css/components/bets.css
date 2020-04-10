@@ -1,5 +1,5 @@
 .bets {
-  font-size: 0.85em;
+  font-size: 0.7rem;
 
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-column: span 2;
@@ -25,9 +25,15 @@
     margin-bottom: 0;
   }
 
+  &__innertable {
+     overflow-y: auto;
+     height: 10rem;
+   }
+
   &__table {
     background: $dark-blue;
     width: 100%;
+    table-layout: fixed;
   }
 
   &__th {
@@ -39,6 +45,11 @@
     + .bets__th {
       border-left: 1px solid $light-black;
     }
+
+    &__flex {
+       display: flex;
+       justify-content: space-between;
+     }
   }
 
   &__td {
@@ -51,6 +62,11 @@
       border-left: 1px solid $light-black;
       color: $dark-white;
     }
+
+    &__flex {
+       display: flex;
+       justify-content: space-between;
+     }
   }
 
   &__tr + &__team {

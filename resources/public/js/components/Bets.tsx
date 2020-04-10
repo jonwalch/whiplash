@@ -29,59 +29,109 @@ export function Bets(props: any) {
     });
     if (response.status == 200) {
       const resp = await response.json();
-      setBets(Object.entries(resp));
+      setBets(resp);
     } else {
       setBets(null)
     }
   };
 
-  const boolStringToDisplay = (str : string) => {
-    if (str == "true") {
-      return "Yes";
-    } else if (str == "false") {
-      return "No";
+  const generateBetTRs = () => {
+    const yesBets = bets["true"].bets;
+    const noBets = bets["false"].bets;
+    const trs = [];
+    const defaultTD = <td className="bets__td"></td>
+    const end : number = Math.max(yesBets.length, noBets.length);
+
+    for (let i = 0; i < end; i++) {
+      let yes = defaultTD;
+      let no = defaultTD;
+
+      if (i < yesBets.length) {
+        const user = yesBets[i]["user/name"];
+        const betAmount = yesBets[i]["bet/amount"];
+        yes =
+            <td className="bets__td" key={user + betAmount + "yes"}>
+              <div className="bets__td__flex">
+                <span>{user}</span>
+                <span>{"$" + betAmount}</span>
+              </div>
+            </td>
+      }
+
+      if (i < noBets.length){
+        const user = noBets[i]["user/name"];
+        const betAmount = noBets[i]["bet/amount"];
+        no =
+            <td className="bets__td" key={user + betAmount + "no"}>
+              <div className="bets__td__flex">
+                <span>{user}</span>
+                <span>{"$" + betAmount}</span>
+              </div>
+            </td>
+      }
+
+      trs.push(
+          <tr className="bets__tr">
+            {yes}
+            {no}
+          </tr>
+      )
     }
-    return str;
+    return trs;
+  };
+
+  const renderTBody = () => {
+    const t = bets["true"];
+    const f = bets["false"];
+
+    return (
+        <tbody>
+        <tr className="bets__tr bets__team" key="Yes">
+          <th className="bets__th">
+            <div className="bets__th__flex">
+              <span>Yes</span>
+              <span>{t.odds.toFixed(2)}</span>
+              <span>{"$" + t.total}</span>
+            </div>
+          </th>
+          <th className="bets__th">
+            <div className="bets__th__flex">
+              <span>No</span>
+              <span>{f.odds.toFixed(2)}</span>
+              <span>{"$" + f.total}</span>
+            </div>
+          </th>
+        </tr>
+        </tbody>
+    );
   };
 
   const renderBets = () => {
     return (
-      <div className="bets">
-        <div className="container">
-          <header className="bets__header">
-            <h2 className="bets__title">Current Bets</h2>
-          </header>
-          <table className="bets__table">
-            {bets.map((el: any) => {
-              const teamName = boolStringToDisplay(el[0]);
-              const teamBets = el[1];
-              return (
+        <div className="bets">
+          <div className="container">
+            <header className="bets__header">
+              <h2 className="bets__title">Current Bets</h2>
+            </header>
+            <table className="bets__table">
+              {renderTBody()}
+            </table>
+            <div className="bets__innertable">
+              <table className="bets__table">
                 <tbody>
-                  <tr className="bets__tr bets__team" key={teamName}>
-                    <th className="bets__th">{teamName}</th>
-                    <th className="bets__th"><strong>Odds:</strong> {teamBets.odds.toFixed(2)}</th>
-                    <th className="bets__th"><strong>Total:</strong> ${teamBets.total}</th>
-                  </tr>
-                  {teamBets.bets.map((bet: any) => {
-                    return (
-                      <tr className="bets__tr" key={bet["user/name"] + teamName}>
-                        <td className="bets__td" colSpan={2}>{bet["user/name"]}</td>
-                        <td className="bets__td">${bet["bet/amount"]}</td>
-                      </tr>
-                    );
-                  })}
+                {generateBetTRs()}
                 </tbody>
-              );
-            })}
-          </table>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
     );
   };
 
   return (
     <>
-      {bets && renderBets()}
+      {bets && Object.keys(bets).length !== 0 && bets.constructor === Object &&
+      renderBets()}
     </>
   );
 }
