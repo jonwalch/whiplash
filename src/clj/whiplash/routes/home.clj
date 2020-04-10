@@ -2,8 +2,6 @@
   (:require
     [whiplash.layout :as layout]
     [whiplash.middleware :as middleware]
-    [ring.util.http-response :as response]
-    [whiplash.routes.services.stream :as stream]
     [whiplash.routes.services.event :as event]
     [whiplash.routes.services.proposition :as proposition]
     [whiplash.routes.services.leaderboard :as leaderboard]
@@ -18,7 +16,7 @@
     [reitit.coercion.spec :as spec-coercion]))
 
 (defn home-page [request]
-  (layout/render request "index.html")
+  (layout/render request "../public/dist/index.html")
   #_(layout/render request "home.html" {:docs (-> "docs/docs.md" io/resource slurp)}))
 
 (defn home-routes []

@@ -1,5 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 let config = {
   entry: "./resources/public/js/index.tsx",
@@ -41,11 +42,15 @@ let config = {
   output: {
     path: path.resolve(__dirname, "resources/public/dist/"),
     publicPath: "/dist/",
-    filename: "bundle.js"
+    filename: "bundle.[contenthash].js"
   },
   plugins: [
     // ignore moment.js locales, see https://github.com/jmblog/how-to-optimize-momentjs-with-webpack#using-ignoreplugin
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+    new HtmlWebpackPlugin({
+      hash: true,
+      template: "resources/html/index.html",
+    })
   ]
   //      externals: {
   //          "react": "React",
@@ -56,6 +61,7 @@ let config = {
 module.exports = (env, argv) => {
   if (argv.mode === 'development') {
     config.mode = 'development';
+    config.output.filename = "bundle.js";
     config.plugins.push(new webpack.HotModuleReplacementPlugin())
   }
 
