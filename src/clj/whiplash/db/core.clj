@@ -208,13 +208,12 @@
 
 (defn pull-bet-payout-info
   [{:keys [db prop-bet-id attrs]}]
-  (log/info prop-bet-id attrs)
   (->> (d/q
          {:query '[:find (pull ?bet [:db/id :bet/amount :bet/projected-result?
                                      {:user/_prop-bets [:user/cash :db/id]}])
                    :in $ ?prop-bet-id
                    :where [?bet :bet/proposition ?prop-bet-id]]
-          :args  [db prop-bet-id attrs]})
+          :args  [db prop-bet-id]})
        (map
          (comp (fn [bet]
                  (-> bet
@@ -471,7 +470,6 @@
 
 (defn end-proposition
   [{:keys [proposition result? db]}]
-  (log/info proposition result? db)
   (let [betting-end-time (:proposition/betting-end-time proposition)
         bets (pull-bet-payout-info {:db db
                                     :prop-bet-id        (:db/id proposition)})
