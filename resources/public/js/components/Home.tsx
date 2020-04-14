@@ -54,11 +54,15 @@ export function Home(props: any) {
 
   const setCountdownWrapper = (arg: string) => {
       if (arg == "") {
-          return null
+          return null;
       }
 
       const now = moment();
       let exp = moment(arg, "YYYY-MM-DDTHH:mm:ssZ");
+
+      if (exp.isBefore(now)) {
+          return null;
+      }
 
       const days = exp.diff(now, 'days');
       const hours = exp.subtract(days, 'days').diff(now, 'hours');

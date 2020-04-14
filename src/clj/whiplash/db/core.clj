@@ -606,4 +606,5 @@
   (make-admin "foobar@whiplashesports.com" conn)
 
   #_(d/create-database test-client {:db-name "test"})
-  #_(d/delete-database test-client {:db-name "foo"}))
+  #_(d/delete-database test-client {:db-name "foo"})
+  )
