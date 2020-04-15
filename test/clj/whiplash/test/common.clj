@@ -13,18 +13,22 @@
 (def test-state
   (atom {}))
 
+(defn internal-send-email-fake
+  [params]
+  (swap! test-state (fn [{:keys [emails] :as val}]
+                      (assoc val :emails (conj emails params)))))
+
 (defn app-fixtures
   []
   (use-fixtures
     :once
     (fn [f]
       (mount/start #'whiplash.config/env
-                   #'whiplash.handler/app-routes
-                   #_#'whiplash.routes.services.stream/cached-streams)
-      (f)
+                   #'whiplash.handler/app-routes)
+      (with-redefs [whiplash.integrations.amazon-ses/internal-send-email internal-send-email-fake]
+        (f))
       (mount/stop #'whiplash.config/env
-                  #'whiplash.handler/app-routes
-                  #_#'whiplash.routes.services.stream/cached-streams))))
+                  #'whiplash.handler/app-routes))))
 
 (defn db-fixtures
   []
@@ -43,24 +47,7 @@
          #(hash-map (:twitch/username %) 100))
        (apply conj)))
 
-(defn internal-send-verification-email-fake
-  [{:keys [user/email body subject] :as params}]
-  (swap! test-state (fn [{:keys [emails] :as val}]
-                      (assoc val :emails (conj emails params)))))
-
-#_(defn test-wrap-base [handler]
-  (-> ((:middleware defaults) handler)
-      middleware/wrap-auth
-      (wrap-defaults
-        (-> site-defaults
-            ;; This is commented out in the real version
-            (assoc-in [:security :anti-forgery] false)
-            (assoc-in  [:session :store] (ttl-memory-store (* 60 30))))) ;;seconds
-      middleware/wrap-internal-error))
-
 (defn test-app []
-  "This version has CSRF disabled for testing purposes."
-  ;; no it doesn't, i've removed it for now
   (middleware/wrap-base #'whiplash.handler/app-routes))
 
 (defn parse-json-body

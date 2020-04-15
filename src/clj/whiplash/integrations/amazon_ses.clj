@@ -11,8 +11,8 @@
    :port 587
    :tls true})
 
-(defn- internal-send-verification-email
-  [{:keys [user/email body subject]}]
+(defn- internal-send-email
+  [{:keys [user/email body subject email/type]}]
   ;; TODO: On success save this email information to the user
   (if (:prod env)
     (future
@@ -24,18 +24,31 @@
                                  :subject subject
                                  :body    body})
            (catch Throwable t
-             (log/error (format "Failed to send verification email to %s" email) t))))
+             (log/error (format "Failed to send %s email to %s" type email) t))))
     (log/info {:to      email
                :subject subject
                :body    body})))
 
+(defn- generate-url
+  [url email token]
+  (format "%s?email=%s&token=%s" url email token))
+
 (defn send-verification-email
   [{:user/keys [email first-name verify-token] :as user}]
-  (let [verify-url (format "https://www.whiplashesports.com/user/verify?email=%s&token=%s"
-                           email
-                           verify-token)
+  (let [verify-url (generate-url "https://www.whiplashesports.com/user/verify" email verify-token)
         body (format "Hi %s,\n\nPlease click this link to verify your email address %s\n\nYour buddies,\nWhiplash"
                      first-name
                      verify-url)]
-    (internal-send-verification-email (merge user {:subject "Whiplash: Please verify your email!"
-                                                   :body    body}))))
+    (internal-send-email (merge user {:subject    "Whiplash: Please verify your email!"
+                                      :body       body
+                                      :email/type :email.type/verification}))))
+
+(defn send-recovery-email
+  [{:keys [user/email user/first-name recovery/token] :as user}]
+  (let [verify-url (generate-url "https://www.whiplashesports.com/user/password/recover" email token)
+        body (format "Hi %s,\n\nPlease click this link to reset your account %s\n\nYour buddies,\nWhiplash"
+                     first-name
+                     verify-url)]
+    (internal-send-email (merge user {:subject    "Whiplash: Reset your password"
+                                      :body       body
+                                      :email/type :email.type/recovery}))))

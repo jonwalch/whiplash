@@ -4,7 +4,6 @@
     [ring.mock.request :as mock]
     [clojure.string :as string]
     [whiplash.test.common :as common]
-    ;[whiplash.guess-processor :as guess-processor]
     [whiplash.db.core :as db]
     [datomic.client.api :as d]
     [clj-uuid :as uuid]
@@ -29,6 +28,10 @@
 
   (testing "account"
     (let [response ((common/test-app) (mock/request :get "/account"))]
+      (is (= 200 (:status response)))))
+
+  (testing "recover"
+    (let [response ((common/test-app) (mock/request :get "/user/password/recover"))]
       (is (= 200 (:status response)))))
 
   (testing "not-found route"
@@ -98,34 +101,33 @@
    (create-user dummy-user))
   ([{:keys [first_name email admin?] :as user}]
    (assert user)
-   (with-redefs [whiplash.integrations.amazon-ses/internal-send-verification-email
-                 common/internal-send-verification-email-fake]
-     (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
-                                       (mock/json-body user)))
-           parsed-body (common/parse-json-body resp)
-           sent-emails (-> common/test-state deref :emails)
-           {:keys [body subject] :as sent-email} (first sent-emails)]
+   (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
+                                     (mock/json-body user)))
+         parsed-body (common/parse-json-body resp)
+         sent-emails (-> common/test-state deref :emails)
+         {:keys [body subject] :as sent-email} (first sent-emails)]
 
-       (is (= 200 (:status resp)))
-       (is (empty? parsed-body))
+     (is (= 200 (:status resp)))
+     (is (empty? parsed-body))
 
-       (when admin?
-         (d/transact (:conn db/datomic-cloud)
-                     {:tx-data [{:db/id (:db/id
-                                          (db/pull-user {:user/email email
-                                                         :attrs      [:db/id]}))
-                                 :user/status :user.status/admin}]}))
+     (when admin?
+       (d/transact (:conn db/datomic-cloud)
+                   {:tx-data [{:db/id       (:db/id
+                                              (db/pull-user {:user/email email
+                                                             :attrs      [:db/id]}))
+                               :user/status :user.status/admin}]}))
 
-       (is (= 1 (count (filter #(= email (:user/email %))
-                               sent-emails))))
-       (is (= {:subject           "Whiplash: Please verify your email!"
-               :user/email        email
-               :user/first-name   first_name}
-              (dissoc sent-email :body :user/verify-token)))
-       (is (some? (re-find #"https:\/\/www\.whiplashesports\.com\/user\/verify\?email=.*&token=.{32}" body)))
-       (is (not (string/blank? (:user/verify-token sent-email))))
+     (is (= 1 (count (filter #(= email (:user/email %))
+                             sent-emails))))
+     (is (= {:subject         "Whiplash: Please verify your email!"
+             :user/email      email
+             :user/first-name first_name
+             :email/type      :email.type/verification}
+            (dissoc sent-email :body :user/verify-token)))
+     (is (some? (re-find #"https:\/\/www\.whiplashesports\.com\/user\/verify\?email=.*&token=.{32}" body)))
+     (is (not (string/blank? (:user/verify-token sent-email))))
 
-       (assoc resp :body parsed-body)))))
+     (assoc resp :body parsed-body))))
 
 (deftest test-uncommon-name-success
   (create-user (assoc dummy-user :last_name "de Flandres")))
@@ -239,216 +241,6 @@
       (is (= 401 (:status login-fail-resp)))
       (is (= 409 (:status create-again-fail))))))
 
-#_(def dummy-guess
-  {;;:game-type "csgo"
-   :match_name "Grand Final: Liquid vs ATK"
-   :game_id   9388
-   :match_id 549829
-   :team_name "Liquid"
-   :team_id   3213
-   :bet_amount 75})
-
-#_(def dummy-guess-2
-  {;;:game-type "csgo"
-   :match_name "Grand Final: Liquid vs ATK"
-   :game_id   9389
-   :match_id 549829
-   :team_name "Liquid"
-   :team_id   3213
-   :bet_amount 25})
-
-#_(defn- create-bet
-  [auth-token guess]
-  (let [resp ((common/test-app) (-> (mock/request :post "/user/guess")
-                                    (mock/json-body guess)
-                                    (mock/cookie :value auth-token)))
-        parsed-body (common/parse-json-body resp)]
-    (is (= 200 (:status resp)))
-
-    (assoc resp :body parsed-body)))
-
-#_(defn- get-bets
-  [auth-token game-id match-id]
-  (let [resp ((common/test-app) (-> (mock/request :get "/user/guess")
-                                    (mock/query-string {:match_id match-id
-                                                        :game_id  game-id})
-                                    (mock/cookie :value auth-token)))
-        parsed-body (common/parse-json-body resp)]
-    (is (= 200 (:status resp)))
-
-    (assoc resp :body parsed-body)))
-
-#_(deftest add-guesses
-  (testing "We can add and get guesses for a user"
-    (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
-          {:keys [game_id match_id]} dummy-guess
-          create-guess-resp (create-bet auth-token dummy-guess)
-          create-guess-resp2 (create-bet auth-token dummy-guess-2)
-          create-guess-resp3 (create-bet auth-token dummy-guess-2)
-          {:keys [body] :as get-guess-resp} (get-bets auth-token game_id match_id)
-          get-guess-resp2 (get-bets auth-token
-                                    (:game_id dummy-guess-2)
-                                    (:match_id dummy-guess-2))
-          bets-resp ((common/test-app) (-> (mock/request :get "/leaderboard/bets")
-                                           (mock/query-string {:match_id (:match_id dummy-guess-2)
-                                                               :game_id  (:game_id dummy-guess-2)})))]
-      (is (= [{:bet/processed? false
-               :bet/amount     (:bet_amount dummy-guess)
-               :match/id (:match_id dummy-guess)
-               :game/id   (:game_id dummy-guess)
-               :team/id   (:team_id dummy-guess)
-               :match/name (:match_name dummy-guess)
-               :team/name      (:team_name dummy-guess)}]
-             (mapv #(dissoc % :bet/time) body)))
-
-      (is (= [{:bet/processed? false
-               :bet/amount     (:bet_amount dummy-guess-2)
-               :match/id (:match_id dummy-guess-2)
-               :game/id   (:game_id dummy-guess-2)
-               :team/id   (:team_id dummy-guess-2)
-               :match/name (:match_name dummy-guess-2)
-               :team/name      (:team_name dummy-guess-2)}
-              {:bet/processed? false
-               :bet/amount     (:bet_amount dummy-guess-2)
-               :match/id (:match_id dummy-guess-2)
-               :game/id   (:game_id dummy-guess-2)
-               :team/id   (:team_id dummy-guess-2)
-               :match/name (:match_name dummy-guess-2)
-               :team/name      (:team_name dummy-guess-2)}]
-             (mapv #(dissoc % :bet/time) (:body get-guess-resp2))))
-
-      (is (= 375 (-> (get-user auth-token) :body :user/cash)))
-
-      (is (= {:Liquid {:bets  [{:bet/amount 50
-                                :user/name  "queefburglar"}]
-                       :odds  1.0
-                       :total 50}}
-             (common/parse-json-body bets-resp)))
-
-      (testing "Guess success processing works"
-        (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
-          (let [_ (guess-processor/process-bets)
-                {:keys [body] :as get-guess-resp} (get-bets auth-token game_id match_id)
-                get-guess-resp2 (get-bets auth-token
-                                          (:game_id dummy-guess-2)
-                                          (:match_id dummy-guess-2))
-                #_#_leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/weekly")))
-                all-time-leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
-
-            (is (= [{:bet/payout     0
-                     :bet/processed? true
-                     :bet/amount     (:bet_amount dummy-guess)
-                     :match/id (:match_id dummy-guess)
-                     :game/id   (:game_id dummy-guess)
-                     :team/id   (:team_id dummy-guess)
-                     :match/name (:match_name dummy-guess)
-                     :team/name      (:team_name dummy-guess)}]
-                   (mapv #(dissoc % :bet/time :bet/processed-time) body)))
-
-            (is (= [{:bet/payout     25
-                     :bet/processed? true
-                     :bet/amount     (:bet_amount dummy-guess-2)
-                     :match/id (:match_id dummy-guess-2)
-                     :game/id   (:game_id dummy-guess-2)
-                     :team/id   (:team_id dummy-guess-2)
-                     :match/name (:match_name dummy-guess-2)
-                     :team/name      (:team_name dummy-guess-2)}
-                    {:bet/payout     25
-                     :bet/processed? true
-                     :bet/amount     (:bet_amount dummy-guess-2)
-                     :match/id (:match_id dummy-guess-2)
-                     :game/id   (:game_id dummy-guess-2)
-                     :team/id   (:team_id dummy-guess-2)
-                     :match/name (:match_name dummy-guess-2)
-                     :team/name      (:team_name dummy-guess-2)}]
-                   (mapv #(dissoc % :bet/time :bet/processed-time) (:body get-guess-resp2))))
-
-            (is (= 425 (-> (get-user auth-token) :body :user/cash)))
-
-            #_(is (= 200 (:status leaderboard-resp)))
-            #_(is (= [{:user_name "queefburglar" :payout 50}]
-                   (common/parse-json-body leaderboard-resp)))
-
-            (is (= [{:cash      425
-                     :user_name "queefburglar"}]
-                   (common/parse-json-body all-time-leaderboard-resp)))))))))
-
-#_(deftest payout
-  (testing "Testing more complex payout"
-    (let [keys-to-select [:game/id :team/name :team/id :game/type :match/name
-                          :bet/processed? :bet/amount :bet/payout :match/id]
-          {:keys [auth-token] login-resp :response} (create-user-and-login)
-          {auth-token2 :auth-token login-resp2 :response} (create-user-and-login dummy-user-2)
-          create-guess-resp (create-bet auth-token (assoc dummy-guess :bet_amount 475))
-          create-guess-resp2 (create-bet auth-token2 (assoc dummy-guess :bet_amount 100
-                                                                        :team_id 125859
-                                                                        :team_name "Other-team"))
-          bets-resp ((common/test-app) (-> (mock/request :get "/leaderboard/bets")
-                                           (mock/query-string {:match_id (:match_id dummy-guess)
-                                                               :game_id  (:game_id dummy-guess)})))]
-
-      (is (= 25 (-> (get-user auth-token) :body :user/cash)))
-      (is (= 400 (-> (get-user auth-token2) :body :user/cash)))
-
-      (is (= {:Liquid     {:bets  [{:bet/amount 475
-                                    :user/name  "queefburglar"}]
-                           :odds  1.210526315789474
-                           :total 475}
-              :Other-team {:bets  [{:bet/amount 100
-                                    :user/name  "donniedarko"}]
-                           :odds  5.75
-                           :total 100}}
-             (common/parse-json-body bets-resp)))
-
-     (testing "Proper payout"
-        (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-finished-fake]
-          (let [{:keys [game_id match_id]} dummy-guess
-                _ (guess-processor/process-bets)
-                {:keys [body] :as get-guess-resp} (get-bets auth-token game_id match_id)
-                get-guess-resp2 (get-bets auth-token2 game_id match_id)
-                #_#_leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/weekly")))
-                all-time-leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
-
-            (is (= [{:game/id        game_id
-                     :team/name      (:team_name dummy-guess)
-                     :team/id        (:team_id dummy-guess)
-                     :match/id       match_id
-                     :match/name     (:match_name dummy-guess)
-                     :bet/processed? true
-                     :bet/amount     475
-                     :bet/payout     0}]
-                   (mapv #(dissoc % :bet/time :bet/processed-time) body)))
-
-            (is (= [{:game/id        game_id
-                     :team/name      "Other-team"
-                     :team/id        125859
-                     :match/id       match_id
-                     :match/name     (:match_name dummy-guess)
-                     :bet/processed? true
-                     :bet/amount     100
-                     :bet/payout     575}]
-                   (mapv #(dissoc % :bet/time :bet/processed-time) (:body get-guess-resp2))))
-
-            ;; if user falls below 100, bail them out so they have 100 again
-            (is (= 100 (-> (get-user auth-token) :body :user/cash)))
-            (is (= 975 (-> (get-user auth-token2) :body :user/cash)))
-
-            #_(is (= [{:user_name "donniedarko" :payout 575}]
-                   (common/parse-json-body leaderboard-resp)))
-
-            (is (= [{:cash      975
-                     :user_name "donniedarko"}
-                    {:cash      100
-                     :user_name "queefburglar"}]
-                   (common/parse-json-body all-time-leaderboard-resp)))))))))
-
-#_(deftest fail-add-guess
-  (testing "Fail to auth because no cookie"
-    (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
-          guess-resp ((common/test-app) (-> (mock/request :post "/user/guess")
-                                            (mock/json-body dummy-guess)))]
-      (is (= 403 (:status guess-resp))))))
-
 (deftest logout
   (testing "not logged in"
     (let [resp ((common/test-app) (-> (mock/request :post "/user/logout")))]
@@ -555,16 +347,6 @@
                     :notifications []
                     :status        "user.status/active"}
              (dissoc (:body get-verified-user) :user/verify-token))))))
-
-#_(deftest get-stream
-  (testing "Test getting stream works, hits fixtures"
-    (with-redefs [whiplash.integrations.pandascore/get-matches-request common/pandascore-running-fake
-                  whiplash.integrations.twitch/views-per-twitch-stream common/twitch-view-fake]
-      (let [resp ((common/test-app) (-> (mock/request :get "/stream")))
-            body (common/parse-json-body resp)]
-        (is (= 200 (:status resp)))
-        (is (every? #(contains? body %) [:live_url :status :id :games :opponents]))
-        (is (= (:live_url body) "https://player.twitch.tv/?channel=faceittv"))))))
 
 (deftest all-time-top-ten
   (testing "only returns 10 users"
@@ -1644,3 +1426,137 @@
 
     (is (not= {:whiplash/next-event-time ts}
               (:body (get-event))))))
+
+(defn- request-password-recovery
+  [{:keys [status user email-count method]}]
+  (let [user (or user
+                 dummy-user)
+        method (or method :user_name)
+        _ (assert (or (= :user_name method)
+                      (= :email method)))
+        resp ((common/test-app) (-> (mock/request :post "/user/password/request-recovery")
+                                    (mock/json-body {:user (method user)})))
+        sent-emails (-> common/test-state deref :emails)
+        {:keys [body] :as sent-email} (first (filter #(= :email.type/recovery (:email/type %)) sent-emails))]
+
+    (is (= (or status
+               200)
+           (:status resp)))
+
+    (is (= (or email-count
+               1)
+           (count (filter #(= (:email user) (:user/email %)) sent-emails))))
+
+    (when (> email-count 0)
+      (is (= {:user/email      (:email user)
+              :user/first-name (:first_name user)
+              :email/type      :email.type/recovery
+              :subject         "Whiplash: Reset your password"}
+             (dissoc sent-email :body :recovery/token :db/id :user/recovery)))
+
+      (is (some? (re-find #"https:\/\/www\.whiplashesports\.com\/user\/password\/recover\?email=.*&token=.{32}" body)))
+      (is (not (string/blank? (:recovery/token sent-email)))))
+
+    (assoc resp :body (common/parse-json-body resp)
+                :recovery/token (:recovery/token sent-email))))
+
+(defn- submit-password-recovery
+  [{:keys [status email token password]}]
+  (let [email (or email (:email dummy-user))
+        resp ((common/test-app) (-> (mock/request :post "/user/password/recover")
+                                    (mock/json-body {:email        email
+                                                     :token        token
+                                                     :new_password password})))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    (assoc resp :body (common/parse-json-body resp))))
+
+(deftest recover-account-with-username
+  (let [create-resp (create-user dummy-user)
+        {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery {:email-count 2})
+        new-password "big_ole_bears"
+        submit-password-recovery-resp (submit-password-recovery {:token token
+                                                                 :password new-password})
+        login-resp (login {:user_name (:user_name dummy-user)
+                           :password new-password})
+        request-recovery-resp2 (request-password-recovery {:email-count 3})
+        submit-password-recovery-resp (submit-password-recovery {:token (:recovery/token request-recovery-resp2)
+                                                                 :password new-password})
+        login-resp2 (login {:user_name (:user_name dummy-user)
+                            :password new-password})]
+    ;; new token is issued after the old one is used
+    (is (not= token (:recovery/token request-recovery-resp2)))))
+
+(deftest recover-account-with-email
+  (let [create-resp (create-user dummy-user)
+        {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery {:email-count 2
+                                                                                       :method :email})
+        new-password "big_ole_bears"
+        submit-password-recovery-resp (submit-password-recovery {:token token
+                                                                 :password new-password})
+        login-resp (login {:user_name (:email dummy-user)
+                           :password new-password})]))
+
+(deftest recover-account-request-twice
+  (testing "reuse an unused token"
+    (let [create-resp (create-user dummy-user)
+          request-recovery-resp (request-password-recovery {:email-count 2})
+          {:keys [recovery/token]} (request-password-recovery {:email-count 3})
+          new-password "big_ole_bears"
+          submit-password-recovery-resp (submit-password-recovery {:token    token
+                                                                   :password new-password})
+          login-resp (login {:user_name (:user_name dummy-user)
+                             :password  new-password})]
+      (is (= token (:recovery/token request-recovery-resp))))))
+
+(deftest recover-account-user-dne
+  (let [create-resp (create-user dummy-user)
+        {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery
+                                                             {:user        {:email "newemailwhodis"}
+                                                              :method      :email
+                                                              :email-count 0
+                                                              :status      404})]))
+
+(deftest recover-account-bad-token
+  (let [create-resp (create-user dummy-user)
+        {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery {:email-count 2})
+        new-password "big_ole_bears"
+        submit-password-recovery-resp (submit-password-recovery {:token    "buh buh buh bad token"
+                                                                 :password new-password
+                                                                 :status   404})]
+    (is (= 401
+           (:status
+             ;; TODO: refactor login so we can pass status
+             ((common/test-app) (-> (mock/request :post "/user/login")
+                                    (mock/json-body {:user_name (:user_name dummy-user)
+                                                     :password  new-password}))))))))
+
+(deftest recover-account-bad-email
+  (let [create-resp (create-user dummy-user)
+        {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery {:email-count 2})
+        new-password "big_ole_bears"
+        submit-password-recovery-resp (submit-password-recovery {:email "does-not-exist"
+                                                                 :token token
+                                                                 :password new-password
+                                                                 :status 404})]
+    (is (= 401
+           (:status
+             ;; TODO: refactor login so we can pass status
+             ((common/test-app) (-> (mock/request :post "/user/login")
+                                    (mock/json-body {:user_name (:user_name dummy-user)
+                                                     :password  new-password}))))))))
+
+(deftest recover-account-bad-new-password
+  (let [create-resp (create-user dummy-user)
+        {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery {:email-count 2})
+        new-password "invalid"
+        submit-password-recovery-resp (submit-password-recovery {:token token
+                                                                 :status 409
+                                                                 :password new-password})]
+    (is (= 401
+           (:status
+             ;; TODO: refactor login so we can pass status
+             ((common/test-app) (-> (mock/request :post "/user/login")
+                                    (mock/json-body {:user_name (:user_name dummy-user)
+                                                     :password  new-password}))))))))

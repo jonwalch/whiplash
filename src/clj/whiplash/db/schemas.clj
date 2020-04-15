@@ -265,8 +265,7 @@
        {:db/doc         "New attribute to replace event/twitch-user"
         :db/ident       :event/channel-id
         :db/valueType   :db.type/string
-        :db/cardinality :db.cardinality/one}
-       ]
+        :db/cardinality :db.cardinality/one}]
 
    :3 [{:db/doc         "Notifications to show to the user"
         :db/ident       :user/notifications
@@ -295,11 +294,31 @@
        {:db/doc         "Time of acknowledgment"
         :db/ident       :notification/acknowledged-time
         :db/valueType   :db.type/instant
-        :db/cardinality :db.cardinality/one}
-       ]
+        :db/cardinality :db.cardinality/one}]
 
    :4 [{:db/doc         "Time of next event"
         :db/ident       :whiplash/next-event-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}]
+
+   :5 [{:db/doc         "User recovery"
+        :db/ident       :user/recovery
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/many
+        :db/isComponent true}
+
+       {:db/doc         "Actual token used for recovery"
+        :db/ident       :recovery/token
+        :db/valueType   :db.type/string
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Time of issuance of token"
+        :db/ident       :recovery/issued-time
+        :db/valueType   :db.type/instant
+        :db/cardinality :db.cardinality/one}
+
+       {:db/doc         "Time of usage of token to change password"
+        :db/ident       :recovery/used-time
         :db/valueType   :db.type/instant
         :db/cardinality :db.cardinality/one}]})
 

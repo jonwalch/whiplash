@@ -41,6 +41,7 @@
         created? (d/create-database client {:db-name "whiplash"})
         conn (d/connect client {:db-name "whiplash"})
         ;; TODO: read current schema and only transact the schema if it has changed
+        ;; TODO: transact all schemas one at a time instead of flattening and transacting them all at once
         schema-tx-result (d/transact conn {:tx-data (schemas/migrations->schema-tx)})]
     (log/debug "Migration to transact " (schemas/migrations->schema-tx))
     (log/debug "Schema transaction result " schema-tx-result)
@@ -55,15 +56,6 @@
 (defstate datomic-cloud
           :start (create-datomic-cloud)
           :stop (destroy-datomic-cloud datomic-cloud))
-
-;; TODO: deprecate, this is an anti-pattern
-#_(defn resolve-enum
-  [entity keyw]
-  (when entity
-    (update entity keyw #(:db/ident
-                           (d/pull (d/db (:conn datomic-cloud))
-                                   [:db/ident]
-                                   (:db/id %))))))
 
 (defn show-transaction
   "Show all the transaction data
@@ -173,7 +165,6 @@
 
 (defn pull-unacked-notifications
   [{:keys [db/id db attrs notification/types]}]
-  (assert db)
   (->> (d/q {:query '[:find (pull ?notif attrs)
                       :in $ ?id attrs ?types
                       :where [?id :user/notifications ?notif]
@@ -207,13 +198,13 @@
        (map first)))
 
 (defn pull-bet-payout-info
-  [{:keys [db prop-bet-id attrs]}]
+  [{:keys [db prop-bet-id]}]
   (->> (d/q
          {:query '[:find (pull ?bet [:db/id :bet/amount :bet/projected-result?
                                      {:user/_prop-bets [:user/cash :db/id]}])
                    :in $ ?prop-bet-id
                    :where [?bet :bet/proposition ?prop-bet-id]]
-          :args  [db prop-bet-id]})
+          :args  [db prop-bet-id nil]})
        (map
          (comp (fn [bet]
                  (-> bet
@@ -244,76 +235,6 @@
                 :in $ ?event-id]
        :args  [db event-id]})))
 
-;;; TODO resolve :game/type
-#_(defn find-all-unprocessed-bets-for-game
-  [db {:keys [game-id match-id]}]
-  (->> (d/q
-         {:query '[:find ?bet
-                   :in $ ?game-id ?match-id
-                   :where [?bet :bet/processed? false]
-                   [?bet :match/id ?match-id]
-                   [?bet :game/id ?game-id]]
-          :args  [db game-id match-id]})
-       (map first)
-       (map #(d/pull db '[:bet/amount :user/_bets :team/name :game/type] %))
-       (mapv (fn [bet]
-              (-> bet
-                  (merge (d/pull db
-                                 '[:user/name]
-                                 (-> bet :user/_bets :db/id)))
-                  ;; for now dissoc game/type
-                  (dissoc :user/_bets :game/type))))))
-
-#_(defn find-all-unprocessed-bets
-  [db]
-  (->> (d/q {:query '[:find ?bet
-                      :where [?bet :bet/processed? false]]
-             :args  [db]})
-       (mapv
-         ;;each guess is a vector with 1 element
-         (fn [bet]
-           (d/pull db
-                   '[:game/id :bet/processed? :bet/amount :match/id
-                     :db/id :game/type :user/_bets :team/id]
-                   (first bet))))))
-
-#_(defn find-this-week-payout-leaderboard
-  [lower-bound]
-  (let [db (d/db (:conn datomic-cloud))]
-    (->> (d/q
-           {:query '[:find ?bet
-                     :in $ ?lower-bound
-                     :where [?bet :bet/time ?time]
-                     [?bet :bet/payout ?payout]
-                     [(>= ?time ?lower-bound)]
-                     [?bet :bet/processed? true]
-                     [(> ?payout 0)]]
-            :args  [db lower-bound]})
-         (map #(d/pull db '[:bet/payout :user/_bets] (first %)))
-         (map (fn [bet]
-                (merge bet
-                       (d/pull db
-                               '[:user/name]
-                               (-> bet :user/_bets :db/id))))))))
-
-;; TODO refactor out all `pull`s in `map`s
-#_(defn find-this-week-prop-bet-payout-leaderboard
-  [lower-bound]
-  (let [db (d/db (:conn datomic-cloud))]
-    (->> (d/q
-           {:query '[:find ?bet
-                     :in $ ?lower-bound
-                     :where [?bet :bet/time ?time]
-                     [?bet :bet/payout ?payout]
-                     [(>= ?time ?lower-bound)]
-                     [(> ?payout 0)]]
-            :args  [db lower-bound]})
-         (map #(d/pull db '[:bet/payout :user/_prop-bets] (first %)))
-         (map (fn [bet]
-                (merge bet
-                       (d/pull db
-                               '[:user/name]
-                               (-> bet :user/_prop-bets :db/id))))))))
 
 (defn find-all-time-leaderboard
   []
@@ -569,6 +490,13 @@
                  :suggestion/dismissed-time dismissed-time})
               suggestion-eids)]
     (d/transact (:conn datomic-cloud) {:tx-data txs})))
+
+(defn create-recovery-token
+  [{:keys [user-id recovery/token]}]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [{:db/id         user-id
+                          :user/recovery [{:recovery/token       token
+                                           :recovery/issued-time (time/to-date)}]}]}))
 
 (comment
 

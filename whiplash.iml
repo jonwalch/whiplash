@@ -49,10 +49,10 @@
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-cljs:0.8.256" level="project" />
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-java:0.8.337" level="project" />
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-js:0.8.846" level="project" />
-    <orderEntry type="library" name="Leiningen: com.datomic/client-api:0.8.31" level="project" />
-    <orderEntry type="library" name="Leiningen: com.datomic/client-cloud:0.8.78" level="project" />
-    <orderEntry type="library" name="Leiningen: com.datomic/client-impl-shared:0.8.67" level="project" />
-    <orderEntry type="library" name="Leiningen: com.datomic/client:0.8.81" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/client-api:0.8.38" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/client-cloud:0.8.81" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/client-impl-shared:0.8.69" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/client:0.8.87" level="project" />
     <orderEntry type="library" name="Leiningen: com.datomic/datomic-free:0.9.5697" level="project" />
     <orderEntry type="library" name="Leiningen: com.datomic/datomic-lucene-core:3.3.0" level="project" />
     <orderEntry type="library" name="Leiningen: com.datomic/query-support:0.8.16" level="project" />

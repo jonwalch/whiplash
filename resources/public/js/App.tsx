@@ -6,6 +6,7 @@ import { Verify } from "./components/Verify";
 import {defaultLoggedIn, LoginContext} from "./contexts/LoginContext";
 import { Account } from "./components/Account";
 import {getUser} from "./common/getUser";
+import {Recovery} from "./components/Recovery";
 const Control = lazy(() => import("./components/Control").then(({ Control }) => ({default: Control})));
 
 export const App = () => {
@@ -29,6 +30,12 @@ export const App = () => {
                     path="/user/verify"
                     render={({ match, history, location }) => (
                         <Verify match={match} history={history} location={location}/>
+                    )}
+                />
+                <Route
+                    path="/user/password/recover"
+                    render={({ match, history, location }) => (
+                        <Recovery match={match} history={history} location={location}/>
                     )}
                 />
                 <Route exact path="/control" render={({ match, history}) =>

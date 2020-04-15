@@ -19,6 +19,8 @@
 ;; anything 1 - 50
 (def valid-user-name #"^.{1,50}$")
 
+(def invalid-password "Password must be at least 8 characters")
+
 (defn validate-user-inputs
   [{:keys [first-name last-name email password user-name]}]
   (cond
@@ -32,7 +34,7 @@
     "Email invalid"
 
     (not (re-matches valid-password password))
-    "Password must be at least 8 characters"
+    invalid-password
 
     (or (not (re-matches valid-user-name user-name))
         ;; user name should not be of email format
@@ -50,6 +52,10 @@
 (defn verify-email-token
   []
   (md5 (rand-str 100)))
+
+(defn- hash-password
+  [password]
+  (hashers/derive password {:alg :bcrypt+blake2b-512}))
 
 (defn create-user
   [{:keys [body-params] :as req}]
@@ -71,7 +77,7 @@
       (conflict {:message "User name taken"})
 
       :else
-      (let [encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})
+      (let [encrypted-password (hash-password password)
             tx-result (db/add-user (:conn db/datomic-cloud)
                                    {:first-name   first_name
                                     :last-name    last_name
@@ -90,14 +96,14 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [password]} body-params
         invalid-input (when-not (re-matches valid-password password)
-                        "Password must be at least 8 characters")]
+                        invalid-password)]
     (cond
       (some? invalid-input)
       (conflict {:message invalid-input})
 
       :else
       (let [{:keys [user exp]} (middleware/req->token req)
-            encrypted-password (hashers/derive password {:alg :bcrypt+blake2b-512})
+            encrypted-password (hash-password password)
             tx-result (db/update-password (:conn db/datomic-cloud)
                                           {:db/id (db/find-user-by-user-name user)
                                            :password     encrypted-password})]
@@ -177,12 +183,15 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [user_name password]} body-params
         attrs [:user/password :user/name {:user/status [:db/ident]}]
+        db (d/db (:conn db/datomic-cloud))
         ;; try to find user by their user name or their email
         ;; client will pass as user_name either way, we don't allow users to have user names
         ;; that are of email address format, so we won't ever pull the wrong user
         user-entity (or (db/pull-user {:user/name user_name
+                                       :db db
                                        :attrs     attrs})
                         (db/pull-user {:user/email user_name
+                                       :db db
                                        :attrs attrs}))
         valid-password (when user-entity
                          (hashers/check password (:user/password user-entity)))
@@ -214,48 +223,14 @@
                       :expires    "Thu, 01 Jan 1970 00:00:00 GMT"
                       :same-site :strict}}})
 
-;; TODO validation
-#_(defn create-bet
-  [{:keys [body-params] :as req}]
-  (let [{:keys [match_name game_id team_name team_id match_id bet_amount]} body-params
-        {:keys [user exp]} (middleware/req->token req)
-        db (d/db (:conn db/datomic-cloud))
-        {:keys [db/id user/cash]} (d/pull db '[:user/cash :db/id] (db/find-user-by-user-name user))]
-    (cond
-      (>= 0 bet_amount)
-      (conflict {:message "Cannot bet less than 1."})
-
-      (> bet_amount cash)
-      (conflict {:message "Bet cannot exceed total user cash."})
-
-      (some? id)
-      (if (try
-            (db/add-guess-for-user (:conn db/datomic-cloud)
-                                   {:db/id      id
-                                    :game-id    game_id
-                                    :match-name match_name
-                                    :game-type  :game.type/csgo
-                                    :team-name  team_name
-                                    :match-id   match_id
-                                    :team-id    team_id
-                                    :bet-amount bet_amount
-                                    :cash       cash})
-            (catch Throwable t (log/info "cas failed for adding guess: " t)))
-        (ok {})
-        (conflict {:message "CAS failed"}))
-
-      :else
-      (not-found {:message "User not found."}))))
-
 (defn create-prop-bet
   [{:keys [body-params] :as req}]
   (let [{:keys [bet_amount projected_result]} body-params
         {:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        {:keys [db/id user/cash] :as poop} (db/pull-user
-                                             {:db db
-                                              :user/name       user
-                                              :attrs           [:user/cash :db/id]})
+        {:keys [db/id user/cash]} (db/pull-user {:db db
+                                                 :user/name       user
+                                                 :attrs           [:user/cash :db/id]})
         {:keys [proposition/betting-end-time] :as ongoing-prop} (db/pull-ongoing-proposition
                                                                   {:db db
                                                                    :attrs [:db/id :proposition/betting-end-time]})]
@@ -340,37 +315,14 @@
       :else
       (not-found {:message "User not found."}))))
 
-#_(defn get-bets
-  [{:keys [params] :as req}]
-  (let [{:keys [game_id match_id]} params
-        ;; TODO figure out why this isnt getting casted by middleware
-        game-id (Integer/parseInt game_id)
-        match-id (Integer/parseInt match_id)
-        {:keys [user exp]} (middleware/req->token req)
-        db (d/db (:conn db/datomic-cloud))
-        existing-bets (when user
-                        (db/find-bets db user game-id match-id))
-        pulled-bets (when existing-bets
-                      (mapv
-                        #(-> (d/pull db '[*] %)
-                             (db/resolve-enum :game/type)
-                             (dissoc :db/id :game/type))
-                        existing-bets))]
-    (if (some? pulled-bets)
-      (ok pulled-bets)
-      (not-found {:message (format "bets for user %s, game-id %s, match-id %s not found"
-                                   user
-                                   game-id
-                                   match-id)}))))
-
 (defn verify-email
   [{:keys [body-params] :as req}]
   (let [{:keys [email token]} body-params
-        {:keys [db/id user/verify-token user/status] :as user} (db/pull-user
-                                                                 {:user/email email
-                                                                  :attrs [:db/id
-                                                                          {:user/status [:db/ident]}
-                                                                          :user/verify-token]})]
+        {:keys [db/id user/verify-token user/status]} (db/pull-user
+                                                        {:user/email email
+                                                         :attrs [:db/id
+                                                                 {:user/status [:db/ident]}
+                                                                 :user/verify-token]})]
     (cond
       (and (= token verify-token)
            (= :user.status/pending status))
@@ -384,3 +336,63 @@
 
       :else
       (not-found {:message (format "Couldn't verify %s" email)}))))
+
+(defn- existing-unused-recovery-token
+  [{:keys [user/recovery]}]
+  (some->> recovery
+           (filter #(nil? (:recovery/used-time %)))
+           first))
+
+(defn account-recovery
+  [{:keys [body-params] :as req}]
+  (let [{:keys [user]} body-params
+        db (d/db (:conn db/datomic-cloud))
+        attrs [:db/id :user/email :user/first-name {:user/recovery
+                                                    [:recovery/token
+                                                     :recovery/issued-time
+                                                     :recovery/used-time]}]
+        user-entity (or (db/pull-user {:user/name user
+                                       :db db
+                                       :attrs     attrs})
+                        (db/pull-user {:user/email user
+                                       :db db
+                                       :attrs attrs}))
+        existing-unused-token (:recovery/token (existing-unused-recovery-token user-entity))
+        token (or existing-unused-token (verify-email-token))]
+    (if user-entity
+      (do
+        (when-not existing-unused-token
+          (db/create-recovery-token {:user-id        (:db/id user-entity)
+                                     :recovery/token token}))
+        (ses/send-recovery-email (assoc user-entity :recovery/token token))
+        (ok {:message "Check your email for instructions to reset your password."}))
+      (not-found {:message "User not found."}))))
+
+(defn account-recovery-set-new-password
+  [{:keys [body-params] :as req}]
+  (let [{:keys [email token new_password]} body-params
+        invalid-input (when-not (re-matches valid-password new_password)
+                        invalid-password)
+        user-entity (db/pull-user {:user/email email
+                                   :attrs      [:db/id {:user/recovery
+                                                        [:db/id
+                                                         :recovery/token
+                                                         :recovery/issued-time
+                                                         :recovery/used-time]}]})
+        existing-token (existing-unused-recovery-token user-entity)]
+    (cond
+      (some? invalid-input)
+      (conflict {:message invalid-input})
+
+      (= token (:recovery/token existing-token))
+      (do
+        ;; TODO: combine to make this one transaction instead of two
+        (db/update-password (:conn db/datomic-cloud)
+                            {:db/id (:db/id user-entity)
+                             :password (hash-password new_password)})
+        (d/transact (:conn db/datomic-cloud) {:tx-data [{:db/id (:db/id existing-token)
+                                                         :recovery/used-time (time/to-date)}]})
+        (ok {:message "Successfully reset your password!"}))
+
+      :else
+      (not-found {:message "Couldn't reset your password."}))))

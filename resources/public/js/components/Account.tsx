@@ -7,8 +7,8 @@ import {logout} from "../common/logout";
 
 export function Account(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
+  const [password, setPassword] = useState<string>("");
+  const [repeatPassword, setRepeatPassword] = useState<string>("");
 
   const toggleValid = () => {
     //TODO: add validation

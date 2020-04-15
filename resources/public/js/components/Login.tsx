@@ -9,10 +9,16 @@ export function Login(props: any) {
   const [password, setPassword] = useState("");
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [logInWaitingForResp, setLogInWaitingForResp] = useState<boolean>(false);
+  const [forgotWaitingForResp, setForgotWaitingForResp] = useState<boolean>(false);
 
-  const toggleValid = () => {
+  const toggleValidLogIn = () => {
     //TODO: add validation
     return !(userName && password);
+  };
+
+  const toggleValidForgot = () => {
+    //TODO: add validation
+    return !(userName);
   };
 
   const login = async () => {
@@ -28,17 +34,34 @@ export function Login(props: any) {
     });
     if (response.status == 200) {
       getUser(setLoggedInState);
+      setLogInWaitingForResp(false);
       props.setShowSignup(false);
     } else {
       const resp = await response.json();
+      setLogInWaitingForResp(false);
       alert(resp.message);
     }
-    setLogInWaitingForResp(false);
+  };
+
+  const requestRecovery = async () => {
+    setForgotWaitingForResp(true);
+    const response = await fetch(baseUrl + "user/password/request-recovery", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      mode: "same-origin",
+      redirect: "error",
+      body: JSON.stringify({ user: userName })
+    });
+    const resp = await response.json();
+    setForgotWaitingForResp(false);
+    alert(resp.message);
   };
 
   const loginOnKeyPress = (e: any) => {
     const key = e.key;
-    if (key == "Enter" && !toggleValid()) {
+    if (key == "Enter" && !toggleValidLogIn()) {
       login();
     }
   };
@@ -87,15 +110,28 @@ export function Login(props: any) {
                     id="password"
                 />
               </div>
-              <button
-                  className="button form__button form__button__margin-top"
-                  type="button"
-                  onClick={login}
-                  disabled={toggleValid()}>
-                <div className={logInWaitingForResp ? "loading" : ""}>
-                  {logInWaitingForResp ? "" : "Log In"}
-                </div>
-              </button>
+              <div className="login__buttons">
+                <button
+                    className={"button form__button form__button__margin-top button--login" +
+                    (!toggleValidLogIn() ? "is-active" : "")}
+                    type="button"
+                    onClick={login}
+                    disabled={toggleValidLogIn()}>
+                  <div className={logInWaitingForResp ? "loading" : ""}>
+                    {logInWaitingForResp ? "" : "Log In"}
+                  </div>
+                </button>
+                <button
+                    className={"button form__button form__button__margin-top button--login" +
+                    (!toggleValidForgot() ? "is-active" : "")}
+                    type="button"
+                    onClick={requestRecovery}
+                    disabled={toggleValidForgot()}>
+                  <div className={forgotWaitingForResp ? "loading" : ""}>
+                    {forgotWaitingForResp ? "" : "Forgot Password?"}
+                  </div>
+                </button>
+              </div>
             </fieldset>
           </form>
       );

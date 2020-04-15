@@ -101,11 +101,6 @@
 
    ;;endpoints client talks to
    ["/stream"
-    #_[""
-     {:get {:summary "get the current best stream candidate"
-            :handler (fn [req]
-                       (stream/get-stream req))}}]
-
     ["/event"
      {:get  {:summary    "Get the current event"
              :handler    (fn [req]
@@ -121,21 +116,7 @@
      {:get {:summary "return the highest all time user cash"
             :handler (fn [req]
                        (leaderboard/all-time-top-ten req))}}]
-    #_["/weekly"
-     {:get {:summary "return this week's leaderboard"
-            :handler (fn [req]
-                       (leaderboard/weekly-leaderboard req))}}]
 
-    #_["/weekly-prop-bets"
-     {:get  {:summary    "this week's prop bet leaderboard"
-             :handler    (fn [req]
-                           (leaderboard/weekly-prop-bet-leaderboard req))}}]
-    #_["/bets"
-     {:get  {:summary    "get all bets for current game"
-             :parameters {:query {:game_id  int?
-                                  :match_id int?}}
-             :handler    (fn [req]
-                           (leaderboard/get-bets req))}}]
     ["/prop-bets"
      {:get  {:summary    "get all prop bets for current event"
              :handler    (fn [req]
@@ -146,8 +127,6 @@
                            (leaderboard/event-score-leaderboard req))}}]]
 
    ["/user"
-
-    ;;Defined for "/user"
     [""
      {:get  {:summary    "get a user"
              :middleware [middleware/wrap-restricted]
@@ -155,11 +134,12 @@
                            (user/get-user req))}}]
 
     ["/login"
-     {:post {:summary    "login as user"
-             :parameters {:body {:user_name string?
-                                 :password    string?}}
-             :handler    (fn [req]
-                           (user/login req))}}]
+     [""
+      {:post {:summary    "login as user"
+              :parameters {:body {:user_name string?
+                                  :password  string?}}
+              :handler    (fn [req]
+                            (user/login req))}}]]
 
     ["/logout"
      {:post {:summary    "logout"
@@ -188,30 +168,28 @@
                               (user/create-user req))}}]
 
     ["/password"
-     {:post    {:summary    "update a user's password"
-                :parameters {:body {:password   string?}}
-                :middleware [middleware/wrap-restricted]
-                :handler    (fn [req]
-                              (user/update-password req))}}]
+     [""
+      {:post {:summary    "update a user's password"
+              :parameters {:body {:password string?}}
+              :middleware [middleware/wrap-restricted]
+              :handler    (fn [req]
+                            (user/update-password req))}}]
 
-    #_["/guess"
-     {:get  {:summary    "get a guess for a user/game-id"
-             :parameters {:query {:game_id  int?
-                                  :match_id int?}}
-             :middleware [middleware/wrap-restricted]
-             :handler    (fn [req]
-                           (user/get-bets req))}
+     ["/recover"
+      ;; get routing handled in react
+      {:get home-page
+       :post {:summary    "Update password from recovery flow"
+              :parameters {:body {:email string?
+                                  :token string?
+                                  :new_password string?}}
+              :handler    (fn [req]
+                            (user/account-recovery-set-new-password req))}}]
 
-      :post {:summary    "create a guess for a user"
-             :parameters {:body {:match_name string?
-                                 :game_id    int?
-                                 :match_id   int?
-                                 :team_name  string?
-                                 :team_id    int?
-                                 :bet_amount int?}}
-             :middleware [middleware/wrap-restricted]
-             :handler    (fn [req]
-                           (user/create-bet req))}}]
+     ["/request-recovery"
+      {:post {:summary    "Send email to user with recovery link"
+              :parameters {:body {:user string?}}
+              :handler    (fn [req]
+                            (user/account-recovery req))}}]]
 
     ["/prop-bet"
      {:get  {:summary    "get any current prop bets"
