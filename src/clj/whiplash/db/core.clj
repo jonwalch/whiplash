@@ -204,7 +204,7 @@
                                      {:user/_prop-bets [:user/cash :db/id]}])
                    :in $ ?prop-bet-id
                    :where [?bet :bet/proposition ?prop-bet-id]]
-          :args  [db prop-bet-id nil]})
+          :args  [db prop-bet-id]})
        (map
          (comp (fn [bet]
                  (-> bet
