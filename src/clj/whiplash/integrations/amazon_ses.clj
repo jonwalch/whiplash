@@ -46,7 +46,7 @@
 (defn send-recovery-email
   [{:keys [user/email user/first-name recovery/token] :as user}]
   (let [verify-url (generate-url "https://www.whiplashesports.com/user/password/recover" email token)
-        body (format "Hi %s,\n\nPlease click this link to reset your account %s\n\nYour buddies,\nWhiplash"
+        body (format "Hi %s,\n\nPlease click this link to reset your password %s\n\nYour buddies,\nWhiplash"
                      first-name
                      verify-url)]
     (internal-send-email (merge user {:subject    "Whiplash: Reset your password"
