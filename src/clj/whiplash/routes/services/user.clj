@@ -167,13 +167,10 @@
                                    :db db
                                    :attrs [{:user/status [:db/ident]}
                                            :user/first-name :user/last-name :user/email
-                                           :user/name :user/verify-token :user/cash :db/id]})
+                                           :user/name :user/cash :db/id]})
         notifications (when user-entity
                         (retrieve-and-ack-user-notifications db (:db/id user-entity)))]
     (if (some? user-entity)
-      ;; TODO don't return verify-token, currently only exposing it for testing purposes
-      ;; A user could falsely verify their email if they poked around and reconstructed the
-      ;; correct route and query params
       (ok (-> user-entity
               (dissoc :db/id)
               (assoc :user/notifications notifications)))

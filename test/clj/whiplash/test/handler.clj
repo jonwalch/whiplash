@@ -127,7 +127,8 @@
      (is (some? (re-find #"https:\/\/www\.whiplashesports\.com\/user\/verify\?email=.*&token=.{32}" body)))
      (is (not (string/blank? (:user/verify-token sent-email))))
 
-     (assoc resp :body parsed-body))))
+     (assoc resp :body parsed-body
+                 :token (:user/verify-token sent-email)))))
 
 (deftest test-uncommon-name-success
   (create-user (assoc dummy-user :last_name "de Flandres")))
@@ -176,8 +177,8 @@
   ([]
    (create-user-and-login dummy-user))
   ([user]
-   (create-user user)
-   (login user)))
+   (let [create-user (create-user user)]
+     (assoc (login user) :create-user create-user))))
 
 (defn- change-password
   ([auth-token]
@@ -228,7 +229,6 @@
           create-again-fail ((common/test-app) (-> (mock/request :post "/user/create")
                                                    (mock/json-body dummy-user)))]
 
-      (is (not (string/blank? (-> get-success-resp :body :user/verify-token))))
       (is (= #:user{:email      email
                     :first-name first_name
                     :last-name  last_name
@@ -236,7 +236,7 @@
                     :name       user_name
                     :cash       500
                     :notifications []}
-             (dissoc (:body get-success-resp) :user/verify-token)))
+             (:body get-success-resp)))
 
       (is (= 401 (:status login-fail-resp)))
       (is (= 409 (:status create-again-fail))))))
@@ -312,9 +312,10 @@
 
   (testing "verify email post"
     (let [{:keys [user_name email first_name last_name]} dummy-user
-          {:keys [auth-token] login-resp :response} (create-user-and-login)
+          {:keys [auth-token] :as login-resp} (create-user-and-login)
+          verify-token (get-in login-resp [:create-user :token])
           {:keys [body] :as get-success-resp} (get-user auth-token)
-          {:keys [user/verify-token user/email]} body
+          {:keys [user/email]} body
           verify-resp ((common/test-app) (-> (mock/request :post "/user/verify")
                                              (mock/json-body {:email email
                                                               :token verify-token})))
@@ -337,8 +338,6 @@
       (is (= {:message (format "Couldn't verify %s" email)}
              (common/parse-json-body failed-verify-resp)))
 
-      (is (not (string/blank? (-> get-verified-user :body :user/verify-token))))
-
       (is (= #:user{:cash          500
                     :email         "butt@cheek.com"
                     :first-name    "yas"
@@ -346,7 +345,7 @@
                     :name          "queefburglar"
                     :notifications []
                     :status        "user.status/active"}
-             (dissoc (:body get-verified-user) :user/verify-token))))))
+             (:body get-verified-user))))))
 
 (deftest all-time-top-ten
   (testing "only returns 10 users"
