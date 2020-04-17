@@ -1,4 +1,5 @@
 import React, { useEffect, useState, lazy, Suspense} from "react";
+import "../../resources/public/css/App.css";
 import { BrowserRouter, Route } from "react-router-dom";
 import { Home } from "./components/Home";
 import { About } from "./components/About";

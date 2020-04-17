@@ -3,7 +3,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 let config = {
-  entry: "./resources/public/js/index.tsx",
+  entry: "./src/js/index.tsx",
   module: {
     rules: [
       {
