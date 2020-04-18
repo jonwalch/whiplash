@@ -38,12 +38,6 @@
     (let [response ((common/test-app) (mock/request :get "/invalid"))]
       (is (= 404 (:status response))))))
 
-(deftest static-content
-  (testing "can get static content"
-    (let [{:keys [status] :as response}
-          ((common/test-app) (mock/request :get "/js/index.tsx"))]
-      (is (= 200 status)))))
-
 (deftest healthz
   (testing "healthz endpoint works"
     (let [response ((common/test-app) (mock/request :get "/v1/healthz"))]
@@ -380,13 +374,15 @@
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn- admin-create-prop
-  [{:keys [auth-token text end-betting-secs]}]
+  [{:keys [auth-token text end-betting-secs status]}]
   (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop")
                                     (mock/cookie :value auth-token)
                                     (mock/json-body {:text             text
                                                      :end-betting-secs (or end-betting-secs
                                                                            30)})))]
-    (is (= 200 (:status resp)))
+    (is (= (or status
+               200)
+           (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn- admin-end-prop
@@ -545,6 +541,19 @@
                      :stream-source "event.stream-source/twitch"
                      :channel-id twitch-user}
              (dissoc get-response-body :event/start-time))))))
+
+(deftest fail-create-empty-prop
+  (testing "successfully create and get event with proper admin role"
+    (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                      (assoc dummy-user :admin? true))
+          title "Dirty Dan's Delirious Dance Party"
+          twitch-user "drdisrespect"
+          resp (admin-create-event {:auth-token auth-token
+                                    :title title
+                                    :channel-id twitch-user})
+          create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                   :text ""
+                                                   :status 405})])))
 
 (deftest success-get-event
   (testing "successfully get nonexistent event, don't need admin"

@@ -5,13 +5,16 @@
 
 (defn admin-create-proposition
   [{:keys [body-params] :as req}]
-  ;; TODO validation of text
   (let [{:keys [text end-betting-secs]} body-params
         ongoing-event (db/find-ongoing-event)
         ongoing-prop (db/find-ongoing-proposition)]
     (cond
       (nil? ongoing-event)
       (method-not-allowed {:message "Cannot create prop bet, no ongoing event"})
+
+      ;; TODO more validation of text
+      (empty? text)
+      (method-not-allowed {:message "An empty proposition is not allowed."})
 
       (some? ongoing-prop)
       (method-not-allowed {:message "Cannot create prop bet, ongoing proposition exists"})
