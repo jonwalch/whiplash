@@ -367,7 +367,6 @@ export function Control(props: any) {
                         Current Proposition:
                     </div>
                     <div>{proposition["proposition/text"] || "N/A"}</div>
-                    {proposition["proposition/text"] &&
                     <>
                         <button
                             className="button twitch__button"
@@ -387,7 +386,6 @@ export function Control(props: any) {
                             Proposition outcome: False
                         </button>
                     </>
-                    }
                     <div className="form__group"
                         // TODO: remove inline style
                          style = {{marginTop: "30px"}}
