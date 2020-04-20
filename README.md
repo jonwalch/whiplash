@@ -42,9 +42,7 @@ Or run in the REPL from `env/dev/clj/user.clj`:
 - `npm run build`: Build CSS and JS, and minify CSS for production
 - `npm test`: Run backend tests
 - `npm run serve`: Build CSS and JS, and serve Whiplash to `localhost:3000`
-- `npm run develop`: Build CSS and JS
-- `npm run watch:css`: Build CSS and watch for changes (run this before `watch:js`)
-- `npm run watch:js`: Build JS and watch for changes (run this after `watch:css` in another terminal tab/window)
+- `npm run develop`: Build CSS and JS watch for changes
 - `npm run flush:cache`: Flush the Cloudfront CDN cache
 
 ### CSS
