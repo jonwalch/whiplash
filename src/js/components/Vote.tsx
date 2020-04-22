@@ -108,7 +108,9 @@ export function Vote(props: any) {
     return projectedResult == null ||
         betAmount == 0 ||
         betAmount > loggedInState.cash ||
-        betWaitingForResp;
+        betWaitingForResp ||
+        !loggedInState.userName ||
+        loggedInState.status == "user.status/pending";
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,24 +121,21 @@ export function Vote(props: any) {
     }
   };
 
-  const renderPropositionText = (useClass : boolean) => {
-    let nameOfClass = "vote__message";
+  const renderPropositionText = () => {
     if (props.proposition["proposition/text"]) {
-      return (<p className={useClass ? nameOfClass : ""}>{props.proposition["proposition/text"]}</p>);
+      return (<p>{props.proposition["proposition/text"]}</p>);
     } else if (props.prevProposition["proposition/text"]){
       return (
           <>
-            <p className={useClass ? nameOfClass : ""}>
-              {"Last proposition: " + props.prevProposition["proposition/text"]}
-            </p>
-            <p className={useClass ? nameOfClass : ""}>
+            <p>{"Last proposition: " + props.prevProposition["proposition/text"]}</p>
+            <p>
               {"Outcome: " + (props.prevProposition["proposition/result?"] ? "Yes" : "No")}
             </p>
-            <p className={useClass ? nameOfClass : ""}>Next proposition soon!</p>
+            <p>Next proposition soon!</p>
           </>
       );
     } else {
-      return <p className={useClass ? nameOfClass : ""}>Next proposition soon!</p>;
+      return <p>Next proposition soon!</p>;
     }
   };
 
@@ -144,6 +143,15 @@ export function Vote(props: any) {
     const key = e.key;
     if (key == "Enter" && !toggleValid()) {
       makePropBet();
+    }
+  };
+
+  const renderCTA = () => {
+    if (!loggedInState.userName) {
+      return <p>Log in to bet!</p>
+    }
+    else if (loggedInState.status == "user.status/pending") {
+      return <p>Verify your email to bet!</p>
     }
   };
 
@@ -190,6 +198,7 @@ export function Vote(props: any) {
                     id="betAmount"
                 />
               </div>
+              {renderCTA()}
               <button
                   className={"button button--make-bet " + (!toggleValid() ? "is-active" : "")}
                   type="button"
@@ -209,40 +218,25 @@ export function Vote(props: any) {
   };
 
   const renderContent = () => {
-    if (loggedInState.userName) {
-      if (loggedInState.status === null) {
-        return (
-            <div className="container">
-              <p>Loading...</p>
-            </div>
-        );
-      } else if (loggedInState.status == "user.status/pending") {
-        return (
+    if (loggedInState.status === null) {
+      return (
           <div className="container">
-            {renderPropositionText(true)}
-            <p className="vote__message">Verify your email to participate!</p>
+            <p>Loading...</p>
           </div>
-        );
-      } else {
-        return (
+      );
+    }
+    else {
+      return (
           <div className="container">
             <form className="form form--vote"
                   onSubmit={(e: any) => e.preventDefault()}
             >
               <fieldset className="form__fieldset">
-                {renderPropositionText(false)}
+                {renderPropositionText()}
                 {renderBettingOptions()}
               </fieldset>
             </form>
           </div>
-        );
-      }
-    } else {
-      return (
-        <div className="container">
-          {renderPropositionText(true)}
-          <p className="vote__message">Log in to participate!</p>
-        </div>
       );
     }
   };

@@ -225,13 +225,17 @@
   (let [{:keys [bet_amount projected_result]} body-params
         {:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        {:keys [db/id user/cash]} (db/pull-user {:db db
+        {:keys [db/id user/cash user/status]} (db/pull-user
+                                                {:db db
                                                  :user/name       user
-                                                 :attrs           [:user/cash :db/id]})
+                                                 :attrs           [:user/cash :db/id {:user/status [:db/ident]}]})
         {:keys [proposition/betting-end-time] :as ongoing-prop} (db/pull-ongoing-proposition
                                                                   {:db db
                                                                    :attrs [:db/id :proposition/betting-end-time]})]
     (cond
+      (not-any? #(= % status) [:user.status/active :user.status/admin])
+      (conflict {:message "Must have email verified to bet."})
+
       (>= 0 bet_amount)
       (conflict {:message "Cannot bet less than 1."})
 
@@ -265,16 +269,24 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [text]} body-params
         {:keys [user]} (middleware/req->token req)
-        user-eid (db/find-user-by-user-name user)
-        ongoing-event (db/find-ongoing-event)]
+        db (d/db (:conn db/datomic-cloud))
+        {:keys [db/id user/status]} (when user
+                                      (db/pull-user {:db        db
+                                                     :user/name user
+                                                     :attrs     [:db/id {:user/status [:db/ident]}]}))
+        ongoing-event (db/find-ongoing-event db)]
+
     (cond
+      (not-any? #(= % status) [:user.status/active :user.status/admin])
+      (method-not-allowed {:message "Must have email verified to suggest."})
+
       (nil? ongoing-event)
       (method-not-allowed {:message "No ongoing event, cannot make suggestion"})
 
       (empty? text)
       (method-not-allowed {:message "Invalid text"})
 
-      (nil? user-eid)
+      (nil? id)
       (not-found {:message "User not found"})
 
       (> (count text) 100)
@@ -284,7 +296,7 @@
       (if (try
             (db/add-user-suggestion-to-event {:event-eid ongoing-event
                                               :text text
-                                              :user-eid user-eid})
+                                              :user-eid id})
             (catch Throwable t (log/info "transaction failed: " t)))
         (ok {})
         (conflict {:message "Transaction failed"}))

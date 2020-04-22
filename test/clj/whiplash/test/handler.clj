@@ -90,12 +90,25 @@
            (re-find #"^value=(.*)$")
            second))
 
+(defn- verify-email
+  [{:keys [email verify-token status]}]
+  (let [resp ((common/test-app) (-> (mock/request :post "/user/verify")
+                                    (mock/json-body {:email email
+                                                     :token verify-token})))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    (assoc resp :body (common/parse-json-body resp))))
+
 (defn- create-user
   ([]
    (create-user dummy-user))
-  ([{:keys [first_name email admin?] :as user}]
+  ([{:keys [first_name email admin? verify?] :as user}]
    (assert user)
-   (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
+   (let [verify? (if (nil? verify?)
+                   true
+                   verify?)
+         resp ((common/test-app) (-> (mock/request :post "/user/create")
                                      (mock/json-body user)))
          parsed-body (common/parse-json-body resp)
          sent-emails (-> common/test-state deref :emails)
@@ -103,6 +116,10 @@
 
      (is (= 200 (:status resp)))
      (is (empty? parsed-body))
+
+     (when verify?
+       (verify-email {:email email
+                      :verify-token (:user/verify-token sent-email)}))
 
      (when admin?
        (d/transact (:conn db/datomic-cloud)
@@ -215,7 +232,7 @@
 (deftest test-user
   (testing "create and get user success "
     (let [{:keys [email first_name last_name user_name]} dummy-user
-          {:keys [auth-token] login-resp :response} (create-user-and-login)
+          {:keys [auth-token] login-resp :response} (create-user-and-login (assoc dummy-user :verify? false))
           login-fail-resp ((common/test-app) (-> (mock/request :post "/user/login")
                                                  (mock/json-body {:user_name user_name
                                                                   :password  "wrong_password"})))
@@ -299,38 +316,44 @@
              :body
              :message))))
 
-(deftest verify-email
+
+(defn- user-place-prop-bet
+  [{:keys [auth-token projected-result bet-amount status]}]
+  (let [resp ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                    (mock/cookie :value auth-token)
+                                    (mock/json-body {:projected_result projected-result
+                                                     :bet_amount       bet-amount})))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    (assoc resp :body (common/parse-json-body resp))))
+
+(deftest verify-email-test
   (testing "verify get"
     (let [response ((common/test-app) (mock/request :get "/user/verify"))]
       (is (= 200 (:status response)))))
 
   (testing "verify email post"
-    (let [{:keys [user_name email first_name last_name]} dummy-user
-          {:keys [auth-token] :as login-resp} (create-user-and-login)
+    (let [{:keys [auth-token] :as login-resp} (create-user-and-login (assoc dummy-user :verify? false))
           verify-token (get-in login-resp [:create-user :token])
           {:keys [body] :as get-success-resp} (get-user auth-token)
           {:keys [user/email]} body
-          verify-resp ((common/test-app) (-> (mock/request :post "/user/verify")
-                                             (mock/json-body {:email email
-                                                              :token verify-token})))
-          try-verify-again-resp ((common/test-app) (-> (mock/request :post "/user/verify")
-                                                       (mock/json-body {:email email
-                                                                        :token verify-token})))
-          failed-verify-resp ((common/test-app) (-> (mock/request :post "/user/verify")
-                                                    (mock/json-body {:email email
-                                                                     :token "you only yolo once"})))
+          verify-resp (verify-email {:email email
+                                     :verify-token verify-token})
+          try-verify-again-resp (verify-email {:email email
+                                               :verify-token verify-token})
+          failed-verify-resp (verify-email {:email email
+                                            :verify-token "you only yolo once"
+                                            :status 404})
           get-verified-user (get-user auth-token)]
-      (is (= 200 (:status verify-resp)))
       (is (= {:message (format "Successfully verified %s" email)}
-             (common/parse-json-body verify-resp)))
+             (:body verify-resp)))
 
-      (is (= 200 (:status try-verify-again-resp)))
       (is (= {:message (format "Already verified %s" email)}
-             (common/parse-json-body try-verify-again-resp)))
+             (:body try-verify-again-resp)))
 
-      (is (= 404 (:status failed-verify-resp)))
       (is (= {:message (format "Couldn't verify %s" email)}
-             (common/parse-json-body failed-verify-resp)))
+             (:body failed-verify-resp)))
 
       (is (= #:user{:cash          500
                     :email         "butt@cheek.com"
@@ -736,6 +759,29 @@
     (is (= []
            (-> user3-get-user-notifs-acked :body :user/notifications)))))
 
+(deftest cant-bet-email-not-verified
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title      title
+                                               :channel-id twitch-user})
+
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       text})
+
+        _ (create-user (assoc dummy-user-2 :verify? false))
+
+        {:keys [auth-token] login-resp :response} (login dummy-user-2)
+
+        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
+                                                       :projected-result true
+                                                       :bet-amount       100
+                                                       :status 409})]))
+
 (deftest no-payout-doesnt-break
   (testing ""
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -871,6 +917,22 @@
                                :status 405})
       (user-submit-suggestion {:auth-token auth-token
                                :text "this string is going to be very long and possibly even over 100 characters wowee zowie. I don't know."
+                               :status 405}))))
+
+(deftest user-cant-suggest-email-not-verified
+  (testing "invalid text"
+    (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                      (assoc dummy-user :admin? true))
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      "hi"
+                                 :channel-id "donnie"})
+
+          _ (create-user (assoc dummy-user-2 :verify? false))
+
+          {:keys [auth-token] login-resp :response} (login dummy-user-2)]
+
+      (user-submit-suggestion {:auth-token auth-token
+                               :text "Hello this is a valid suggestion."
                                :status 405}))))
 
 (deftest dismiss-suggestions-success
@@ -1364,16 +1426,19 @@
         get-user-resp (get-user auth-token)]
 
     ;; only one bailout notification, winnings coalesced
+
     (is (= [#:notification{:type "notification.type/bailout"}
-            {:bet/payout          100
-             :notification/type   "notification.type/payout"
-             :proposition/result? true
-             :proposition/text    "second one"}
             {:bet/payout          60
              :notification/type   "notification.type/payout"
              :proposition/result? true
-             :proposition/text    "third one"}]
-           (-> get-user-resp :body :user/notifications)))))
+             :proposition/text    "third one"}
+            {:bet/payout          100
+             :notification/type   "notification.type/payout"
+             :proposition/result? true
+             :proposition/text    "second one"}]
+           (->> (-> get-user-resp :body :user/notifications)
+                (sort-by :bet/payout)
+                vec)))))
 
 (deftest cant-create-next-event-ts-invalid-ts
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login

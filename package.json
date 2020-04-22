@@ -10,7 +10,7 @@
     "build": "NODE_ENV='production' gulp build && webpack -p",
     "test": "lein test",
     "serve": "npm run develop && lein run",
-    "develop": "(NODE_ENV='development' gulp watch) & (sleep 1; NODE_ENV='development' webpack --mode=development -w)",
+    "develop": "(NODE_ENV='development' gulp watch) & (sleep 5; NODE_ENV='development' webpack --mode=development -w)",
     "flush:cache": "aws cloudfront create-invalidation --distribution-id E451IY44F3ERG --paths \"/*\"",
     "analyze": "source-map-explorer 'resources/public/dist/bundle.js'"
   },

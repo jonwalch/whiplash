@@ -39,11 +39,22 @@ export function Suggestion(props: any) {
     };
 
     const toggleValid = () => {
-        //TODO: add validation
         return suggestion === null ||
             suggestion === "" ||
             suggestion.length < 5 ||
-            suggestWaitingForResp;
+            suggestWaitingForResp ||
+            !loggedInState.userName ||
+            loggedInState.status == "user.status/pending";
+    };
+
+    const placeholderText = () => {
+        if (!loggedInState.userName) {
+            return "Log in to suggest a proposition!";}
+        else if (loggedInState.status === "user.status/pending") {
+            return "Verify your email to suggest a proposition!";
+        } else {
+            return "Type your proposition suggestion here!";
+        }
     };
 
     const renderSuggestion = () => {
@@ -60,7 +71,7 @@ export function Suggestion(props: any) {
                     onKeyPress={(e) => {suggestionOnKeyPress(e)}}
                     maxLength={100}
                     minLength={5}
-                    placeholder="Type your proposition suggestion here!"
+                    placeholder={placeholderText()}
                     name="suggestion"
                     id="suggestion"
                 />
@@ -77,9 +88,7 @@ export function Suggestion(props: any) {
         );
     };
 
-    if (props.twitchUsername === failedToFetch ||
-        loggedInState.userName === null ||
-        loggedInState.status === "user.status/pending") {
+    if (props.twitchUsername === failedToFetch) {
         return (<></>);
     } else {
         return renderSuggestion();
