@@ -8,13 +8,23 @@ import {defaultLoggedIn, LoginContext} from "./contexts/LoginContext";
 import { Account } from "./components/Account";
 import {getUser} from "./common/getUser";
 import {Recovery} from "./components/Recovery";
+
+const { install } = require('ga-gtag');
 const Control = lazy(() => import("./components/Control").then(({ Control }) => ({default: Control})));
 
 export const App = () => {
     const [loggedInState, setLoggedInState] = useState(defaultLoggedIn);
 
     useEffect(() => {
-        getUser(setLoggedInState)
+        getUser(setLoggedInState);
+
+        const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
+
+        if (isProduction) {
+            // Install Google tag manager
+            install('UA-154430212-2')
+        }
+
     }, []);
 
     return (

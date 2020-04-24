@@ -11,8 +11,6 @@ import {defaultLoggedIn, LoginContext} from "../contexts/LoginContext";
 import {getUser} from "../common/getUser";
 import moment from "moment";
 
-const { install } = require('ga-gtag');
-
 export const failedToFetch : string = "failed to fetch";
 
 export function Home(props: any) {
@@ -29,7 +27,6 @@ export function Home(props: any) {
   // child state
   const [eventScoreLeaderboard, setEventScoreLeaderboard] = useState<EventScore[]>([]);
 
-  const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
 
   const getEventWrapper = (event:any) => {
       setChannelID(event["event/channel-id"] || failedToFetch);
@@ -82,11 +79,6 @@ export function Home(props: any) {
   }, 5000);
 
     useEffect(() => {
-    if (isProduction) {
-      // Install Google tag manager
-      install('UA-154430212-2')
-    }
-
     getEvent().then((event) => {
         getEventWrapper(event)
     });

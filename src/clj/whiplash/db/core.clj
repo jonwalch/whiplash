@@ -341,7 +341,7 @@
                           :event/running? false
                           :event/end-time (time/to-date)}]}))
 
-;; TODO make this depend on an event
+;; TODO deprecate
 (defn find-ongoing-proposition
   ([]
    (find-ongoing-proposition (d/db (:conn datomic-cloud))))

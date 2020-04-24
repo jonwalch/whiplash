@@ -2,36 +2,11 @@
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
             [datomic.client.api :as d]
-            [whiplash.payouts :as payouts]
-            [clojure.tools.logging :as log]))
+            [whiplash.payouts :as payouts]))
 
 (defn all-time-top-ten
   [{:keys [params] :as req}]
   (ok (db/find-top-ten)))
-
-#_(defn weekly-leaderboard
-  [{:keys [params] :as req}]
-  (let [weekly-leaderboard (->> (db/find-this-week-payout-leaderboard (time/to-date (time/last-monday)))
-                                (group-by :user/name)
-                                (map (fn [[k v]]
-                                       (hash-map :user_name k
-                                                 :payout (->> v
-                                                              (map :bet/payout)
-                                                              (apply +)))))
-                                (sort-by :payout #(compare %2 %1)))]
-    (ok weekly-leaderboard)))
-
-#_(defn weekly-prop-bet-leaderboard
-  [{:keys [params] :as req}]
-  (let [weekly-leaderboard (->> (db/find-this-week-prop-bet-payout-leaderboard (time/to-date (time/last-monday)))
-                                (group-by :user/name)
-                                (map (fn [[k v]]
-                                       (hash-map :user_name k
-                                                 :payout (->> v
-                                                              (map :bet/payout)
-                                                              (apply +)))))
-                                (sort-by :payout #(compare %2 %1)))]
-    (ok weekly-leaderboard)))
 
 (defn event-score-leaderboard
   [{:keys [params] :as req}]
@@ -66,38 +41,10 @@
                (sort-by :score #(compare %2 %1)))))
       (not-found []))))
 
-#_(defn get-bets
-  [{:keys [params] :as req}]
-  (let [{:keys [game_id match_id]} params
-        ;; TODO figure out why this isnt getting casted by middleware
-        game-id (Integer/parseInt game_id)
-        match-id (Integer/parseInt match_id)
-        unprocessed-bets (db/find-all-unprocessed-bets-for-game (d/db (:conn db/datomic-cloud))
-                                                                {:match-id match-id
-                                                                 :game-id  game-id})
-        total-amounts-and-odds (-> unprocessed-bets
-                                   (payouts/game-bet-totals :team/name)
-                                   (payouts/team-odds))]
-    (ok (or (->> unprocessed-bets
-                 (group-by :team/name)
-                 (map (fn [[team-name bets]]
-                        (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds team-name)]
-                          {team-name {:bets (sort-by :bet/amount
-                                                     #(compare %2 %1)
-                                                     (->> bets
-                                                          (group-by :user/name)
-                                                          (mapv (fn [[user-name bets]]
-                                                                  {:user/name user-name
-                                                                   :bet/amount (apply +
-                                                                                      (map :bet/amount bets))}))))
-                              :total total
-                              :odds  odds}})))
-                 (apply merge))
-            {}))))
-
 (defn get-prop-bets
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
+        ;; TODO: use pull-ongoing-proposiiton
         current-proposition (db/find-ongoing-proposition db)]
     (if current-proposition
       (let [current-bets (->> (db/find-all-user-bets-for-proposition {:db db

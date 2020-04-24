@@ -253,11 +253,11 @@
       (some? id)
       (if (try
             (db/add-prop-bet-for-user (:conn db/datomic-cloud)
-                                      {:db/id      id
+                                      {:db/id                 id
                                        :bet/projected-result? projected_result
-                                       :bet/amount bet_amount
-                                       :user/cash       cash
-                                       :bet/proposition ongoing-prop})
+                                       :bet/amount            bet_amount
+                                       :user/cash             cash
+                                       :bet/proposition       (:db/id ongoing-prop)})
             (catch Throwable t (log/info "cas failed for adding prop bet: " t)))
         (ok {})
         (conflict {:message "CAS failed"}))
