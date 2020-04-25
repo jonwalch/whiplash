@@ -66,7 +66,7 @@ export function Login(props: any) {
   };
 
   const renderContent = () => {
-    if (loggedInState.userName === null) {
+    if (loggedInState.userName === null || loggedInState.status === "user.status/unauth") {
       return (
           <form className="form form--login container" name="login">
             <hr className="form__hr"/>

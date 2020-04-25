@@ -16,15 +16,12 @@ export const App = () => {
     const [loggedInState, setLoggedInState] = useState(defaultLoggedIn);
 
     useEffect(() => {
+        // Install Google tag manager, will only track on hostnames that contain 'whiplash'
+        // this was configured as a filter named 'whiplash hostname filter (filter out local host)'
+        // in the GA admin panel
+        install('UA-154430212-2');
+
         getUser(setLoggedInState);
-
-        const isProduction: boolean = document.location.hostname.search("whiplashesports.com") !== -1;
-
-        if (isProduction) {
-            // Install Google tag manager
-            install('UA-154430212-2')
-        }
-
     }, []);
 
     return (

@@ -81,7 +81,16 @@ export function Header() {
           <li>{renderSignupButton()}</li>
         </>
       )
-      // Show log out button, user is logged in
+    } else if (loggedInState.status === "user.status/unauth") {
+        return (
+            <>
+                <li className="navigation__item">{loggedInState.userName}</li>
+                <li className="navigation__item"><span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}</li>
+                <li>{renderLoginButton()}</li>
+                <li>{renderSignupButton()}</li>
+            </>
+        )
+        // Show log out button, user is logged in
     } else {
       return (
         <>
@@ -103,7 +112,14 @@ export function Header() {
                                 <span className="navigation__highlight">You got bailed out! Your Whipcash was set to $100!</span>
                             </li>
                         );
-                    } else if (notif["notification/type"] == "notification.type/payout") {
+                    } else if (notif["notification/type"] == "notification.type/no-bailout") {
+                        return (
+                            <li className="navigation__item navigation__fade-in">
+                                <span className="navigation__highlight">Make an account to get bailed out when your Whipcash drops too low!</span>
+                            </li>
+                        );
+                    }
+                    else if (notif["notification/type"] == "notification.type/payout") {
                         const text = "You won $" + notif["bet/payout"] +
                             " Whipcash because you bet " + (notif["proposition/result?"] ? "Yes" : "No") +
                             " on '" + notif["proposition/text"] + "'!";

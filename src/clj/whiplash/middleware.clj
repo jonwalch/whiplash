@@ -99,7 +99,7 @@
       (catch Throwable t (when (not= "deleted" cookie-value)
                            (log/error (format "Failed to decrypt JWT %s "
                                               cookie-value)
-                                      t))))))
+                                      nil))))))
 
 (defn valid-cookie-auth?
   [req]
@@ -116,6 +116,15 @@
                   (< (time/to-millis) exp)
                   (= "user.status/admin" status)))))
 
+(defn valid-auth-or-ga-cookie?
+  [req]
+  (let [{:keys [user exp]} (req->token req)]
+    (or (boolean (and (string? user)
+                      (int? exp)
+                      (< (time/to-millis) exp)))
+        ;; TODO: regex validation of _ga tag
+        (string? (-> req :cookies (get "_ga") :value)))))
+
 (defn on-error [request response]
   {:status 403
    :body   {:message (str "Access to " (:uri request) " is not authorized")}}
@@ -126,6 +135,11 @@
 ;; Add on a per route basis
 (defn wrap-restricted [handler]
   (restrict handler {:handler valid-cookie-auth?
+                     :on-error on-error}))
+
+;; Add on a per route basis
+(defn wrap-restricted-or-ga-unauth-user [handler]
+  (restrict handler {:handler valid-auth-or-ga-cookie?
                      :on-error on-error}))
 
 ;; Add on a per route basis

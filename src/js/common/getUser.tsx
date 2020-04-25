@@ -1,4 +1,5 @@
 import {baseUrl} from "../config/const";
+import {defaultLoggedIn} from "../contexts/LoginContext";
 
 export const getUser = async (setLoggedInState: Function) => {
     const response = await fetch(baseUrl + "user", {
@@ -15,5 +16,7 @@ export const getUser = async (setLoggedInState: Function) => {
             cash: resp["user/cash"],
             notifications: resp["user/notifications"]
         });
-    };
+    } else {
+        setLoggedInState(defaultLoggedIn)
+    }
 };

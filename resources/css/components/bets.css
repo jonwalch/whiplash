@@ -57,6 +57,7 @@
     padding: 0.25em 0.5em;
     color: $dark-white;
     font-family: $font-stack-code;
+    font-size: 0.5rem;
 
     + .bets__td {
       border-left: 1px solid $light-black;

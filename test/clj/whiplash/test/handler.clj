@@ -218,16 +218,20 @@
                                                (mock/cookie :value auth-token))))))))
 
 (defn- get-user
-  ([auth-token]
-   (get-user auth-token dummy-user))
-  ([auth-token {:keys [email first_name last_name user_name] :as user}]
-   (let [resp ((common/test-app) (-> (mock/request :get "/user")
-                                     (mock/cookie :value auth-token)))
-         parsed-body (common/parse-json-body resp)]
+  [{:keys [ga-tag? auth-token status]}]
+  (let [ga-tag? (if (some? ga-tag?)
+                  ga-tag?
+                  true)
+        resp (if ga-tag?
+               ((common/test-app) (-> (mock/request :get "/user")
+                                      (mock/cookie :_ga "GA1.2.1493569166.1576110731")
+                                      (mock/cookie :value auth-token)))
+               ((common/test-app) (-> (mock/request :get "/user")
+                                      (mock/cookie :value auth-token))))
+        parsed-body (common/parse-json-body resp)]
+    (is (= (or status 200) (:status resp)))
 
-     (is (= 200 (:status resp)))
-
-     (assoc resp :body parsed-body))))
+    (assoc resp :body parsed-body)))
 
 (deftest test-user
   (testing "create and get user success "
@@ -236,7 +240,7 @@
           login-fail-resp ((common/test-app) (-> (mock/request :post "/user/login")
                                                  (mock/json-body {:user_name user_name
                                                                   :password  "wrong_password"})))
-          get-success-resp (get-user auth-token)
+          get-success-resp (get-user {:auth-token auth-token})
           create-again-fail ((common/test-app) (-> (mock/request :post "/user/create")
                                                    (mock/json-body dummy-user)))]
 
@@ -316,18 +320,6 @@
              :body
              :message))))
 
-
-(defn- user-place-prop-bet
-  [{:keys [auth-token projected-result bet-amount status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/user/prop-bet")
-                                    (mock/cookie :value auth-token)
-                                    (mock/json-body {:projected_result projected-result
-                                                     :bet_amount       bet-amount})))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
 (deftest verify-email-test
   (testing "verify get"
     (let [response ((common/test-app) (mock/request :get "/user/verify"))]
@@ -336,7 +328,7 @@
   (testing "verify email post"
     (let [{:keys [auth-token] :as login-resp} (create-user-and-login (assoc dummy-user :verify? false))
           verify-token (get-in login-resp [:create-user :token])
-          {:keys [body] :as get-success-resp} (get-user auth-token)
+          {:keys [body] :as get-success-resp} (get-user {:auth-token auth-token})
           {:keys [user/email]} body
           verify-resp (verify-email {:email email
                                      :verify-token verify-token})
@@ -345,7 +337,7 @@
           failed-verify-resp (verify-email {:email email
                                             :verify-token "you only yolo once"
                                             :status 404})
-          get-verified-user (get-user auth-token)]
+          get-verified-user (get-user {:auth-token auth-token})]
       (is (= {:message (format "Successfully verified %s" email)}
              (:body verify-resp)))
 
@@ -447,21 +439,33 @@
      (assoc resp :body (common/parse-json-body resp)))))
 
 (defn- user-place-prop-bet
-  [{:keys [auth-token projected-result bet-amount status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/user/prop-bet")
-                                    (mock/cookie :value auth-token)
-                                    (mock/json-body {:projected_result projected-result
-                                                     :bet_amount       bet-amount})))]
+  [{:keys [auth-token projected-result bet-amount status ga-tag?]}]
+  (let [ga-tag? (if (some? ga-tag?)
+                  ga-tag?
+                  true)
+        resp (if ga-tag?
+               ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                      ;; All requests should have this cookie set by google analytics
+                                      (mock/cookie :_ga "GA1.2.1493569166.1576110731")
+                                      (mock/cookie :value auth-token)
+                                      (mock/json-body {:projected_result projected-result
+                                                       :bet_amount       bet-amount})))
+               ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+                                      ;; All requests should have this cookie set by google analytics
+                                      (mock/cookie :value auth-token)
+                                      (mock/json-body {:projected_result projected-result
+                                                       :bet_amount       bet-amount}))))]
     (is (= (or status
                200)
            (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn- user-get-prop-bets
-  [{:keys [auth-token]}]
+  [{:keys [auth-token status]}]
   (let [resp ((common/test-app) (-> (mock/request :get "/user/prop-bet")
                                     (mock/cookie :value auth-token)))]
-    (is (= 200 (:status resp)))
+    (is (= (or status 200)
+           (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn- get-prop-bets-leaderboard
@@ -662,16 +666,16 @@
 
         event-score-before-end (get-event-leaderboard)
 
-        admin-get-user (get-user auth-token)
-        admin-get-user-notifs-acked (get-user auth-token)
+        admin-get-user (get-user {:auth-token auth-token})
+        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
 
         {:keys [auth-token] login-resp :response} (login dummy-user-2)
-        user2-get-user (get-user auth-token)
-        user2-get-user-notifs-acked (get-user auth-token)
+        user2-get-user (get-user {:auth-token auth-token})
+        user2-get-user-notifs-acked (get-user {:auth-token auth-token})
 
         {:keys [auth-token] login-resp :response} (login dummy-user-3)
-        user3-get-user (get-user auth-token)
-        user3-get-user-notifs-acked (get-user auth-token)
+        user3-get-user (get-user {:auth-token auth-token})
+        user3-get-user-notifs-acked (get-user {:auth-token auth-token})
 
         ;;admin end event
         {:keys [auth-token] login-resp :response} (login)
@@ -812,7 +816,7 @@
                                              :result false})
 
           ;;admin bet and reset to 100
-          _ (is (= 100 (-> (get-user auth-token) :body :user/cash)))
+          _ (is (= 100 (-> (get-user {:auth-token auth-token}) :body :user/cash)))
 
           ;;admin end event
           {:keys [auth-token] login-resp :response} (login)
@@ -864,7 +868,7 @@
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
                                              :result false})
 
-          _ (is (= 500 (-> (get-user auth-token) :body :user/cash)))
+          _ (is (= 500 (-> (get-user {:auth-token auth-token}) :body :user/cash)))
 
           ;;admin end event
           {:keys [auth-token] login-resp :response} (login)
@@ -1423,7 +1427,7 @@
                                            :result false})
 
         ;; normally the get would happen on a regular interval between these requests
-        get-user-resp (get-user auth-token)]
+        get-user-resp (get-user {:auth-token auth-token})]
 
     ;; only one bailout notification, winnings coalesced
 
@@ -1633,3 +1637,116 @@
              ((common/test-app) (-> (mock/request :post "/user/login")
                                     (mock/json-body {:user_name (:user_name dummy-user)
                                                      :password  new-password}))))))))
+
+(deftest valid-auth-or-ga-cookie?-middleware-test
+  (user-place-prop-bet {:auth-token       nil
+                       :projected-result false
+                       :ga-tag?          false
+                       :bet-amount       500
+                       :status           403})
+  (get-user {:auth-token nil
+             :ga-tag? false
+             :status 403}))
+
+(deftest not-logged-in-user-can-bet
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+
+        event-score-before-event-creation (get-event-leaderboard {:status 404})
+
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title      title
+                                               :channel-id twitch-user})
+
+        event-score-before-prop-creation (get-event-leaderboard {:status 404})
+
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       text})
+
+        _ (user-place-prop-bet {:auth-token       auth-token
+                                :projected-result false
+                                :bet-amount       500})
+
+        ;; logged out user bets
+        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       nil
+                                                       :projected-result true
+                                                       :bet-amount       100})
+
+        user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       nil
+                                                       :projected-result true
+                                                       :bet-amount       400})
+
+        user-get-prop-bet-resp (user-get-prop-bets {:auth-token nil
+                                                    :status 403})
+        get-body (:body user-get-prop-bet-resp)
+
+        current-prop-bets-response (get-prop-bets-leaderboard)
+        event-score-before-prop-result (get-event-leaderboard)
+
+        ;;admin end prop bet
+        {:keys [auth-token] login-resp :response} (login)
+        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                           :result     false})
+
+        event-score-before-end (get-event-leaderboard)
+
+        admin-get-user (get-user {:auth-token auth-token})
+        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
+
+        user2-get-user (get-user nil)
+        user2-get-user-notifs-acked (get-user nil)
+
+        ;;admin end event
+        {:keys [auth-token] login-resp :response} (login)
+        end-event-resp (admin-end-event {:auth-token auth-token})
+
+        event-score-after-end (get-event-leaderboard)]
+
+    ;; need auth to hit this endpoint
+    (is (= get-body {:message "Access to /user/prop-bet is not authorized"}))
+
+    (is (= {:false {:bets  [{:bet/amount 500
+                             :user/name  "queefburglar"}]
+                    :odds  2.0
+                    :total 500}
+            :true  {:bets  [{:bet/amount 500
+                             :user/name  "user-cAcwygPxycxxcPNxcczNgc"}]
+                    :odds  2.0
+                    :total 500}}
+           (:body current-prop-bets-response)))
+
+    (is (= []
+           (:body event-score-before-event-creation)
+           (:body event-score-before-prop-creation)))
+
+    (is (= [{:score     0
+             :user_name "queefburglar"}
+            {:score     0
+             :user_name "user-cAcwygPxycxxcPNxcczNgc"}]
+           (:body event-score-before-prop-result)))
+
+    (is (= [{:score     500
+             :user_name "queefburglar"}
+            {:score     -500
+             :user_name "user-cAcwygPxycxxcPNxcczNgc"}]
+           (:body event-score-before-end)
+           (:body event-score-after-end)))
+
+    ;; notifications
+    (is (= 1000 (-> admin-get-user :body :user/cash)))
+    (is (= [{:bet/payout          1000
+             :notification/type   "notification.type/payout"
+             :proposition/result? false
+             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+           (-> admin-get-user :body :user/notifications)))
+    (is (= []
+           (-> admin-get-user-notifs-acked :body :user/notifications)))
+
+    (is (= 0 (-> user2-get-user :body :user/cash)))
+    (is (= [#:notification{:type "notification.type/no-bailout"}]
+           (-> user2-get-user :body :user/notifications)))
+    (is (= []
+           (-> user2-get-user-notifs-acked :body :user/notifications)))))

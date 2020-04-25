@@ -78,14 +78,12 @@ export function Vote(props: any) {
       })
     });
 
-    if (props.isProduction) {
-      // Trigger Google Analytics event
-      gtag('event', 'prop-bet', {
-        event_category: 'Betting',
-        event_label: loggedInState.userName,
-        value: betAmount
-      })
-    }
+    // Trigger Google Analytics event
+    gtag('event', 'prop-bet', {
+      event_category: 'Betting',
+      event_label: loggedInState.userName,
+      value: betAmount
+    });
 
     const resp = await response.json();
     if (response.status == 200) {
@@ -104,13 +102,25 @@ export function Vote(props: any) {
   };
 
   const toggleValid = () => {
-    // means the user hasn't select a team yet
-    return projectedResult == null ||
-        betAmount == 0 ||
-        betAmount > loggedInState.cash ||
-        betWaitingForResp ||
-        !loggedInState.userName ||
-        loggedInState.status == "user.status/pending";
+    if (loggedInState.status === "user.status/unauth" ||
+        loggedInState.status === "user.status/active" ||
+        loggedInState.status === "user.status/admin")
+    {
+      return projectedResult == null ||
+          betAmount == 0 ||
+          betAmount > loggedInState.cash ||
+          betWaitingForResp;
+
+    } else if (loggedInState.status === "user.status/pending") {
+      return true;
+
+    } else {
+      return projectedResult == null ||
+          betAmount == 0 ||
+          // TODO: change this to a constant
+          betAmount > 500 ||
+          betWaitingForResp;
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,8 +157,8 @@ export function Vote(props: any) {
   };
 
   const renderCTA = () => {
-    if (!loggedInState.userName) {
-      return <p>Log in to bet!</p>
+    if (loggedInState.status === "user.status/unauth") {
+      return <p>Sign up for more perks and features!</p>
     }
     else if (loggedInState.status == "user.status/pending") {
       return <p>Verify your email to bet!</p>
@@ -218,14 +228,6 @@ export function Vote(props: any) {
   };
 
   const renderContent = () => {
-    if (loggedInState.status === null) {
-      return (
-          <div className="container">
-            <p>Loading...</p>
-          </div>
-      );
-    }
-    else {
       return (
           <div className="container">
             <form className="form form--vote"
@@ -238,7 +240,6 @@ export function Vote(props: any) {
             </form>
           </div>
       );
-    }
   };
 
   return (

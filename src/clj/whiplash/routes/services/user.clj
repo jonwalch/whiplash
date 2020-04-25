@@ -7,7 +7,8 @@
             [whiplash.integrations.amazon-ses :as ses]
             [clojure.tools.logging :as log]
             [whiplash.time :as time]
-            [java-time :as jtime])
+            [java-time :as jtime]
+            [clojure.string :as string])
   (:import (java.security MessageDigest)))
 
 ;; https://www.regular-expressions.info/email.html
@@ -57,6 +58,18 @@
   [password]
   (hashers/derive password {:alg :bcrypt+blake2b-512}))
 
+;; I picked the letters here arbitrarily
+(def ^:private fuzz-map
+  {\0 "z" \1 "c" \2 "A" \3 "g" \4 "w" \5 "P" \6 "x" \7 "N" \8 "v" \9 "y"})
+
+(defn- unauthed-username
+  [{:keys [cookies]}]
+  (let [ga (:value (get cookies "_ga"))]
+    (format "user-%s"
+            (->> (string/replace ga #"[a-zA-Z]|\." "")
+                     (map #(get fuzz-map %))
+                     (apply str)))))
+
 (defn create-user
   [{:keys [body-params] :as req}]
   (let [{:keys [first_name last_name email password user_name]} body-params
@@ -78,8 +91,7 @@
 
       :else
       (let [encrypted-password (hash-password password)
-            tx-result (db/add-user (:conn db/datomic-cloud)
-                                   {:first-name   first_name
+            tx-result (db/add-user {:first-name   first_name
                                     :last-name    last_name
                                     :status       :user.status/pending
                                     :verify-token email-token
@@ -122,7 +134,8 @@
                                                                                          :proposition/text
                                                                                          :proposition/result?]}]}]
                          :notification/types #{:notification.type/bailout
-                                               :notification.type/payout}})
+                                               :notification.type/payout
+                                               :notification.type/no-bailout}})
         ;; ack notifications, dubious because this makes this GET no longer idempotent
         ack-time (time/to-date)
         ack-tx (when notifications
@@ -136,7 +149,8 @@
          (map
            (comp
              (fn [{:keys [notification/type] :as munged-notif}]
-               (if (= :notification.type/bailout type)
+               (if (or (= :notification.type/bailout type)
+                       (= :notification.type/no-bailout type))
                  (dissoc munged-notif :proposition/text :bet/payout :proposition/result?)
                  munged-notif))
              ;; munge db results
@@ -155,7 +169,8 @@
                           first
                           (assoc :bet/payout (apply + 0 (keep :bet/payout notifications)))
                           (dissoc :proposition/db-id))]
-                  (if (= :notification.type/bailout type)
+                  (if (or (= :notification.type/bailout type)
+                          (= :notification.type/no-bailout type))
                     (dissoc flat-notification :bet/payout)
                     flat-notification)))))))
 
@@ -163,11 +178,12 @@
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        user-entity (db/pull-user {:user/name          user
-                                   :db db
-                                   :attrs [{:user/status [:db/ident]}
-                                           :user/first-name :user/last-name :user/email
-                                           :user/name :user/cash :db/id]})
+        ;; TODO: error handling
+        user-entity (db/pull-user {:user/name (or user (unauthed-username req))
+                                   :db        db
+                                   :attrs     [{:user/status [:db/ident]}
+                                               :user/first-name :user/last-name :user/email
+                                               :user/name :user/cash :db/id]})
         notifications (when user-entity
                         (retrieve-and-ack-user-notifications db (:db/id user-entity)))]
     (if (some? user-entity)
@@ -220,21 +236,40 @@
                       :expires    "Thu, 01 Jan 1970 00:00:00 GMT"
                       :same-site :strict}}})
 
+(defn- pull-and-maybe-create-user
+  [{:keys [user unauthed-user db]}]
+  (let [pulled-user (db/pull-user {:db        db
+                                   :user/name (or user unauthed-user)
+                                   :attrs     [:user/cash :db/id {:user/status [:db/ident]}]})]
+    (if (or user
+            (and unauthed-user pulled-user))
+      pulled-user
+      ;; TODO: handle this failure, names could clash but extremely unlikely
+      ;; a malicious person could figure out our pattern for _ga to user-name and
+      ;; create a ton of user's with the pattern to make unauth betting not work
+      (let [tx-result (db/create-unauthed-user unauthed-user)]
+        (log/info "creating unauthed user")
+        (db/pull-user {:db (:db-after tx-result)
+                       :user/name unauthed-user
+                       :attrs     [:user/cash :db/id {:user/status [:db/ident]}]})))))
+
 (defn create-prop-bet
   [{:keys [body-params] :as req}]
   (let [{:keys [bet_amount projected_result]} body-params
         {:keys [user exp]} (middleware/req->token req)
+        unauthed-user (when-not user
+                        (unauthed-username req))
         db (d/db (:conn db/datomic-cloud))
-        {:keys [db/id user/cash user/status]} (db/pull-user
-                                                {:db db
-                                                 :user/name       user
-                                                 :attrs           [:user/cash :db/id {:user/status [:db/ident]}]})
+        {:keys [db/id user/cash user/status]} (pull-and-maybe-create-user
+                                                {:user user
+                                                 :unauthed-user unauthed-user
+                                                 :db db})
         {:keys [proposition/betting-end-time] :as ongoing-prop} (db/pull-ongoing-proposition
                                                                   {:db db
                                                                    :attrs [:db/id :proposition/betting-end-time]})]
     (cond
-      (not-any? #(= % status) [:user.status/active :user.status/admin])
-      (conflict {:message "Must have email verified to bet."})
+      (not-any? #(= % status) [:user.status/active :user.status/admin :user.status/unauth])
+      (conflict {:message "User not in betable state."})
 
       (>= 0 bet_amount)
       (conflict {:message "Cannot bet less than 1."})

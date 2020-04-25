@@ -27,7 +27,6 @@ export function Home(props: any) {
   // child state
   const [eventScoreLeaderboard, setEventScoreLeaderboard] = useState<EventScore[]>([]);
 
-
   const getEventWrapper = (event:any) => {
       setChannelID(event["event/channel-id"] || failedToFetch);
       setMatchName(event["event/title"]);
@@ -73,7 +72,7 @@ export function Home(props: any) {
   // the other pages don't need to do this regularly, because it doesn't matter if their cash is out of date
   // we also only need to fetch regularly if an event is happening, because that's the only time payouts happens
   useInterval(() => {
-    if (loggedInState.userName && channelID != failedToFetch) {
+    if (channelID != failedToFetch) {
         getUser(setLoggedInState);
     }
   }, 5000);
@@ -224,7 +223,6 @@ export function Home(props: any) {
                 proposition={proposition}
                 prevProposition={prevProposition}
                 matchName={matchName}
-                isProduction={isProduction}
             />
           </>
       );

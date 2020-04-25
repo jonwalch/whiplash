@@ -129,7 +129,7 @@
    ["/user"
     [""
      {:get  {:summary    "get a user"
-             :middleware [middleware/wrap-restricted]
+             :middleware [middleware/wrap-restricted-or-ga-unauth-user]
              :handler    (fn [req]
                            (user/get-user req))}}]
 
@@ -200,7 +200,7 @@
       :post {:summary    "create a guess for a user"
              :parameters {:body {:projected_result boolean?
                                  :bet_amount int?}}
-             :middleware [middleware/wrap-restricted]
+             :middleware [middleware/wrap-restricted-or-ga-unauth-user]
              :handler    (fn [req]
                            (user/create-prop-bet req))}}]
     ["/suggestion"

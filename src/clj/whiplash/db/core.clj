@@ -66,16 +66,25 @@
   (seq (d/tx-range conn {})))
 
 (defn add-user
-  [conn {:keys [first-name last-name status email password user-name verify-token]}]
-  (d/transact conn {:tx-data [{:user/first-name   first-name
-                               :user/last-name    last-name
-                               :user/name         user-name
-                               :user/status       status
-                               :user/verify-token verify-token
-                               :user/email        email
-                               :user/password     password
-                               :user/sign-up-time (time/to-date)
-                               :user/cash         500N}]}))
+  [{:keys [first-name last-name status email password user-name verify-token]}]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [{:user/first-name   first-name
+                          :user/last-name    last-name
+                          :user/name         user-name
+                          :user/status       status
+                          :user/verify-token verify-token
+                          :user/email        email
+                          :user/password     password
+                          :user/sign-up-time (time/to-date)
+                          :user/cash         500N}]}))
+
+(defn create-unauthed-user
+  [username]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [{:user/name         username
+                          :user/status       :user.status/unauth
+                          :user/sign-up-time (time/to-date)
+                          :user/cash         500N}]}))
 
 (defn update-password
   [conn {:keys [db/id password]}]
@@ -201,7 +210,9 @@
   [{:keys [db prop-bet-id]}]
   (->> (d/q
          {:query '[:find (pull ?bet [:db/id :bet/amount :bet/projected-result?
-                                     {:user/_prop-bets [:user/cash :db/id]}])
+                                     {:user/_prop-bets [:user/cash
+                                                        :db/id
+                                                        {:user/status [:db/ident]}]}])
                    :in $ ?prop-bet-id
                    :where [?bet :bet/proposition ?prop-bet-id]]
           :args  [db prop-bet-id]})
@@ -209,7 +220,8 @@
          (comp (fn [bet]
                  (-> bet
                      (assoc :user/db-id (get-in bet [:user/_prop-bets :db/id])
-                            :user/cash (get-in bet [:user/_prop-bets :user/cash]))
+                            :user/cash (get-in bet [:user/_prop-bets :user/cash])
+                            :user/status (get-in bet [:user/_prop-bets :user/status :db/ident]))
                      (dissoc :user/_prop-bets)))
                first))))
 
@@ -413,7 +425,8 @@
                                           {db-id {:user/total-payout (apply +
                                                                             0
                                                                             (keep :bet/payout pbets))
-                                                  :user/cash (:user/cash (first pbets))}}))
+                                                  :user/cash (:user/cash (first pbets))
+                                                  :user/status (:user/status (first pbets))}}))
                                    (apply merge))
         processed-time (time/to-date)
         payout-txs (->> payouts
@@ -433,18 +446,29 @@
                         (into []))
         user-cash-txs (->> user-id->total-payout
                            (map
-                             (fn [[user-id {:keys [user/cash user/total-payout]}]]
+                             (fn [[user-id {:keys [user/cash user/total-payout user/status]}]]
                                (let [new-balance (+ cash total-payout)
+                                     authed-user? (not= status :user.status/unauth)
                                      bailout? (> 100 new-balance)
-                                     cas [:db/cas user-id :user/cash cash (if-not bailout?
-                                                                            new-balance
-                                                                            100N)]]
-                                 (if-not bailout?
-                                   [cas]
+                                     cas [:db/cas user-id :user/cash cash (if (and authed-user?
+                                                                                   bailout?)
+                                                                            100N
+                                                                            new-balance)]]
+                                 (cond
+                                   (and bailout? (not authed-user?))
+                                   [cas
+                                    {:db/id              user-id
+                                     :user/notifications [{:notification/type :notification.type/no-bailout
+                                                           :notification/acknowledged? false}]}]
+
+                                   bailout?
                                    [cas
                                     {:db/id              user-id
                                      :user/notifications [{:notification/type :notification.type/bailout
-                                                           :notification/acknowledged? false}]}]))))
+                                                           :notification/acknowledged? false}]}]
+
+                                   :else
+                                   [cas]))))
                            (apply concat)
                            (into []))]
 

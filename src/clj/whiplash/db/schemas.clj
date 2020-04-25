@@ -320,7 +320,11 @@
        {:db/doc         "Time of usage of token to change password"
         :db/ident       :recovery/used-time
         :db/valueType   :db.type/instant
-        :db/cardinality :db.cardinality/one}]})
+        :db/cardinality :db.cardinality/one}]
+
+   :6 [{:db/ident :user.status/unauth}
+       {:db/ident :notification.type/no-bailout}
+       ]})
 
 (defn migrations->schema-tx
   []

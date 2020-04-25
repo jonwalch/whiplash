@@ -2,11 +2,11 @@ import React, { createContext, useState } from "react";
 
 export interface loggedIn {
   userName: string | null;
-  status: string;
+  status: string | null;
   cash: number;
   notifications: Object[];
 }
-export const defaultLoggedIn: loggedIn = { userName: null, status: 'user.status/pending', cash: 0, notifications: []};
+export const defaultLoggedIn: loggedIn = { userName: null, status: null, cash: 0, notifications: []};
 
 interface loggedInState {
   loggedInState: loggedIn;

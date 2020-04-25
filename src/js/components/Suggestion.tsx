@@ -27,6 +27,8 @@ export function Suggestion(props: any) {
         } else {
             alert(resp.message);
         }
+
+        // TODO add GA event
         setSuggestion("");
         setSuggestWaitingForResp(false);
     };
@@ -44,14 +46,17 @@ export function Suggestion(props: any) {
             suggestion.length < 5 ||
             suggestWaitingForResp ||
             !loggedInState.userName ||
-            loggedInState.status == "user.status/pending";
+            loggedInState.status == "user.status/pending" ||
+            loggedInState.status == "user.status/unauth";
     };
 
     const placeholderText = () => {
         if (!loggedInState.userName) {
-            return "Log in to suggest a proposition!";}
-        else if (loggedInState.status === "user.status/pending") {
+            return "Log in to suggest a proposition!";
+        } else if (loggedInState.status === "user.status/pending") {
             return "Verify your email to suggest a proposition!";
+        } else if (loggedInState.status === "user.status/unauth") {
+           return "Sign up to suggest a proposition!"
         } else {
             return "Type your proposition suggestion here!";
         }
