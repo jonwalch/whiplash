@@ -28,6 +28,7 @@ export function About() {
             <p>Payouts are rounded down to the nearest whole dollar.</p>
             <h3>How can I chat with other Whiplash users?</h3>
             <p>Join our <a href="https://discord.gg/GsG2G9t">Discord server</a>!</p>
+            <p>Follow us on <a href="https://twitter.com/whiplashgg">Twitter</a>!</p>
             <h3>How does Whiplash decide which stream to play?</h3>
             <p>We're currently testing a bunch of ideas. Suggest a stream/event and we'll cover it!</p>
             <h3>Why can’t I see the embedded Twitch chat?</h3>
