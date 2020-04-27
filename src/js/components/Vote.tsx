@@ -86,6 +86,8 @@ export function Vote(props: any) {
     });
 
     const resp = await response.json();
+    setProjectedResult(null);
+    setBetWaitingForResp(false);
     if (response.status == 200) {
       alert(`You successfully bet $${betAmount} on outcome ${booleanToButton()}.`);
       // update user's cash
@@ -94,11 +96,12 @@ export function Vote(props: any) {
             status: loggedInState.status,
             cash: loggedInState.cash - betAmount,
             notifications: loggedInState.notifications})
+      // 403 will happen if they're not logged in AND they aren't sending the google analytics cookie.
+    } else if (response.status === 403) {
+      alert("Sign up or disable your ad blocker to bet!")
     } else {
       alert(resp.message);
     }
-    setProjectedResult(null);
-    setBetWaitingForResp(false);
   };
 
   const toggleValid = () => {
@@ -157,11 +160,14 @@ export function Vote(props: any) {
   };
 
   const renderCTA = () => {
-    if (loggedInState.status === "user.status/unauth") {
-      return <p>Sign up for more perks and features!</p>
+    if (loggedInState.status === null) {
+      return "You can bet up to $500 Whipcash!"
+    }
+    else if (loggedInState.status === "user.status/unauth") {
+      return "Sign up to receive bailouts when you drop below $100 Whipcash!"
     }
     else if (loggedInState.status == "user.status/pending") {
-      return <p>Verify your email to bet!</p>
+      return "Verify your email to bet!"
     }
   };
 
@@ -208,7 +214,7 @@ export function Vote(props: any) {
                     id="betAmount"
                 />
               </div>
-              {renderCTA()}
+              <p>{renderCTA()}</p>
               <button
                   className={"button button--make-bet " + (!toggleValid() ? "is-active" : "")}
                   type="button"

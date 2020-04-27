@@ -168,7 +168,7 @@ export function Signup(props: any) {
           onClick={submitSignUp}
           disabled={toggleValid()}>
           <div className={signUpWaitingForResp ? "loading" : ""}>
-            {signUpWaitingForResp ? "" : "Log In"}
+            {signUpWaitingForResp ? "" : "Sign Up"}
           </div>
         </button>
       </fieldset>

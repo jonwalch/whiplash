@@ -20,7 +20,7 @@ export function About() {
             <h3>How do I play?</h3>
             <p>After creating an account and verifying your email, you will start with $500 in Whipcash that can be used to place bets on live event streams. Bets are open for the duration of the proposition.</p>
             <p>To place a bet, simply enter the amount you want to bet in the "Bet Amount" box and click one of the two "Bet" buttons to select your projected outcome. You may place as many bets as you want while the proposition is open. You can bet on both sides of the proposition. After placing a bet, it will be displayed on the screen in the “Current Bets” section.</p>
-            <p>All players, bets, and winnings will not be deleted. If you drop below $100 Whipcash you will receive a small bailout.</p>
+            <p>All players, bets, and winnings will not be deleted. If you're logged in and drop below $100 Whipcash you will receive a small bailout. A user without an account will not receive a bailout.</p>
             <h3>How does Whiplash pick what the current proposition is?</h3>
             <p>We take live suggestions from the community! Enter your suggestion into the text box below the stream and press Make Suggestion!</p>
             <h3>How are odds and payouts calculated?</h3>
@@ -36,6 +36,8 @@ export function About() {
             <p>Check your spam. If it’s not there, email us at <a href="mailto:support@whiplashesports.com">support@whiplashesports.com</a>.</p>
             <h3>How do I change my password?</h3>
             <p>Login and click your name in the header. It will bring you to your account page.</p>
+            <h3>Why can't I bet?</h3>
+            <p>If you're not logged in and you're getting an error when you try to bet, either sign up or disable your adblocker.</p>
           </div>
           <div className="article__container">
             <h2>Terms of Service</h2>

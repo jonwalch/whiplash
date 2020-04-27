@@ -1,8 +1,6 @@
 (ns whiplash.middleware
   (:require
     [whiplash.env :refer [defaults]]
-    [cheshire.generate :as cheshire]
-    [cognitect.transit :as transit]
     [clojure.tools.logging :as log]
     [whiplash.layout :refer [error-page]]
     [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
@@ -50,7 +48,7 @@
       ((if (:websocket? request) handler wrapped) request))))
 
 ;; TODO: read this from env var and set in K8S config
-(def secret (hash/sha256 "HIILWUUQBSCCICRMTJSQXIRYUIJIJRRL"))
+(def ^:private secret (hash/sha256 "HIILWUUQBSCCICRMTJSQXIRYUIJIJRRL"))
 
 (comment
   (defn rand-str [len]

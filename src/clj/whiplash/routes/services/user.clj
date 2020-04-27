@@ -19,6 +19,8 @@
 (def valid-name #"^[a-zA-Z ,.'-]{1,100}$")
 ;; anything 1 - 50
 (def valid-user-name #"^.{1,50}$")
+;; unauthed user format
+(def unauth-user-name #"(?i)user-[a-zA-Z]{21}")
 
 (def invalid-password "Password must be at least 8 characters")
 
@@ -39,7 +41,8 @@
 
     (or (not (re-matches valid-user-name user-name))
         ;; user name should not be of email format
-        (re-matches valid-email user-name))
+        (re-matches valid-email user-name)
+        (re-matches unauth-user-name user-name))
     "User name invalid"))
 
 (defn md5 [^String s]
@@ -62,6 +65,7 @@
 (def ^:private fuzz-map
   {\0 "z" \1 "c" \2 "A" \3 "g" \4 "w" \5 "P" \6 "x" \7 "N" \8 "v" \9 "y"})
 
+;; user-ccPxgcAwcwNcPvNNxcywg
 (defn- unauthed-username
   [{:keys [cookies]}]
   (let [ga (:value (get cookies "_ga"))]
