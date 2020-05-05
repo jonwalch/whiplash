@@ -1,11 +1,23 @@
 import React, {useState, useEffect, useContext} from "react";
 import { useInterval } from "../common";
-import { getProp} from "../common/stream";
 import {baseUrl} from "../config/const";
 
 export function TwitchExtension(props: any) {
     const [proposition, setProposition] = useState<any>({});
     const [prevProposition, setPrevProposition] = useState<any>({});
+
+    const getCORSProp = async () => {
+        const response = await fetch(baseUrl + "stream/prop", {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "GET",
+            mode: "cors",
+            redirect: "error",
+        });
+        const resp = await response.json();
+        return resp;
+    };
 
     const getPropWrapper = (event:any) => {
         if (event["current-prop"]){
@@ -21,13 +33,13 @@ export function TwitchExtension(props: any) {
     };
 
     useEffect(() => {
-        getProp().then((event) => {
+        getCORSProp().then((event) => {
             getPropWrapper(event)
         });
     }, []);
 
     useInterval(() => {
-        getProp().then((event) => {
+        getCORSProp().then((event) => {
             getPropWrapper(event)
         });
     }, 3000);
