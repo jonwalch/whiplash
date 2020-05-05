@@ -47,24 +47,9 @@
        :headers {"Access-Control-Allow-Origin" "*"}
        :body {:current-prop  (if ongoing-prop ongoing-prop {})
               :previous-prop (if previous-prop previous-prop {})}}
-      (not-found {}))))
-
-#_(defn end-betting-for-prop
-  [{:keys [body-params] :as req}]
-  (let [db (d/db (:conn db/datomic-cloud))
-        prop (db/find-ongoing-proposition db)]
-    (cond
-      (nil? prop)
-      (method-not-allowed {:message "No ongoing proposition"})
-
-      (some? (:proposition/betting-end-time
-               (d/pull db '[:proposition/betting-end-time] prop)))
-      (method-not-allowed {:message "Already ended betting for this prop"})
-
-      :else
-      (do
-        (db/end-betting-for-proposition {:proposition-eid prop})
-        (ok {:message "Successfully ended betting for prop."})))))
+      {:status 404
+       :headers {"Access-Control-Allow-Origin" "*"}
+       :body {}})))
 
 (defn end-current-proposition
   [{:keys [body-params] :as req}]
