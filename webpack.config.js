@@ -1,7 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 
 let config = {
   entry: {
@@ -51,7 +50,7 @@ let config = {
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new HtmlWebpackPlugin({
       template: "resources/html/index.html",
-      chunks: ["app"]
+      chunks: ["app"],
     }),
     new HtmlWebpackPlugin({
       filename: "error.html",
@@ -61,15 +60,15 @@ let config = {
     new HtmlWebpackPlugin({
       filename: "twitch-extension.html",
       template: "resources/html/twitch-extension.html",
-      chunks: ["twitchExt"]
+      chunks: ["twitchExt"],
     }),
-    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/twitchExt/]),
   ]
 };
 
 module.exports = (env, argv) => {
   if (argv.mode === 'development') {
     config.mode = 'development';
+    //fix local dev for twitch extension
     config.output.filename = "bundle.js";
     config.plugins.push(new webpack.HotModuleReplacementPlugin())
   }

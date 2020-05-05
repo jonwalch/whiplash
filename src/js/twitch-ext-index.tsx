@@ -4,5 +4,5 @@ import {TwitchExtension} from "./components/TwitchExtension";
 
 ReactDOM.render(
     <TwitchExtension />,
-    document.getElementById("app")
+    document.getElementById("root")
 );

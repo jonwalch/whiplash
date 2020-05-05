@@ -43,8 +43,10 @@
                                                        :attrs (conj prop-fields-to-pull :proposition/result?)
                                                        :event-eid ongoing-event}))]
     (if (or ongoing-prop previous-prop)
-      (ok {:current-prop  (if ongoing-prop ongoing-prop {})
-           :previous-prop (if previous-prop previous-prop {})})
+      {:status 200
+       :headers {"Access-Control-Allow-Origin" "*"}
+       :body {:current-prop  (if ongoing-prop ongoing-prop {})
+              :previous-prop (if previous-prop previous-prop {})}}
       (not-found {}))))
 
 #_(defn end-betting-for-prop
