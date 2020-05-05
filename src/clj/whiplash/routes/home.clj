@@ -19,6 +19,9 @@
   (layout/render request "index.html")
   #_(layout/render request "home.html" {:docs (-> "docs/docs.md" io/resource slurp)}))
 
+#_(defn twitch-extension-page [request]
+  (layout/render request "twitch-extension.html"))
+
 (defn home-routes []
   [""
    {:coercion   spec-coercion/coercion
@@ -46,6 +49,8 @@
    ["/about" {:get home-page}]
    ["/account" {:get home-page}]
    ["/control" {:get home-page}]
+   ;["/ext" {:get home-page}]
+   ;["/twitch-extension.html" {:get twitch-extension-page}]
 
    ;; admin only endpoints
    ["/admin"

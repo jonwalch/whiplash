@@ -536,12 +536,14 @@
   (def test-client (d/client local-tunnel-cloud-config))
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
-  (let [db (d/db conn)]
-    (d/pull db '[*]
-            (ffirst (d/q {:query '[:find ?event ?end-time
-                                   :where [?event :event/running? false]
-                                   [?event :event/end-time ?end-time]]
-                          :args  [db]}))))
+  (->>
+    (d/q {:query '[:find (pull ?user [:user/email :user/name :user/sign-up-time])
+                   :in $
+                   :where [?user :user/status :user.status/active]]
+          :args  [(d/db conn)]})
+
+    (apply concat)
+    (sort-by :user/sign-up-time))
 
   (defn find-loser-by-email
     [email conn]

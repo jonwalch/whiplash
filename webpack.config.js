@@ -3,15 +3,16 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 let config = {
-  entry: "./src/js/index.tsx",
+  entry: {
+    app: "./src/js/index.tsx",
+    twitchExt: "./src/js/index.tsx",
+  },
   module: {
     rules: [
       {
         test: /\.ts(x?)$/,
         exclude: /(node_modules|bower_components)/,
         loader: "ts-loader"
-        // loader: "babel-loader",
-        //options: { presets: ["@babel/env"] }
       },
       {
         enforce: "pre",
@@ -42,18 +43,24 @@ let config = {
   output: {
     path: path.resolve(__dirname, "resources/public/dist/"),
     publicPath: "/dist/",
-    filename: "bundle.[contenthash].js"
+    filename: "[name].[contenthash].js"
   },
   plugins: [
     // ignore moment.js locales, see https://github.com/jmblog/how-to-optimize-momentjs-with-webpack#using-ignoreplugin
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new HtmlWebpackPlugin({
       template: "resources/html/index.html",
+      chunks: ["app"]
     }),
     new HtmlWebpackPlugin({
       filename: "error.html",
       template: "resources/html/error.html",
       inject: false,
+    }),
+    new HtmlWebpackPlugin({
+      filename: "twitch-extension.html",
+      template: "resources/html/twitch-extension.html",
+      chunks: ["twitchExt"]
     })
   ]
   //      externals: {
