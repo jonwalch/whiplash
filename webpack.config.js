@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 let config = {
   entry: {
     app: "./src/js/index.tsx",
-    twitchExt: "./src/js/index.tsx",
+    twitchExt: "./src/js/twitch-ext-index.tsx",
   },
   module: {
     rules: [
