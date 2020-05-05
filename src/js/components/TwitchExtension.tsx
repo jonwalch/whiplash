@@ -12,6 +12,7 @@ export function TwitchExtension(props: any) {
                 "Content-Type": "application/json",
             },
             method: "GET",
+            credentials: "omit",
             mode: "cors",
             redirect: "error",
         });

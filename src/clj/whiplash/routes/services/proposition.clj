@@ -27,6 +27,10 @@
         (ok {})))))
 
 ;; TODO: remove separate query for event, can do all previous pull in one query instead of 2
+;Access-Control-Allow-Origin : http://localhost:3000
+;Access-Control-Allow-Credentials : true
+;Access-Control-Allow-Methods : GET, POST, OPTIONS
+;Access-Control-Allow-Headers : Origin, Content-Type, Accept
 (defn get-current-proposition
   [req]
   (let [prop-fields-to-pull '[:proposition/start-time
@@ -44,11 +48,15 @@
                                                        :event-eid ongoing-event}))]
     (if (or ongoing-prop previous-prop)
       {:status 200
-       :headers {"Access-Control-Allow-Origin" "*"}
+       :headers {"Access-Control-Allow-Origin" "*"
+                 "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
+                 "Access-Control-Allow-Methods" "GET"}
        :body {:current-prop  (if ongoing-prop ongoing-prop {})
               :previous-prop (if previous-prop previous-prop {})}}
       {:status 404
-       :headers {"Access-Control-Allow-Origin" "*"}
+       :headers {"Access-Control-Allow-Origin" "*"
+                 "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
+                 "Access-Control-Allow-Methods" "GET"}
        :body {}})))
 
 (defn end-current-proposition

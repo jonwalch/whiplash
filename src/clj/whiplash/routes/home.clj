@@ -13,7 +13,8 @@
     [whiplash.middleware.exception :as exception]
     [reitit.ring.middleware.parameters :as parameters]
     [whiplash.middleware.formats :as formats]
-    [reitit.coercion.spec :as spec-coercion]))
+    [reitit.coercion.spec :as spec-coercion]
+    [clojure.tools.logging :as log]))
 
 (defn home-page [request]
   (layout/render request "index.html")
@@ -112,9 +113,17 @@
                            (event/get-current-event req))}}]
 
     ["/prop"
-     {:get {:summary "Get the current prop bet"
-            :handler (fn [req]
-                       (proposition/get-current-proposition req))}}]]
+     ;; TODO add test for this options call
+     {:options {:summary "Take care of CORS preflight"
+                :handler (fn [req]
+                           {:status  204
+                            :headers {"Access-Control-Allow-Origin"  "*"
+                                      "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
+                                      "Access-Control-Allow-Methods" "GET"}
+                            :body    nil})}
+      :get     {:summary "Get the current prop bet"
+                :handler (fn [req]
+                           (proposition/get-current-proposition req))}}]]
 
    ["/leaderboard"
     ["/all-time"
