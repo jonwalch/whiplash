@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useContext} from "react";
 import { useInterval } from "../common";
 import {baseUrl} from "../config/const";
+import "../../../resources/public/css/App.css";
 
 export function TwitchExtension(props: any) {
     const [proposition, setProposition] = useState<any>({});
@@ -57,25 +58,20 @@ export function TwitchExtension(props: any) {
         return (
             // TODO: uninline styles
             <div style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-around",
-                alignItems: "center",
-                padding: "1rem 0 1rem 0"
-            }}>
-                <div>
-                    <a href="https://whiplash.gg">
-                        <img
-                            src={baseUrl + "/img/logos/whiplash-horizontal-4c.svg"}
-                            alt="Whiplash"
-                            width="165"
-                            height="36"
-                            className="site-logo"
-                        />
-                    </a>
-                    <div>Bet on <a href="https://whiplash.gg">whiplash.gg</a>!</div>
+                marginTop: "5rem",
+                width: "15%",
+                background: "hsla( 202, 65%, 3%, 0.35)",}}>
+                <img
+                    src={baseUrl + "/img/logos/whiplash-horizontal-4c-gg.svg"}
+                    alt="Whiplash"
+                    width="165"
+                    height="36"
+                    className="site-logo"
+                    style={{padding: "0.25rem", margin:"auto"}}
+                />
+                <div style={{fontSize: ".5rem", padding: "0 0.5rem 0.5rem 0.5rem",}}>
+                    {renderPropositionText()}
                 </div>
-                <div>{renderPropositionText()}</div>
             </div>
         );
     };
