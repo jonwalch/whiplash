@@ -444,7 +444,30 @@
      (is (= (or status
                 200)
             (:status resp)))
+     ;; Access-Control headers needed for CORS
+     (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
+             "Access-Control-Allow-Methods" "GET"
+             "Access-Control-Allow-Origin"  "*"
+             "Content-Type"                 "application/json; charset=utf-8"
+             "X-Content-Type-Options"       "nosniff"
+             "X-Frame-Options"              "SAMEORIGIN"
+             "X-XSS-Protection"             "1; mode=block"}
+            (:headers resp)))
      (assoc resp :body (common/parse-json-body resp)))))
+
+(deftest options-proposition
+  (testing "need this endpoint and headers for CORS (twitch extension)"
+    (let [resp ((common/test-app) (-> (mock/request :options "/stream/prop")))]
+      (is (= 204
+             (:status resp)))
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
+              "Access-Control-Allow-Methods" "GET"
+              "Access-Control-Allow-Origin"  "*"
+              "Content-Type"                 "application/octet-stream"
+              "X-Content-Type-Options"       "nosniff"
+              "X-Frame-Options"              "SAMEORIGIN"
+              "X-XSS-Protection"             "1; mode=block"}
+             (:headers resp))))))
 
 (defn- user-place-prop-bet
   [{:keys [auth-token projected-result bet-amount status ga-tag?]}]

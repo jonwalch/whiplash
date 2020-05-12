@@ -433,7 +433,7 @@
                         (map
                           (fn [{:keys [bet/payout user/db-id db/id] :as p}]
                             (let [tx (-> p
-                                         (dissoc :user/cash :user/db-id :bet/amount :bet/projected-result?)
+                                         (dissoc :user/cash :user/db-id :bet/amount :bet/projected-result? :user/status)
                                          (assoc :bet/processed-time processed-time))]
                               (if (> payout 0N)
                                 [tx

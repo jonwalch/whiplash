@@ -113,7 +113,6 @@
                            (event/get-current-event req))}}]
 
     ["/prop"
-     ;; TODO add test for this options call
      {:options {:summary "Take care of CORS preflight"
                 :handler (fn [req]
                            {:status  204
