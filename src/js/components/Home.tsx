@@ -18,7 +18,7 @@ export function Home(props: any) {
   const [channelID, setChannelID] = useState<null | string>(null);
   const [matchName, setMatchName] = useState<string>("");
   const [streamSource, setStreamSource] = useState<string>("");
-  const [chatIsOpen, setChatIsOpen] = useState<boolean>(false);
+  const [chatIsOpen, setChatIsOpen] = useState<boolean>(true);
   const [proposition, setProposition] = useState<Object>({});
   const [prevProposition, setPrevProposition] = useState<Object>({});
   const [nextEventTime, setNextEventTime] = useState<string>("");
@@ -31,6 +31,9 @@ export function Home(props: any) {
       setChannelID(event["event/channel-id"] || failedToFetch);
       setMatchName(event["event/title"]);
       setStreamSource(event["event/stream-source"]);
+      if (event["event/stream-source"] !== "event.stream-source/twitch") {
+          setChatIsOpen(false)
+      }
       setNextEventTime(event["whiplash/next-event-time"] || "");
       setCountdown(setCountdownWrapper(event["whiplash/next-event-time"] || ""));
     };
