@@ -69,7 +69,7 @@ export function TwitchExtension(props: any) {
                     className="site-logo"
                     style={{padding: "0.25rem", margin:"auto"}}
                 />
-                <div style={{fontSize: ".5rem", padding: "0 0.5rem 0.5rem 0.5rem",}}>
+                <div style={{fontSize: ".75rem", padding: "0 0.5rem 0.5rem 0.5rem",}}>
                     {renderPropositionText()}
                 </div>
             </div>
