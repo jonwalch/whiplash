@@ -180,8 +180,7 @@ export function Home(props: any) {
               <h2 className="twitch__title">Whiplash is taking a nap</h2>
                 <div className="twitch__placeholder">
                     <p className="twitch__subtitle">Last Event Winner: {lastWinner()}</p>
-                    <p>Hang tight, we'll have a watch party soon.</p>
-                    <p>In the meantime, bookmark this page and check back often for new chances to win while watching.</p>
+                    <p>Join our <a href="https://discord.gg/GsG2G9t">Discord</a> and follow us on <a href="https://twitter.com/whiplashgg">Twitter</a> to find out when we'll be live next!</p>
                 </div>
             </div>
           </div>
