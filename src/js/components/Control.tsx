@@ -43,6 +43,8 @@ export const defaultProposition = {
     "proposition/result?": false
 };
 
+const defaultBetSecs = 23;
+
 export function Control(props: any) {
     const { loggedInState, setLoggedInState } = useContext(LoginContext);
     const [nextEventTs, setNextEventTs] = useState("");
@@ -56,6 +58,7 @@ export function Control(props: any) {
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
     const [eventSource, setEventSource] = useState<string>("");
+    const [bettingDuration, setBettingDuration] = useState<number>(defaultBetSecs);
 
     useEffect(() => {
         getEvent().then((event) => {setEventInfo(event)});
@@ -143,14 +146,13 @@ export function Control(props: any) {
             redirect: "error",
             body: JSON.stringify({
                 text: propText,
-                "end-betting-secs": 33,
+                "end-betting-secs": bettingDuration,
             })
         });
-        const resp = await response.json();
         if (response.status == 200) {
             alert("Successfully created proposition")
         } else {
-            alert(resp.message)
+            alert("ERROR: Couldn't create proposition")
         }
     };
 
@@ -405,6 +407,24 @@ export function Control(props: any) {
                             id="propText"
                         />
                     </div>
+                    <div className="form__group"
+                        // TODO: remove inline style
+                         style = {{marginTop: "30px"}}
+                    >
+                        <label className="form__label" htmlFor="betSecs">Bet Duration (add 3 to what you want it to display)</label>
+                        <input
+                            className="form__input"
+                            value={bettingDuration}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                setBettingDuration(parseInt(e.currentTarget.value));
+                            }}
+                            maxLength={3}
+                            minLength= {1}
+                            type="number"
+                            name="betSecs"
+                            id="betSecs"
+                        />
+                    </div>
                     {!proposition["proposition/text"] &&
                     <button
                         className="button twitch__button"
@@ -412,7 +432,11 @@ export function Control(props: any) {
                         style = {{marginRight: "30px"}}
                         type="button"
                         onClick={() => {
-                            createProp()
+                            if (bettingDuration > 0) {
+                                createProp()
+                            } else {
+                                alert("Enter a valid value for betting duration")
+                            }
                         }}>
                         Create Proposition
                     </button>
