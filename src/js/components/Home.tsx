@@ -51,6 +51,7 @@ export function Home(props: any) {
       }
   };
 
+  // TODO: Redo all of this on the backend, I no longer trust JS/system times
   const setCountdownWrapper = (arg: string) => {
       if (arg == "") {
           return null;
@@ -96,7 +97,7 @@ export function Home(props: any) {
             getPropWrapper(event)
         });
     }
-  }, 3000);
+  }, 1000);
 
   useInterval(() => {
     getEvent().then((event) => {

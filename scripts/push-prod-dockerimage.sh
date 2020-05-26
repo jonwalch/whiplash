@@ -1,6 +1,6 @@
 #usage: must run form project root ./scripts/push-prod-dockerimage.sh 0.1.5
 set -ev
-
+rm -rf resources/public/dist
 npm start
 lein uberjar
 docker build -t whiplash:$1 .

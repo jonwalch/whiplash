@@ -590,6 +590,7 @@
       (is (string? (:proposition/start-time current-prop)))
       (is (string? (:proposition/betting-end-time current-prop)))
       (is (= #:proposition{:running? true
+                           :betting-seconds-left 30
                            :text text}
              (dissoc current-prop :proposition/start-time :proposition/betting-end-time)))
 

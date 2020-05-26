@@ -83,6 +83,11 @@
   [date]
   (ZonedDateTime/ofInstant (.toInstant date) (ZoneId/of "UTC")))
 
+(defn delta-between
+  "Takes two ZonedDateTimes and return the difference between start end end in unit"
+  [start end unit]
+  (java-time/time-between start end unit))
+
 (comment
   (minutes-delta 1)
   (time/zoned-date-time "2019-10-12T07:47:11Z" "UTC")

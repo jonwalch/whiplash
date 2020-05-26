@@ -1,7 +1,8 @@
 (ns whiplash.routes.services.proposition
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
-            [datomic.client.api :as d]))
+            [datomic.client.api :as d]
+            [whiplash.time :as time]))
 
 (defn admin-create-proposition
   [{:keys [body-params] :as req}]
@@ -26,6 +27,14 @@
                                 :end-betting-secs end-betting-secs})
         (ok {})))))
 
+(defn- add-countdown-seconds
+  [{:proposition/keys [start-time betting-end-time] :as proposition}]
+  (assert (and start-time betting-end-time))
+  (assoc proposition :proposition/betting-seconds-left
+                     (time/delta-between (time/now)
+                                         (time/date-to-zdt betting-end-time)
+                                         :seconds)))
+
 ;; TODO: remove separate query for event, can do all previous pull in one query instead of 2
 ;Access-Control-Allow-Origin : http://localhost:3000
 ;Access-Control-Allow-Credentials : true
@@ -40,23 +49,27 @@
         db (d/db (:conn db/datomic-cloud))
         ongoing-event (db/find-ongoing-event db)
         ongoing-prop (when ongoing-event
-                       (db/pull-ongoing-proposition {:db db
+                       (db/pull-ongoing-proposition {:db    db
                                                      :attrs prop-fields-to-pull}))
         previous-prop (when ongoing-event
-                        (db/pull-previous-proposition {:db db
-                                                       :attrs (conj prop-fields-to-pull :proposition/result?)
+                        (db/pull-previous-proposition {:db        db
+                                                       :attrs     (conj prop-fields-to-pull :proposition/result?)
                                                        :event-eid ongoing-event}))]
     (if (or ongoing-prop previous-prop)
-      {:status 200
-       :headers {"Access-Control-Allow-Origin" "*"
+      {:status  200
+       :headers {"Access-Control-Allow-Origin"  "*"
                  "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
-                 "Access-Control-Allow-Methods" "GET"}
-       :body {:current-prop  (if ongoing-prop ongoing-prop {})
-              :previous-prop (if previous-prop previous-prop {})}}
+                 "Access-Control-Allow-Methods" "GET"
+                 "Cache-Control" "max-age=1"}
+       :body    {:current-prop  (if ongoing-prop
+                                  (add-countdown-seconds ongoing-prop)
+                                  {})
+                 :previous-prop (if previous-prop previous-prop {})}}
       {:status 404
        :headers {"Access-Control-Allow-Origin" "*"
                  "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
-                 "Access-Control-Allow-Methods" "GET"}
+                 "Access-Control-Allow-Methods" "GET"
+                 "Cache-Control" "max-age=1"}
        :body {}})))
 
 (defn end-current-proposition

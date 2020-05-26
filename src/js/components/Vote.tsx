@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
-import {getUser} from "../common/getUser";
-import {useInterval} from "../common";
-import moment from "moment";
 const { gtag } = require('ga-gtag');
 
 export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [betAmount, setBetAmount] = useState<number>(0);
   const [projectedResult, setProjectedResult] = useState<null | boolean>(null);
-  const [secondsLeftToBet, setSecondsLeftToBet] = useState<number>(0);
+  // const [secondsLeftToBet, setSecondsLeftToBet] = useState<number>(0);
   const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
 
   const booleanToButton = () => {
@@ -23,14 +20,14 @@ export function Vote(props: any) {
     return 'No';
   };
 
-  useInterval(() => {
-        if (props.proposition["proposition/betting-end-time"]) {
-          setSecondsLeftToBet(calculateSecondsLeftToBet())
-        }}, 1000);
-
-  useEffect(() => {
-    setSecondsLeftToBet(calculateSecondsLeftToBet())
-  }, [props.proposition]);
+  // useInterval(() => {
+  //       if (props.proposition["proposition/betting-end-time"]) {
+  //         setSecondsLeftToBet(calculateSecondsLeftToBet())
+  //       }}, 1000);
+  //
+  // useEffect(() => {
+  //   setSecondsLeftToBet(calculateSecondsLeftToBet())
+  // }, [props.proposition]);
 
   useEffect(() => {
     // TODO: Refactor and use useRef
@@ -49,19 +46,19 @@ export function Vote(props: any) {
     })
   }, [projectedResult]);
 
-  const endBettingDate = () => {
-    if (props.proposition["proposition/betting-end-time"]){
-      return moment(props.proposition["proposition/betting-end-time"],
-          "YYYY-MM-DDTHH:mm:ssZ");
-    } else {
-      return Infinity;
-    }
-  };
+  // const endBettingDate = () => {
+  //   if (props.proposition["proposition/betting-end-time"]){
+  //     return moment(props.proposition["proposition/betting-end-time"],
+  //         "YYYY-MM-DDTHH:mm:ssZ");
+  //   } else {
+  //     return Infinity;
+  //   }
+  // };
 
-  const calculateSecondsLeftToBet = () => {
-    return moment(props.proposition["proposition/betting-end-time"], "YYYY-MM-DDTHH:mm:ssZ")
-        .diff(moment().utc(), "seconds");
-  };
+  // const calculateSecondsLeftToBet = () => {
+  //   return moment(props.proposition["proposition/betting-end-time"], "YYYY-MM-DDTHH:mm:ssZ")
+  //       .diff(moment().utc(), "seconds");
+  // };
 
   const makePropBet = async () => {
     setBetWaitingForResp(true);
@@ -174,10 +171,11 @@ export function Vote(props: any) {
   const renderBettingOptions = () => {
     if (props.proposition["proposition/text"] &&
         props.proposition["proposition/betting-end-time"]){
-      if (moment().utc().isBefore(endBettingDate())) {
+      // if (moment().utc().isBefore(endBettingDate())) {
+      if (props.proposition["proposition/betting-seconds-left"] > 0) {
         return (
             <>
-              <p>Seconds left to bet: {secondsLeftToBet}</p>
+              <p>Seconds left to bet: {props.proposition["proposition/betting-seconds-left"]}</p>
               <div className="form__button-group">
                 <button
                     className="button button--vote"
