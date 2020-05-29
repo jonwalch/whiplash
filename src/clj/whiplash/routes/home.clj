@@ -91,7 +91,12 @@
                :middleware [middleware/wrap-admin]
                :parameters {:body {:result boolean?}}
                :handler    (fn [req]
-                             (proposition/end-current-proposition req))}}]]]
+                             (proposition/end-current-proposition req))}}]]
+     ["/flip-previous"
+      {:post {:summary    "Flip the outcome of the previous proposition"
+              :middleware [middleware/wrap-admin]
+              :handler    (fn [req]
+                            (proposition/flip-prev-prop-outcome req))}}]]
 
     ["/suggestion"
      {:get  {:summary    "get prop suggestions for current event"

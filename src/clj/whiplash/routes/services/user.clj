@@ -171,6 +171,7 @@
                 (let [{:keys [notification/type] :as flat-notification}
                       (-> notifications
                           first
+                          ;; refactor so im not associng an then dissocing for wrong notif types
                           (assoc :bet/payout (apply + 0 (keep :bet/payout notifications)))
                           (dissoc :proposition/db-id))]
                   (if (or (= :notification.type/bailout type)
@@ -252,7 +253,6 @@
       ;; a malicious person could figure out our pattern for _ga to user-name and
       ;; create a ton of user's with the pattern to make unauth betting not work
       (let [tx-result (db/create-unauthed-user unauthed-user)]
-        (log/info "creating unauthed user")
         (db/pull-user {:db (:db-after tx-result)
                        :user/name unauthed-user
                        :attrs     [:user/cash :db/id {:user/status [:db/ident]}]})))))

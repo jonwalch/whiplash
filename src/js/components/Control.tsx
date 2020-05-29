@@ -176,6 +176,23 @@ export function Control(props: any) {
         }
     };
 
+    const flipPreviousOutcome = async () => {
+        const response = await fetch(baseUrl + "admin/prop/flip-previous", {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "POST",
+            mode: "same-origin",
+            redirect: "error",
+        });
+        const resp = await response.json();
+        if (response.status == 200) {
+            alert("Successfully flipped previous proposition outcome")
+        } else {
+            alert(resp.message)
+        }
+    };
+
     const getSuggestions = async () => {
         const response = await fetch(baseUrl + "admin/suggestion", {
             headers: {
@@ -432,7 +449,7 @@ export function Control(props: any) {
                         style = {{marginRight: "30px"}}
                         type="button"
                         onClick={() => {
-                            if (bettingDuration > 0) {
+                            if (bettingDuration >= 10) {
                                 createProp()
                             } else {
                                 alert("Enter a valid value for betting duration")
@@ -500,6 +517,16 @@ export function Control(props: any) {
                         </button>
                     </>
                     }
+                    <div>Previous Proposition:</div>
+                    <div>{JSON.stringify(prevProposition)}</div>
+                    <button
+                        className="button twitch__button"
+                        type="button"
+                        onClick={() => {
+                            flipPreviousOutcome()
+                        }}>
+                        Flip Previous Prop Outcome
+                    </button>
                 </form>
             );
         }

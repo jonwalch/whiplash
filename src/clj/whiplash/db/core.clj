@@ -207,15 +207,12 @@
        (map first)))
 
 (defn pull-bet-payout-info
-  [{:keys [db prop-bet-id]}]
+  [{:keys [db prop-bet-id attrs]}]
   (->> (d/q
-         {:query '[:find (pull ?bet [:db/id :bet/amount :bet/projected-result?
-                                     {:user/_prop-bets [:user/cash
-                                                        :db/id
-                                                        {:user/status [:db/ident]}]}])
-                   :in $ ?prop-bet-id
+         {:query '[:find (pull ?bet attrs)
+                   :in $ ?prop-bet-id attrs
                    :where [?bet :bet/proposition ?prop-bet-id]]
-          :args  [db prop-bet-id]})
+          :args  [db prop-bet-id attrs]})
        (map
          (comp (fn [bet]
                  (-> bet
@@ -401,11 +398,58 @@
               {:tx-data [{:db/id                        proposition-eid
                           :proposition/betting-end-time (time/to-date)}]}))
 
-(defn end-proposition
-  [{:keys [proposition result? db]}]
+(defn user-id->total-pay
+  [payouts]
+  (->> payouts
+       (group-by :user/db-id)
+       (map (fn [[db-id pbets]]
+              {db-id {:user/total-payout (apply +
+                                                0
+                                                (keep :bet/payout pbets))
+                      :user/cash (:user/cash (first pbets))
+                      :user/status (:user/status (first pbets))}}))
+       (apply merge)))
+
+(defn user-cash-txs
+  [{:keys [user-id->total-payout flip?]}]
+  (->> user-id->total-payout
+       (map
+         (fn [[user-id {:keys [user/cash user/total-payout user/status]}]]
+           (let [new-balance (+ cash total-payout)
+                 authed-user? (not= status :user.status/unauth)
+                 bailout? (> 100 new-balance)
+                 cas [:db/cas user-id :user/cash cash (if (and authed-user?
+                                                               bailout?
+                                                               (not flip?))
+                                                        100N
+                                                        new-balance)]]
+             (cond
+               (and bailout? (not authed-user?))
+               [cas
+                {:db/id              user-id
+                 :user/notifications [{:notification/type :notification.type/no-bailout
+                                       :notification/acknowledged? false}]}]
+
+               bailout?
+               [cas
+                {:db/id              user-id
+                 :user/notifications [{:notification/type :notification.type/bailout
+                                       :notification/acknowledged? false}]}]
+
+               :else
+               [cas]))))
+       (apply concat)
+       (into [])))
+
+(defn generate-txs-to-end-proposition
+  [{:keys [proposition result? db flip?]}]
   (let [betting-end-time (:proposition/betting-end-time proposition)
         bets (pull-bet-payout-info {:db db
-                                    :prop-bet-id        (:db/id proposition)})
+                                    :prop-bet-id        (:db/id proposition)
+                                    :attrs [:db/id :bet/amount :bet/projected-result?
+                                            {:user/_prop-bets [:user/cash
+                                                               :db/id
+                                                               {:user/status [:db/ident]}]}]})
         payouts (map
                   (fn [{:keys [bet/projected-result? bet/amount] :as bet}]
                     (assoc bet
@@ -419,15 +463,7 @@
                              :team/winner result?})
                           0N)))
                   bets)
-        user-id->total-payout (->> payouts
-                                   (group-by :user/db-id)
-                                   (map (fn [[db-id pbets]]
-                                          {db-id {:user/total-payout (apply +
-                                                                            0
-                                                                            (keep :bet/payout pbets))
-                                                  :user/cash (:user/cash (first pbets))
-                                                  :user/status (:user/status (first pbets))}}))
-                                   (apply merge))
+        user-id->total-payout (user-id->total-pay payouts)
         processed-time (time/to-date)
         payout-txs (->> payouts
                         (map
@@ -444,44 +480,22 @@
                                 [tx]))))
                         (apply concat)
                         (into []))
-        user-cash-txs (->> user-id->total-payout
-                           (map
-                             (fn [[user-id {:keys [user/cash user/total-payout user/status]}]]
-                               (let [new-balance (+ cash total-payout)
-                                     authed-user? (not= status :user.status/unauth)
-                                     bailout? (> 100 new-balance)
-                                     cas [:db/cas user-id :user/cash cash (if (and authed-user?
-                                                                                   bailout?)
-                                                                            100N
-                                                                            new-balance)]]
-                                 (cond
-                                   (and bailout? (not authed-user?))
-                                   [cas
-                                    {:db/id              user-id
-                                     :user/notifications [{:notification/type :notification.type/no-bailout
-                                                           :notification/acknowledged? false}]}]
+        cash-txs (user-cash-txs {:user-id->total-payout user-id->total-payout})]
+    (vec
+      (concat payout-txs
+              cash-txs
+              [(merge {:db/id                (:db/id proposition)
+                       :proposition/result?  result?}
+                      (when-not flip?
+                        {:proposition/running? false
+                         :proposition/end-time processed-time})
+                      (when-not betting-end-time
+                        {:proposition/betting-end-time processed-time}))]))))
 
-                                   bailout?
-                                   [cas
-                                    {:db/id              user-id
-                                     :user/notifications [{:notification/type :notification.type/bailout
-                                                           :notification/acknowledged? false}]}]
-
-                                   :else
-                                   [cas]))))
-                           (apply concat)
-                           (into []))]
-
-    (d/transact (:conn datomic-cloud)
-                {:tx-data (vec
-                            (concat payout-txs
-                                    user-cash-txs
-                                    [(merge {:db/id                (:db/id proposition)
-                                             :proposition/running? false
-                                             :proposition/end-time processed-time
-                                             :proposition/result?  result?}
-                                            (when-not betting-end-time
-                                              {:proposition/betting-end-time processed-time}))]))})))
+(defn end-proposition
+  [arg-map]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data (generate-txs-to-end-proposition arg-map)}))
 
 (defn add-user-suggestion-to-event
   [{:keys [text event-eid user-eid]}]

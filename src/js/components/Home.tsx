@@ -97,7 +97,8 @@ export function Home(props: any) {
             getPropWrapper(event)
         });
     }
-  }, 1000);
+    // TODO: Digits in the countdown sometimes get skipped, lowering to see if this helps mitigate
+  }, 500);
 
   useInterval(() => {
     getEvent().then((event) => {

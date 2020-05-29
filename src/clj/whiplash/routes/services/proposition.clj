@@ -2,10 +2,12 @@
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
             [datomic.client.api :as d]
-            [whiplash.time :as time]))
+            [whiplash.time :as time]
+            [clojure.tools.logging :as log]))
 
 (defn admin-create-proposition
   [{:keys [body-params] :as req}]
+  ;; TODO: input validation end-betting-secs must be greater than n
   (let [{:keys [text end-betting-secs]} body-params
         ongoing-event (db/find-ongoing-event)
         ongoing-prop (db/find-ongoing-proposition)]
@@ -84,3 +86,41 @@
                                :db db})
           (ok {}))
       (method-not-allowed {:message "No ongoing proposition"}))))
+
+(defn- flip-outcome
+  [db {:keys [db/id proposition/result?] :as previous-prop}]
+  (let [user-id->total-payout (->> (db/pull-bet-payout-info
+                                     {:db          db
+                                      :prop-bet-id id
+                                      :attrs       [:db/id :bet/amount :bet/payout :bet/projected-result?
+                                                    {:user/_prop-bets [:user/cash
+                                                                       :db/id
+                                                                       {:user/status [:db/ident]}]}]})
+                                   (filter #(= result? (:bet/projected-result? %)))
+                                   db/user-id->total-pay
+                                   (map (fn [[user-db-id payout-info]]
+                                          {user-db-id (update payout-info :user/total-payout -)}))
+                                   (apply merge))
+        tx-result (d/transact (:conn db/datomic-cloud)
+                              {:tx-data (db/user-cash-txs {:user-id->total-payout user-id->total-payout
+                                                           :flip? true})})]
+    (d/transact (:conn db/datomic-cloud)
+                {:tx-data (db/generate-txs-to-end-proposition {:db          (:db-after tx-result)
+                                                               :flip?       true
+                                                               :proposition previous-prop
+                                                               :result?     (not result?)})})))
+
+(defn flip-prev-prop-outcome
+  [req]
+  (let [db (d/db (:conn db/datomic-cloud))
+        ongoing-event (db/find-ongoing-event db)
+        previous-prop (when ongoing-event
+                        (db/pull-previous-proposition {:db        db
+                                                       :attrs     '[:db/id
+                                                                    :proposition/result?
+                                                                    :proposition/betting-end-time]
+                                                       :event-eid ongoing-event}))]
+    (if previous-prop
+      (do (flip-outcome db previous-prop)
+          (ok {}))
+      (method-not-allowed {:message "No previous proposition to flip."}))))
