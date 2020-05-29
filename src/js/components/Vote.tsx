@@ -212,7 +212,8 @@ export function Vote(props: any) {
                     id="betAmount"
                 />
               </div>
-              <p>{renderCTA()}</p>
+              {/*TODO: remove inline style and pick proper color*/}
+              <p style={{color: "red"}}>{renderCTA()}</p>
               <button
                   className={"button button--make-bet " + (!toggleValid() ? "is-active" : "")}
                   type="button"
