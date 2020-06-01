@@ -6,6 +6,7 @@ let config = {
   entry: {
     app: "./src/js/index.tsx",
     twitchExt: "./src/js/twitch-ext-index.tsx",
+    twitchExtConfig: "./src/js/twitch-ext-config-index.tsx",
   },
   module: {
     rules: [
@@ -61,6 +62,11 @@ let config = {
       filename: "twitch-extension.html",
       template: "resources/html/twitch-extension.html",
       chunks: ["twitchExt"],
+    }),
+    new HtmlWebpackPlugin({
+      filename: "twitch-extension-config.html",
+      template: "resources/html/twitch-extension-config.html",
+      chunks: ["twitchExtConfig"],
     }),
   ]
 };
