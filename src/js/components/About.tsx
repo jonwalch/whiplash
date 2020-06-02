@@ -38,6 +38,7 @@ export function About() {
             <h3>How do I change my password?</h3>
             <p>Login and click your name in the header. It will bring you to your account page.</p>
             <h3>Why can't I bet?</h3>
+            <p>If you're signed up and logged in, make sure your email is verified.</>
             <p>If you're not logged in and you're getting an error when you try to bet, either sign up or disable your adblocker.</p>
             <h3>Why aren't I on the leaderboards?</h3>
             <p>You need to sign up for an account to appear on leaderboards.</p>
