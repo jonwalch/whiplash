@@ -27,8 +27,11 @@
                                     (map (fn [bet]
                                            (-> bet
                                                (assoc :user/name (get-in bet [:user/_prop-bets :user/name]))
+                                               (assoc :user/status (get-in bet [:user/_prop-bets :user/status :db/ident]))
                                                (dissoc :user/_prop-bets)))))]
           (->> transformed-bets
+               (filter #(not= :user.status/unauth
+                              (:user/status %)))
                (group-by :user/name)
                (map (fn [[user bets]]
                       {:user_name user

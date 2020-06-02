@@ -364,7 +364,14 @@
                     :status        "user.status/active"}
              (:body get-verified-user))))))
 
-(deftest all-time-top-ten
+(defn- all-time-top-ten
+  [{:keys [status]}]
+  (let [resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
+    (is (= (:status resp)
+           (or status 200)))
+    (assoc resp :body (common/parse-json-body resp))))
+
+(deftest all-time-top-ten-test
   (testing "only returns 10 users"
     (doseq [x (range 12)]
       (create-user (assoc dummy-user :email (str x "@poops.com") :user_name (str x))))
@@ -1980,7 +1987,8 @@
         {:keys [auth-token] login-resp :response} (login)
         end-event-resp (admin-end-event {:auth-token auth-token})
 
-        event-score-after-end (get-event-leaderboard)]
+        event-score-after-end (get-event-leaderboard)
+        all-time-leaderboard (all-time-top-ten {})]
 
     ;; need auth to hit this endpoint
     (is (= get-body {:message "Access to /user/prop-bet is not authorized"}))
@@ -1999,18 +2007,20 @@
            (:body event-score-before-event-creation)
            (:body event-score-before-prop-creation)))
 
-    (is (= [{:score     0
-             :user_name "queefburglar"}
-            {:score     0
-             :user_name "user-cAcwygPxycxxcPNxcczNgc"}]
-           (:body event-score-before-prop-result)))
+    (testing "unauth user does not appear on current event leaderboard"
+      (is (= [{:score     0
+               :user_name "queefburglar"}]
+             (:body event-score-before-prop-result))))
 
     (is (= [{:score     500
-             :user_name "queefburglar"}
-            {:score     -500
-             :user_name "user-cAcwygPxycxxcPNxcczNgc"}]
+             :user_name "queefburglar"}]
            (:body event-score-before-end)
            (:body event-score-after-end)))
+
+    (testing "unauth user does not appear in all time leaderboard"
+      (is (= [{:cash      1000
+               :user_name "queefburglar"}]
+             (:body all-time-leaderboard))))
 
     ;; notifications
     (is (= 1000 (-> admin-get-user :body :user/cash)))

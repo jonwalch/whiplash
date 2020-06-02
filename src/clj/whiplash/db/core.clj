@@ -240,7 +240,8 @@
                                         [{:bet/_proposition [:bet/amount
                                                              :bet/payout
                                                              :bet/projected-result?
-                                                             {:user/_prop-bets [:user/name]}]}]}])
+                                                             {:user/_prop-bets [:user/name
+                                                                                {:user/status [:db/ident]}]}]}]}])
                 :in $ ?event-id]
        :args  [db event-id]})))
 
@@ -252,7 +253,8 @@
            {:query '[:find ?user-name ?cash
                      :in $
                      :where [?user :user/cash ?cash]
-                     [?user :user/name ?user-name]]
+                     [?user :user/name ?user-name]
+                     (not [?user :user/status :user.status/unauth])]
             :args  [db]})
          (map #(hash-map :user_name (first %)
                          :cash (second %)))

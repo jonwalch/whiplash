@@ -22,7 +22,7 @@ export function About() {
             <p>To place a bet, simply enter the amount you want to bet in the "Bet Amount" box and click one of the two "Bet" buttons to select your projected outcome. You may place as many bets as you want while the proposition is open. You can bet on both sides of the proposition. After placing a bet, it will be displayed on the screen in the “Current Bets” section.</p>
             <p>All players, bets, and winnings will not be deleted. If you're logged in and drop below $100 Whipcash you will receive a small bailout. A user without an account will not receive a bailout.</p>
             <h3>How does Whiplash pick what the current proposition is?</h3>
-            <p>We take live suggestions from the community! Enter your suggestion into the text box below the stream and press Make Suggestion!</p>
+            <p>We take live suggestions from the community! Enter your suggestion into the text box below the video and press Make Suggestion!</p>
             <h3>How are odds and payouts calculated?</h3>
             <p>Odds and payouts update in real-time and are based on <a href="https://en.wikipedia.org/wiki/Parimutuel_betting">parimutuel betting</a>.</p>
             <p>Payouts are rounded down to the nearest whole dollar.</p>
@@ -39,6 +39,8 @@ export function About() {
             <p>Login and click your name in the header. It will bring you to your account page.</p>
             <h3>Why can't I bet?</h3>
             <p>If you're not logged in and you're getting an error when you try to bet, either sign up or disable your adblocker.</p>
+            <h3>Why aren't I on the leaderboards?</h3>
+            <p>You need to sign up for an account to appear on leaderboards.</p>
           </div>
           <div className="article__container">
             <h2>Terms of Service</h2>
