@@ -67,7 +67,7 @@
                                   (add-countdown-seconds ongoing-prop)
                                   {})
                  :previous-prop (if previous-prop previous-prop {})}}
-      {:status 404
+      {:status 204
        :headers {"Access-Control-Allow-Origin" "*"
                  "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
                  "Access-Control-Allow-Methods" "GET"

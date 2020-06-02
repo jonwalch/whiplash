@@ -202,8 +202,11 @@ export function Control(props: any) {
             mode: "same-origin",
             redirect: "error",
         });
-        const resp = await response.json();
-        return resp;
+        if (response.status === 200) {
+            return await response.json()
+        } else {
+            return []
+        }
     };
 
     const dismissSuggestions = async () => {

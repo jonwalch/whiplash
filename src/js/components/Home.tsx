@@ -169,6 +169,7 @@ export function Home(props: any) {
                     <div className="twitch__placeholder">
                         <p className="twitch__subtitle">Last Event Winner: {lastWinner()}</p>
                         <h2 className="twitch__subtitle">Next Event in {displayCountDown()}</h2>
+                        <p>Join our <a href="https://discord.gg/GsG2G9t">Discord</a> and follow us on <a href="https://twitter.com/whiplashgg">Twitter</a>!</p>
                     </div>
                 </div>
             </div>

@@ -54,7 +54,7 @@
       (ok next-event-time)
 
       :else
-      (not-found {}))))
+      (no-content))))
 
 (defn end-current-event
   [{:keys [body-params] :as req}]

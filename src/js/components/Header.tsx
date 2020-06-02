@@ -85,7 +85,9 @@ export function Header() {
         return (
             <>
                 <li className="navigation__item">{loggedInState.userName}</li>
-                <li className="navigation__item"><span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}</li>
+                <li className="navigation__item">
+                    <span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}
+                </li>
                 <li>{renderLoginButton()}</li>
                 <li>{renderSignupButton()}</li>
             </>
@@ -94,8 +96,12 @@ export function Header() {
     } else {
       return (
         <>
-          <li className="navigation__item"><Link to="/account">{loggedInState.userName}</Link></li>
-          <li className="navigation__item"><span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}</li>
+          <li className="navigation__item">
+              <Link to="/account">{loggedInState.userName}</Link>
+          </li>
+          <li className="navigation__item">
+              <span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}
+          </li>
           <li>{renderLogoutButton()}</li>
         </>
       )

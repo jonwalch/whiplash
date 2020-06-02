@@ -17,7 +17,7 @@
       (ok (sort-by :suggestion/submission-time
                    #(compare %2 %1)
                    suggestions))
-      (not-found []))))
+      (no-content))))
 
 (defn dismiss-suggestions
   [{:keys [body-params] :as req}]

@@ -71,8 +71,8 @@
   (let [ga (:value (get cookies "_ga"))]
     (format "user-%s"
             (->> (string/replace ga #"[a-zA-Z]|\." "")
-                     (map #(get fuzz-map %))
-                     (apply str)))))
+                 (map #(get fuzz-map %))
+                 (apply str)))))
 
 (defn create-user
   [{:keys [body-params] :as req}]
@@ -351,7 +351,7 @@
         ongoing-prop (db/find-ongoing-proposition db)]
     (cond
       (nil? ongoing-prop)
-      (not-found {:message "No ongoing prop bet, cannot get bets."})
+      (no-content)
 
       (some? user-id)
       (ok (sort-by :bet/amount

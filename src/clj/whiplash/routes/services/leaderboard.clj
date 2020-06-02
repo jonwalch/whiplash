@@ -42,7 +42,7 @@
                                                    (- payout amount)))
                                                bets))}))
                (sort-by :score #(compare %2 %1)))))
-      (not-found []))))
+      (no-content))))
 
 (defn get-prop-bets
   [{:keys [params] :as req}]
@@ -87,4 +87,4 @@
                                        :odds  odds}})))
                      (apply merge))
                 {})))
-      (not-found {:message "no ongoing prop bet"}))))
+      (no-content))))

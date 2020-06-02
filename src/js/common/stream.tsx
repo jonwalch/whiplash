@@ -9,8 +9,12 @@ export const getEvent = async () => {
         mode: "same-origin",
         redirect: "error",
     });
-    const resp = await response.json();
-    return resp;
+
+    if (response.status === 200) {
+        return await response.json();
+    } else {
+        return {}
+    }
 };
 
 export const getProp = async () => {
@@ -22,6 +26,9 @@ export const getProp = async () => {
         mode: "same-origin",
         redirect: "error",
     });
-    const resp = await response.json();
-    return resp;
+    if (response.status === 200) {
+        return await response.json();
+    } else {
+        return {}
+    }
 };

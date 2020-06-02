@@ -602,7 +602,7 @@
                                              :result true})
 
           end-event-resp (admin-end-event {:auth-token auth-token})
-          get-after-end-resp (get-event {:status 404})]
+          get-after-end-resp (get-event {:status 204})]
 
       (is (string? (:proposition/start-time current-prop)))
       (is (string? (:proposition/betting-end-time current-prop)))
@@ -633,7 +633,7 @@
 
 (deftest success-get-event
   (testing "successfully get nonexistent event, don't need admin"
-    (get-event {:status 404})))
+    (get-event {:status 204})))
 
 (deftest fail-end-event
   (testing "fails because user is not an admin"
@@ -651,7 +651,7 @@
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
 
-        event-score-before-event-creation (get-event-leaderboard {:status 404})
+        event-score-before-event-creation (get-event-leaderboard {:status 204})
 
         title "Dirty Dan's Delirious Dance Party"
         twitch-user "drdisrespect"
@@ -659,7 +659,7 @@
                                                :title      title
                                                :channel-id twitch-user})
 
-        event-score-before-prop-creation (get-event-leaderboard {:status 404})
+        event-score-before-prop-creation (get-event-leaderboard {:status 204})
 
         text "Will Jon wipeout 2+ times this round?"
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
@@ -764,7 +764,7 @@
                     :total 600}}
            (:body current-prop-bets-response)))
 
-    (is (= []
+    (is (= nil
            (:body event-score-before-event-creation)
            (:body event-score-before-prop-creation)))
 
@@ -1290,15 +1290,15 @@
                                :title       "hi"
                                :channel-id "donnie"})
         get-suggestions (admin-get-suggestions {:auth-token auth-token
-                                                :status 404})]
-    (is (= [] (:body get-suggestions)))))
+                                                :status 204})]
+    (is (nil? (:body get-suggestions)))))
 
 (deftest admin-get-empty-suggestion-no-event
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
         get-suggestions (admin-get-suggestions {:auth-token auth-token
-                                                :status 404})]
-    (is (= [] (:body get-suggestions)))))
+                                                :status 204})]
+    (is (nil? (:body get-suggestions)))))
 
 (deftest end-betting-for-proposition
   (let [{:keys [auth-token]} (create-user-and-login
@@ -1396,7 +1396,7 @@
         get-response-body (:body get-event-response)
 
         end-event-resp (admin-end-event {:auth-token auth-token})
-        get-after-end-resp (get-event {:status 404})]
+        get-after-end-resp (get-event {:status 204})]
 
     (is (string? (:event/start-time get-response-body)))
     (is (= #:event{:running?      true
@@ -1458,7 +1458,7 @@
         get-response-body (:body get-event-response)
 
         end-event-resp (admin-end-event {:auth-token auth-token})
-        get-after-end-resp (get-event {:status 404})]
+        get-after-end-resp (get-event {:status 204})]
 
     (is (string? (:event/start-time get-response-body)))
     (is (= #:event{:running?      true
@@ -1755,7 +1755,7 @@
     ;; TODO: change tests so we can move time forward more sanely
     (with-redefs [whiplash.time/now (fn []
                                       (time/days-delta now (* 365 100)))]
-      (get-event {:status 404}))))
+      (get-event {:status 204}))))
 
 (deftest create-next-event-ts
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -1936,7 +1936,7 @@
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
 
-        event-score-before-event-creation (get-event-leaderboard {:status 404})
+        event-score-before-event-creation (get-event-leaderboard {:status 204})
 
         title "Dirty Dan's Delirious Dance Party"
         twitch-user "drdisrespect"
@@ -1944,7 +1944,7 @@
                                                :title      title
                                                :channel-id twitch-user})
 
-        event-score-before-prop-creation (get-event-leaderboard {:status 404})
+        event-score-before-prop-creation (get-event-leaderboard {:status 204})
 
         text "Will Jon wipeout 2+ times this round?"
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
@@ -2003,7 +2003,7 @@
                     :total 500}}
            (:body current-prop-bets-response)))
 
-    (is (= []
+    (is (= nil
            (:body event-score-before-event-creation)
            (:body event-score-before-prop-creation)))
 
