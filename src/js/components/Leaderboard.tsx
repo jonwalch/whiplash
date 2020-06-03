@@ -21,8 +21,9 @@ export function Leaderboard(props:any) {
   useEffect(() => {
     getEventScoreLeaderboard();
     getLeaderboard();
-  }, [loggedInState.cash, props.proposition]);
+  }, [loggedInState.cash]);
 
+  //TODO: do this conditionally if there's an event
   useInterval(() => {
     getEventScoreLeaderboard();
     getLeaderboard();
