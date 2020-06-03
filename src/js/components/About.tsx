@@ -42,6 +42,8 @@ export function About() {
             <p>If you're not logged in and you're getting an error when you try to bet, either sign up or disable your adblocker.</p>
             <h3>Why aren't I on the leaderboards?</h3>
             <p>You need to sign up for an account to appear on leaderboards.</p>
+            <h3>How can I help support Whiplash?</h3>
+            <p>You can tip us <a href="https://streamelements.com/whiplash_gg/tip">here</a>!</p>
           </div>
           <div className="article__container">
             <h2>Terms of Service</h2>
