@@ -62,7 +62,8 @@
        :headers {"Access-Control-Allow-Origin"  "*"
                  "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
                  "Access-Control-Allow-Methods" "GET"
-                 "Cache-Control" "max-age=1"}
+                 "Expires" (http-date-str (seconds-delta 0.5))
+                 #_#_"Cache-Control" "max-age=1"}
        :body    {:current-prop  (if ongoing-prop
                                   (add-countdown-seconds ongoing-prop)
                                   {})
@@ -71,7 +72,8 @@
        :headers {"Access-Control-Allow-Origin" "*"
                  "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
                  "Access-Control-Allow-Methods" "GET"
-                 "Cache-Control" "max-age=1"}
+                 "Expires" (http-date-str (seconds-delta 0.5))
+                 #_#_"Cache-Control" "max-age=1"}
        :body {}})))
 
 (defn end-current-proposition
