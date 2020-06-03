@@ -37,11 +37,6 @@
                                          (time/date-to-zdt betting-end-time)
                                          :seconds)))
 
-;; TODO: remove separate query for event, can do all previous pull in one query instead of 2
-;Access-Control-Allow-Origin : http://localhost:3000
-;Access-Control-Allow-Credentials : true
-;Access-Control-Allow-Methods : GET, POST, OPTIONS
-;Access-Control-Allow-Headers : Origin, Content-Type, Accept
 (defn get-current-proposition
   [req]
   (let [prop-fields-to-pull '[:proposition/start-time
@@ -62,7 +57,7 @@
        :headers {"Access-Control-Allow-Origin"  "*"
                  "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
                  "Access-Control-Allow-Methods" "GET"
-                 "Expires" (http-date-str (seconds-delta 0.5))
+                 "Expires" (time/http-date-str (time/seconds-delta 0.5))
                  #_#_"Cache-Control" "max-age=1"}
        :body    {:current-prop  (if ongoing-prop
                                   (add-countdown-seconds ongoing-prop)
@@ -72,7 +67,7 @@
        :headers {"Access-Control-Allow-Origin" "*"
                  "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
                  "Access-Control-Allow-Methods" "GET"
-                 "Expires" (http-date-str (seconds-delta 0.5))
+                 "Expires" (time/http-date-str (time/seconds-delta 0.5))
                  #_#_"Cache-Control" "max-age=1"}
        :body {}})))
 

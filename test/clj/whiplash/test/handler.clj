@@ -464,12 +464,14 @@
      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
              "Access-Control-Allow-Methods" "GET"
              "Access-Control-Allow-Origin"  "*"
-             "Cache-Control"                "max-age=1"
+             ;"Cache-Control"                "max-age=1"
              "Content-Type"                 "application/json; charset=utf-8"
              "X-Content-Type-Options"       "nosniff"
              "X-Frame-Options"              "SAMEORIGIN"
              "X-XSS-Protection"             "1; mode=block"}
-            (:headers resp)))
+            (dissoc (:headers resp) "Expires")))
+     ;; TODO: assert that it conforms to http date spec and is roughly 500 ms in future
+     (is (contains? (:headers resp) "Expires"))
      (assoc resp :body (common/parse-json-body resp)))))
 
 (deftest options-proposition
