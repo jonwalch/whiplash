@@ -32,7 +32,7 @@ export interface Proposition {
     "proposition/text" : string;
     "proposition/running?" : boolean;
     "proposition/betting-end-time" : string;
-    "proposition/result?" : boolean;
+    "proposition/result" : string;
 }
 
 export const defaultProposition = {
@@ -40,7 +40,7 @@ export const defaultProposition = {
     "proposition/text": "",
     "proposition/running?": false,
     "proposition/betting-end-time" : "",
-    "proposition/result?": false
+    "proposition/result": ""
 };
 
 const defaultBetSecs = 23;
@@ -156,7 +156,7 @@ export function Control(props: any) {
         }
     };
 
-    const endProp = async (result:boolean) => {
+    const endProp = async (result:string) => {
         const response = await fetch(baseUrl + "admin/prop/end", {
             headers: {
                 "Content-Type": "application/json",
@@ -396,7 +396,7 @@ export function Control(props: any) {
                             style={{marginRight: "30px"}}
                             type="button"
                             onClick={() => {
-                                endProp(true)
+                                endProp("true")
                             }}>
                             Proposition outcome: True
                         </button>
@@ -404,9 +404,18 @@ export function Control(props: any) {
                             className="button twitch__button"
                             type="button"
                             onClick={() => {
-                                endProp(false)
+                                endProp("false")
                             }}>
                             Proposition outcome: False
+                        </button>
+                        <button
+                            className="button twitch__button"
+                            style={{background: "red"}}
+                            type="button"
+                            onClick={() => {
+                                endProp("cancel")
+                            }}>
+                            CANCEL PROPOSITION
                         </button>
                     </>
                     }

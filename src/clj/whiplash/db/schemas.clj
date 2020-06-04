@@ -171,6 +171,7 @@
         :db/valueType   :db.type/string
         :db/cardinality :db.cardinality/one}
 
+       ;; TODO: retire
        {:db/doc         "The outcome of the prop bet"
         :db/ident       :proposition/result?
         :db/valueType   :db.type/boolean
@@ -323,8 +324,17 @@
         :db/cardinality :db.cardinality/one}]
 
    :6 [{:db/ident :user.status/unauth}
-       {:db/ident :notification.type/no-bailout}
-       ]})
+       {:db/ident :notification.type/no-bailout}]
+
+   :7 [{:db/ident :notification.type/proposition-cancelled}
+
+       {:db/ident :proposition.result/true}
+       {:db/ident :proposition.result/false}
+       {:db/ident :proposition.result/cancelled}
+       {:db/doc         "The outcome of the prop bet"
+        :db/ident       :proposition/result
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/one}]})
 
 (defn migrations->schema-tx
   []

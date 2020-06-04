@@ -169,7 +169,7 @@
                                (string/lower-case (second lookup))
                                attrs]}))]
     (if (contains? result :user/status)
-      (update result :user/status #(:db/ident %))
+      (update result :user/status :db/ident)
       result)))
 
 (defn pull-unacked-notifications
@@ -183,7 +183,7 @@
                       [(contains? ?types ?atype)]]
              :args  [db id attrs types]})
        (map (fn [notif]
-              (-> notif first (update :notification/type #(:db/ident %)))))))
+              (-> notif first (update :notification/type :db/ident))))))
 
 (defn find-bets
   [db user-name game-id match-id]
@@ -301,7 +301,7 @@
                                 :where [?event :event/running? true]]
                        :args  [db attrs]}))]
     (if (contains? result :event/stream-source)
-      (update result :event/stream-source #(:db/ident %))
+      (update result :event/stream-source :db/ident)
       result)))
 
 (defn pull-next-event-time
@@ -412,7 +412,7 @@
                       :user/status (:user/status (first pbets))}}))
        (apply merge)))
 
-(defn user-cash-txs
+(defn generate-user-cash-txs
   [{:keys [user-id->total-payout flip?]}]
   (->> user-id->total-payout
        (map
@@ -443,6 +443,24 @@
        (apply concat)
        (into [])))
 
+(defn generate-payout-txs
+  [payouts processed-time]
+  (->> payouts
+       (map
+         (fn [{:keys [bet/payout user/db-id db/id] :as p}]
+           (let [tx (-> p
+                        (dissoc :user/cash :user/db-id :bet/amount :bet/projected-result? :user/status)
+                        (assoc :bet/processed-time processed-time))]
+             (if (> payout 0N)
+               [tx
+                {:db/id              db-id
+                 :user/notifications [{:notification/type          :notification.type/payout
+                                       :notification/trigger       id
+                                       :notification/acknowledged? false}]}]
+               [tx]))))
+       (apply concat)
+       (into [])))
+
 (defn generate-txs-to-end-proposition
   [{:keys [proposition result? db flip?]}]
   (let [betting-end-time (:proposition/betting-end-time proposition)
@@ -467,27 +485,15 @@
                   bets)
         user-id->total-payout (user-id->total-pay payouts)
         processed-time (time/to-date)
-        payout-txs (->> payouts
-                        (map
-                          (fn [{:keys [bet/payout user/db-id db/id] :as p}]
-                            (let [tx (-> p
-                                         (dissoc :user/cash :user/db-id :bet/amount :bet/projected-result? :user/status)
-                                         (assoc :bet/processed-time processed-time))]
-                              (if (> payout 0N)
-                                [tx
-                                 {:db/id              db-id
-                                  :user/notifications [{:notification/type          :notification.type/payout
-                                                        :notification/trigger       id
-                                                        :notification/acknowledged? false}]}]
-                                [tx]))))
-                        (apply concat)
-                        (into []))
-        cash-txs (user-cash-txs {:user-id->total-payout user-id->total-payout})]
+        payout-txs (generate-payout-txs payouts processed-time)
+        user-cash-txs (generate-user-cash-txs {:user-id->total-payout user-id->total-payout})]
     (vec
       (concat payout-txs
-              cash-txs
+              user-cash-txs
               [(merge {:db/id                (:db/id proposition)
-                       :proposition/result?  result?}
+                       :proposition/result  (if result?
+                                              :proposition.result/true
+                                              :proposition.result/false)}
                       (when-not flip?
                         {:proposition/running? false
                          :proposition/end-time processed-time})
@@ -498,6 +504,37 @@
   [arg-map]
   (d/transact (:conn datomic-cloud)
               {:tx-data (generate-txs-to-end-proposition arg-map)}))
+
+(defn- generate-txs-to-cancel-proposition
+  [{:keys [db proposition]}]
+  (let [betting-end-time (:proposition/betting-end-time proposition)
+        payouts (->> (pull-bet-payout-info
+                       {:db          db
+                        :prop-bet-id (:db/id proposition)
+                        :attrs       [:db/id :bet/amount
+                                      {:user/_prop-bets [:user/cash
+                                                         :db/id
+                                                         {:user/status [:db/ident]}]}]})
+                     (map (fn [{:keys [bet/amount] :as bet}]
+                            (assoc bet :bet/payout amount))))
+        user-id->total-payout (user-id->total-pay payouts)
+        processed-time (time/to-date)
+        payout-txs (generate-payout-txs payouts processed-time)
+        user-cash-txs (generate-user-cash-txs {:user-id->total-payout user-id->total-payout})]
+    (vec
+      (concat payout-txs
+              user-cash-txs
+              [(merge {:db/id                (:db/id proposition)
+                       :proposition/result   :proposition.result/cancelled
+                       :proposition/running? false
+                       :proposition/end-time processed-time}
+                      (when-not betting-end-time
+                        {:proposition/betting-end-time processed-time}))]))))
+
+(defn cancel-proposition-and-return-cash
+  [arg-map]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data (generate-txs-to-cancel-proposition arg-map)}))
 
 (defn add-user-suggestion-to-event
   [{:keys [text event-eid user-eid]}]

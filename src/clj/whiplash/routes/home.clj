@@ -89,7 +89,7 @@
       [""
        {:post {:summary    "End the current proposition"
                :middleware [middleware/wrap-admin]
-               :parameters {:body {:result boolean?}}
+               :parameters {:body {:result string?}}
                :handler    (fn [req]
                              (proposition/end-current-proposition req))}}]]
      ["/flip-previous"

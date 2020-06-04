@@ -131,6 +131,16 @@ export function Vote(props: any) {
     }
   };
 
+  const renderOutcomeText = (result: string) => {
+    if (result === "proposition.result/true" ) {
+      return "Yes";
+    } else if (result === "proposition.result/false") {
+      return "No";
+    } else {
+      return "Cancelled"
+    }
+  };
+
   const renderPropositionText = () => {
     if (props.proposition["proposition/text"]) {
       return (<p>{props.proposition["proposition/text"]}</p>);
@@ -139,7 +149,7 @@ export function Vote(props: any) {
           <>
             <p>{"Last proposition: " + props.prevProposition["proposition/text"]}</p>
             <p>
-              {"Outcome: " + (props.prevProposition["proposition/result?"] ? "Yes" : "No")}
+              {"Outcome: " + renderOutcomeText(props.prevProposition["proposition/result"])}
             </p>
             <p>Next proposition soon!</p>
           </>

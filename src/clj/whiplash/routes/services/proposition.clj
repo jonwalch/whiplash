@@ -50,43 +50,59 @@
                                                      :attrs prop-fields-to-pull}))
         previous-prop (when ongoing-event
                         (db/pull-previous-proposition {:db        db
-                                                       :attrs     (conj prop-fields-to-pull :proposition/result?)
+                                                       :attrs     (conj prop-fields-to-pull {:proposition/result [:db/ident]})
                                                        :event-eid ongoing-event}))]
     (if (or ongoing-prop previous-prop)
       {:status  200
        :headers {"Access-Control-Allow-Origin"  "*"
                  "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
                  "Access-Control-Allow-Methods" "GET"
-                 "Expires" (time/http-date-str (time/seconds-delta 0.5))
-                 #_#_"Cache-Control" "max-age=1"}
+                 "Expires"                      (time/http-date-str (time/seconds-delta 0.5))}
        :body    {:current-prop  (if ongoing-prop
                                   (add-countdown-seconds ongoing-prop)
                                   {})
-                 :previous-prop (if previous-prop previous-prop {})}}
+                 :previous-prop (if previous-prop
+                                  (update previous-prop :proposition/result :db/ident)
+                                  {})}}
       {:status 204
        :headers {"Access-Control-Allow-Origin" "*"
                  "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
                  "Access-Control-Allow-Methods" "GET"
-                 "Expires" (time/http-date-str (time/seconds-delta 0.5))
-                 #_#_"Cache-Control" "max-age=1"}
+                 "Expires" (time/http-date-str (time/seconds-delta 0.5))}
        :body {}})))
 
 (defn end-current-proposition
   [{:keys [body-params] :as req}]
   (let [{:keys [result]} body-params
-        db (d/db (:conn db/datomic-cloud))]
-    (if-let [prop (db/pull-ongoing-proposition {:db db
-                                                :attrs [:proposition/betting-end-time
-                                                        :db/id]})]
-      (do (db/end-proposition {:result?  result
-                               :proposition prop
-                               :db db})
+        db (d/db (:conn db/datomic-cloud))
+        prop (db/pull-ongoing-proposition {:db db
+                                           :attrs [:proposition/betting-end-time
+                                                   :db/id]})]
+    (cond
+      (not (contains? #{"true" "false" "cancel"} result))
+      (method-not-allowed {:message "Invalid parameter"})
+
+      (and prop (= "cancel" result))
+      (do (db/cancel-proposition-and-return-cash {:proposition prop
+                                                  :db db})
           (ok {}))
+
+      (some? prop)
+      (do (db/end-proposition {:result?     (boolean (Boolean/valueOf result))
+                               :proposition prop
+                               :db          db})
+          (ok {}))
+
+      :else
       (method-not-allowed {:message "No ongoing proposition"}))))
 
 (defn- flip-outcome
-  [db {:keys [db/id proposition/result?] :as previous-prop}]
-  (let [user-id->total-payout (->> (db/pull-bet-payout-info
+  [db {:keys [db/id proposition/result] :as previous-prop}]
+  (assert (or (= (:db/ident result) :proposition.result/true)
+              (= (:db/ident result) :proposition.result/false)))
+  (let [result (:db/ident result)
+        result? (= result :proposition.result/true)
+        user-id->total-payout (->> (db/pull-bet-payout-info
                                      {:db          db
                                       :prop-bet-id id
                                       :attrs       [:db/id :bet/amount :bet/payout :bet/projected-result?
@@ -99,8 +115,8 @@
                                           {user-db-id (update payout-info :user/total-payout -)}))
                                    (apply merge))
         tx-result (d/transact (:conn db/datomic-cloud)
-                              {:tx-data (db/user-cash-txs {:user-id->total-payout user-id->total-payout
-                                                           :flip? true})})]
+                              {:tx-data (db/generate-user-cash-txs {:user-id->total-payout user-id->total-payout
+                                                                    :flip?                 true})})]
     (d/transact (:conn db/datomic-cloud)
                 {:tx-data (db/generate-txs-to-end-proposition {:db          (:db-after tx-result)
                                                                :flip?       true
@@ -114,10 +130,13 @@
         previous-prop (when ongoing-event
                         (db/pull-previous-proposition {:db        db
                                                        :attrs     '[:db/id
-                                                                    :proposition/result?
+                                                                    {:proposition/result [:db/ident]}
                                                                     :proposition/betting-end-time]
-                                                       :event-eid ongoing-event}))]
-    (if previous-prop
+                                                       :event-eid ongoing-event}))
+        prev-result (-> previous-prop :proposition/result :db/ident)
+        result-valid? (or (= :proposition.result/true prev-result)
+                          (= :proposition.result/false prev-result))]
+    (if result-valid?
       (do (flip-outcome db previous-prop)
           (ok {}))
-      (method-not-allowed {:message "No previous proposition to flip."}))))
+      (method-not-allowed {:message "Cannot flip prev prop. Either there isnt one or it was cancelled"}))))

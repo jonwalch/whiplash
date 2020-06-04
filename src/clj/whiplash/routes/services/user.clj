@@ -136,7 +136,7 @@
                                               {:notification/trigger [:bet/payout
                                                                       {:bet/proposition [:db/id
                                                                                          :proposition/text
-                                                                                         :proposition/result?]}]}]
+                                                                                         {:proposition/result [:db/ident]}]}]}]
                          :notification/types #{:notification.type/bailout
                                                :notification.type/payout
                                                :notification.type/no-bailout}})
@@ -155,14 +155,14 @@
              (fn [{:keys [notification/type] :as munged-notif}]
                (if (or (= :notification.type/bailout type)
                        (= :notification.type/no-bailout type))
-                 (dissoc munged-notif :proposition/text :bet/payout :proposition/result?)
+                 (dissoc munged-notif :proposition/text :bet/payout :proposition/result)
                  munged-notif))
              ;; munge db results
              (fn [{:keys [notification/trigger] :as notif}]
                (-> notif
                    (assoc :bet/payout (:bet/payout trigger)
                           :proposition/text (get-in trigger [:bet/proposition :proposition/text])
-                          :proposition/result? (get-in trigger [:bet/proposition :proposition/result?])
+                          :proposition/result (get-in trigger [:bet/proposition :proposition/result :db/ident])
                           :proposition/db-id (get-in trigger [:bet/proposition :db/id]))
                    (dissoc :notification/trigger :db/id)))))
          (group-by :proposition/db-id)

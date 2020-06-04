@@ -601,7 +601,7 @@
                                                 :status 405})
 
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result true})
+                                             :result "true"})
 
           end-event-resp (admin-end-event {:auth-token auth-token})
           get-after-end-resp (get-event {:status 204})]
@@ -713,7 +713,7 @@
         ;;admin end prop bet
         {:keys [auth-token] login-resp :response} (login)
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result     true})
+                                           :result     "true"})
 
         event-score-before-end (get-event-leaderboard)
 
@@ -799,7 +799,7 @@
     ;; 2 payouts for the same proposition coalesced into one notification
     (is (= [{:bet/payout          500
              :notification/type   "notification.type/payout"
-             :proposition/result? true
+             :proposition/result "proposition.result/true"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}]
            (-> user2-get-user :body :user/notifications)))
     (is (= []
@@ -808,13 +808,14 @@
     (is (= 1000 (-> user3-get-user :body :user/cash)))
     (is (= [{:bet/payout          1000
              :notification/type   "notification.type/payout"
-             :proposition/result? true
+             :proposition/result "proposition.result/true"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}]
            (-> user3-get-user :body :user/notifications)))
     (is (= []
            (-> user3-get-user-notifs-acked :body :user/notifications)))))
 
 ;;TODO test for no previous outcome to flip
+;;TODO test for previous prop cancelled, so cant flip it
 (deftest flip-proposition-outcome
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
@@ -871,7 +872,7 @@
         ;;admin end prop bet
         {:keys [auth-token] login-resp :response} (login)
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result     true})
+                                           :result     "true"})
 
         event-score-before-flip (get-event-leaderboard)
 
@@ -928,14 +929,14 @@
     (is (= 800 (-> admin-get-user :body :user/cash)))
     (is (= [{:bet/payout          700
              :notification/type   "notification.type/payout"
-             :proposition/result? false
+             :proposition/result "proposition.result/false"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}]
            (-> admin-get-user :body :user/notifications)))
 
     (is (= 525 (-> user2-get-user :body :user/cash)))
     (is (= [{:bet/payout          525
              :notification/type   "notification.type/payout"
-             :proposition/result? false
+             :proposition/result "proposition.result/false"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}
             #:notification{:type "notification.type/bailout"}]
            (-> user2-get-user :body :user/notifications)))
@@ -943,7 +944,7 @@
     (is (= 175 (-> user3-get-user :body :user/cash)))
     (is (= [{:bet/payout          175
              :notification/type   "notification.type/payout"
-             :proposition/result? false
+             :proposition/result "proposition.result/false"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}
             #:notification{:type "notification.type/bailout"}]
            (-> user3-get-user :body :user/notifications)))))
@@ -983,7 +984,7 @@
         ;;admin end prop bet
         {:keys [auth-token] login-resp :response} (login)
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result     true})
+                                           :result     "true"})
 
         {:keys [auth-token] login-resp :response} (login dummy-user-2)
         user2-get-user-before-flip (get-user {:auth-token auth-token})
@@ -1029,10 +1030,10 @@
 
     ;; notifications
     (is (= 700 (-> admin-get-user-before-flip :body :user/cash)))
-    (is (= [{:bet/payout          700
-             :notification/type   "notification.type/payout"
-             :proposition/result? true
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+    (is (= [{:bet/payout         700
+             :notification/type  "notification.type/payout"
+             :proposition/result "proposition.result/true"
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> admin-get-user-before-flip :body :user/notifications)))
 
     (is (= 100 (-> admin-get-user-after-flip :body :user/cash)))
@@ -1046,9 +1047,133 @@
     (is (= 1000 (-> user2-get-user-after-flip :body :user/cash)))
     (is (= [{:bet/payout          700
              :notification/type   "notification.type/payout"
-             :proposition/result? false
+             :proposition/result "proposition.result/false"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}]
            (-> user2-get-user-after-flip :body :user/notifications)))))
+
+(deftest cancel-proposition
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title      title
+                                               :channel-id twitch-user})
+
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       text})
+
+        ;; have admin bet for notifications
+        _ (user-place-prop-bet {:auth-token       auth-token
+                                :projected-result false
+                                :bet-amount       400})
+
+        _ (create-user dummy-user-2)
+        _ (create-user dummy-user-3)
+
+        ;; user 2 bets
+        {:keys [auth-token] login-resp :response} (login dummy-user-2)
+
+        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
+                                                       :projected-result true
+                                                       :bet-amount       100})
+
+        user-place-prop-bet-respa (user-place-prop-bet {:auth-token       auth-token
+                                                        :projected-result true
+                                                        :bet-amount       100})
+
+        user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       auth-token
+                                                        :projected-result false
+                                                        :bet-amount       300})
+
+        user-get-prop-bet-resp (user-get-prop-bets {:auth-token auth-token})
+
+        ;; user 3 bets
+        {:keys [auth-token] login-resp :response} (login dummy-user-3)
+
+        user-place-prop-bet-resp3 (user-place-prop-bet {:auth-token       auth-token
+                                                        :projected-result false
+                                                        :bet-amount       100})
+        user-place-prop-bet-resp4 (user-place-prop-bet {:auth-token       auth-token
+                                                        :projected-result true
+                                                        :bet-amount       400})
+
+        user-get-prop-bet-resp2 (user-get-prop-bets {:auth-token auth-token})
+
+        current-prop-bets-response (get-prop-bets-leaderboard)
+
+        ;;admin end prop bet
+        {:keys [auth-token] login-resp :response} (login)
+        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                           :result     "cancel"})
+
+        event-score-before-cancel (get-event-leaderboard)
+
+        {:keys [auth-token] login-resp :response} (login)
+        ;; flip proposition outcome
+        flip-outcome-resp (admin-flip-prop-outcome {:auth-token auth-token
+                                                    :status 405})
+        event-score-after-cancel (get-event-leaderboard)
+
+        admin-get-user (get-user {:auth-token auth-token})
+
+        {:keys [auth-token] login-resp :response} (login dummy-user-2)
+        user2-get-user (get-user {:auth-token auth-token})
+
+        {:keys [auth-token] login-resp :response} (login dummy-user-3)
+        user3-get-user (get-user {:auth-token auth-token})
+
+        {:keys [auth-token] login-resp :response} (login)
+        ;;admin end event
+        end-event-resp (admin-end-event {:auth-token auth-token})]
+
+    (is (= {:false {:bets  [{:bet/amount 400
+                             :user/name  "queefburglar"}
+                            {:bet/amount 300
+                             :user/name  "donniedarko"}
+                            {:bet/amount 100
+                             :user/name  "kittycuddler420"}]
+                    :odds  1.75
+                    :total 800}
+            :true  {:bets  [{:bet/amount 400
+                             :user/name  "kittycuddler420"}
+                            {:bet/amount 200
+                             :user/name  "donniedarko"}]
+                    :odds  2.333333333333333
+                    :total 600}}
+           (:body current-prop-bets-response)))
+
+    (is (every? (fn [entry]
+                  (= 0 (:score entry)))
+                (:body event-score-before-cancel)))
+
+    (is (every? (fn [entry]
+                  (= 0 (:score entry)))
+                (:body event-score-after-cancel)))
+
+    ;; notifications
+    (is (= 500 (-> admin-get-user :body :user/cash)))
+    (is (= [{:bet/payout          400
+             :notification/type   "notification.type/payout"
+             :proposition/result "proposition.result/cancelled"
+             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+           (-> admin-get-user :body :user/notifications)))
+
+    (is (= 500 (-> user2-get-user :body :user/cash)))
+    (is (= [{:bet/payout          500
+             :notification/type   "notification.type/payout"
+             :proposition/result "proposition.result/cancelled"
+             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+           (-> user2-get-user :body :user/notifications)))
+
+    (is (= 500 (-> user3-get-user :body :user/cash)))
+    (is (= [{:bet/payout          500
+             :notification/type   "notification.type/payout"
+             :proposition/result "proposition.result/cancelled"
+             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+           (-> user3-get-user :body :user/notifications)))))
 
 (deftest cant-bet-email-not-verified
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -1100,7 +1225,7 @@
           ;;admin end prop bet
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result false})
+                                             :result "false"})
 
           ;;admin bet and reset to 100
           _ (is (= 100 (-> (get-user {:auth-token auth-token}) :body :user/cash)))
@@ -1153,7 +1278,7 @@
           ;;admin end prop bet
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result false})
+                                             :result "false"})
 
           _ (is (= 500 (-> (get-user {:auth-token auth-token}) :body :user/cash)))
 
@@ -1329,9 +1454,9 @@
                             :bet-amount       200
                             :status           405}))
     (admin-end-prop {:auth-token auth-token
-                     :result true})
+                     :result "true"})
     (admin-end-event {:auth-token auth-token
-                     :result true})))
+                      :result true})))
 
 (deftest get-previous-prop
   (let [{:keys [auth-token]} (create-user-and-login
@@ -1353,7 +1478,7 @@
            (-> (get-prop) :body :current-prop :proposition/text)))
 
     (admin-end-prop {:auth-token auth-token
-                     :result true})
+                     :result "true"})
     (admin-create-prop {:auth-token auth-token
                         :text "foo"
                         :end-betting-secs end-betting-secs})
@@ -1361,19 +1486,19 @@
     ;; asserts about current prop and previous prop
     (is (= text
            (-> (get-prop) :body :previous-prop :proposition/text)))
-    (is (= true
-           (-> (get-prop) :body :previous-prop :proposition/result?)))
+    (is (= "proposition.result/true"
+           (-> (get-prop) :body :previous-prop :proposition/result)))
     (is (= "foo"
            (-> (get-prop) :body :current-prop :proposition/text)))
 
     (admin-end-prop {:auth-token auth-token
-                     :result false})
+                     :result "false"})
 
     ;;asserts about prev prop but no current prop
     (is (= "foo"
            (-> (get-prop) :body :previous-prop :proposition/text)))
-    (is (= false
-           (-> (get-prop) :body :previous-prop :proposition/result?)))
+    (is (= "proposition.result/false"
+           (-> (get-prop) :body :previous-prop :proposition/result)))
     (is (empty? (-> (get-prop) :body :current-prop)))
 
     (admin-end-event {:auth-token auth-token
@@ -1535,7 +1660,7 @@
           ;;admin end prop bet
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result true})
+                                             :result "true"})
           all-time-leaderboard-first-prop ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))
 
           event-score-first-prop (get-event-leaderboard)
@@ -1562,7 +1687,7 @@
           ;; login as admin
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result false})
+                                             :result "false"})
 
           event-score-second-prop (get-event-leaderboard)
           ;;admin end event
@@ -1650,7 +1775,7 @@
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
                                                  :text text})
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result false})
+                                           :result "false"})
         end-event-resp (admin-end-event {:auth-token auth-token})]))
 
 (deftest weird-notifications-behavior-test
@@ -1672,7 +1797,7 @@
                               :bet-amount 500})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result false})
+                                           :result "false"})
 
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
                                                  :text "second one"})
@@ -1686,7 +1811,7 @@
                                    :bet-amount 50})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result true})
+                                           :result "true"})
 
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
                                                  :text "third one"})
@@ -1700,7 +1825,7 @@
                                    :bet-amount 30})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result true})
+                                           :result "true"})
 
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
                                                  :text "fourth one"})
@@ -1710,7 +1835,7 @@
                                    :bet-amount 10})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result false})
+                                           :result "false"})
 
         ;; normally the get would happen on a regular interval between these requests
         get-user-resp (get-user {:auth-token auth-token})]
@@ -1718,13 +1843,13 @@
     ;; only one bailout notification, winnings coalesced
 
     (is (= [#:notification{:type "notification.type/bailout"}
-            {:bet/payout          60
-             :notification/type   "notification.type/payout"
-             :proposition/result? true
-             :proposition/text    "third one"}
+            {:bet/payout         60
+             :notification/type  "notification.type/payout"
+             :proposition/result "proposition.result/true"
+             :proposition/text   "third one"}
             {:bet/payout          100
              :notification/type   "notification.type/payout"
-             :proposition/result? true
+             :proposition/result "proposition.result/true"
              :proposition/text    "second one"}]
            (->> (-> get-user-resp :body :user/notifications)
                 (sort-by :bet/payout)
@@ -1975,7 +2100,7 @@
         ;;admin end prop bet
         {:keys [auth-token] login-resp :response} (login)
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result     false})
+                                           :result     "false"})
 
         event-score-before-end (get-event-leaderboard)
 
@@ -2026,10 +2151,10 @@
 
     ;; notifications
     (is (= 1000 (-> admin-get-user :body :user/cash)))
-    (is (= [{:bet/payout          1000
-             :notification/type   "notification.type/payout"
-             :proposition/result? false
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+    (is (= [{:bet/payout         1000
+             :notification/type  "notification.type/payout"
+             :proposition/result "proposition.result/false"
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> admin-get-user :body :user/notifications)))
     (is (= []
            (-> admin-get-user-notifs-acked :body :user/notifications)))

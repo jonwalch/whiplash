@@ -125,10 +125,23 @@ export function Header() {
                             </li>
                         );
                     }
-                    else if (notif["notification/type"] == "notification.type/payout") {
+                    else if ((notif["notification/type"] == "notification.type/payout") &&
+                            !(notif["proposition/result"] == "proposition.result/cancelled")) {
                         const text = "You won $" + notif["bet/payout"] +
-                            " Whipcash because you bet " + (notif["proposition/result?"] ? "Yes" : "No") +
+                            " Whipcash because you bet " +
+                            (notif["proposition/result"] === "proposition.result/true" ? "Yes" : "No") +
                             " on '" + notif["proposition/text"] + "'!";
+                        return (
+                            <li className="navigation__item navigation__fade-in">
+                                <span className="navigation__highlight">{text}</span>
+                            </li>
+                        );
+                    }
+                    else if ((notif["notification/type"] == "notification.type/payout") &&
+                            (notif["proposition/result"] == "proposition.result/cancelled")) {
+                        const text = "You got your $" + notif["bet/payout"] +
+                            " Whipcash back because you bet on '" +
+                            notif["proposition/text"] + "' and it was cancelled.";
                         return (
                             <li className="navigation__item navigation__fade-in">
                                 <span className="navigation__highlight">{text}</span>
