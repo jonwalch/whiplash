@@ -38,7 +38,7 @@
                  [clj-http "3.10.1"]
                  [danlentz/clj-uuid "0.1.9"]
                  [buddy/buddy-hashers "1.4.0"]
-                 [org.clojure/core.async "1.1.587"]
+                 ;;[org.clojure/core.async "1.1.587"]
                  [com.draines/postal "2.0.3"]
                  ]
 
