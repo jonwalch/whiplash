@@ -13,8 +13,7 @@
     [whiplash.middleware.exception :as exception]
     [reitit.ring.middleware.parameters :as parameters]
     [whiplash.middleware.formats :as formats]
-    [reitit.coercion.spec :as spec-coercion]
-    [clojure.tools.logging :as log]))
+    [reitit.coercion.spec :as spec-coercion]))
 
 (defn home-page [request]
   (layout/render request "index.html")
@@ -50,8 +49,6 @@
    ["/about" {:get home-page}]
    ["/account" {:get home-page}]
    ["/control" {:get home-page}]
-   ;["/ext" {:get home-page}]
-   ;["/twitch-extension.html" {:get twitch-extension-page}]
 
    ;; admin only endpoints
    ["/admin"

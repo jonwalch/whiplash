@@ -153,7 +153,6 @@
         (buddy-middleware/wrap-authorization backend))))
 
 ;; These are applied in reverse order, how intuitive
-;; IF YOU CHANGE THIS MIRROR IT IN test-wrap-base
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
       wrap-auth

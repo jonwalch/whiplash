@@ -40,6 +40,7 @@
                  [buddy/buddy-hashers "1.4.0"]
                  ;;[org.clojure/core.async "1.1.587"]
                  [com.draines/postal "2.0.3"]
+                 [raven-clj "1.6.0"]
                  ]
 
   :min-lein-version "2.0.0"

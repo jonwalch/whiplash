@@ -1,6 +1,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const SentryWebpackPlugin = require('@sentry/webpack-plugin');
 
 let config = {
   entry: {
@@ -81,6 +82,14 @@ module.exports = (env, argv) => {
 
   else {
     config.mode = 'production'
+    config.plugins.push(
+        new SentryWebpackPlugin({
+          include: '.',
+          ignoreFile: '.sentrycliignore',
+          ignore: ['node_modules', 'webpack.config.js'],
+          configFile: 'sentry.properties'
+        })
+    )
   }
 
   return config;
