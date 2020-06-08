@@ -75,6 +75,8 @@ export function Leaderboard(props:any) {
     if (response.status == 200) {
       const resp = await response.json();
       props.setEventScoreLeaderboard(resp);
+    } else if (response.status === 204){
+      props.setEventScoreLeaderboard([]);
     }
   };
 
