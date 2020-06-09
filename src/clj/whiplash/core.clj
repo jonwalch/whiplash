@@ -4,13 +4,11 @@
     [whiplash.nrepl :as nrepl]
     [luminus.http-server :as http]
     [whiplash.config :refer [env]]
-    ;[whiplash.guess-processor :refer [guess-processor]]
-    ;[whiplash.routes.services.stream :refer [cached-streams]]
     [clojure.tools.cli :refer [parse-opts]]
     [whiplash.db.core :refer [datomic-cloud]]
-    ;[whiplash.integrations.abios :refer [cached-token]]
     [clojure.tools.logging :as log]
-    [mount.core :as mount])
+    [mount.core :as mount]
+    [whiplash.middleware.exception :as ex])
   (:gen-class))
 
 ;; log uncaught exceptions in threads
@@ -19,7 +17,8 @@
     (uncaughtException [_ thread ex]
       (log/error {:what :uncaught-exception
                   :exception ex
-                  :where (str "Uncaught exception on" (.getName thread))}))))
+                  :where (str "Uncaught exception on" (.getName thread))})
+      (ex/report-to-sentry ex))))
 
 (def cli-options
   [["-p" "--port PORT" "Port number"
