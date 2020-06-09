@@ -15,7 +15,7 @@
 ;; https://github.com/ComputeSoftware/datomic-client-memdb#caveats                                       ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^:private cloud-config
+(defonce ^:private cloud-config
   {:server-type :cloud
    :region "us-west-2"
    :system "prod-whiplash-datomic"
@@ -91,20 +91,6 @@
   (d/transact conn {:tx-data [{:db/id id
                                :user/password     password}]}))
 
-(defn add-guess-for-user
-  [conn {:keys [db/id game-type match-name game-id team-name team-id match-id bet-amount cash]}]
-  (d/transact conn {:tx-data [[:db/cas id :user/cash cash (bigint (- cash bet-amount))]
-                              {:db/id     id
-                               :user/bets [{:bet/time       (time/to-date)
-                                            :bet/processed? false
-                                            :game/type      game-type
-                                            :game/id        game-id
-                                            :match/name     match-name
-                                            :match/id       match-id
-                                            :team/name      team-name
-                                            :team/id        team-id
-                                            :bet/amount     (bigint bet-amount)}]}]}))
-
 (defn add-prop-bet-for-user
   [conn {:keys [db/id bet/amount user/cash bet/projected-result? bet/proposition]}]
   (d/transact conn {:tx-data [[:db/cas id :user/cash cash (bigint (- cash amount))]
@@ -113,6 +99,28 @@
                                                  :bet/projected-result? projected-result?
                                                  :bet/time       (time/to-date)
                                                  :bet/amount     (bigint amount)}]}]}))
+
+(defn find-existing-prop-bet
+  [{:keys [db user-id prop-id bet/projected-result?]}]
+  ;; Consider finding all bets from prop instead of all bets from user and then filtering by prop
+  (ffirst
+    (d/q {:query '[:find (pull ?prop-bets [:db/id :bet/amount])
+                   :in $ ?user-id ?prop-id ?projected-result?
+                   :where [?user-id :user/prop-bets ?prop-bets]
+                   [?prop-bets :bet/proposition ?prop-id]
+                   [?prop-bets :bet/projected-result? ?projected-result?]]
+          :args  [db user-id prop-id projected-result?]})))
+
+(defn update-prop-bet-amount
+  [{:keys [db/id bet/amount]} cash user-id additional-amount]
+  ;; TODO: consider making bet times a vector to explicitly track these, we can just use datomics time function
+  ;; to get them if we care for now
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [[:db/cas user-id :user/cash cash (bigint (- cash additional-amount))]
+                         {:db/id      id
+                          :bet/time   (time/to-date)
+                          :bet/amount (+ (bigint amount)
+                                         (bigint additional-amount))}]}))
 
 (defn verify-email
   [conn {:keys [db/id]}]
@@ -400,17 +408,30 @@
               {:tx-data [{:db/id                        proposition-eid
                           :proposition/betting-end-time (time/to-date)}]}))
 
+(defonce ^:private winning-constant 10)
+
+(defn- calculate-payout-with-bonus
+  [payout result? side->payout-bonus-map]
+  (if (< 0 payout)
+    (+ payout
+       (or (get side->payout-bonus-map result?)
+           0))
+    payout))
+
 (defn user-id->total-pay
-  [payouts]
-  (->> payouts
-       (group-by :user/db-id)
-       (map (fn [[db-id pbets]]
-              {db-id {:user/total-payout (apply +
-                                                0
-                                                (keep :bet/payout pbets))
-                      :user/cash (:user/cash (first pbets))
-                      :user/status (:user/status (first pbets))}}))
-       (apply merge)))
+  ([payouts]
+   (user-id->total-pay payouts nil {}))
+  ([payouts result? side->payout-bonus-map]
+   (->> payouts
+        (group-by :user/db-id)
+        (map (fn [[db-id pbets]]
+               (let [payout (apply + 0 (keep :bet/payout pbets))]
+                 {db-id {:user/total-payout (calculate-payout-with-bonus payout
+                                                                         result?
+                                                                         side->payout-bonus-map)
+                         :user/cash         (:user/cash (first pbets))
+                         :user/status       (:user/status (first pbets))}})))
+        (apply merge))))
 
 (defn generate-user-cash-txs
   [{:keys [user-id->total-payout flip?]}]
@@ -444,22 +465,39 @@
        (into [])))
 
 (defn generate-payout-txs
-  [payouts processed-time]
-  (->> payouts
-       (map
-         (fn [{:keys [bet/payout user/db-id db/id] :as p}]
-           (let [tx (-> p
-                        (dissoc :user/cash :user/db-id :bet/amount :bet/projected-result? :user/status)
-                        (assoc :bet/processed-time processed-time))]
-             (if (> payout 0N)
-               [tx
-                {:db/id              db-id
-                 :user/notifications [{:notification/type          :notification.type/payout
-                                       :notification/trigger       id
-                                       :notification/acknowledged? false}]}]
-               [tx]))))
-       (apply concat)
-       (into [])))
+  ([payouts processed-time]
+   (generate-payout-txs payouts processed-time {}))
+  ([payouts processed-time side->payout-bonus-map]
+   (->> payouts
+        (map
+          (fn [{:keys [user/db-id db/id] :as p}]
+            (let [tx (-> p
+                         (assoc :bet/processed-time processed-time)
+                         (update :bet/payout #(calculate-payout-with-bonus %
+                                                                           (:bet/projected-result? p)
+                                                                           side->payout-bonus-map))
+                         (dissoc :user/cash :user/db-id :bet/amount :bet/projected-result? :user/status))]
+              (if (> (:bet/payout tx) 0N)
+                [tx
+                 {:db/id              db-id
+                  :user/notifications [{:notification/type          :notification.type/payout
+                                        :notification/trigger       id
+                                        :notification/acknowledged? false}]}]
+                [tx]))))
+        (apply concat)
+        (into []))))
+
+(defn side->payout-bonus
+  "Calculate how much additional whipcash the winning side gets.
+  Additional cash (AC) = (constant * number of betters on that side)"
+  [bets result?]
+  (->> bets
+       (group-by :bet/projected-result?)
+       (map (fn [[projected-result? bets]]
+              {projected-result? (if (= result? projected-result?)
+                                   (* winning-constant (count bets))
+                                   0)}))
+       (apply merge)))
 
 (defn generate-txs-to-end-proposition
   [{:keys [proposition result? db flip?]}]
@@ -470,6 +508,7 @@
                                             {:user/_prop-bets [:user/cash
                                                                :db/id
                                                                {:user/status [:db/ident]}]}]})
+        side->payout-bonus-map (side->payout-bonus bets result?)
         payouts (map
                   (fn [{:keys [bet/projected-result? bet/amount] :as bet}]
                     (assoc bet
@@ -483,9 +522,9 @@
                              :team/winner result?})
                           0N)))
                   bets)
-        user-id->total-payout (user-id->total-pay payouts)
+        user-id->total-payout (user-id->total-pay payouts result? side->payout-bonus-map)
         processed-time (time/to-date)
-        payout-txs (generate-payout-txs payouts processed-time)
+        payout-txs (generate-payout-txs payouts processed-time side->payout-bonus-map)
         user-cash-txs (generate-user-cash-txs {:user-id->total-payout user-id->total-payout})]
     (vec
       (concat payout-txs

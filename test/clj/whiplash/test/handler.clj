@@ -736,9 +736,7 @@
 
     (is (= [#:bet{:amount            300
                   :projected-result? false}
-            #:bet{:amount            100
-                  :projected-result? true}
-            #:bet{:amount            100
+            #:bet{:amount            200
                   :projected-result? true}]
            (mapv #(dissoc % :bet/time) get-body)))
 
@@ -778,9 +776,9 @@
              :user_name "kittycuddler420"}]
            (:body event-score-before-prop-result)))
 
-    (is (= [{:score     500
+    (is (= [{:score     520
              :user_name "kittycuddler420"}
-            {:score     0
+            {:score     20
              :user_name "donniedarko"}
             {:score     -500
              :user_name "queefburglar"}]
@@ -795,9 +793,9 @@
     (is (= []
            (-> admin-get-user-notifs-acked :body :user/notifications)))
 
-    (is (= 500 (-> user2-get-user :body :user/cash)))
+    (is (= 520 (-> user2-get-user :body :user/cash)))
     ;; 2 payouts for the same proposition coalesced into one notification
-    (is (= [{:bet/payout          500
+    (is (= [{:bet/payout          520
              :notification/type   "notification.type/payout"
              :proposition/result "proposition.result/true"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}]
@@ -805,8 +803,8 @@
     (is (= []
            (-> user2-get-user-notifs-acked :body :user/notifications)))
 
-    (is (= 1000 (-> user3-get-user :body :user/cash)))
-    (is (= [{:bet/payout          1000
+    (is (= 1020 (-> user3-get-user :body :user/cash)))
+    (is (= [{:bet/payout          1020
              :notification/type   "notification.type/payout"
              :proposition/result "proposition.result/true"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}]
@@ -909,40 +907,40 @@
                     :total 600}}
            (:body current-prop-bets-response)))
 
-    (is (= [{:score     433
+    (is (= [{:score     453
              :user_name "kittycuddler420"}
-            {:score     -34
+            {:score     -14
              :user_name "donniedarko"}
             {:score     -400
              :user_name "queefburglar"}]
            (:body event-score-before-flip)))
 
-    (is (= [{:score     300
+    (is (= [{:score     330
              :user_name "queefburglar"}
-            {:score     25
+            {:score     55
              :user_name "donniedarko"}
-            {:score     -325
+            {:score     -295
              :user_name "kittycuddler420"}]
            (:body event-score-after-flip)))
 
     ;; notifications
-    (is (= 800 (-> admin-get-user :body :user/cash)))
-    (is (= [{:bet/payout          700
+    (is (= 830 (-> admin-get-user :body :user/cash)))
+    (is (= [{:bet/payout          730
              :notification/type   "notification.type/payout"
              :proposition/result "proposition.result/false"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}]
            (-> admin-get-user :body :user/notifications)))
 
-    (is (= 525 (-> user2-get-user :body :user/cash)))
-    (is (= [{:bet/payout          525
+    (is (= 555 (-> user2-get-user :body :user/cash)))
+    (is (= [{:bet/payout          555
              :notification/type   "notification.type/payout"
              :proposition/result "proposition.result/false"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}
             #:notification{:type "notification.type/bailout"}]
            (-> user2-get-user :body :user/notifications)))
 
-    (is (= 175 (-> user3-get-user :body :user/cash)))
-    (is (= [{:bet/payout          175
+    (is (= 205 (-> user3-get-user :body :user/cash)))
+    (is (= [{:bet/payout          205
              :notification/type   "notification.type/payout"
              :proposition/result "proposition.result/false"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}
@@ -1016,21 +1014,21 @@
                     :total 500}}
            (:body current-prop-bets-response)))
 
-    (is (= [{:score     200
+    (is (= [{:score     210
              :user_name "queefburglar"}
             {:score     -200
              :user_name "donniedarko"}]
            (:body event-score-before-flip)))
 
-    (is (= [{:score     500
+    (is (= [{:score     510
              :user_name "donniedarko"}
             {:score     -500
              :user_name "queefburglar"}]
            (:body event-score-after-flip)))
 
     ;; notifications
-    (is (= 700 (-> admin-get-user-before-flip :body :user/cash)))
-    (is (= [{:bet/payout         700
+    (is (= 710 (-> admin-get-user-before-flip :body :user/cash)))
+    (is (= [{:bet/payout         710
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
              :proposition/text   "Will Jon wipeout 2+ times this round?"}]
@@ -1044,8 +1042,8 @@
     (is (= []
            (-> user2-get-user-before-flip :body :user/notifications)))
 
-    (is (= 1000 (-> user2-get-user-after-flip :body :user/cash)))
-    (is (= [{:bet/payout          700
+    (is (= 1010 (-> user2-get-user-after-flip :body :user/cash)))
+    (is (= [{:bet/payout          710
              :notification/type   "notification.type/payout"
              :proposition/result "proposition.result/false"
              :proposition/text    "Will Jon wipeout 2+ times this round?"}]
@@ -1280,7 +1278,7 @@
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
                                              :result "false"})
 
-          _ (is (= 500 (-> (get-user {:auth-token auth-token}) :body :user/cash)))
+          _ (is (= 510 (-> (get-user {:auth-token auth-token}) :body :user/cash)))
 
           ;;admin end event
           {:keys [auth-token] login-resp :response} (login)
@@ -1304,7 +1302,7 @@
                      :total 300}}
              (:body current-prop-bets-response)))
 
-      (is (= [{:score     0
+      (is (= [{:score     10
                :user_name "queefburglar"}]
              (:body event-score-resp))))))
 
@@ -1716,17 +1714,17 @@
                :user_name "kittycuddler420"}]
              (:body event-score-before-prop-result)))
 
-      (is (= [{:score     166
+      (is (= [{:score     186
                :user_name "kittycuddler420"}
-              {:score     -167
+              {:score     -147
                :user_name "donniedarko"}]
              (:body event-score-first-prop)))
 
-      (is (= [{:cash      666
+      (is (= [{:cash      686
                :user_name "kittycuddler420"}
               {:cash      500
                :user_name "queefburglar"}
-              {:cash      333
+              {:cash      353
                :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-first-prop)))
 
@@ -1740,24 +1738,24 @@
                       :total 50}}
              (:body prop-bets-second-response)))
 
-      (is (= [{:score     215
+      (is (= [{:score     245
                :user_name "kittycuddler420"}
-              {:score     -217
+              {:score     -197
                :user_name "donniedarko"}]
              (:body event-score-second-prop)))
 
-      (is (= [{:cash      715
+      (is (= [{:cash      745
                :user_name "kittycuddler420"}
               {:cash      500
                :user_name "queefburglar"}
-              {:cash      283
+              {:cash      303
                :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-end)))
 
       ;; Pulling from previous event since current event is over
-      (is (= [{:score     215
+      (is (= [{:score     245
                :user_name "kittycuddler420"}
-              {:score     -217
+              {:score     -197
                :user_name "donniedarko"}]
              (:body (get-event-leaderboard)))))))
 
@@ -1843,11 +1841,11 @@
     ;; only one bailout notification, winnings coalesced
 
     (is (= [#:notification{:type "notification.type/bailout"}
-            {:bet/payout         60
+            {:bet/payout         70
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
              :proposition/text   "third one"}
-            {:bet/payout          100
+            {:bet/payout          110
              :notification/type   "notification.type/payout"
              :proposition/result "proposition.result/true"
              :proposition/text    "second one"}]
@@ -2139,19 +2137,19 @@
                :user_name "queefburglar"}]
              (:body event-score-before-prop-result))))
 
-    (is (= [{:score     500
+    (is (= [{:score     510
              :user_name "queefburglar"}]
            (:body event-score-before-end)
            (:body event-score-after-end)))
 
     (testing "unauth user does not appear in all time leaderboard"
-      (is (= [{:cash      1000
+      (is (= [{:cash      1010
                :user_name "queefburglar"}]
              (:body all-time-leaderboard))))
 
     ;; notifications
-    (is (= 1000 (-> admin-get-user :body :user/cash)))
-    (is (= [{:bet/payout         1000
+    (is (= 1010 (-> admin-get-user :body :user/cash)))
+    (is (= [{:bet/payout         1010
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/false"
              :proposition/text   "Will Jon wipeout 2+ times this round?"}]

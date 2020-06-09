@@ -4,7 +4,7 @@
             [clojure.tools.logging :as log]))
 
 ;;TODO move secrets to KMS
-(def aws-ses-config
+(defonce aws-ses-config
   {:user "AKIAUJ3FEDZ5XK6Z7THM"
    :pass "BLF7jQ5tdWxsCTapjL/RZI6h25Ki2UNIqBhI4Mw2bnWX"
    :host "email-smtp.us-west-2.amazonaws.com"

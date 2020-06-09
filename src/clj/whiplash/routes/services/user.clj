@@ -149,6 +149,7 @@
                                                 :notification/acknowledged? true
                                                 :notification/acknowledged-time ack-time})
                                              notifications)}))]
+    ;; TODO: refactor, no longer need to coalesce payout notifications
     (->> notifications
          (map
            (comp
@@ -183,7 +184,6 @@
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        ;; TODO: error handling
         user-entity (db/pull-user {:user/name (or user (unauthed-username req))
                                    :db        db
                                    :attrs     [{:user/status [:db/ident]}
@@ -290,16 +290,26 @@
       (method-not-allowed {:message "Betting for proposition has ended."})
 
       (some? id)
-      (if (try
-            (db/add-prop-bet-for-user (:conn db/datomic-cloud)
-                                      {:db/id                 id
-                                       :bet/projected-result? projected_result
-                                       :bet/amount            bet_amount
-                                       :user/cash             cash
-                                       :bet/proposition       (:db/id ongoing-prop)})
-            (catch Throwable t (log/info "cas failed for adding prop bet: " t)))
-        (ok {})
-        (conflict {:message "CAS failed"}))
+      (let [existing-bet (db/find-existing-prop-bet {:db                    db
+                                                     :user-id               id
+                                                     :prop-id               (:db/id ongoing-prop)
+                                                     :bet/projected-result? projected_result})]
+        (if existing-bet
+          (if (try
+                (db/update-prop-bet-amount existing-bet cash id bet_amount)
+                (catch Throwable t (log/error "cas failed for adding prop bet: " t)))
+            (ok {})
+            (conflict {:message "CAS failed"}))
+          (if (try
+                (db/add-prop-bet-for-user (:conn db/datomic-cloud)
+                                          {:db/id                 id
+                                           :bet/projected-result? projected_result
+                                           :bet/amount            bet_amount
+                                           :user/cash             cash
+                                           :bet/proposition       (:db/id ongoing-prop)})
+                (catch Throwable t (log/error "cas failed for adding prop bet: " t)))
+            (ok {})
+            (conflict {:message "CAS failed"}))))
 
       :else
       (not-found {:message "User not found."}))))

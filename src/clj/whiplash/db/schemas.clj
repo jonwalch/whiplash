@@ -1,6 +1,6 @@
 (ns whiplash.db.schemas)
 
-(def ^:private schemas
+(defonce ^:private schemas
   ;; Game betting MVP
   {:0 [{:db/doc         "User first name"
         :db/ident       :user/first-name
