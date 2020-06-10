@@ -24,13 +24,14 @@
 
 (def exception-middleware
   (exception/create-exception-middleware
-   (merge
-    exception/default-handlers
-    {;; log stack-traces for all exceptions
-     ::exception/wrap (fn [handler e request]
-                        (log/error e (.getMessage e))
-                        (report-to-sentry e)
-                        (handler e request))
-     ;; human-optimized validation messages
-     ::coercion/request-coercion (coercion-error-handler 400)
-     ::coercion/response-coercion (coercion-error-handler 500)})))
+    (merge
+      exception/default-handlers
+      {;; log stack-traces for all exceptions
+       ::exception/wrap             (fn [handler e request]
+                                      (log/error e (.getMessage e))
+
+                                      (report-to-sentry e)
+                                      (handler e request))
+       ;; human-optimized validation messages
+       ::coercion/request-coercion  (coercion-error-handler 400)
+       ::coercion/response-coercion (coercion-error-handler 500)})))

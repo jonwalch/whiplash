@@ -121,9 +121,6 @@ export function Control(props: any) {
 
     const endEvent = async () => {
         const response = await fetch(baseUrl + "admin/event/end", {
-            headers: {
-                "Content-Type": "application/json",
-            },
             method: "POST",
             mode: "same-origin",
             redirect: "error",
@@ -178,9 +175,6 @@ export function Control(props: any) {
 
     const flipPreviousOutcome = async () => {
         const response = await fetch(baseUrl + "admin/prop/flip-previous", {
-            headers: {
-                "Content-Type": "application/json",
-            },
             method: "POST",
             mode: "same-origin",
             redirect: "error",
@@ -195,9 +189,6 @@ export function Control(props: any) {
 
     const getSuggestions = async () => {
         const response = await fetch(baseUrl + "admin/suggestion", {
-            headers: {
-                "Content-Type": "application/json",
-            },
             method: "GET",
             mode: "same-origin",
             redirect: "error",

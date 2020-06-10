@@ -18,9 +18,6 @@ export function TwitchExtension(props: any) {
 
     const getCORSProp = async () => {
         const response = await fetch(baseUrl + "stream/prop", {
-            headers: {
-                "Content-Type": "application/json",
-            },
             method: "GET",
             credentials: "omit",
             mode: "cors",

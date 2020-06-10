@@ -22,7 +22,6 @@ export function Bets(props: any) {
   const getPropBets = async () => {
     const url = baseUrl + "leaderboard/prop-bets";
     const response = await fetch(url, {
-      headers: { "Content-Type": "application/json" },
       method: "GET",
       mode: "same-origin",
       redirect: "error"

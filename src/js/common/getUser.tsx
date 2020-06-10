@@ -3,7 +3,6 @@ import {defaultLoggedIn} from "../contexts/LoginContext";
 
 export const getUser = async (setLoggedInState: Function) => {
     const response = await fetch(baseUrl + "user", {
-        headers: {"Content-Type": "application/json"},
         method: "GET",
         mode: "same-origin",
         redirect: "error"

@@ -31,7 +31,6 @@ export function Leaderboard(props:any) {
 
   const getLeaderboard = async () => {
     const response = await fetch(baseUrl + "leaderboard/all-time", {
-      headers: { "Content-Type": "application/json" },
       method: "GET",
       mode: "same-origin",
       redirect: "error"
@@ -67,7 +66,6 @@ export function Leaderboard(props:any) {
 
   const getEventScoreLeaderboard = async () => {
     const response = await fetch(baseUrl + "leaderboard/event", {
-      headers: { "Content-Type": "application/json" },
       method: "GET",
       mode: "same-origin",
       redirect: "error"

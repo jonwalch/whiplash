@@ -14,7 +14,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Leiningen: aleph:0.4.6" level="project" />
     <orderEntry type="library" name="Leiningen: args4j:2.0.26" level="project" />
     <orderEntry type="library" name="Leiningen: borkdude/edamame:0.0.6" level="project" />
     <orderEntry type="library" name="Leiningen: borkdude/sci:0.0.11-alpha.2" level="project" />
@@ -23,7 +22,6 @@
     <orderEntry type="library" name="Leiningen: buddy/buddy-hashers:1.4.0" level="project" />
     <orderEntry type="library" name="Leiningen: buddy/buddy-sign:2.2.0" level="project" />
     <orderEntry type="library" name="Leiningen: buddy:2.0.0" level="project" />
-    <orderEntry type="library" name="Leiningen: byte-streams:0.2.4" level="project" />
     <orderEntry type="library" name="Leiningen: ch.qos.logback/logback-classic:1.2.3" level="project" />
     <orderEntry type="library" name="Leiningen: ch.qos.logback/logback-core:1.2.3" level="project" />
     <orderEntry type="library" name="Leiningen: cheshire:5.10.0" level="project" />
@@ -98,22 +96,9 @@
     <orderEntry type="library" name="Leiningen: funcool/struct:1.4.0" level="project" />
     <orderEntry type="library" name="Leiningen: hiccup:1.0.5" level="project" />
     <orderEntry type="library" name="Leiningen: instaparse:1.4.0" level="project" />
-    <orderEntry type="library" name="Leiningen: io.aleph/dirigiste:0.1.5" level="project" />
     <orderEntry type="library" name="Leiningen: io.github.classgraph/classgraph:4.8.64" level="project" />
     <orderEntry type="library" name="Leiningen: io.netty/netty-all:4.0.39.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-buffer:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-codec-dns:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-codec-http:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-codec-socks:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-codec:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-common:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-handler-proxy:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-handler:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-resolver-dns:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-resolver:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-transport-native-epoll:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-transport-native-unix-common:4.1.25.Final" level="project" />
-    <orderEntry type="library" name="Leiningen: io.netty/netty-transport:4.1.25.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: io.undertow/undertow-core:2.1.1.Final" level="project" />
     <orderEntry type="library" name="Leiningen: javax.activation/activation:1.1" level="project" />
     <orderEntry type="library" name="Leiningen: javax.mail/javax.mail-api:1.5.5" level="project" />
     <orderEntry type="library" name="Leiningen: javax.servlet/javax.servlet-api:3.1.0" level="project" />
@@ -121,10 +106,10 @@
     <orderEntry type="library" name="Leiningen: joda-time:2.8.1" level="project" />
     <orderEntry type="library" name="Leiningen: json-html:0.4.7" level="project" />
     <orderEntry type="library" name="Leiningen: lambdaisland/deep-diff:0.0-47" level="project" />
-    <orderEntry type="library" name="Leiningen: luminus-aleph:0.1.6" level="project" />
     <orderEntry type="library" name="Leiningen: luminus-transit:0.1.2" level="project" />
+    <orderEntry type="library" name="Leiningen: luminus-undertow:0.1.5" level="project" />
     <orderEntry type="library" name="Leiningen: luminus/ring-ttl-session:0.3.3" level="project" />
-    <orderEntry type="library" name="Leiningen: manifold:0.1.8" level="project" />
+    <orderEntry type="library" name="Leiningen: luminus/ring-undertow-adapter:1.1.0" level="project" />
     <orderEntry type="library" name="Leiningen: markdown-clj:1.10.4" level="project" />
     <orderEntry type="library" name="Leiningen: meta-merge:1.0.0" level="project" />
     <orderEntry type="library" name="Leiningen: metosin/jsonista:0.2.5" level="project" />
@@ -203,7 +188,10 @@
     <orderEntry type="library" name="Leiningen: org.flatland/useful:0.11.6" level="project" />
     <orderEntry type="library" name="Leiningen: org.fressian/fressian:0.6.5" level="project" />
     <orderEntry type="library" name="Leiningen: org.javassist/javassist:3.18.1-GA" level="project" />
-    <orderEntry type="library" name="Leiningen: org.jboss.logging/jboss-logging:3.3.0.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.jboss.logging/jboss-logging:3.4.1.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.jboss.threads/jboss-threads:3.1.0.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.jboss.xnio/xnio-api:3.8.0.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.jboss.xnio/xnio-nio:3.8.0.Final" level="project" />
     <orderEntry type="library" name="Leiningen: org.martinklepsch/clj-http-lite:0.4.1" level="project" />
     <orderEntry type="library" name="Leiningen: org.mozilla/rhino:1.7R5" level="project" />
     <orderEntry type="library" name="Leiningen: org.msgpack/msgpack:0.6.12" level="project" />
@@ -215,6 +203,8 @@
     <orderEntry type="library" name="Leiningen: org.webjars.npm/material-icons:0.3.1" level="project" />
     <orderEntry type="library" name="Leiningen: org.webjars/webjars-locator-core:0.44" level="project" />
     <orderEntry type="library" name="Leiningen: org.webjars/webjars-locator:0.39" level="project" />
+    <orderEntry type="library" name="Leiningen: org.wildfly.client/wildfly-client-config:1.0.1.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.wildfly.common/wildfly-common:1.5.2.Final" level="project" />
     <orderEntry type="library" name="Leiningen: org.yaml/snakeyaml:1.24" level="project" />
     <orderEntry type="library" name="Leiningen: potemkin:0.4.5" level="project" />
     <orderEntry type="library" name="Leiningen: primitive-math:0.1.6" level="project" />

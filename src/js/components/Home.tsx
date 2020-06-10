@@ -7,9 +7,10 @@ import {Header} from "./Header";
 import {Footer} from "./Footer";
 import {getEvent, getProp} from "../common/stream";
 import {Suggestion} from "./Suggestion";
-import {defaultLoggedIn, LoginContext} from "../contexts/LoginContext";
+import {LoginContext} from "../contexts/LoginContext";
 import {getUser} from "../common/getUser";
 import moment from "moment";
+import { embedBaseUrl } from "../config/const";
 
 export const failedToFetch : string = "failed to fetch";
 
@@ -134,7 +135,7 @@ export function Home(props: any) {
           return "https://www.youtube.com/embed/live_stream?channel=" + channelID;
       }
       else if (streamSource == "event.stream-source/twitch") {
-         return "https://player.twitch.tv/?channel=" + channelID;
+         return "https://player.twitch.tv/?channel=" + channelID + "&parent=" + embedBaseUrl;
       }
   };
 
@@ -144,7 +145,7 @@ export function Home(props: any) {
             return "https://www.youtube.com/live_chat?channel=" + channelID;
         }
         else if (streamSource == "event.stream-source/twitch") {
-            return "https://www.twitch.tv/embed/" + channelID + "/chat?darkpopout";
+            return "https://www.twitch.tv/embed/" + channelID + "/chat?darkpopout&parent=" + embedBaseUrl;
         }
     };
 
