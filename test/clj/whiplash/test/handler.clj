@@ -907,9 +907,9 @@
                     :total 600}}
            (:body current-prop-bets-response)))
 
-    (is (= [{:score     453
+    (is (= [{:score     454
              :user_name "kittycuddler420"}
-            {:score     -14
+            {:score     -13
              :user_name "donniedarko"}
             {:score     -400
              :user_name "queefburglar"}]
@@ -1715,17 +1715,17 @@
                :user_name "kittycuddler420"}]
              (:body event-score-before-prop-result)))
 
-      (is (= [{:score     186
+      (is (= [{:score     187
                :user_name "kittycuddler420"}
-              {:score     -147
+              {:score     -146
                :user_name "donniedarko"}]
              (:body event-score-first-prop)))
 
-      (is (= [{:cash      686
+      (is (= [{:cash      687
                :user_name "kittycuddler420"}
               {:cash      500
                :user_name "queefburglar"}
-              {:cash      353
+              {:cash      354
                :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-first-prop)))
 
@@ -1739,18 +1739,18 @@
                       :total 100}}
              (:body prop-bets-second-response)))
 
-      (is (= [{:score     295
+      (is (= [{:score     297
                :user_name "kittycuddler420"}
-              {:score     -247
+              {:score     -246
                :user_name "donniedarko"}]
              (:body event-score-second-prop)
              (:body event-score-after-end)))
 
-      (is (= [{:cash      795
+      (is (= [{:cash      797
                :user_name "kittycuddler420"}
               {:cash      500
                :user_name "queefburglar"}
-              {:cash      253
+              {:cash      254
                :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-end))))))
 

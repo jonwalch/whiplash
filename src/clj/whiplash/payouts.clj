@@ -47,9 +47,8 @@
                                     :bet/odds)
                                 ;; This happens when no one bet for the other team and there are no odds
                                 0.0)))
-          floored-payout (Math/floor payout)]
-      ;;TODO save this casino take somewhere in the DB
-      (when (< 0 (- payout floored-payout))
+          floored-payout (Math/ceil payout)]
+      #_(when (< 0 (- payout floored-payout))
         (log/info (format "Casino floored payout take %s dollars" (- payout floored-payout))))
       (if (= winner id)
         (bigint floored-payout)

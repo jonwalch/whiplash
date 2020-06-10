@@ -25,6 +25,7 @@ export function About() {
             <p>We take live suggestions from the community! Enter your suggestion into the text box below the video and press Make Suggestion!</p>
             <h3>How are odds and payouts calculated?</h3>
             <p>Odds and payouts update in real-time and are based on <a href="https://en.wikipedia.org/wiki/Parimutuel_betting">parimutuel betting</a>.</p>
+            <p>The winning side gets an additional payout bonus based on how many players that bet on that side.</p>
             <p>Payouts are rounded down to the nearest whole dollar.</p>
             <h3>How can I chat with other Whiplash users?</h3>
             <p>Join our <a href="https://discord.gg/GsG2G9t">Discord server</a>!</p>
