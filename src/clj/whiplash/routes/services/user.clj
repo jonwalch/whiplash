@@ -249,9 +249,6 @@
     (if (or user
             (and unauthed-user pulled-user))
       pulled-user
-      ;; TODO: handle this failure, names could clash but extremely unlikely
-      ;; a malicious person could figure out our pattern for _ga to user-name and
-      ;; create a ton of user's with the pattern to make unauth betting not work
       (let [tx-result (db/create-unauthed-user unauthed-user)]
         (db/pull-user {:db (:db-after tx-result)
                        :user/name unauthed-user
@@ -275,8 +272,8 @@
       (not-any? #(= % status) [:user.status/active :user.status/admin :user.status/unauth])
       (conflict {:message "User not in betable state."})
 
-      (>= 0 bet_amount)
-      (conflict {:message "Cannot bet less than 1."})
+      (> 100 bet_amount)
+      (conflict {:message "Cannot bet less than 100."})
 
       (> bet_amount cash)
       (conflict {:message "Bet cannot exceed total user cash."})

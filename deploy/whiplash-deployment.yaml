@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: whiplash
-          image: 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:0.1.134
+          image: 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:0.1.135
           imagePullPolicy: IfNotPresent
           ports:
             - name: container-port

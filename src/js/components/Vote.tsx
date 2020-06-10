@@ -7,7 +7,6 @@ export function Vote(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [betAmount, setBetAmount] = useState<number>(0);
   const [projectedResult, setProjectedResult] = useState<null | boolean>(null);
-  // const [secondsLeftToBet, setSecondsLeftToBet] = useState<number>(0);
   const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
 
   const booleanToButton = () => {
@@ -19,15 +18,6 @@ export function Vote(props: any) {
     }
     return 'No';
   };
-
-  // useInterval(() => {
-  //       if (props.proposition["proposition/betting-end-time"]) {
-  //         setSecondsLeftToBet(calculateSecondsLeftToBet())
-  //       }}, 1000);
-  //
-  // useEffect(() => {
-  //   setSecondsLeftToBet(calculateSecondsLeftToBet())
-  // }, [props.proposition]);
 
   useEffect(() => {
     // TODO: Refactor and use useRef
@@ -45,20 +35,6 @@ export function Vote(props: any) {
       }
     })
   }, [projectedResult]);
-
-  // const endBettingDate = () => {
-  //   if (props.proposition["proposition/betting-end-time"]){
-  //     return moment(props.proposition["proposition/betting-end-time"],
-  //         "YYYY-MM-DDTHH:mm:ssZ");
-  //   } else {
-  //     return Infinity;
-  //   }
-  // };
-
-  // const calculateSecondsLeftToBet = () => {
-  //   return moment(props.proposition["proposition/betting-end-time"], "YYYY-MM-DDTHH:mm:ssZ")
-  //       .diff(moment().utc(), "seconds");
-  // };
 
   const makePropBet = async () => {
     setBetWaitingForResp(true);
@@ -106,8 +82,8 @@ export function Vote(props: any) {
         loggedInState.status === "user.status/active" ||
         loggedInState.status === "user.status/admin")
     {
-      return projectedResult == null ||
-          betAmount == 0 ||
+      return projectedResult === null ||
+          betAmount < 100 ||
           betAmount > loggedInState.cash ||
           betWaitingForResp;
 
@@ -115,8 +91,8 @@ export function Vote(props: any) {
       return true;
 
     } else {
-      return projectedResult == null ||
-          betAmount == 0 ||
+      return projectedResult === null ||
+          betAmount < 100 ||
           // TODO: change this to a constant
           betAmount > 500 ||
           betWaitingForResp;
@@ -220,6 +196,8 @@ export function Vote(props: any) {
                     min="1"
                     name="betAmount"
                     id="betAmount"
+                    autoComplete="off"
+                    placeholder="100 is the minimum bet!"
                 />
               </div>
               {/*TODO: remove inline style and pick proper color*/}

@@ -1671,14 +1671,14 @@
 
           user-place-second-prop-bet-resp (user-place-prop-bet {:auth-token auth-token
                                                                 :projected-result true
-                                                                :bet-amount 50})
+                                                                :bet-amount 100})
 
           ;; user 3 bets
           {:keys [auth-token] login-resp :response} (login dummy-user-3)
 
           user-place-second-prop-bet-resp2 (user-place-prop-bet {:auth-token auth-token
                                                                  :projected-result false
-                                                                 :bet-amount 70})
+                                                                 :bet-amount 120})
 
           prop-bets-second-response  (get-prop-bets-leaderboard)
 
@@ -1691,6 +1691,7 @@
           ;;admin end event
           {:keys [auth-token] login-resp :response} (login)
           end-event-resp (admin-end-event {:auth-token auth-token})
+          event-score-after-end (get-event-leaderboard)
 
           all-time-leaderboard-end ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
 
@@ -1728,36 +1729,30 @@
                :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-first-prop)))
 
-      (is (= {:false {:bets  [{:bet/amount 70
+      (is (= {:false {:bets  [{:bet/amount 120
                                :user/name  "kittycuddler420"}]
-                      :odds  1.714285714285714
-                      :total 70}
-              :true  {:bets  [{:bet/amount 50
+                      :odds  1.833333333333333
+                      :total 120}
+              :true  {:bets  [{:bet/amount 100
                                :user/name  "donniedarko"}]
-                      :odds  2.4
-                      :total 50}}
+                      :odds  2.2
+                      :total 100}}
              (:body prop-bets-second-response)))
 
-      (is (= [{:score     245
+      (is (= [{:score     295
                :user_name "kittycuddler420"}
-              {:score     -197
+              {:score     -247
                :user_name "donniedarko"}]
-             (:body event-score-second-prop)))
+             (:body event-score-second-prop)
+             (:body event-score-after-end)))
 
-      (is (= [{:cash      745
+      (is (= [{:cash      795
                :user_name "kittycuddler420"}
               {:cash      500
                :user_name "queefburglar"}
-              {:cash      303
+              {:cash      253
                :user_name "donniedarko"}]
-             (common/parse-json-body all-time-leaderboard-end)))
-
-      ;; Pulling from previous event since current event is over
-      (is (= [{:score     245
-               :user_name "kittycuddler420"}
-              {:score     -197
-               :user_name "donniedarko"}]
-             (:body (get-event-leaderboard)))))))
+             (common/parse-json-body all-time-leaderboard-end))))))
 
 (deftest end-proposition-no-bets
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -1802,11 +1797,7 @@
 
         bet2 (user-place-prop-bet {:auth-token auth-token
                               :projected-result true
-                              :bet-amount 50})
-
-        bet3 (user-place-prop-bet {:auth-token auth-token
-                                   :projected-result true
-                                   :bet-amount 50})
+                              :bet-amount 100})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
                                            :result "true"})
@@ -1816,11 +1807,7 @@
 
         bet4 (user-place-prop-bet {:auth-token auth-token
                                    :projected-result true
-                                   :bet-amount 30})
-
-        bet5 (user-place-prop-bet {:auth-token auth-token
-                                   :projected-result true
-                                   :bet-amount 30})
+                                   :bet-amount 100})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
                                            :result "true"})
@@ -1830,7 +1817,7 @@
 
         bet6 (user-place-prop-bet {:auth-token auth-token
                                    :projected-result true
-                                   :bet-amount 10})
+                                   :bet-amount 100})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
                                            :result "false"})
@@ -1841,14 +1828,14 @@
     ;; only one bailout notification, winnings coalesced
 
     (is (= [#:notification{:type "notification.type/bailout"}
-            {:bet/payout         70
+            {:bet/payout         110
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
              :proposition/text   "third one"}
-            {:bet/payout          110
-             :notification/type   "notification.type/payout"
+            {:bet/payout         110
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
-             :proposition/text    "second one"}]
+             :proposition/text   "second one"}]
            (->> (-> get-user-resp :body :user/notifications)
                 (sort-by :bet/payout)
                 vec)))))
