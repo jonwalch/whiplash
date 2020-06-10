@@ -227,7 +227,6 @@ export function Home(props: any) {
             <Vote
                 proposition={proposition}
                 prevProposition={prevProposition}
-                matchName={matchName}
             />
           </>
       );

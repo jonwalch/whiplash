@@ -267,13 +267,21 @@
                                                  :db db})
         {:keys [proposition/betting-end-time] :as ongoing-prop} (db/pull-ongoing-proposition
                                                                   {:db db
-                                                                   :attrs [:db/id :proposition/betting-end-time]})]
+                                                                   :attrs [:db/id :proposition/betting-end-time]})
+        existing-bet (when id
+                       (db/find-existing-prop-bet {:db                    db
+                                                   :user-id               id
+                                                   :prop-id               (:db/id ongoing-prop)
+                                                   :bet/projected-result? projected_result}))]
     (cond
       (not-any? #(= % status) [:user.status/active :user.status/admin :user.status/unauth])
       (conflict {:message "User not in betable state."})
 
-      (> 100 bet_amount)
-      (conflict {:message "Cannot bet less than 100."})
+      (and (some? existing-bet) (>= 0 bet_amount))
+      (conflict {:message "You must bet more than 0."})
+
+      (and (nil? existing-bet) (> 100 bet_amount))
+      (conflict {:message "You must bet 100 or more!"})
 
       (> bet_amount cash)
       (conflict {:message "Bet cannot exceed total user cash."})
@@ -287,26 +295,22 @@
       (method-not-allowed {:message "Betting for proposition has ended."})
 
       (some? id)
-      (let [existing-bet (db/find-existing-prop-bet {:db                    db
-                                                     :user-id               id
-                                                     :prop-id               (:db/id ongoing-prop)
-                                                     :bet/projected-result? projected_result})]
-        (if existing-bet
-          (if (try
-                (db/update-prop-bet-amount existing-bet cash id bet_amount)
-                (catch Throwable t (log/error "cas failed for adding prop bet: " t)))
-            (ok {})
-            (conflict {:message "CAS failed"}))
-          (if (try
-                (db/add-prop-bet-for-user (:conn db/datomic-cloud)
-                                          {:db/id                 id
-                                           :bet/projected-result? projected_result
-                                           :bet/amount            bet_amount
-                                           :user/cash             cash
-                                           :bet/proposition       (:db/id ongoing-prop)})
-                (catch Throwable t (log/error "cas failed for adding prop bet: " t)))
-            (ok {})
-            (conflict {:message "CAS failed"}))))
+      (if existing-bet
+        (if (try
+              (db/update-prop-bet-amount existing-bet cash id bet_amount)
+              (catch Throwable t (log/error "cas failed for adding prop bet: " t)))
+          (ok {})
+          (conflict {:message "CAS failed"}))
+        (if (try
+              (db/add-prop-bet-for-user (:conn db/datomic-cloud)
+                                        {:db/id                 id
+                                         :bet/projected-result? projected_result
+                                         :bet/amount            bet_amount
+                                         :user/cash             cash
+                                         :bet/proposition       (:db/id ongoing-prop)})
+              (catch Throwable t (log/error "cas failed for adding prop bet: " t)))
+          (ok {})
+          (conflict {:message "CAS failed"})))
 
       :else
       (not-found {:message "User not found."}))))

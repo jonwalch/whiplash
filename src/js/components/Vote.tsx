@@ -3,7 +3,7 @@ import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
 const { gtag } = require('ga-gtag');
 
-export function Vote(props: any) {
+export function Vote (props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [betAmount, setBetAmount] = useState<number>(0);
   const [projectedResult, setProjectedResult] = useState<null | boolean>(null);
@@ -83,7 +83,7 @@ export function Vote(props: any) {
         loggedInState.status === "user.status/admin")
     {
       return projectedResult === null ||
-          betAmount < 100 ||
+          betAmount == 0 ||
           betAmount > loggedInState.cash ||
           betWaitingForResp;
 
@@ -92,7 +92,7 @@ export function Vote(props: any) {
 
     } else {
       return projectedResult === null ||
-          betAmount < 100 ||
+          betAmount == 0 ||
           // TODO: change this to a constant
           betAmount > 500 ||
           betWaitingForResp;
@@ -187,9 +187,7 @@ export function Vote(props: any) {
                 <input
                     className="form__input"
                     value={betAmount > 0 ? betAmount : ""}
-                    onChange={e => {
-                      handleInputChange(e);
-                    }}
+                    onChange={e => handleInputChange(e)}
                     onKeyPress={e => betOnKeyPress(e)}
                     type="text"
                     pattern="/^[0-9]*$/"
@@ -197,7 +195,7 @@ export function Vote(props: any) {
                     name="betAmount"
                     id="betAmount"
                     autoComplete="off"
-                    placeholder="100 is the minimum bet!"
+                    placeholder="100"
                 />
               </div>
               {/*TODO: remove inline style and pick proper color*/}

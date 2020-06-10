@@ -1197,53 +1197,52 @@
                                                        :status 409})]))
 
 (deftest no-payout-doesnt-break
-  (testing ""
-    (let [{:keys [auth-token] login-resp :response} (create-user-and-login
-                                                      (assoc dummy-user :admin? true))
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
 
-          title "Dirty Dan's Delirious Dance Party"
-          twitch-user "drdisrespect"
-          create-event-resp (admin-create-event {:auth-token auth-token
-                                                 :title title
-                                                 :channel-id twitch-user})
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title      title
+                                               :channel-id twitch-user})
 
-          text "Will Jon wipeout 2+ times this round?"
-          create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                   :text text})
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       text})
 
-          user-place-prop-bet-resp (user-place-prop-bet {:auth-token auth-token
-                                                         :projected-result true
-                                                         :bet-amount 500})
+        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
+                                                       :projected-result true
+                                                       :bet-amount       500})
 
-          user-get-prop-bet-resp (user-get-prop-bets {:auth-token auth-token})
-          get-body (:body user-get-prop-bet-resp)
+        user-get-prop-bet-resp (user-get-prop-bets {:auth-token auth-token})
+        get-body (:body user-get-prop-bet-resp)
 
-          current-prop-bets-response (get-prop-bets-leaderboard)
+        current-prop-bets-response (get-prop-bets-leaderboard)
 
-          ;;admin end prop bet
-          {:keys [auth-token] login-resp :response} (login)
-          end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result "false"})
+        ;;admin end prop bet
+        {:keys [auth-token] login-resp :response} (login)
+        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                           :result     "false"})
 
-          ;;admin bet and reset to 100
-          _ (is (= 100 (-> (get-user {:auth-token auth-token}) :body :user/cash)))
+        ;;admin bet and reset to 100
+        _ (is (= 100 (-> (get-user {:auth-token auth-token}) :body :user/cash)))
 
-          ;;admin end event
-          {:keys [auth-token] login-resp :response} (login)
-          resp (admin-end-event {:auth-token auth-token})]
+        ;;admin end event
+        {:keys [auth-token] login-resp :response} (login)
+        resp (admin-end-event {:auth-token auth-token})]
 
-      (is (= [#:bet{:amount            500
-                    :projected-result? true}]
-             (mapv #(dissoc % :bet/time) get-body)))
+    (is (= [#:bet{:amount            500
+                  :projected-result? true}]
+           (mapv #(dissoc % :bet/time) get-body)))
 
-      (is (= {:true  {:bets  [{:bet/amount 500
-                               :user/name  "queefburglar"}]
-                      :odds  1.00
-                      :total 500}
-              :false {:bets []
-                      :odds 500.00
-                      :total 0}}
-             (:body current-prop-bets-response))))))
+    (is (= {:true  {:bets  [{:bet/amount 500
+                             :user/name  "queefburglar"}]
+                    :odds  1.00
+                    :total 500}
+            :false {:bets  []
+                    :odds  500.00
+                    :total 0}}
+           (:body current-prop-bets-response)))))
 
 (deftest bet-both-sides-doesnt-break
   (testing ""
@@ -2149,3 +2148,44 @@
            (-> user2-get-user :body :user/notifications)))
     (is (= []
            (-> user2-get-user-notifs-acked :body :user/notifications)))))
+
+(deftest can-bet-under-100-on-existing-bet
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title      title
+                                               :channel-id twitch-user})
+
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       text})
+
+        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
+                                                       :projected-result true
+                                                       :bet-amount       100})
+
+        user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       auth-token
+                                                       :projected-result true
+                                                       :bet-amount       1})]))
+
+(deftest cant-bet-under-100-no-existing-bet
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title      title
+                                               :channel-id twitch-user})
+
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       text})
+
+        user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       auth-token
+                                                        :projected-result true
+                                                        :bet-amount       1
+                                                        :status 409})]))
