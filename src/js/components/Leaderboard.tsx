@@ -14,7 +14,7 @@ export interface Leader {
   cash: number;
 }
 
-export function Leaderboard(props:any) {
+export function Leaderboard (props:any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [leaderboard, setLeaderboard] = useState<Leader[]>([]);
 
@@ -23,10 +23,11 @@ export function Leaderboard(props:any) {
     getLeaderboard();
   }, [loggedInState.cash]);
 
-  //TODO: do this conditionally if there's an event
   useInterval(() => {
-    getEventScoreLeaderboard();
-    getLeaderboard();
+    if (props.channelID !== failedToFetch) {
+      getEventScoreLeaderboard();
+      getLeaderboard();
+    }
   }, 10000);
 
   const getLeaderboard = async () => {
@@ -104,7 +105,7 @@ export function Leaderboard(props:any) {
   };
 
   const scoreText = () => {
-    if (props.twitchUsername == failedToFetch) {
+    if (props.channelID === failedToFetch) {
       return "Last"
     }
     return "Live"

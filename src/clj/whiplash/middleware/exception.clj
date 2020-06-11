@@ -14,6 +14,7 @@
        :headers {"Content-Type" "text/html"}
        :body (with-out-str (printer (-> exception ex-data :problems)))})))
 
+;; TODO: secret manage this
 (def ^:private dsn "https://213e4c48ffd244368adfbb93f7352fbd@o404694.ingest.sentry.io/5269183")
 
 (defn report-to-sentry

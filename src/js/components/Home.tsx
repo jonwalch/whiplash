@@ -246,7 +246,7 @@ export function Home(props: any) {
                     <Suggestion
                         twitchUsername={channelID}/>
                     <Leaderboard
-                        twitchUsername={channelID}
+                        channelID={channelID}
                         proposition={proposition}
                         eventScoreLeaderboard={eventScoreLeaderboard}
                         setEventScoreLeaderboard={setEventScoreLeaderboard}
