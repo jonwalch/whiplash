@@ -14,6 +14,7 @@ import { embedBaseUrl } from "../config/const";
 
 export const failedToFetch : string = "failed to fetch";
 
+
 export function Home(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [channelID, setChannelID] = useState<null | string>(null);
@@ -98,7 +99,7 @@ export function Home(props: any) {
             getPropWrapper(event)
         });
     }
-    // TODO: Digits in the countdown sometimes get skipped, lowering to see if this helps mitigate
+    // TODO: Digits no longer get skipped, but some digits dont display for an entire second
   }, 500);
 
   useInterval(() => {

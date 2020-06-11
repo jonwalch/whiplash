@@ -2189,3 +2189,8 @@
                                                         :projected-result true
                                                         :bet-amount       1
                                                         :status 409})]))
+
+(deftest event-reset-content-on-wrong-client
+  (is (= 205 (:status
+               ((common/test-app) (-> (mock/request :get "/stream/event")
+                                      (mock/header "client-version" "incorrect-value")))))))

@@ -1,14 +1,27 @@
 import {baseUrl} from "../config/const";
 
+const bundleRegex = new RegExp('\/dist\/app\.(.*)\.js');
+
 export const getEvent = async () => {
+    //<script src="/dist/app.288025e10aca5279f096.js"></script>
+    // @ts-ignore "i dont care if this is null"
+    const bundleContentHash = Array.from(document.scripts).filter(
+        // @ts-ignore "i dont care if this is unknown"
+        script => script.outerHTML.includes("dist"))[0].outerHTML.match(bundleRegex)[1];
+
     const response = await fetch(baseUrl + "stream/event", {
         method: "GET",
         mode: "same-origin",
         redirect: "error",
+        headers: {
+            'Client-Version': bundleContentHash
+        },
     });
 
     if (response.status === 200) {
         return await response.json();
+    } else if (response.status === 205) {
+        location.reload();
     } else {
         return {}
     }

@@ -3,7 +3,8 @@
             [whiplash.db.core :as db]
             [datomic.client.api :as d]
             [whiplash.time :as time]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [selmer.parser :as parser]))
 
 (defn create-event
   [{:keys [body-params] :as req}]
@@ -33,28 +34,39 @@
         (ok {})))))
 
 (defn get-current-event
-  [{:keys [body-params] :as req}]
-  (let [db (d/db (:conn db/datomic-cloud))
-        event (db/pull-ongoing-event {:db db
-                                      :attrs [:event/start-time
-                                              :event/running?
-                                              :event/channel-id
-                                              :event/title
-                                              {:event/stream-source [:db/ident]}]})
-        next-event-time (when-not event
-                          (db/pull-next-event-time {:db    db
-                                                    :attrs [:whiplash/next-event-time]}))]
-    (cond
-      (some? event)
-      (ok event)
+  [{:keys [body-params headers] :as req}]
+  ;; TODO make this version check a middleware function that is applied on a per route basis
+  (let [client-bundle-version (get headers "client-version")
+        server-bundle-version (second
+                                (re-find #"\/dist\/app\.(.*)\.js"
+                                         (parser/render-file
+                                           "index.html"
+                                           {:page "index.html"})))]
+    (if (and (and (not (nil? client-bundle-version))
+                  (not (nil? server-bundle-version)))
+             (not= client-bundle-version server-bundle-version))
+      (reset-content)
+      (let [db (d/db (:conn db/datomic-cloud))
+            event (db/pull-ongoing-event {:db    db
+                                          :attrs [:event/start-time
+                                                  :event/running?
+                                                  :event/channel-id
+                                                  :event/title
+                                                  {:event/stream-source [:db/ident]}]})
+            next-event-time (when-not event
+                              (db/pull-next-event-time {:db    db
+                                                        :attrs [:whiplash/next-event-time]}))]
+        (cond
+          (some? event)
+          (ok event)
 
-      (and (some? next-event-time)
-           (java-time/after? (time/date-to-zdt (:whiplash/next-event-time next-event-time))
-                             (time/now)))
-      (ok next-event-time)
+          (and (some? next-event-time)
+               (java-time/after? (time/date-to-zdt (:whiplash/next-event-time next-event-time))
+                                 (time/now)))
+          (ok next-event-time)
 
-      :else
-      (no-content))))
+          :else
+          (no-content))))))
 
 (defn end-current-event
   [{:keys [body-params] :as req}]

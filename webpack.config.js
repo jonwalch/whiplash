@@ -76,7 +76,7 @@ module.exports = (env, argv) => {
   if (argv.mode === 'development') {
     config.mode = 'development';
     //fix local dev for twitch extension
-    config.output.filename = "bundle.js";
+    config.output.filename = "app.contenthash.js";
     config.plugins.push(new webpack.HotModuleReplacementPlugin())
   }
 
