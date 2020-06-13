@@ -110,6 +110,16 @@ eksctl create iamserviceaccount \
     --approve \
     --override-existing-serviceaccounts
 
+
+OR attach the policy above directly to the node role `eksctl-prod-nodegroup-standard-wo-NodeInstanceRole-DE09WEOWWGS`
+because datomic is using an old version of the AWS SDK that doesnt support service accounts yet
+
+
+## Configuring NLB + nginx-ingress-controller
+Use default yaml from K8S team here: https://kubernetes.github.io/ingress-nginx/deploy/
+Add service.beta.kubernetes.io/aws-load-balancer-ssl-cert: $(CERT_ARN) to kind: Service
+
+
 [bem]: http://getbem.com/introduction/
 [itcss]: https://speakerdeck.com/dafed/managing-css-projects-with-itcss
 [simple-css-scales]: https://hankchizljaw.com/wrote/keeping-it-simple-with-css-that-scales/
