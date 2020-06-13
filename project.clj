@@ -8,7 +8,7 @@
                  [cheshire "5.10.0"]
                  [clj-oauth "1.5.5"]
                  [clojure.java-time "0.3.2"]
-                 [com.datomic/client-cloud "0.8.91"]
+                 [com.datomic/client-cloud "0.8.96"]
                  [com.google.guava/guava "25.1-jre"]
                  [cprop "0.1.16"]
                  [expound "0.8.4"]

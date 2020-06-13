@@ -77,6 +77,39 @@ eksctl create cluster --name whiplash --version 1.14 --nodegroup-name standard-w
 ## If CloudFront isn't serving your newest content
 aws cloudfront create-invalidation --distribution-id E451IY44F3ERG --paths "/*"
 
+## Making Datomic Cloud talk to a fresh K8S cluster
+Follow this https://docs.datomic.com/cloud/operation/client-applications.html#create-endpoint
+Also make sure to set the proper inbound CIDR on the security group on the vpc endpoint (see original AWS support ticket from Nov).
+The CIDR is found by looking at IPv4 CIDR on the actual VPC.
+
+Configure EKS with a service account that has the proper perms:
+https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html
+https://docs.aws.amazon.com/eks/latest/userguide/create-service-account-iam-policy-and-role.html
+
+IAM policy:
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::prod-whiplash-datomic-storagef7f305e7-1-s3datomic-1ckyxqf9jsoux/*"
+            ]
+        }
+    ]
+}
+
+eksctl create iamserviceaccount \
+    --name datomic-s3 \
+    --namespace default \
+    --cluster prod \
+    --attach-policy-arn arn:aws:iam::296027954811:policy/pod-datomic-s3 \
+    --approve \
+    --override-existing-serviceaccounts
+
 [bem]: http://getbem.com/introduction/
 [itcss]: https://speakerdeck.com/dafed/managing-css-projects-with-itcss
 [simple-css-scales]: https://hankchizljaw.com/wrote/keeping-it-simple-with-css-that-scales/
