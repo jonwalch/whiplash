@@ -5,6 +5,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
 spec:
+## This used to work but now breaks the website, so it is commented out
 #  tls:
 #    - hosts:
 #        - whiplashesports.com

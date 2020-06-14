@@ -3,9 +3,6 @@ import {getUser} from "./getUser";
 
 export const logout = async (setLoggedInState: Function) => {
     const response = await fetch(baseUrl + "user/logout", {
-        headers: {
-            "Content-Type": "application/json",
-        },
         method: "POST",
         mode: "same-origin",
         redirect: "error"
