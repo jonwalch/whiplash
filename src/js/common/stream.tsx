@@ -7,7 +7,7 @@ export const getEvent = async () => {
     // @ts-ignore "i dont care if this is null"
     const bundleContentHash = Array.from(document.scripts).filter(
         // @ts-ignore "i dont care if this is unknown"
-        script => script.outerHTML.includes("app"))[0].outerHTML.match(bundleRegex)[1];
+        script => script.outerHTML.includes("/dist/app"))[0].outerHTML.match(bundleRegex)[1];
 
     const response = await fetch(baseUrl + "stream/event", {
         method: "GET",
