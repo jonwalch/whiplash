@@ -102,8 +102,8 @@ export function Header() {
                 className="button navigation__button__tiny"
                 onClick={() => {
                     // Trigger Google Analytics event
-                    gtag('event', 'buy-whipcash', {
-                        event_category: 'clicked-button',
+                    gtag('event', 'clicked-button', {
+                        event_category: 'buy-whipcash',
                         event_label: loggedInState.userName,
                     });
                 }}>
