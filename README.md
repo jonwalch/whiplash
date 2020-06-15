@@ -5,7 +5,7 @@ generated using Luminus version "3.48"
 FIXME
 
 ## Prerequisites
-- Java 8+
+- Java 14
 - Clojure 1.10.1
 - [Leiningen][lein] 2.0 or above
 - [npm][node]

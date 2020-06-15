@@ -2168,8 +2168,8 @@
                                                        :bet-amount       100})
 
         user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       auth-token
-                                                       :projected-result true
-                                                       :bet-amount       1})]))
+                                                        :projected-result true
+                                                        :bet-amount       1})]))
 
 (deftest cant-bet-under-100-no-existing-bet
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
