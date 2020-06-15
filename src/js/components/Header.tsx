@@ -6,6 +6,7 @@ import {scrollToTop} from "../common";
 import {LoginContext} from "../contexts/LoginContext";
 import {baseUrl} from "../config/const";
 import {logout} from "../common/logout";
+const { gtag } = require('ga-gtag');
 
 export function Header() {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
@@ -61,7 +62,7 @@ export function Header() {
     return (
       <button
         type="button"
-        className="button navigation__button"
+        className="button navigation__button__tiny"
         onClick={() => {
           scrollToTop();
           setShowSignup(!showSignup);
@@ -96,12 +97,24 @@ export function Header() {
     } else {
       return (
         <>
-          <li className="navigation__item">
-              <Link to="/account">{loggedInState.userName}</Link>
-          </li>
+            <button
+                type="button"
+                className="button navigation__button__tiny"
+                onClick={() => {
+                    // Trigger Google Analytics event
+                    gtag('event', 'buy-whipcash', {
+                        event_category: 'clicked-button',
+                        event_label: loggedInState.userName,
+                    });
+                }}>
+                Buy Whipcash
+            </button>
           <li className="navigation__item">
               <span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}
           </li>
+            <li className="navigation__item">
+                <Link to="/account">{loggedInState.userName}</Link>
+            </li>
           <li>{renderLogoutButton()}</li>
         </>
       )

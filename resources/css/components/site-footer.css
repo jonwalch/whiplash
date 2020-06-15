@@ -1,6 +1,6 @@
 .site-footer {
   background: $dark-blue;
-  border-bottom: 0.25em solid $orange;
+  border-bottom: 0.15em solid $orange;
   color: $dark-white;
 
   &__hr {

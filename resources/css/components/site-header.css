@@ -1,6 +1,6 @@
 .site-header {
   background: $dark-blue;
-  border-top: 0.25em solid $orange;
+  border-top: 0.15em solid $orange;
   color: $dark-white;
 
 /*  stick to top */
