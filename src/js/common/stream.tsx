@@ -3,7 +3,6 @@ import {baseUrl} from "../config/const";
 const bundleRegex = new RegExp('\\/dist\\/\\d?\\.{0,1}app\\.(.*)\\.js');
 
 export const getEvent = async () => {
-    //<script src="/dist/app.288025e10aca5279f096.js"></script>
     // @ts-ignore "i dont care if this is null"
     const bundleContentHash = Array.from(document.scripts).filter(
         // @ts-ignore "i dont care if this is unknown"
