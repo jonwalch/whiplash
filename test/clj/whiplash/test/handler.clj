@@ -932,19 +932,27 @@
            (-> admin-get-user :body :user/notifications)))
 
     (is (= 555 (-> user2-get-user :body :user/cash)))
-    (is (= [{:bet/payout          555
-             :notification/type   "notification.type/payout"
+    (is (= [;; First notif wasn't shown, and prop flipped, so it comes up as 0 here
+            {:bet/payout         0
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/false"
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}
-            #:notification{:type "notification.type/bailout"}]
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}
+            {:bet/payout         555
+             :notification/type  "notification.type/payout"
+             :proposition/result "proposition.result/false"
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> user2-get-user :body :user/notifications)))
 
     (is (= 205 (-> user3-get-user :body :user/cash)))
-    (is (= [{:bet/payout          205
-             :notification/type   "notification.type/payout"
+    (is (= [;; First notif wasn't shown, and prop flipped, so it comes up as 0 here
+            {:bet/payout         0
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/false"
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}
-            #:notification{:type "notification.type/bailout"}]
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}
+            {:bet/payout         205
+             :notification/type  "notification.type/payout"
+             :proposition/result "proposition.result/false"
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> user3-get-user :body :user/notifications)))))
 
 (deftest flip-prop-outcome-test-bail
@@ -1110,7 +1118,6 @@
         event-score-before-cancel (get-event-leaderboard)
 
         {:keys [auth-token] login-resp :response} (login)
-        ;; flip proposition outcome
         flip-outcome-resp (admin-flip-prop-outcome {:auth-token auth-token
                                                     :status 405})
         event-score-after-cancel (get-event-leaderboard)
@@ -1160,17 +1167,25 @@
            (-> admin-get-user :body :user/notifications)))
 
     (is (= 500 (-> user2-get-user :body :user/cash)))
-    (is (= [{:bet/payout          500
-             :notification/type   "notification.type/payout"
+    (is (= [{:bet/payout         200
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/cancelled"
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}
+            {:bet/payout         300
+             :notification/type  "notification.type/payout"
+             :proposition/result "proposition.result/cancelled"
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> user2-get-user :body :user/notifications)))
 
     (is (= 500 (-> user3-get-user :body :user/cash)))
-    (is (= [{:bet/payout          500
-             :notification/type   "notification.type/payout"
+    (is (= [{:bet/payout         400
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/cancelled"
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}
+            {:bet/payout         100
+             :notification/type  "notification.type/payout"
+             :proposition/result "proposition.result/cancelled"
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> user3-get-user :body :user/notifications)))))
 
 (deftest cant-bet-email-not-verified
@@ -1824,9 +1839,8 @@
         ;; normally the get would happen on a regular interval between these requests
         get-user-resp (get-user {:auth-token auth-token})]
 
-    ;; only one bailout notification, winnings coalesced
-
     (is (= [#:notification{:type "notification.type/bailout"}
+            #:notification{:type "notification.type/bailout"}
             {:bet/payout         110
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"

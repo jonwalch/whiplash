@@ -163,22 +163,8 @@
                (-> notif
                    (assoc :bet/payout (:bet/payout trigger)
                           :proposition/text (get-in trigger [:bet/proposition :proposition/text])
-                          :proposition/result (get-in trigger [:bet/proposition :proposition/result :db/ident])
-                          :proposition/db-id (get-in trigger [:bet/proposition :db/id]))
-                   (dissoc :notification/trigger :db/id)))))
-         (group-by :proposition/db-id)
-         (map (fn [[id notifications]]
-                ;; assuming there won't ever be a bailout and a payout notification at the same time
-                (let [{:keys [notification/type] :as flat-notification}
-                      (-> notifications
-                          first
-                          ;; refactor so im not associng an then dissocing for wrong notif types
-                          (assoc :bet/payout (apply + 0 (keep :bet/payout notifications)))
-                          (dissoc :proposition/db-id))]
-                  (if (or (= :notification.type/bailout type)
-                          (= :notification.type/no-bailout type))
-                    (dissoc flat-notification :bet/payout)
-                    flat-notification)))))))
+                          :proposition/result (get-in trigger [:bet/proposition :proposition/result :db/ident]))
+                   (dissoc :notification/trigger :db/id))))))))
 
 (defn get-user
   [{:keys [params] :as req}]

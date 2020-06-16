@@ -449,13 +449,13 @@
                                                         100N
                                                         new-balance)]]
              (cond
-               (and bailout? (not authed-user?))
+               (and bailout? (not authed-user?) (not flip?))
                [cas
                 {:db/id              user-id
                  :user/notifications [{:notification/type :notification.type/no-bailout
                                        :notification/acknowledged? false}]}]
 
-               bailout?
+               (and bailout? (not flip?))
                [cas
                 {:db/id              user-id
                  :user/notifications [{:notification/type :notification.type/bailout
