@@ -89,17 +89,21 @@ export function Leaderboard (props:any) {
               <th className="leaderboard__th">Score</th>
             </tr>
             </thead>
-            <tbody>
-            {props.eventScoreLeaderboard.map((leader: EventScore) => {
-              return (
-                  <tr className="leaderboard__tr" key={leader.user_name}>
-                    <td className="leaderboard__td">{leader.user_name}</td>
-                    <td className="leaderboard__td">{leader.score}</td>
-                  </tr>
-              );
-            })}
-            </tbody>
           </table>
+          <div className="leaderboard__innertable">
+            <table className="leaderboard__table">
+              <tbody>
+              {props.eventScoreLeaderboard.map((leader: EventScore) => {
+                return (
+                    <tr className="leaderboard__tr" key={leader.user_name}>
+                      <td className="leaderboard__td">{leader.user_name}</td>
+                      <td className="leaderboard__td">{leader.score}</td>
+                    </tr>
+                );
+              })}
+              </tbody>
+            </table>
+          </div>
         </div>
     );
   };
@@ -119,7 +123,7 @@ export function Leaderboard (props:any) {
         </header>
         <section className="leaderboard__section">
           <header className="leaderboard__header">
-            <h3 className="leaderboard__subtitle">All Time Top Ten</h3>
+            <h3 className="leaderboard__subtitle">All Time Top 25</h3>
           </header>
           {renderLeaderboard()}
         </section>

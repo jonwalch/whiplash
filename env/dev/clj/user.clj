@@ -32,8 +32,24 @@
 (defn- add-many-users
   [num-users]
   (doseq [x (range num-users)]
-    (create-and-verify-local-dev-user {:email (str "test" x "@whiplashesports.com")
-                                       :user-name (str "test" x)})))
+    (future
+      (create-and-verify-local-dev-user {:email     (str "test" x "@whiplashesports.com")
+                                         :user-name (str "test" x)}))))
+(defn- place-bet
+  [cookies]
+  (user/create-prop-bet {:body-params {:bet_amount       100
+                                       :projected_result (= 1 (rand-int 2))}
+                         :cookies cookies}))
+
+(defn place-bets
+  [n]
+  (doseq [x (range n)]
+    (let [user-name (str "test" x)]
+      (future
+        (place-bet (-> {:body-params {:user_name user-name
+                                      :password  "11111111"}}
+                       (user/login)
+                       :cookies))))))
 
 (defn start
   "Starts application.
@@ -58,5 +74,6 @@
   (start)
   (restart)
   (stop)
-  (add-many-users 10)
+  (add-many-users 50)
+  (place-bets 50)
   )

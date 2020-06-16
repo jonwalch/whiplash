@@ -6,7 +6,7 @@
 
 (defn all-time-top-ten
   [{:keys [params] :as req}]
-  (ok (db/find-top-ten)))
+  (ok (db/find-top-n 25)))
 
 (defn event-score-leaderboard
   [{:keys [params] :as req}]

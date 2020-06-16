@@ -255,7 +255,7 @@
                 :in $ ?event-id]
        :args  [db event-id]})))
 
-
+;; TODO only pull users that are over n whipcash
 (defn find-all-time-leaderboard
   []
   (let [db (d/db (:conn datomic-cloud))]
@@ -270,10 +270,10 @@
                          :cash (second %)))
          (sort-by :cash #(compare %2 %1)))))
 
-(defn find-top-ten
-  []
+(defn find-top-n
+  [n]
   (->> (find-all-time-leaderboard)
-       (take 10)))
+       (take n)))
 
 ;; TODO: adjust threshold at a later time and add a test that won't return n days later
 ;; We're pull n and then figuring out the largest because aggregation doesn't work with :db/ids

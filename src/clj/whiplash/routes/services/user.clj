@@ -68,7 +68,7 @@
 ;; user-ccPxgcAwcwNcPvNNxcywg
 (defn- unauthed-username
   [{:keys [cookies]}]
-  (let [ga (:value (get cookies "_ga"))]
+  (when-let [ga (:value (get cookies "_ga"))]
     (format "user-%s"
             (->> (string/replace ga #"[a-zA-Z]|\." "")
                  (map #(get fuzz-map %))
@@ -268,7 +268,7 @@
         {:keys [proposition/betting-end-time] :as ongoing-prop} (db/pull-ongoing-proposition
                                                                   {:db db
                                                                    :attrs [:db/id :proposition/betting-end-time]})
-        existing-bet (when id
+        existing-bet (when (and id ongoing-prop)
                        (db/find-existing-prop-bet {:db                    db
                                                    :user-id               id
                                                    :prop-id               (:db/id ongoing-prop)
