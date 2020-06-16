@@ -371,12 +371,12 @@
            (or status 200)))
     (assoc resp :body (common/parse-json-body resp))))
 
-(deftest all-time-top-ten-test
-  (testing "only returns 10 users"
-    (doseq [x (range 12)]
+(deftest all-time-top-25-test
+  (testing "only returns 25 users"
+    (doseq [x (range 27)]
       (create-user (assoc dummy-user :email (str x "@poops.com") :user_name (str x))))
     (let [all-time-leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
-      (is (= 10
+      (is (= 25
              (count (common/parse-json-body all-time-leaderboard-resp)))))))
 
 ;; Prop betting MVP tests
