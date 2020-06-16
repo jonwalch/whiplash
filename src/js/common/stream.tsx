@@ -21,6 +21,7 @@ export const getEvent = async () => {
         return await response.json();
     } else if (response.status === 205) {
         location.reload();
+        return {};
     } else {
         return {}
     }
