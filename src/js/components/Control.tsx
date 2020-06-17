@@ -431,7 +431,7 @@ export function Control(props: any) {
                         // TODO: remove inline style
                          style = {{marginTop: "30px"}}
                     >
-                        <label className="form__label" htmlFor="betSecs">Bet Duration (add 3 to what you want it to display)</label>
+                        <label className="form__label" htmlFor="betSecs">Bet Duration (add 1 to what you want it to display)</label>
                         <input
                             className="form__input"
                             value={bettingDuration}

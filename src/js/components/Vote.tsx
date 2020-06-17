@@ -36,6 +36,14 @@ export function Vote (props: any) {
     })
   }, [projectedResult]);
 
+  // Play a sound effect here. This fires everytime betting starts
+  // useEffect(() => {
+  //   if (props.proposition["proposition/text"]) {
+  //     console.log(props.proposition["proposition/text"])
+  //     console.log("sheeeety")
+  //   }
+  // }, [props.proposition["proposition/text"]])
+
   const makePropBet = async () => {
     setBetWaitingForResp(true);
     const response = await fetch(baseUrl + "user/prop-bet", {
@@ -190,7 +198,6 @@ export function Vote (props: any) {
                     onChange={e => handleInputChange(e)}
                     onKeyPress={e => betOnKeyPress(e)}
                     type="text"
-                    pattern="/^[0-9]*$/"
                     min="1"
                     name="betAmount"
                     id="betAmount"

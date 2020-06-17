@@ -52,10 +52,10 @@ export function Leaderboard (props:any) {
           </tr>
         </thead>
         <tbody>
-          {leaderboard.map((leader: Leader) => {
+          {leaderboard.map((leader: Leader, index: number) => {
             return (
               <tr className="leaderboard__tr" key={leader.user_name}>
-                <td className="leaderboard__td">{leader.user_name}</td>
+                <td className="leaderboard__td">{(index + 1) + ". " + leader.user_name}</td>
                 <td className="leaderboard__td">${leader.cash}</td>
               </tr>
             );
@@ -93,10 +93,10 @@ export function Leaderboard (props:any) {
           <div className="leaderboard__innertable">
             <table className="leaderboard__table">
               <tbody>
-              {props.eventScoreLeaderboard.map((leader: EventScore) => {
+              {props.eventScoreLeaderboard.map((leader: EventScore, index: number) => {
                 return (
                     <tr className="leaderboard__tr" key={leader.user_name}>
-                      <td className="leaderboard__td">{leader.user_name}</td>
+                      <td className="leaderboard__td">{ (index + 1) + ". " + leader.user_name}</td>
                       <td className="leaderboard__td">{leader.score}</td>
                     </tr>
                 );
