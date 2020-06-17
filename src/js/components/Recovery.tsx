@@ -52,7 +52,8 @@ export function Recovery(props: any) {
     };
 
     function renderRecoveryMarkup() {
-        if (!loggedInState.userName) {
+        // not logged in OR logged in as unauth user
+        if (!loggedInState.userName || loggedInState.status === "user.status/unauth") {
             return (
                 <form className="form form--account container" name="account">
                     <header className="form__header">
