@@ -7,7 +7,7 @@ export const getUser = async (setLoggedInState: Function) => {
         mode: "same-origin",
         redirect: "error"
     });
-    if (response.status == 200) {
+    if (response.status === 200) {
         const resp = await response.json();
         setLoggedInState({
             userName: resp["user/name"],
