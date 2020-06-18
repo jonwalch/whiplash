@@ -50,7 +50,7 @@
         ;; TODO: use pull-ongoing-proposiiton
         current-proposition (db/find-ongoing-proposition db)]
     (if current-proposition
-      (let [current-bets (->> (db/find-all-user-bets-for-proposition {:db db
+      (let [current-bets (->> (db/find-all-user-bets-for-proposition {:db          db
                                                                       :prop-bet-id current-proposition})
                               (apply concat)
                               (map (fn [bet]
@@ -72,19 +72,21 @@
 
                              :else
                              grouped-bets)]
-        (ok (or (->> add-other-side
-                     (map (fn [[result bets]]
-                            (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
-                              {result {:bets  (sort-by :bet/amount
-                                                       #(compare %2 %1)
-                                                       (->> bets
-                                                            (group-by :user/name)
-                                                            (mapv (fn [[user-name bets]]
-                                                                    {:user/name  user-name
-                                                                     :bet/amount (apply +
-                                                                                        (map :bet/amount bets))}))))
-                                       :total total
-                                       :odds  odds}})))
-                     (apply merge))
-                {})))
+        {:status  200
+         :headers {"Cache-Control" "max-age=1"}
+         :body    (or (->> add-other-side
+                           (map (fn [[result bets]]
+                                  (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
+                                    {result {:bets  (sort-by :bet/amount
+                                                             #(compare %2 %1)
+                                                             (->> bets
+                                                                  (group-by :user/name)
+                                                                  (mapv (fn [[user-name bets]]
+                                                                          {:user/name  user-name
+                                                                           :bet/amount (apply +
+                                                                                              (map :bet/amount bets))}))))
+                                             :total total
+                                             :odds  odds}})))
+                           (apply merge))
+                      {})})
       (no-content))))

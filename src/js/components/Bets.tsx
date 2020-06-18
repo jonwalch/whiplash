@@ -14,10 +14,11 @@ export function Bets(props: any) {
 
   // TODO: only when there's an event
   useInterval(() => {
-    if (props.twitchUsername != failedToFetch) {
+    if (props.twitchUsername != failedToFetch && props.proposition["proposition/text"] &&
+        props.proposition["proposition/betting-seconds-left"] > -2) {
       getPropBets();
     }
-  }, 3000);
+  }, 1000);
 
   const getPropBets = async () => {
     const url = baseUrl + "leaderboard/prop-bets";

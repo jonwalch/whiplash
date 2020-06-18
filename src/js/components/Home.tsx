@@ -99,8 +99,7 @@ export function Home(props: any) {
             getPropWrapper(event)
         });
     }
-    // TODO: Digits no longer get skipped, but some digits dont display for an entire second
-  }, 500);
+  }, 300);
 
   useInterval(() => {
     getEvent().then((event) => {
@@ -243,6 +242,7 @@ export function Home(props: any) {
                     {renderContent()}
                     <Bets
                         twitchUsername={channelID}
+                        proposition={proposition}
                     />
                     <Suggestion
                         twitchUsername={channelID}/>
