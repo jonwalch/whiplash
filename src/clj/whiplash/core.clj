@@ -29,7 +29,11 @@
   (http/start
     (-> env
         (assoc  :handler (handler/app))
-        (update :io-threads #(or % (* 2 (.availableProcessors (Runtime/getRuntime)))))
+        (update :io-threads (fn [x]
+                              (let [threads (or x
+                                                (* 2 (.availableProcessors (Runtime/getRuntime))))]
+                                (log/info (format "Starting with %s :io-threads" threads))
+                                threads)))
         (update :port #(or (-> env :options :port) %))))
   :stop
   (http/stop http-server))
