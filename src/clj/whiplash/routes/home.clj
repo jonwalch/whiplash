@@ -118,9 +118,10 @@
      {:options {:summary "Take care of CORS preflight"
                 :handler (fn [req]
                            {:status  204
-                            :headers {"Access-Control-Allow-Origin"  "*"
+                            :headers {"Access-Control-Allow-Origin"  "*" ;;TODO: for twitch only?
                                       "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
-                                      "Access-Control-Allow-Methods" "GET"}
+                                      "Access-Control-Allow-Methods" "GET"
+                                      "Cache-Control" "max-age=86400"} ;; Cache the options req for a day
                             :body    nil})}
       :get     {:summary "Get the current prop bet"
                 :handler (fn [req]

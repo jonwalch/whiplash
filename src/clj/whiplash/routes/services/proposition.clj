@@ -39,19 +39,19 @@
 
 (defn get-current-proposition
   [req]
-  (let [prop-fields-to-pull '[:proposition/start-time
-                              :proposition/text
-                              :proposition/running?
-                              :proposition/betting-end-time]
-        db (d/db (:conn db/datomic-cloud))
-        ongoing-event (db/find-ongoing-event db)
-        ongoing-prop (when ongoing-event
-                       (db/pull-ongoing-proposition {:db    db
-                                                     :attrs prop-fields-to-pull}))
-        previous-prop (when ongoing-event
-                        (db/pull-previous-proposition {:db        db
-                                                       :attrs     (conj prop-fields-to-pull {:proposition/result [:db/ident]})
-                                                       :event-eid ongoing-event}))]
+  (let [db (d/db (:conn db/datomic-cloud))
+        {:keys [event/propositions] :as ongoing-event} (db/pull-ongoing-event
+                                                         {:db    db
+                                                          :attrs [:db/id
+                                                                  {:event/propositions
+                                                                   '[:proposition/start-time
+                                                                     :proposition/text
+                                                                     :proposition/running?
+                                                                     :proposition/betting-end-time
+                                                                     {:proposition/result [:db/ident]}]}]})
+        props (group-by :proposition/running? propositions)
+        ongoing-prop (first (get props true))
+        previous-prop (first (sort-by :proposition/start-time #(compare %2 %1) (get props false)))]
     (if (or ongoing-prop previous-prop)
       {:status  200
        :headers {"Access-Control-Allow-Origin"  "*"

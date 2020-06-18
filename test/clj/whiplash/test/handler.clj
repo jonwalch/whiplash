@@ -482,6 +482,7 @@
       (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
               "Access-Control-Allow-Methods" "GET"
               "Access-Control-Allow-Origin"  "*"
+              "Cache-Control"                "max-age=86400"
               "Content-Type"                 "application/octet-stream"
               "X-Content-Type-Options"       "nosniff"
               "X-Frame-Options"              "SAMEORIGIN"
