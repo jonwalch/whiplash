@@ -10,6 +10,7 @@ const beautify = require('gulp-beautify')
 const uglify = require('gulp-uglify')
 const rename = require('gulp-rename')
 const connect = require('gulp-connect')
+// const hash = require('gulp-hash-filename');
 
 const paths = {
   css: {
@@ -73,6 +74,11 @@ function css () {
 
 function minify () {
   const css = gulp.src(paths.css.output)
+    // .pipe(hash({
+    //   "format": "{name}.{hash}{ext}"
+    //  }))
+    // .pipe(gulp.dest(paths.css.dest))
+    // TODO: remove old App.css that is still hanging around
     .pipe(sourcemaps.init())
     .pipe(postcss([require('cssnano')])) // Minify
     .pipe(sourcemaps.write('.')) // Maintain Sourcemaps

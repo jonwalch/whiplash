@@ -30,16 +30,27 @@ spec:
           ports:
             - name: container-port
               containerPort: 3000
-          livenessProbe:
-            httpGet:
-              path: /v1/healthz
-              port: container-port
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            failureThreshold: 3
+#          livenessProbe:
+#            httpGet:
+#              path: /v1/healthz
+#              port: container-port
+#            initialDelaySeconds: 60
+#            periodSeconds: 30
+#            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /v1/healthz
               port: container-port
-            initialDelaySeconds: 15
-            periodSeconds: 5
+            initialDelaySeconds: 25
+            periodSeconds: 15
+            failureThreshold: 5
+#      affinity:
+#        podAntiAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            - labelSelector:
+#                matchExpressions:
+#                  - key: "app"
+#                    operator: In
+#                    values:
+#                      - whiplash
+#              topologyKey: "kubernetes.io/hostname"

@@ -12,6 +12,7 @@ export const getEvent = async () => {
         method: "GET",
         mode: "same-origin",
         redirect: "error",
+        credentials: "omit",
         headers: {
             'Client-Version': bundleContentHash
         },
@@ -32,6 +33,7 @@ export const getProp = async () => {
         method: "GET",
         mode: "same-origin",
         redirect: "error",
+        credentials: "omit",
     });
     if (response.status === 200) {
         return await response.json();

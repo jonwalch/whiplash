@@ -34,6 +34,7 @@ export function Leaderboard (props:any) {
     const response = await fetch(baseUrl + "leaderboard/all-time", {
       method: "GET",
       mode: "same-origin",
+      credentials: "omit",
       redirect: "error"
     });
     if (response.status == 200) {
@@ -69,6 +70,7 @@ export function Leaderboard (props:any) {
     const response = await fetch(baseUrl + "leaderboard/event", {
       method: "GET",
       mode: "same-origin",
+      credentials: "omit",
       redirect: "error"
     });
     if (response.status == 200) {

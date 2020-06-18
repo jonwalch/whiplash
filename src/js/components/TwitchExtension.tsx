@@ -66,7 +66,7 @@ export function TwitchExtension(props: any) {
         getCORSProp().then((event) => {
             getPropWrapper(event)
         });
-    }, 3000);
+    }, 10000);
 
     const renderPropositionText = () => {
         if (proposition["proposition/text"]) {
