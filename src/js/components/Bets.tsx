@@ -24,6 +24,7 @@ export function Bets(props: any) {
     const response = await fetch(url, {
       method: "GET",
       mode: "same-origin",
+      credentials: "omit",
       redirect: "error"
     });
     if (response.status == 200) {
