@@ -134,9 +134,10 @@
                          :attrs              [:db/id
                                               {:notification/type [:db/ident]}
                                               {:notification/trigger [:bet/payout
-                                                                      {:bet/proposition [:db/id
-                                                                                         :proposition/text
-                                                                                         {:proposition/result [:db/ident]}]}]}]
+                                                                      {:bet/proposition
+                                                                       [:db/id
+                                                                        :proposition/text
+                                                                        {:proposition/result [:db/ident]}]}]}]
                          :notification/types #{:notification.type/bailout
                                                :notification.type/payout
                                                :notification.type/no-bailout}})
@@ -149,22 +150,21 @@
                                                 :notification/acknowledged? true
                                                 :notification/acknowledged-time ack-time})
                                              notifications)}))]
-    ;; TODO: refactor, no longer need to coalesce payout notifications
-    (->> notifications
-         (map
-           (comp
-             (fn [{:keys [notification/type] :as munged-notif}]
-               (if (or (= :notification.type/bailout type)
-                       (= :notification.type/no-bailout type))
-                 (dissoc munged-notif :proposition/text :bet/payout :proposition/result)
-                 munged-notif))
-             ;; munge db results
-             (fn [{:keys [notification/trigger] :as notif}]
-               (-> notif
-                   (assoc :bet/payout (:bet/payout trigger)
-                          :proposition/text (get-in trigger [:bet/proposition :proposition/text])
-                          :proposition/result (get-in trigger [:bet/proposition :proposition/result :db/ident]))
-                   (dissoc :notification/trigger :db/id))))))))
+    (map
+      (comp
+        (fn [{:keys [notification/type] :as munged-notif}]
+          (if (or (= :notification.type/bailout type)
+                  (= :notification.type/no-bailout type))
+            (dissoc munged-notif :proposition/text :bet/payout :proposition/result)
+            munged-notif))
+        ;; munge db results
+        (fn [{:keys [notification/trigger] :as notif}]
+          (-> notif
+              (assoc :bet/payout (:bet/payout trigger)
+                     :proposition/text (get-in trigger [:bet/proposition :proposition/text])
+                     :proposition/result (get-in trigger [:bet/proposition :proposition/result :db/ident]))
+              (dissoc :notification/trigger :db/id))))
+      notifications)))
 
 (defn get-user
   [{:keys [params] :as req}]
@@ -174,13 +174,11 @@
                                    :db        db
                                    :attrs     [{:user/status [:db/ident]}
                                                :user/first-name :user/last-name :user/email
-                                               :user/name :user/cash :db/id]})
-        notifications (when user-entity
-                        (retrieve-and-ack-user-notifications db (:db/id user-entity)))]
+                                               :user/name :user/cash :db/id]})]
     (if (some? user-entity)
       (ok (-> user-entity
               (dissoc :db/id)
-              (assoc :user/notifications notifications)))
+              (assoc :user/notifications (retrieve-and-ack-user-notifications db (:db/id user-entity)))))
       (not-found {:message (format "User %s not found" user)}))))
 
 (defn login
