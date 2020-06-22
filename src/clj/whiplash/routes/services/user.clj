@@ -178,6 +178,7 @@
     (if (some? user-entity)
       (ok (-> user-entity
               (dissoc :db/id)
+              ;; TODO: make part of pull-user query
               (assoc :user/notifications (retrieve-and-ack-user-notifications db (:db/id user-entity)))))
       (not-found {:message (format "User %s not found" user)}))))
 
@@ -249,9 +250,8 @@
                                                 {:user user
                                                  :unauthed-user unauthed-user
                                                  :db db})
-        {:keys [proposition/betting-end-time] :as ongoing-prop} (db/pull-ongoing-proposition
-                                                                  {:db db
-                                                                   :attrs [:db/id :proposition/betting-end-time]})
+        ongoing-prop (db/pull-ongoing-proposition {:db db :attrs [:db/id]})
+        ;; TODO: make this query part of pulling the user if it shaves off a query
         existing-bet (when (and id ongoing-prop)
                        (db/find-existing-prop-bet {:db                    db
                                                    :user-id               id
@@ -273,9 +273,15 @@
       (nil? (:db/id ongoing-prop))
       (method-not-allowed {:message "No ongoing prop bet, cannot make bet."})
 
-      (and (inst? betting-end-time)
-           (jtime/after? (time/now)
-                         (time/date-to-zdt betting-end-time)))
+      (try
+        (jtime/after? (time/now)
+                      ;; Doing the query again to make sure that betting hasnt closed since we grabbed the last db
+                      (time/date-to-zdt (:proposition/betting-end-time
+                                          (db/pull-ongoing-proposition
+                                            {:attrs [:proposition/betting-end-time]}))))
+        ;; Catch the NPE in case :proposition/betting-end-time is nil because no ongoing prop was found
+        ;; Default to true because we want to hit method not allowed if no ongoing prop
+        (catch NullPointerException e true))
       (method-not-allowed {:message "Betting for proposition has ended."})
 
       (some? id)

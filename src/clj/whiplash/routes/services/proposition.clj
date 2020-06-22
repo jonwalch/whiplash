@@ -82,16 +82,15 @@
       (not (contains? #{"true" "false" "cancel"} result))
       (method-not-allowed {:message "Invalid parameter"})
 
-      (and prop (= "cancel" result))
-      (do (db/cancel-proposition-and-return-cash {:proposition prop
-                                                  :db db})
-          (ok {}))
-
-      (some? prop)
-      (do (db/end-proposition {:result?     (boolean (Boolean/valueOf result))
-                               :proposition prop
-                               :db          db})
-          (ok {}))
+      prop
+      (let [{:keys [db-after] :as tx-result} (db/end-betting-for-proposition prop)]
+        (if-not (= "cancel" result)
+          (db/payouts-for-proposition {:result?     (boolean (Boolean/valueOf result))
+                                       :proposition prop
+                                       :db          db-after})
+          (db/cancel-proposition-and-return-cash {:proposition prop
+                                                  :db          db-after}))
+        (ok {}))
 
       :else
       (method-not-allowed {:message "No ongoing proposition"}))))
@@ -118,10 +117,9 @@
                               {:tx-data (db/generate-user-cash-txs {:user-id->total-payout user-id->total-payout
                                                                     :flip?                 true})})]
     (d/transact (:conn db/datomic-cloud)
-                {:tx-data (db/generate-txs-to-end-proposition {:db          (:db-after tx-result)
-                                                               :flip?       true
-                                                               :proposition previous-prop
-                                                               :result?     (not result?)})})))
+                {:tx-data (db/generate-prop-payout-txs {:db          (:db-after tx-result)
+                                                        :proposition previous-prop
+                                                        :result?     (not result?)})})))
 
 (defn flip-prev-prop-outcome
   [req]

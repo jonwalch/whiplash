@@ -8,7 +8,8 @@
     [whiplash.db.schemas :as schemas]
     [whiplash.payouts :as payouts]
     [clojure.string :as string]
-    [clj-uuid :as uuid]))
+    [clj-uuid :as uuid]
+    [java-time :as jtime]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DO NOT USE DATOMIC ON PREM SCALAR OR COLLECTION FIND SYNTAX, IT'LL WORK LOCALLY BUT NOT IN PRODUCTION ;;
@@ -375,11 +376,12 @@
 ;; TODO make this depend on an event
 (defn pull-ongoing-proposition
   [{:keys [db attrs]}]
-  (ffirst
-    (d/q {:query '[:find (pull ?prop attrs)
-                   :in $ attrs
-                   :where [?prop :proposition/running? true]]
-          :args  [db attrs]})))
+  (let [db (or db (d/db (:conn datomic-cloud)))]
+    (ffirst
+      (d/q {:query '[:find (pull ?prop attrs)
+                     :in $ attrs
+                     :where [?prop :proposition/running? true]]
+            :args  [db attrs]}))))
 
 (defn pull-previous-proposition
   [{:keys [db event-eid attrs]}]
@@ -404,7 +406,7 @@
                                                                          (time/seconds-delta now end-betting-secs))
                                          :proposition/running?   true}]}]})))
 
-(defn end-betting-for-proposition
+#_(defn end-betting-for-proposition
   [{:keys [proposition-eid]}]
   (d/transact (:conn datomic-cloud)
               {:tx-data [{:db/id                        proposition-eid
@@ -501,10 +503,9 @@
                                    0)}))
        (apply merge)))
 
-(defn generate-txs-to-end-proposition
-  [{:keys [proposition result? db flip?]}]
-  (let [betting-end-time (:proposition/betting-end-time proposition)
-        bets (pull-bet-payout-info {:db db
+(defn generate-prop-payout-txs
+  [{:keys [proposition result? db]}]
+  (let [bets (pull-bet-payout-info {:db db
                                     :prop-bet-id        (:db/id proposition)
                                     :attrs [:db/id :bet/amount :bet/projected-result?
                                             {:user/_prop-bets [:user/cash
@@ -531,25 +532,33 @@
     (vec
       (concat payout-txs
               user-cash-txs
-              [(merge {:db/id                (:db/id proposition)
-                       :proposition/result  (if result?
-                                              :proposition.result/true
-                                              :proposition.result/false)}
-                      (when-not flip?
-                        {:proposition/running? false
-                         :proposition/end-time processed-time})
-                      (when-not betting-end-time
-                        {:proposition/betting-end-time processed-time}))]))))
+              ;; Other info is transacted in end-betting-for-proposition
+              [{:db/id              (:db/id proposition)
+                :proposition/result (if result?
+                                      :proposition.result/true
+                                      :proposition.result/false)}]))))
 
-(defn end-proposition
+(defn end-betting-for-proposition
+  [{:keys [db/id proposition/betting-end-time]}]
+  (let [end-time (time/now)
+        inst-end-time (time/to-date end-time)]
+    (d/transact (:conn datomic-cloud)
+                {:tx-data [(merge
+                             {:db/id                id
+                              :proposition/running? false
+                              :proposition/end-time inst-end-time}
+                             (when (jtime/before? end-time
+                                                  (time/date-to-zdt betting-end-time))
+                               {:proposition/betting-end-time inst-end-time}))]})))
+
+(defn payouts-for-proposition
   [arg-map]
   (d/transact (:conn datomic-cloud)
-              {:tx-data (generate-txs-to-end-proposition arg-map)}))
+              {:tx-data (generate-prop-payout-txs arg-map)}))
 
 (defn- generate-txs-to-cancel-proposition
   [{:keys [db proposition]}]
-  (let [betting-end-time (:proposition/betting-end-time proposition)
-        payouts (->> (pull-bet-payout-info
+  (let [payouts (->> (pull-bet-payout-info
                        {:db          db
                         :prop-bet-id (:db/id proposition)
                         :attrs       [:db/id :bet/amount
@@ -565,12 +574,8 @@
     (vec
       (concat payout-txs
               user-cash-txs
-              [(merge {:db/id                (:db/id proposition)
-                       :proposition/result   :proposition.result/cancelled
-                       :proposition/running? false
-                       :proposition/end-time processed-time}
-                      (when-not betting-end-time
-                        {:proposition/betting-end-time processed-time}))]))))
+              [{:db/id                (:db/id proposition)
+                :proposition/result   :proposition.result/cancelled}]))))
 
 (defn cancel-proposition-and-return-cash
   [arg-map]
