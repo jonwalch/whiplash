@@ -12,6 +12,8 @@ import {getUser} from "../common/getUser";
 import moment from "moment";
 import { embedBaseUrl } from "../config/const";
 
+const { gtag } = require('ga-gtag');
+
 export const failedToFetch : string = "failed to fetch";
 
 export function Home(props: any) {
@@ -204,6 +206,12 @@ export function Home(props: any) {
                           type="button"
                           onClick={() => {
                               setSfx(!sfx)
+                              // Trigger Google Analytics event
+                              gtag('event', 'toggled-sfx', {
+                                  event_category: 'SFX',
+                                  event_label: loggedInState.userName,
+                                  value: !sfx
+                              });
                           }}>
                           {sfx ? 'Turn SFX Off' : 'Turn SFX On'}
                       </button>
