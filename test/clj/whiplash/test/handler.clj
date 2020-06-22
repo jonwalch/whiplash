@@ -1738,7 +1738,8 @@
                :user_name "kittycuddler420"}
               {:cash      500
                :user_name "queefburglar"}
-              {:cash      354
+              ;; Users below 500 are filtered now
+              #_{:cash      354
                :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-first-prop)))
 
@@ -1763,7 +1764,8 @@
                :user_name "kittycuddler420"}
               {:cash      500
                :user_name "queefburglar"}
-              {:cash      254
+              ;; Users below 500 are filtered now
+              #_{:cash      254
                :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-end))))))
 

@@ -256,7 +256,6 @@
                 :in $ ?event-id]
        :args  [db event-id]})))
 
-;; TODO only pull users that are over n whipcash
 (defn find-all-time-leaderboard
   []
   (let [db (d/db (:conn datomic-cloud))]
@@ -265,6 +264,7 @@
                      :in $
                      :where [?user :user/cash ?cash]
                      [?user :user/name ?user-name]
+                     [(>= ?cash 500N)]
                      (not [?user :user/status :user.status/unauth])]
             :args  [db]})
          (map #(hash-map :user_name (first %)
