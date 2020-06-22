@@ -50,7 +50,7 @@
   :test-paths ["test/clj"]
   :resource-paths ["resources"]
   :target-path "target/%s/"
-  :main ^:skip-aot whiplash.core
+  :main ^:skip-aot whiplash.core ;;skip-aot does not apply in profiles where :aot is set to :all
 
   :plugins []
 
