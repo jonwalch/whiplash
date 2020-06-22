@@ -3,6 +3,18 @@ import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
 const { gtag } = require('ga-gtag');
 
+import UIfx from 'uifx';
+// @ts-ignore
+import betStart from '../sfx/swiftly.mp3'
+
+const startSound = new UIfx(
+    betStart,
+    {
+      volume: 0.4, // number between 0.0 ~ 1.0
+      throttleMs: 100
+    }
+)
+
 export function Vote (props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [betAmount, setBetAmount] = useState<number>(0);
@@ -36,13 +48,11 @@ export function Vote (props: any) {
     })
   }, [projectedResult]);
 
-  // Play a sound effect here. This fires everytime betting starts
-  // useEffect(() => {
-  //   if (props.proposition["proposition/text"]) {
-  //     console.log(props.proposition["proposition/text"])
-  //     console.log("sheeeety")
-  //   }
-  // }, [props.proposition["proposition/text"]])
+  useEffect(() => {
+    if (props.proposition["proposition/text"] && props.sfx) {
+      startSound.play()
+    }
+  }, [props.proposition["proposition/text"]])
 
   const makePropBet = async () => {
     setBetWaitingForResp(true);
@@ -202,7 +212,7 @@ export function Vote (props: any) {
                     name="betAmount"
                     id="betAmount"
                     autoComplete="off"
-                    placeholder="100"
+                    placeholder="Min. bet is 100"
                 />
               </div>
               {/*TODO: remove inline style and pick proper color*/}

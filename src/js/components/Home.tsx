@@ -14,7 +14,6 @@ import { embedBaseUrl } from "../config/const";
 
 export const failedToFetch : string = "failed to fetch";
 
-
 export function Home(props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [channelID, setChannelID] = useState<null | string>(null);
@@ -25,6 +24,7 @@ export function Home(props: any) {
   const [prevProposition, setPrevProposition] = useState<Object>({});
   const [nextEventTime, setNextEventTime] = useState<string>("");
   const [countdown, setCountdown] = useState<any>(null);
+  const [sfx, setSfx] = useState<boolean>(true);
 
   // child state
   const [eventScoreLeaderboard, setEventScoreLeaderboard] = useState<EventScore[]>([]);
@@ -99,7 +99,7 @@ export function Home(props: any) {
             getPropWrapper(event)
         });
     }
-  }, 300);
+  }, 500);
 
   useInterval(() => {
     getEvent().then((event) => {
@@ -197,14 +197,25 @@ export function Home(props: any) {
               <header className="container twitch__header">
                   <h2 className="twitch__title">{matchName}</h2>
                   {streamSource == "event.stream-source/twitch" &&
-                  <button
-                      className="button twitch__button"
-                      type="button"
-                      onClick={() => {
-                          setChatIsOpen(!chatIsOpen)
-                      }}>
-                      {chatIsOpen ? 'Close Chat' : 'Open Chat'}
-                  </button>
+                  // TODO: undo inline stlye
+                  <div style={{display: "flex", width: "20%",justifyContent: "space-between"}}>
+                      <button
+                          className="button twitch__button"
+                          type="button"
+                          onClick={() => {
+                              setSfx(!sfx)
+                          }}>
+                          {sfx ? 'Turn SFX Off' : 'Turn SFX On'}
+                      </button>
+                      <button
+                          className="button twitch__button"
+                          type="button"
+                          onClick={() => {
+                              setChatIsOpen(!chatIsOpen)
+                          }}>
+                          {chatIsOpen ? 'Close Chat' : 'Open Chat'}
+                      </button>
+                  </div>
                   }
               </header>
               <div className="aspect-ratio-wide twitch__video">
@@ -226,6 +237,7 @@ export function Home(props: any) {
                 }
             </div>
             <Vote
+                sfx={sfx}
                 proposition={proposition}
                 prevProposition={prevProposition}
             />
@@ -236,7 +248,7 @@ export function Home(props: any) {
 
     return (
         <>
-            <Header/>
+            <Header sfx={sfx}/>
             <main id="content" role="main">
                 <div className="home__layout">
                     {renderContent()}

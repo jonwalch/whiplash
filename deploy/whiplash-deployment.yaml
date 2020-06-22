@@ -25,7 +25,7 @@ spec:
       #serviceAccountName: datomic-s3
       containers:
         - name: whiplash
-          image: 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:0.1.162
+          image: 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:0.1.163
           imagePullPolicy: IfNotPresent
           ports:
             - name: container-port

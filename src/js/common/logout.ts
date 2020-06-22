@@ -8,7 +8,7 @@ export const logout = async (setLoggedInState: Function) => {
         redirect: "error"
     });
     if (response.status != 200) {
-        alert("Failed to hit server to logout");
+        alert("Failed to logout");
     }
     getUser(setLoggedInState);
 };
