@@ -5,14 +5,14 @@ metadata:
   labels:
     app: whiplash
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
       # Make same as total replicas. We do this because a server running the previous version may be routed
       # a request for a js bundle that it does not have. The website will fail to load properly for the user
       # in this case.
-      maxSurge: 2
+      maxSurge: 1
       maxUnavailable: 0
   selector:
     matchLabels:
