@@ -82,12 +82,9 @@ let config = {
 module.exports = (env, argv) => {
   if (argv.mode === 'development') {
     config.mode = 'development';
-    //fix local dev for twitch extension
-    config.output.filename = "app.contenthash.js";
+    config.output.filename = "[name].[hash].js"
     config.plugins.push(new webpack.HotModuleReplacementPlugin())
-  }
-
-  else {
+  } else {
     config.mode = 'production'
     config.plugins.push(
         new SentryWebpackPlugin({

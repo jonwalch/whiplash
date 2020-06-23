@@ -3,7 +3,8 @@
             [whiplash.db.core :as db]
             [datomic.client.api :as d]
             [whiplash.time :as time]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [whiplash.constants :as constants]))
 
 (defn admin-create-proposition
   [{:keys [body-params] :as req}]
@@ -54,10 +55,8 @@
         previous-prop (first (sort-by :proposition/start-time #(compare %2 %1) (get props false)))]
     (if (or ongoing-prop previous-prop)
       {:status  200
-       :headers {"Access-Control-Allow-Origin"  "*"
-                 "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
-                 "Access-Control-Allow-Methods" "GET"
-                 "Cache-Control" "max-age=1"}
+       :headers (merge constants/CORS-headers
+                       {"Cache-Control" "max-age=1"})
        :body    {:current-prop  (if ongoing-prop
                                   (add-countdown-seconds ongoing-prop)
                                   {})
@@ -65,10 +64,8 @@
                                   (update previous-prop :proposition/result :db/ident)
                                   {})}}
       {:status 204
-       :headers {"Access-Control-Allow-Origin" "*"
-                 "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
-                 "Access-Control-Allow-Methods" "GET"
-                 "Cache-Control" "max-age=1"}
+       :headers (merge constants/CORS-headers
+                       {"Cache-Control"                "max-age=1"})
        :body {}})))
 
 (defn end-current-proposition

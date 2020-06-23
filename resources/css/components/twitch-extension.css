@@ -1,0 +1,66 @@
+.twitch-extension {
+    width: 15%;
+    background: hsla( 202, 65%, 3%, 0.35);
+    margin-top: 5rem;
+    position: static;
+    bottom: auto;
+
+    &.is-bottom-left {
+        margin-top: 0;
+        position: absolute;
+        bottom: 5rem;
+     }
+
+    &.slide-in {
+         -webkit-animation: slide 0.75s;
+         animation: slide 0.75s;
+         animation-fill-mode: forwards;
+      }
+
+    &.slide-out {
+        -webkit-animation: slideout 0.75s;
+        animation: slideout 0.75s;
+        animation-fill-mode: forwards;
+    }
+
+    @-webkit-keyframes slide {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(0);
+            display: initial;
+        }
+    }
+
+    @keyframes slide {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(0);
+            display: initial;
+        }
+    }
+
+    @-webkit-keyframes slideout {
+
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-100%);
+            display: none;
+        }
+    }
+
+    @keyframes slideout {
+        0% {
+                transform: translateX(0);
+            }
+        100% {
+            transform: translateX(-100%);
+            display: none;
+        }
+    }
+}

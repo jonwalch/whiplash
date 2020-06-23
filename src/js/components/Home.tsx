@@ -207,10 +207,9 @@ export function Home(props: any) {
                           onClick={() => {
                               setSfx(!sfx)
                               // Trigger Google Analytics event
-                              gtag('event', 'toggled-sfx', {
+                              gtag('event', 'toggled-sfx', { //TODO change to two different
                                   event_category: 'SFX',
                                   event_label: loggedInState.userName,
-                                  value: !sfx
                               });
                           }}>
                           {sfx ? 'Turn SFX Off' : 'Turn SFX On'}

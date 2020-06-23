@@ -13,7 +13,8 @@
     [whiplash.middleware.exception :as exception]
     [reitit.ring.middleware.parameters :as parameters]
     [whiplash.middleware.formats :as formats]
-    [reitit.coercion.spec :as spec-coercion]))
+    [reitit.coercion.spec :as spec-coercion]
+    [whiplash.constants :as constants]))
 
 (defn home-page [request]
   (layout/render request "index.html")
@@ -21,6 +22,12 @@
 
 #_(defn twitch-extension-page [request]
   (layout/render request "twitch-extension.html"))
+
+(defn CORS-options
+  [req]
+  {:status  204
+   :headers (merge constants/CORS-headers {"Cache-Control"                "max-age=86400"}) ;; Cache the options req for a day
+   :body    nil})
 
 (defn home-routes []
   [""
@@ -116,13 +123,7 @@
 
     ["/prop"
      {:options {:summary "Take care of CORS preflight"
-                :handler (fn [req]
-                           {:status  204
-                            :headers {"Access-Control-Allow-Origin"  "*" ;;TODO: for twitch only?
-                                      "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
-                                      "Access-Control-Allow-Methods" "GET"
-                                      "Cache-Control" "max-age=86400"} ;; Cache the options req for a day
-                            :body    nil})}
+                :handler (fn [req] (CORS-options [req]))}
       :get     {:summary "Get the current prop bet"
                 :handler (fn [req]
                            (proposition/get-current-proposition req))}}]]
@@ -138,7 +139,9 @@
              :handler    (fn [req]
                            (leaderboard/get-prop-bets req))}}]
     ["/event"
-     {:get  {:summary    "get scores from current or most recent event"
+     {:options {:summary "CORS preflight"
+                :handler (fn [req] (CORS-options req))}
+      :get  {:summary    "get scores from current or most recent event"
              :handler    (fn [req]
                            (leaderboard/event-score-leaderboard req))}}]]
 

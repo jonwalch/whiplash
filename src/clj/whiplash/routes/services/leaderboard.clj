@@ -2,7 +2,8 @@
   (:require [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
             [datomic.client.api :as d]
-            [whiplash.payouts :as payouts]))
+            [whiplash.payouts :as payouts]
+            [whiplash.constants :as constants]))
 
 (defn all-time-top-ten
   [{:keys [params] :as req}]
@@ -20,29 +21,30 @@
                                                  :event-id (or ongoing-event
                                                                last-event)}))]
     (if bets
-      (ok
-        (let [transformed-bets (->> bets
-                                    :event/propositions
-                                    (mapcat :bet/_proposition)
-                                    (map (fn [bet]
-                                           (-> bet
-                                               (assoc :user/name (get-in bet [:user/_prop-bets :user/name]))
-                                               (assoc :user/status (get-in bet [:user/_prop-bets :user/status :db/ident]))
-                                               (dissoc :user/_prop-bets)))))]
-          (->> transformed-bets
-               (filter #(not= :user.status/unauth
-                              (:user/status %)))
-               (group-by :user/name)
-               (map (fn [[user bets]]
-                      {:user_name user
-                       :score     (apply +
-                                         0
-                                         (keep (fn [{:keys [bet/amount bet/payout]}]
-                                                 (when (number? payout)
-                                                   (- payout amount)))
-                                               bets))}))
-               (sort-by :score #(compare %2 %1)))))
-      (no-content))))
+      {:status  200
+       :headers constants/CORS-headers
+       :body    (let [transformed-bets (->> bets
+                                            :event/propositions
+                                            (mapcat :bet/_proposition)
+                                            (map (fn [bet]
+                                                   (-> bet
+                                                       (assoc :user/name (get-in bet [:user/_prop-bets :user/name]))
+                                                       (assoc :user/status (get-in bet [:user/_prop-bets :user/status :db/ident]))
+                                                       (dissoc :user/_prop-bets)))))]
+                  (->> transformed-bets
+                       (filter #(not= :user.status/unauth (:user/status %)))
+                       (group-by :user/name)
+                       (map (fn [[user bets]]
+                              {:user_name user
+                               :score     (apply +
+                                                 0
+                                                 (keep (fn [{:keys [bet/amount bet/payout]}]
+                                                         (when (number? payout)
+                                                           (- payout amount)))
+                                                       bets))}))
+                       (sort-by :score #(compare %2 %1))))}
+      {:status 204
+       :headers constants/CORS-headers})))
 
 (defn get-prop-bets
   [{:keys [params] :as req}]

@@ -450,7 +450,44 @@
      (is (= (or status
                 200)
             (:status resp)))
-     (assoc resp :body (common/parse-json-body resp)))))
+
+     (if (= (:status resp) 200)
+       (is
+         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
+             "Access-Control-Allow-Methods" "GET"
+             "Access-Control-Allow-Origin"  "*"
+             "Content-Type"                 "application/json; charset=utf-8"
+             "X-Content-Type-Options"       "nosniff"
+             "X-Frame-Options"              "SAMEORIGIN"
+             "X-XSS-Protection"             "1; mode=block"}
+            (:headers resp)))
+       (is
+         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
+             "Access-Control-Allow-Methods" "GET"
+             "Access-Control-Allow-Origin"  "*"
+             "Content-Type"                 "application/octet-stream"
+             "X-Content-Type-Options"       "nosniff"
+             "X-Frame-Options"              "SAMEORIGIN"
+             "X-XSS-Protection"             "1; mode=block"}
+            (:headers resp))))
+     (if (= 200 (:status resp))
+       (assoc resp :body (common/parse-json-body resp))
+       resp))))
+
+(deftest options-event-leaderboard
+  (testing "need this endpoint and headers for CORS (twitch extension)"
+    (let [resp ((common/test-app) (-> (mock/request :options "/leaderboard/event")))]
+      (is (= 204
+             (:status resp)))
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
+              "Access-Control-Allow-Methods" "GET"
+              "Access-Control-Allow-Origin"  "*"
+              "Cache-Control"                "max-age=86400"
+              "Content-Type"                 "application/octet-stream"
+              "X-Content-Type-Options"       "nosniff"
+              "X-Frame-Options"              "SAMEORIGIN"
+              "X-XSS-Protection"             "1; mode=block"}
+             (:headers resp))))))
 
 (defn- get-prop
   ([]
@@ -468,7 +505,8 @@
              "Content-Type"                 "application/json; charset=utf-8"
              "X-Content-Type-Options"       "nosniff"
              "X-Frame-Options"              "SAMEORIGIN"
-             "X-XSS-Protection"             "1; mode=block"}))
+             "X-XSS-Protection"             "1; mode=block"}
+            (:headers resp)))
      ;; TODO: assert that it conforms to http date spec and is roughly 500 ms in future
      (assoc resp :body (common/parse-json-body resp)))))
 
