@@ -21,8 +21,7 @@
    :region "us-west-2"
    :system "prod-whiplash-datomic"
    #_#_:creds-profile "<your_aws_profile_if_not_using_the_default>"
-   :endpoint #_"http://vpce-083453c598589f6ba-s7g7d18a.vpce-svc-079c04a696f355e37.us-west-2.vpce.amazonaws.com:8182"
-   "http://vpce-0e0c81e5c8220a09c-3y90v90k.vpce-svc-079c04a696f355e37.us-west-2.vpce.amazonaws.com:8182"
+   :endpoint "http://entry.prod-whiplash-datomic.us-west-2.datomic.net:8182"
    })
 
 (defn create-client
