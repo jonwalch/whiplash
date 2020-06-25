@@ -16,7 +16,9 @@
     [buddy.sign.jwt :as jwt]
     [clj-time.core :refer [plus now days]]
     [buddy.core.hash :as hash]
-    [whiplash.time :as time]))
+    [whiplash.time :as time]
+    [clojure.string :as string]
+    [ring.util.request :as req]))
 
 (defn wrap-internal-error [handler]
   (fn [req]
@@ -152,9 +154,20 @@
         (buddy-middleware/wrap-authentication backend)
         (buddy-middleware/wrap-authorization backend))))
 
+(defn wrap-www-redirect [handler]
+  (fn [request]
+    (let [url (req/request-url request)
+          redirect-url (string/replace url #"://www\." "://")]
+      (if (not= url redirect-url)
+        {:status 301
+         :headers {"Location" redirect-url}
+         :body ""}
+        (handler request)))))
+
 ;; These are applied in reverse order, how intuitive
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
+      wrap-www-redirect
       wrap-auth
       (wrap-defaults
         (-> site-defaults

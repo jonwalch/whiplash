@@ -2247,3 +2247,8 @@
   (is (= 205 (:status
                ((common/test-app) (-> (mock/request :get "/stream/event")
                                       (mock/header "client-version" "incorrect-value")))))))
+
+(deftest www-redirect-to-non-www
+  (let [{:keys [status headers]} ((common/test-app) (mock/request :get "http://www.localhost.com/"))]
+    (is (= 301 status))
+    (is (= "http://localhost.com/" (get headers "Location")))))
