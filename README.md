@@ -24,7 +24,7 @@ Run from repl or:
     
 ## Deploying
 
-    fargate service deploy whiplash-web-service --image whiplash=296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:x.x.x --cluster whiplash-cluster --region us-west-2
+    fargate service deploy whiplash-web-service --image 296027954811.dkr.ecr.us-west-2.amazonaws.com/whiplash:x.x.x --cluster whiplash-cluster --region us-west-2
 
 ## Scale vertically
 

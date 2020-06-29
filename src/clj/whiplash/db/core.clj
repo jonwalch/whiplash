@@ -637,11 +637,14 @@
   (->>
     (d/q {:query '[:find (pull ?user [:user/email :user/name :user/sign-up-time])
                    :in $
-                   :where [?user :user/status :user.status/active]]
+                   :where [?user :user/status _]]
           :args  [(d/db conn)]})
 
     (apply concat)
-    (sort-by :user/sign-up-time))
+    (sort-by :user/sign-up-time)
+    #_(map (fn [{:user/keys [email name sign-up-time]}]
+           (str email "," name "," sign-up-time "\n")))
+    #_(apply str))
 
   (defn find-loser-by-email
     [email conn]
