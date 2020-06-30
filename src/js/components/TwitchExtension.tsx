@@ -2,7 +2,7 @@ import React, {useState, useEffect, useContext, useRef} from "react";
 import { useInterval } from "../common";
 import "../../../resources/public/css/App.css";
 import {LoginContext} from "../contexts/LoginContext";
-import {CORSGetUser, OpaqueTwitchId, twitch, twitchBaseUrl} from "../TwitchExtApp";
+import {CORSGetUser, twitch, twitchBaseUrl} from "../TwitchExtApp";
 import UIfx from 'uifx';
 
 const { gtag } = require('ga-gtag');
@@ -64,7 +64,7 @@ export function TwitchExtension(props: any) {
         const response = await fetch(twitchBaseUrl + "user/prop-bet", {
             headers: {
                 "Content-Type": "application/json",
-                "x-twitch-opaque-id": OpaqueTwitchId,
+                "x-twitch-opaque-id": process.env.NODE_ENV === 'development' ? 'testID123' : twitch.viewer.opaqueId,
             },
             method: "POST",
             credentials: "omit",

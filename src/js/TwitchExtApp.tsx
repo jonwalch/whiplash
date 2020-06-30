@@ -13,7 +13,8 @@ declare global {
 
 export const twitch = window.Twitch.ext;
 export const twitchBaseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : "https://whiplashesports.com/";
-export const OpaqueTwitchId =  process.env.NODE_ENV === 'development' ? 'testID123' : twitch.viewer.opaqueId;
+// This wasn't working
+//export const OpaqueTwitchId =  process.env.NODE_ENV === 'development' ? 'testID123' : twitch.viewer.opaqueId;
 
 export const CORSGetUser = async (loggedInState: any, setLoggedInState: Function) => {
     const response = await fetch(twitchBaseUrl + "user", {
@@ -21,7 +22,7 @@ export const CORSGetUser = async (loggedInState: any, setLoggedInState: Function
         credentials: "omit",
         mode: "cors",
         redirect: "error",
-        headers: {"x-twitch-opaque-id": OpaqueTwitchId}
+        headers: {"x-twitch-opaque-id": process.env.NODE_ENV === 'development' ? 'testID123' : twitch.viewer.opaqueId}
     });
     if (response.status === 200) {
         const resp = await response.json();
