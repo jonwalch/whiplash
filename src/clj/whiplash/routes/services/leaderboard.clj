@@ -22,7 +22,7 @@
                                                                last-event)}))]
     (if bets
       {:status  200
-       :headers constants/CORS-headers
+       :headers constants/CORS-GET-headers
        :body    (let [transformed-bets (->> bets
                                             :event/propositions
                                             (mapcat :bet/_proposition)
@@ -32,7 +32,8 @@
                                                        (assoc :user/status (get-in bet [:user/_prop-bets :user/status :db/ident]))
                                                        (dissoc :user/_prop-bets)))))]
                   (->> transformed-bets
-                       (filter #(not= :user.status/unauth (:user/status %)))
+                       (filter #(and (not= :user.status/unauth (:user/status %))
+                                     (not= :user.status/twitch-ext-unauth (:user/status %))))
                        (group-by :user/name)
                        (map (fn [[user bets]]
                               {:user_name user
@@ -43,8 +44,8 @@
                                                            (- payout amount)))
                                                        bets))}))
                        (sort-by :score #(compare %2 %1))))}
-      {:status 204
-       :headers constants/CORS-headers})))
+      {:status  204
+       :headers constants/CORS-GET-headers})))
 
 (defn get-prop-bets
   [{:keys [params] :as req}]

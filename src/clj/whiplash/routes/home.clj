@@ -23,10 +23,17 @@
 #_(defn twitch-extension-page [request]
   (layout/render request "twitch-extension.html"))
 
-(defn CORS-options
+(defn- CORS-GET-options
   [req]
   {:status  204
-   :headers (merge constants/CORS-headers {"Cache-Control"                "max-age=86400"}) ;; Cache the options req for a day
+   :headers (merge constants/CORS-GET-headers {"Cache-Control" "max-age=86400"}) ;; Cache the options req for a day
+   :body    nil})
+
+(defn CORS-GET-and-POST-options
+  [req]
+  {:status  204
+   ;; Cache the options req for a day
+   :headers (merge constants/CORS-GET-and-POST-headers {"Cache-Control" "max-age=86400"})
    :body    nil})
 
 (defn home-routes []
@@ -123,7 +130,7 @@
 
     ["/prop"
      {:options {:summary "Take care of CORS preflight"
-                :handler (fn [req] (CORS-options [req]))}
+                :handler (fn [req] (CORS-GET-options [req]))}
       :get     {:summary "Get the current prop bet"
                 :handler (fn [req]
                            (proposition/get-current-proposition req))}}]]
@@ -140,17 +147,19 @@
                            (leaderboard/get-prop-bets req))}}]
     ["/event"
      {:options {:summary "CORS preflight"
-                :handler (fn [req] (CORS-options req))}
+                :handler (fn [req] (CORS-GET-options req))}
       :get  {:summary    "get scores from current or most recent event"
              :handler    (fn [req]
                            (leaderboard/event-score-leaderboard req))}}]]
 
    ["/user"
     [""
-     {:get  {:summary    "get a user"
-             :middleware [middleware/wrap-restricted-or-ga-unauth-user]
-             :handler    (fn [req]
-                           (user/get-user req))}}]
+     {:options {:summary "Take care of CORS preflight"
+                :handler (fn [req] (CORS-GET-options [req]))}
+      :get  {:summary    "get a user"
+             ;; TODO or twitch
+             :middleware [middleware/wrap-restricted-or-ga-or-twitch]
+             :handler    (fn [req] (user/get-user req))}}]
 
     ["/login"
      [""
@@ -211,17 +220,20 @@
                             (user/account-recovery req))}}]]
 
     ["/prop-bet"
-     {:get  {:summary    "get any current prop bets"
-             :middleware [middleware/wrap-restricted]
-             :handler    (fn [req]
-                           (user/get-prop-bets req))}
+     {:options {:summary "Take care of CORS preflight"
+                :handler (fn [req] (CORS-GET-and-POST-options [req]))}
 
-      :post {:summary    "create a guess for a user"
-             :parameters {:body {:projected_result boolean?
-                                 :bet_amount int?}}
-             :middleware [middleware/wrap-restricted-or-ga-unauth-user]
-             :handler    (fn [req]
-                           (user/create-prop-bet req))}}]
+      :get     {:summary    "get any current prop bets"
+                :middleware [middleware/wrap-restricted]
+                :handler    (fn [req]
+                              (user/get-prop-bets req))}
+
+      :post    {:summary    "create a guess for a user"
+                :parameters {:body {:projected_result boolean?
+                                    :bet_amount       int?}}
+                :middleware [middleware/wrap-restricted-or-ga-or-twitch]
+                :handler    (fn [req]
+                              (assoc (user/create-prop-bet req) :headers constants/CORS-GET-and-POST-headers))}}]
     ["/suggestion"
      {:post {:summary    "create a prop bet suggestion"
              :parameters {:body {:text string?}}

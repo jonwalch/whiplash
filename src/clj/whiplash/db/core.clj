@@ -81,10 +81,12 @@
                           :user/cash         500N}]}))
 
 (defn create-unauthed-user
-  [username]
+  [username status]
+  (assert (or (= status :user.status/unauth)
+              (= status :user.status/twitch-ext-unauth)))
   (d/transact (:conn datomic-cloud)
               {:tx-data [{:user/name         username
-                          :user/status       :user.status/unauth
+                          :user/status       status
                           :user/sign-up-time (time/to-date)
                           :user/cash         500N}]}))
 
@@ -442,7 +444,8 @@
        (map
          (fn [[user-id {:keys [user/cash user/total-payout user/status]}]]
            (let [new-balance (+ cash total-payout)
-                 authed-user? (not= status :user.status/unauth)
+                 authed-user? (and (not= status :user.status/unauth)
+                                   (not= status :user.status/twitch-ext-unauth))
                  bailout? (> 100 new-balance)
                  cas [:db/cas user-id :user/cash cash (if (and authed-user?
                                                                bailout?

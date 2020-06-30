@@ -8,7 +8,8 @@
             [clojure.tools.logging :as log]
             [whiplash.time :as time]
             [java-time :as jtime]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [whiplash.constants :as constants])
   (:import (java.security MessageDigest)))
 
 ;; https://www.regular-expressions.info/email.html
@@ -71,6 +72,14 @@
   (when-let [ga (:value (get cookies "_ga"))]
     (format "user-%s"
             (->> (string/replace ga #"[a-zA-Z]|\." "")
+                 (map #(get fuzz-map %))
+                 (apply str)))))
+
+(defn- twitch-unauth-username
+  [{:keys [headers]}]
+  (when-let [oid (get headers "x-twitch-opaque-id")]
+    (format "user-%s"
+            (->> (string/replace oid #"[a-zA-Z]|\." "")
                  (map #(get fuzz-map %))
                  (apply str)))))
 
@@ -170,17 +179,23 @@
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        user-entity (db/pull-user {:user/name (or user (unauthed-username req))
+        user-entity (db/pull-user {:user/name (or user
+                                                  (twitch-unauth-username req)
+                                                  (unauthed-username req))
                                    :db        db
                                    :attrs     [{:user/status [:db/ident]}
                                                :user/first-name :user/last-name :user/email
                                                :user/name :user/cash :db/id]})]
     (if (some? user-entity)
-      (ok (-> user-entity
-              (dissoc :db/id)
-              ;; TODO: make part of pull-user query
-              (assoc :user/notifications (retrieve-and-ack-user-notifications db (:db/id user-entity)))))
-      (not-found {:message (format "User %s not found" user)}))))
+      {:status  200
+       :headers constants/CORS-GET-headers
+       :body    (-> user-entity
+                 (dissoc :db/id)
+                 ;; TODO: make part of pull-user query
+                 (assoc :user/notifications (retrieve-and-ack-user-notifications db (:db/id user-entity))))}
+      {:status  404
+       :headers constants/CORS-GET-headers
+       :body    {:message (format "User %s not found" user)}})))
 
 (defn login
   [{:keys [body-params] :as req}]
@@ -227,14 +242,21 @@
                       :same-site :strict}}})
 
 (defn- pull-and-maybe-create-user
-  [{:keys [user unauthed-user db]}]
+  [{:keys [user unauthed-user twitch-ext-unauth-user db]}]
   (let [pulled-user (db/pull-user {:db        db
-                                   :user/name (or user unauthed-user)
+                                   :user/name (or user twitch-ext-unauth-user unauthed-user)
                                    :attrs     [:user/cash :db/id {:user/status [:db/ident]}]})]
-    (if (or user
-            (and unauthed-user pulled-user))
+    (cond
       pulled-user
-      (let [tx-result (db/create-unauthed-user unauthed-user)]
+      pulled-user
+
+      twitch-ext-unauth-user
+      (let [tx-result (db/create-unauthed-user twitch-ext-unauth-user :user.status/twitch-ext-unauth)]
+        (db/pull-user {:db (:db-after tx-result)
+                       :user/name twitch-ext-unauth-user
+                       :attrs     [:user/cash :db/id {:user/status [:db/ident]}]}))
+      unauthed-user
+      (let [tx-result (db/create-unauthed-user unauthed-user :user.status/unauth)]
         (db/pull-user {:db (:db-after tx-result)
                        :user/name unauthed-user
                        :attrs     [:user/cash :db/id {:user/status [:db/ident]}]})))))
@@ -243,12 +265,16 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [bet_amount projected_result]} body-params
         {:keys [user exp]} (middleware/req->token req)
-        unauthed-user (when-not user
+        twitch-ext-unauth-user (when-not user
+                                 (twitch-unauth-username req))
+        unauthed-user (when (and (not user)
+                                 (not twitch-ext-unauth-user))
                         (unauthed-username req))
         db (d/db (:conn db/datomic-cloud))
         {:keys [db/id user/cash user/status]} (pull-and-maybe-create-user
                                                 {:user user
                                                  :unauthed-user unauthed-user
+                                                 :twitch-ext-unauth-user twitch-ext-unauth-user
                                                  :db db})
         ongoing-prop (db/pull-ongoing-proposition {:db db :attrs [:db/id]})
         ;; TODO: make this query part of pulling the user if it shaves off a query
@@ -258,7 +284,8 @@
                                                    :prop-id               (:db/id ongoing-prop)
                                                    :bet/projected-result? projected_result}))]
     (cond
-      (not-any? #(= % status) [:user.status/active :user.status/admin :user.status/unauth])
+      (not-any? #(= % status) [:user.status/active :user.status/admin
+                               :user.status/unauth :user.status/twitch-ext-unauth])
       (conflict {:message "User not in betable state."})
 
       (and (some? existing-bet) (>= 0 bet_amount))

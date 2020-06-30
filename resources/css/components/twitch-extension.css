@@ -1,5 +1,5 @@
 .twitch-extension {
-    width: 15%;
+    width: 20%;
     background: hsla( 202, 65%, 3%, 0.35);
     margin-top: 5rem;
     position: static;
@@ -12,14 +12,14 @@
      }
 
     &.slide-in {
-         -webkit-animation: slide 0.75s;
-         animation: slide 0.75s;
+         -webkit-animation: slide 0.75s linear;
+         animation: slide 0.75s linear;
          animation-fill-mode: forwards;
       }
 
     &.slide-out {
-        -webkit-animation: slideout 0.75s;
-        animation: slideout 0.75s;
+        -webkit-animation: slideout 0.75s linear 6s;
+        animation: slideout 0.75s linear 6s;
         animation-fill-mode: forwards;
     }
 
@@ -62,5 +62,40 @@
             transform: translateX(-100%);
             display: none;
         }
+    }
+}
+
+.profit-pulse {
+     -webkit-animation: pulse 1.5s linear;
+     animation: pulse 1.5s linear;
+
+    @keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 hsl(51, 100%, 50%, .7);
+    }
+    40% {
+        box-shadow: 0 0 0 10px hsl(51, 100%, 50%, 0);
+    }
+    80% {
+        box-shadow: 0 0 0 10px hsl(51, 100%, 50%, 0) , 0 0 0 5px hsl(51, 100%, 50%, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 hsl(51, 100%, 50%, 0), 0 0 0 5px hsl(51, 100%, 50%, 0);
+    }
+    }
+
+    @-webkit-keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 hsl(51, 100%, 50%, .7);
+    }
+    40% {
+        box-shadow: 0 0 0 10px hsl(51, 100%, 50%, 0);
+    }
+    80% {
+        box-shadow: 0 0 0 10px hsl(51, 100%, 50%, 0) , 0 0 0 5px hsl(51, 100%, 50%, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 hsl(51, 100%, 50%, 0), 0 0 0 5px hsl(51, 100%, 50%, 0);
+    }
     }
 }

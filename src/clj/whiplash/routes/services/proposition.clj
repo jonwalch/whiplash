@@ -55,7 +55,7 @@
         previous-prop (first (sort-by :proposition/start-time #(compare %2 %1) (get props false)))]
     (if (or ongoing-prop previous-prop)
       {:status  200
-       :headers (merge constants/CORS-headers
+       :headers (merge constants/CORS-GET-headers
                        {"Cache-Control" "max-age=1"})
        :body    {:current-prop  (if ongoing-prop
                                   (add-countdown-seconds ongoing-prop)
@@ -64,7 +64,7 @@
                                   (update previous-prop :proposition/result :db/ident)
                                   {})}}
       {:status 204
-       :headers (merge constants/CORS-headers
+       :headers (merge constants/CORS-GET-headers
                        {"Cache-Control"                "max-age=1"})
        :body {}})))
 

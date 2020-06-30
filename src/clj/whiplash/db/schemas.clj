@@ -334,7 +334,8 @@
        {:db/doc         "The outcome of the prop bet"
         :db/ident       :proposition/result
         :db/valueType   :db.type/ref
-        :db/cardinality :db.cardinality/one}]})
+        :db/cardinality :db.cardinality/one}]
+   :8 [{:db/ident :user.status/twitch-ext-unauth}]})
 
 (defn migrations->schema-tx
   []

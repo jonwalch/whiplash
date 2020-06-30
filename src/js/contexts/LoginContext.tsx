@@ -6,7 +6,7 @@ export interface loggedIn {
   cash: number;
   notifications: Object[];
 }
-export const defaultLoggedIn: loggedIn = { userName: null, status: null, cash: 0, notifications: []};
+export const defaultLoggedIn: loggedIn = { userName: null, status: null, cash: -1, notifications: []};
 
 interface loggedInState {
   loggedInState: loggedIn;

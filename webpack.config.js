@@ -32,7 +32,7 @@ let config = {
             loader: 'file-loader',
             options: {
               name: '[name].[ext]',
-              outputPath: 'resources/public/fonts/' // TODO change this
+              outputPath: 'fonts'
             }
           }
         ]
@@ -41,7 +41,8 @@ let config = {
         test: /\.(ogg|mp3|wav|mpe?g)$/i,
         loader: 'file-loader',
         options: {
-          name: '[path][name].[ext]'
+          name: '[name].[ext]',
+          outputPath: "sfx"
         }
       }
     ]

@@ -18,7 +18,8 @@
     [buddy.core.hash :as hash]
     [whiplash.time :as time]
     [clojure.string :as string]
-    [ring.util.request :as req]))
+    [ring.util.request :as req]
+    [whiplash.constants :as constants]))
 
 (defn wrap-internal-error [handler]
   (fn [req]
@@ -116,14 +117,24 @@
                   (< (time/to-millis) exp)
                   (= "user.status/admin" status)))))
 
-(defn valid-auth-or-ga-cookie?
+;(defn valid-auth-or-ga-cookie?
+;  [req]
+;  (let [{:keys [user exp]} (req->token req)]
+;    (or (boolean (and (string? user)
+;                      (int? exp)
+;                      (< (time/to-millis) exp)))
+;        ;; TODO: regex validation of _ga tag
+;        (string? (-> req :cookies (get "_ga") :value)))))
+
+(defn valid-auth-or-ga-cookie-or-twitch-opaque-id?
   [req]
   (let [{:keys [user exp]} (req->token req)]
     (or (boolean (and (string? user)
                       (int? exp)
                       (< (time/to-millis) exp)))
         ;; TODO: regex validation of _ga tag
-        (string? (-> req :cookies (get "_ga") :value)))))
+        (string? (-> req :cookies (get "_ga") :value))
+        (string? (-> req :headers (get "x-twitch-opaque-id"))))))
 
 (defn on-error [request response]
   {:status 403
@@ -138,8 +149,13 @@
                      :on-error on-error}))
 
 ;; Add on a per route basis
-(defn wrap-restricted-or-ga-unauth-user [handler]
-  (restrict handler {:handler valid-auth-or-ga-cookie?
+;(defn wrap-restricted-or-ga-unauth-user [handler]
+;  (restrict handler {:handler valid-auth-or-ga-cookie?
+;                     :on-error on-error}))
+
+;; Add on a per route basis
+(defn wrap-restricted-or-ga-or-twitch [handler]
+  (restrict handler {:handler valid-auth-or-ga-cookie-or-twitch-opaque-id?
                      :on-error on-error}))
 
 ;; Add on a per route basis

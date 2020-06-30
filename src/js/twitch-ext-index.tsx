@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {TwitchExtension} from "./components/TwitchExtension";
 import {initializeSentry} from "./common/sentry";
+import {TwitchExtApp} from "./TwitchExtApp";
 
 initializeSentry()
 
 ReactDOM.render(
-    <TwitchExtension />,
+    <TwitchExtApp />,
     document.getElementById("root")
 );

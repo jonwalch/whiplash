@@ -22,7 +22,7 @@ export function Vote (props: any) {
   const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
 
   const booleanToButton = () => {
-    if (projectedResult == null) {
+    if (projectedResult === null) {
       return "none"
     }
     else if (projectedResult) {
@@ -110,7 +110,7 @@ export function Vote (props: any) {
 
     } else {
       return projectedResult === null ||
-          betAmount == 0 ||
+          betAmount === 0 ||
           // TODO: change this to a constant
           betAmount > 500 ||
           betWaitingForResp;
@@ -167,7 +167,7 @@ export function Vote (props: any) {
     else if (loggedInState.status === "user.status/unauth") {
       return "Sign up to receive bailouts when you drop below $100 Whipcash!"
     }
-    else if (loggedInState.status == "user.status/pending") {
+    else if (loggedInState.status === "user.status/pending") {
       return "Verify your email to bet!"
     }
   };
