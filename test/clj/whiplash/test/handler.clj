@@ -2353,7 +2353,7 @@
                     :odds  2.0
                     :total 500}
             :true  {:bets  [{:bet/amount 500
-                             :user/name  "user-cAg"}]
+                             :user/name  "user-testIDcAg"}]
                     :odds  2.0
                     :total 500}}
            (:body current-prop-bets-response)))

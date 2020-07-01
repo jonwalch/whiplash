@@ -79,8 +79,10 @@
   [{:keys [headers]}]
   (when-let [oid (get headers "x-twitch-opaque-id")]
     (format "user-%s"
-            (->> (string/replace oid #"[a-zA-Z]|\." "")
-                 (map #(get fuzz-map %))
+            (->> (string/replace oid #"\." "")
+                 (map #(or (get fuzz-map %)
+                           ;; if its a character just use the character
+                           %))
                  (apply str)))))
 
 (defn create-user
