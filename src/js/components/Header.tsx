@@ -6,6 +6,7 @@ import {scrollToTop} from "../common";
 import {LoginContext} from "../contexts/LoginContext";
 import {baseUrl} from "../config/const";
 import {logout} from "../common/logout";
+
 const { gtag } = require('ga-gtag');
 
 import UIfx from 'uifx';
@@ -138,6 +139,9 @@ export function Header(props:any) {
                     scrollToTop();
                     setShowSignup(!showSignup);
                     setShowLogin(false);
+                    gtag('event', 'open-sign-up-form', {
+                        event_category: 'Sign Up',
+                    });
                 }}>
                 {showSignup ? "Cancel" : "Sign Up"}
             </button>

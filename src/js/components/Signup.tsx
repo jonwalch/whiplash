@@ -1,6 +1,8 @@
 import React, { useState, ChangeEvent } from "react";
 import { baseUrl } from "../config/const";
 
+const { gtag } = require('ga-gtag');
+
 export function Signup(props: any) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -49,8 +51,12 @@ export function Signup(props: any) {
       alert(resp.message);
     }
     setSignUpWaitingForResp(false);
+
+    gtag('event', 'submit-sign-up-form', {
+      event_category: 'Sign Up',
+    });
   };
-  
+
   const signupOnKeyPress = (e: any) => {
     const key = e.key;
     if (key == "Enter" && !toggleValid()) {
