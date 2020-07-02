@@ -5,8 +5,6 @@ import {LoginContext} from "../contexts/LoginContext";
 import {CORSGetUser, twitch, twitchBaseUrl} from "../TwitchExtApp";
 import UIfx from 'uifx';
 
-const { gtag } = require('ga-gtag');
-
 const kc = new UIfx(
     (process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : "https://whiplashesports.com/") + "dist/sfx/ka-ching.mp3",
     {
@@ -77,11 +75,14 @@ export function TwitchExtension(props: any) {
         });
 
         // Trigger Google Analytics event
-        gtag('event', 'prop-bet', {
-            event_category: 'Betting',
-            event_label: loggedInState.userName,
-            value: betAmount
-        });
+        // @ts-ignore
+        ga('send', {
+            hitType: 'event',
+            eventCategory: 'Betting',
+            eventAction: 'prop-bet',
+            eventLabel: loggedInState.userName,
+            eventValue: betAmount,
+        })
 
         setBetWaitingForResp(false);
         if (response.status === 200) {

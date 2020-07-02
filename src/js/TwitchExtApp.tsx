@@ -3,8 +3,6 @@ import "../../resources/public/css/App.css";
 import {defaultLoggedIn, LoginContext} from "./contexts/LoginContext";
 import {TwitchExtension} from "./components/TwitchExtension";
 
-const { install } = require('ga-gtag');
-
 declare global {
     interface Window {
         Twitch:any;
@@ -43,10 +41,13 @@ export const TwitchExtApp = () => {
     const [loggedInState, setLoggedInState] = useState(defaultLoggedIn);
 
     useEffect(() => {
-        // Install Google tag manager, will only track on hostnames that contain 'whiplash'
-        // this was configured as a filter named 'whiplash hostname filter (filter out local host)'
-        // in the GA admin panel
-        install('UA-154430212-2');
+        // TODO: update to gtag once twitch supports
+        // Install google analytics inline for Twitch policy
+        // @ts-ignore
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','https://www.google-analytics.com/analytics.js','ga'); ga('create', 'UA-154430212-4', 'auto');
+
+        // @ts-ignore
+        ga('send', {hitType: 'pageview',});
 
         CORSGetUser(loggedInState,setLoggedInState);
     }, []);
