@@ -24,6 +24,7 @@ export function TwitchExtension(props: any) {
 
     const [betAmount, setBetAmount] = useState<number>(0);
     const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
+    const [userTriedBetting, setUserTriedBetting] = useState<boolean>(false);
     // @ts-ignore
     const pulseP = useRef(null);
 
@@ -59,6 +60,7 @@ export function TwitchExtension(props: any) {
 
     const CORSMakePropBet = async (projectedResult : boolean) => {
         setBetWaitingForResp(true);
+        setUserTriedBetting(true);
         const response = await fetch(twitchBaseUrl + "user/prop-bet", {
             headers: {
                 "Content-Type": "application/json",
@@ -90,7 +92,7 @@ export function TwitchExtension(props: any) {
             setLoggedInState(
                 { userName: loggedInState.userName,
                     status: loggedInState.status,
-                    cash: loggedInState.cash - betAmount,
+                    cash: loggedInState.cash !== -1 ? loggedInState.cash - betAmount : 500 - betAmount,
                     notifications: loggedInState.notifications})
         }
     };
@@ -151,14 +153,16 @@ export function TwitchExtension(props: any) {
     useInterval(() => {
         // @ts-ignore
         pulseP.current?.classList.remove("profit-pulse")
-        CORSGetUser(loggedInState, setLoggedInState).then((delta) => {
-                if (delta > 0) {
-                    // apply animation to show cash increase
-                    // @ts-ignore
-                    pulseP.current?.classList.add("profit-pulse")
+        if (userTriedBetting || loggedInState.userName) {
+            CORSGetUser(loggedInState, setLoggedInState).then((delta) => {
+                    if (delta > 0) {
+                        // apply animation to show cash increase
+                        // @ts-ignore
+                        pulseP.current?.classList.add("profit-pulse")
+                    }
                 }
-            }
-        );
+            );
+        }
     }, 5000);
 
     useInterval(() => {
@@ -222,7 +226,7 @@ export function TwitchExtension(props: any) {
             return (
                 <>
                     <p style={{...textStyles, ...{margin: 0}}}>
-                        Countdown: {proposition["proposition/betting-seconds-left"]}
+                        Timer: {proposition["proposition/betting-seconds-left"]}
                     </p>
                     <div className="form__group">
                         <input

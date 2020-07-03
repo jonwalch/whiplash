@@ -179,7 +179,7 @@ export function Vote (props: any) {
       if (props.proposition["proposition/betting-seconds-left"] > 0) {
         return (
             <>
-              <p>Seconds left to bet: {props.proposition["proposition/betting-seconds-left"]}</p>
+              <p>Timer: {props.proposition["proposition/betting-seconds-left"]}</p>
               <div className="form__button-group">
                 <button
                     className="button button--vote"
