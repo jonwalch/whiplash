@@ -222,7 +222,7 @@ export function TwitchExtension(props: any) {
     };
 
     const renderBody = () => {
-        if (proposition["proposition/betting-seconds-left"] > 0 && loggedInState.cash !== 0) {
+        if (proposition["proposition/betting-seconds-left"] > 0 && loggedInState.cash >= 100) {
             return (
                 <>
                     <p style={{...textStyles, ...{margin: 0}}}>
@@ -271,7 +271,7 @@ export function TwitchExtension(props: any) {
                     </div>
                 </>
             );
-        } else if (loggedInState.cash === 0){
+        } else if (loggedInState.cash < 100){
             return (
                 <div style={{padding: "0 0.5rem 0.5rem 0.5rem"}}>Sign up on Whiplash.gg to keep playing!</div>
             );
