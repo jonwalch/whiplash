@@ -45,24 +45,24 @@
 
 (def dummy-user
   {:first_name "yas"
-   :last_name "queen"
-   :email "butt@cheek.com"
-   :password "foobar2000"
-   :user_name "queefburglar"})
+   :last_name  "queen"
+   :email      "butt@cheek.com"
+   :password   "foobar2000"
+   :user_name  "queefburglar"})
 
 (def dummy-user-2
   {:first_name "yas"
-   :last_name "queen"
-   :email "butt@crack.com"
-   :password "foobar2000"
-   :user_name "donniedarko"})
+   :last_name  "queen"
+   :email      "butt@crack.com"
+   :password   "foobar2000"
+   :user_name  "donniedarko"})
 
 (def dummy-user-3
   {:first_name "Joan"
-   :last_name "Walters"
-   :email "butt@snack.com"
-   :password "foobar2001"
-   :user_name "kittycuddler420"})
+   :last_name  "Walters"
+   :email      "butt@snack.com"
+   :password   "foobar2001"
+   :user_name  "kittycuddler420"})
 
 (deftest test-user-400s
   (testing "cant get user, not logged in"
@@ -78,7 +78,7 @@
   (testing "can't login as nonexistent user"
     (let [login-resp ((common/test-app) (-> (mock/request :post "/user/login")
                                             (mock/json-body {:user_name (:user_name dummy-user)
-                                                             :password (:password dummy-user)})))]
+                                                             :password  (:password dummy-user)})))]
 
       (is (= 401 (:status login-resp))))))
 
@@ -118,7 +118,7 @@
      (is (empty? parsed-body))
 
      (when verify?
-       (verify-email {:email email
+       (verify-email {:email        email
                       :verify-token (:user/verify-token sent-email)}))
 
      (when admin?
@@ -173,8 +173,8 @@
   ([{:keys [user_name password] :as user}]
    (assert (and user_name password))
    (let [resp ((common/test-app) (-> (mock/request :post "/user/login")
-                                     (mock/json-body {:user_name   user_name
-                                                      :password password})))
+                                     (mock/json-body {:user_name user_name
+                                                      :password  password})))
          parsed-body (common/parse-json-body resp)
          auth-token (-> resp :headers get-token-from-headers)]
 
@@ -182,7 +182,7 @@
      (is (string? auth-token))
 
      {:auth-token auth-token
-      :response (assoc resp :body parsed-body)})))
+      :response   (assoc resp :body parsed-body)})))
 
 (defn- create-user-and-login
   ([]
@@ -263,12 +263,12 @@
           create-again-fail ((common/test-app) (-> (mock/request :post "/user/create")
                                                    (mock/json-body dummy-user)))]
 
-      (is (= #:user{:email      email
-                    :first-name first_name
-                    :last-name  last_name
-                    :status     "user.status/pending"
-                    :name       user_name
-                    :cash       500
+      (is (= #:user{:email         email
+                    :first-name    first_name
+                    :last-name     last_name
+                    :status        "user.status/pending"
+                    :name          user_name
+                    :cash          500
                     :notifications []}
              (:body get-success-resp)))
 
@@ -291,7 +291,7 @@
 (deftest login-with-email-address
   (create-user)
   (login {:user_name (:email dummy-user)
-          :password (:password dummy-user)}))
+          :password  (:password dummy-user)}))
 
 (defn- create-user-failure
   ([]
@@ -357,13 +357,13 @@
           verify-token (get-in login-resp [:create-user :token])
           {:keys [body] :as get-success-resp} (get-user {:auth-token auth-token})
           {:keys [user/email]} body
-          verify-resp (verify-email {:email email
+          verify-resp (verify-email {:email        email
                                      :verify-token verify-token})
-          try-verify-again-resp (verify-email {:email email
+          try-verify-again-resp (verify-email {:email        email
                                                :verify-token verify-token})
-          failed-verify-resp (verify-email {:email email
+          failed-verify-resp (verify-email {:email        email
                                             :verify-token "you only yolo once"
-                                            :status 404})
+                                            :status       404})
           get-verified-user (get-user {:auth-token auth-token})]
       (is (= {:message (format "Successfully verified %s" email)}
              (:body verify-resp)))
@@ -553,14 +553,14 @@
                      twitch-id?
                      true)
         resp (cond
-               ga-tag?                                           ;;unauth user
+               ga-tag?                                      ;;unauth user
                ((common/test-app) (-> (mock/request :post "/user/prop-bet")
                                       ;; All requests should have this cookie set by google analytics
                                       (mock/cookie :_ga "GA1.2.1493569166.1576110731")
                                       (mock/cookie :value auth-token)
                                       (mock/json-body {:projected_result projected-result
                                                        :bet_amount       bet-amount})))
-               twitch-id?                                ;;unauth twitch user
+               twitch-id?                                   ;;unauth twitch user
                ((common/test-app) (-> (mock/request :post "/user/prop-bet")
                                       (mock/header "x-twitch-opaque-id" "testID123")
                                       (mock/cookie :value auth-token)
@@ -634,9 +634,9 @@
   (testing "fail to create event because not admin"
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login)]
       (admin-create-event {:auth-token auth-token
-                           :title "poops"
+                           :title      "poops"
                            :channel-id "pig boops"
-                           :status 403}))))
+                           :status     403}))))
 
 (deftest success-admin-create-event
   (testing "successfully create and get event with proper admin role"
@@ -645,46 +645,46 @@
           title "Dirty Dan's Delirious Dance Party"
           twitch-user "drdisrespect"
           resp (admin-create-event {:auth-token auth-token
-                                    :title title
+                                    :title      title
                                     :channel-id twitch-user})
           fail-create-again-resp (admin-create-event {:auth-token auth-token
-                                                      :title title
+                                                      :title      title
                                                       :channel-id twitch-user
-                                                      :status 405})
+                                                      :status     405})
 
           get-event-response (get-event)
           get-response-body (:body get-event-response)
 
           text "Will Jon wipeout 2+ times this round?"
           create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                   :text text})
+                                                   :text       text})
 
-          success-get-running-prop-resp  (get-prop)
+          success-get-running-prop-resp (get-prop)
 
           success-get-prop-body (:body success-get-running-prop-resp)
           current-prop (:current-prop success-get-prop-body)
 
           fail-end-event-resp (admin-end-event {:auth-token auth-token
-                                                :status 405})
+                                                :status     405})
 
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result "true"})
+                                             :result     "true"})
 
           end-event-resp (admin-end-event {:auth-token auth-token})
           get-after-end-resp (get-event {:status 204})]
 
       (is (string? (:proposition/start-time current-prop)))
       (is (string? (:proposition/betting-end-time current-prop)))
-      (is (= #:proposition{:running? true
+      (is (= #:proposition{:running?             true
                            :betting-seconds-left 29
-                           :text text}
+                           :text                 text}
              (dissoc current-prop :proposition/start-time :proposition/betting-end-time)))
 
       (is (string? (:event/start-time get-response-body)))
-      (is (= #:event{:running? true
-                     :title title
+      (is (= #:event{:running?      true
+                     :title         title
                      :stream-source "event.stream-source/twitch"
-                     :channel-id twitch-user}
+                     :channel-id    twitch-user}
              (dissoc get-response-body :event/start-time))))))
 
 (deftest fail-create-empty-prop
@@ -694,11 +694,11 @@
           title "Dirty Dan's Delirious Dance Party"
           twitch-user "drdisrespect"
           resp (admin-create-event {:auth-token auth-token
-                                    :title title
+                                    :title      title
                                     :channel-id twitch-user})
           create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                   :text ""
-                                                   :status 405})])))
+                                                   :text       ""
+                                                   :status     405})])))
 
 (deftest success-get-event
   (testing "successfully get nonexistent event, don't need admin"
@@ -708,13 +708,13 @@
   (testing "fails because user is not an admin"
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login)]
       (admin-end-event {:auth-token auth-token
-                        :status 403}))))
+                        :status     403}))))
 
 (deftest no-event-to-end
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))]
     (admin-end-event {:auth-token auth-token
-                      :status 405})))
+                      :status     405})))
 
 (deftest admin-and-user-create-prop-bet
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -862,19 +862,19 @@
 
     (is (= 520 (-> user2-get-user :body :user/cash)))
     ;; 2 payouts for the same proposition coalesced into one notification
-    (is (= [{:bet/payout          520
-             :notification/type   "notification.type/payout"
+    (is (= [{:bet/payout         520
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> user2-get-user :body :user/notifications)))
     (is (= []
            (-> user2-get-user-notifs-acked :body :user/notifications)))
 
     (is (= 1020 (-> user3-get-user :body :user/cash)))
-    (is (= [{:bet/payout          1020
-             :notification/type   "notification.type/payout"
+    (is (= [{:bet/payout         1020
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> user3-get-user :body :user/notifications)))
     (is (= []
            (-> user3-get-user-notifs-acked :body :user/notifications)))))
@@ -992,10 +992,10 @@
 
     ;; notifications
     (is (= 830 (-> admin-get-user :body :user/cash)))
-    (is (= [{:bet/payout          730
-             :notification/type   "notification.type/payout"
+    (is (= [{:bet/payout         730
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/false"
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> admin-get-user :body :user/notifications)))
 
     (is (= 555 (-> user2-get-user :body :user/cash)))
@@ -1118,10 +1118,10 @@
            (-> user2-get-user-before-flip :body :user/notifications)))
 
     (is (= 1010 (-> user2-get-user-after-flip :body :user/cash)))
-    (is (= [{:bet/payout          710
-             :notification/type   "notification.type/payout"
+    (is (= [{:bet/payout         710
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/false"
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> user2-get-user-after-flip :body :user/notifications)))))
 
 (deftest cancel-proposition
@@ -1186,7 +1186,7 @@
 
         {:keys [auth-token] login-resp :response} (login)
         flip-outcome-resp (admin-flip-prop-outcome {:auth-token auth-token
-                                                    :status 405})
+                                                    :status     405})
         event-score-after-cancel (get-event-leaderboard)
 
         admin-get-user (get-user {:auth-token auth-token})
@@ -1227,10 +1227,10 @@
 
     ;; notifications
     (is (= 500 (-> admin-get-user :body :user/cash)))
-    (is (= [{:bet/payout          400
-             :notification/type   "notification.type/payout"
+    (is (= [{:bet/payout         400
+             :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/cancelled"
-             :proposition/text    "Will Jon wipeout 2+ times this round?"}]
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> admin-get-user :body :user/notifications)))
 
     (is (= 500 (-> user2-get-user :body :user/cash)))
@@ -1276,7 +1276,7 @@
         user-place-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
                                                        :projected-result true
                                                        :bet-amount       100
-                                                       :status 409})]))
+                                                       :status           409})]))
 
 (deftest no-payout-doesnt-break
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -1334,20 +1334,20 @@
           title "Dirty Dan's Delirious Dance Party"
           twitch-user "drdisrespect"
           create-event-resp (admin-create-event {:auth-token auth-token
-                                                 :title title
+                                                 :title      title
                                                  :channel-id twitch-user})
 
           text "Will Jon wipeout 2+ times this round?"
           create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                   :text text})
+                                                   :text       text})
 
-          user-place-prop-bet-resp (user-place-prop-bet {:auth-token auth-token
+          user-place-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
                                                          :projected-result true
-                                                         :bet-amount 300})
+                                                         :bet-amount       300})
 
-          user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token auth-token
+          user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       auth-token
                                                           :projected-result false
-                                                          :bet-amount 200})
+                                                          :bet-amount       200})
 
           user-get-prop-bet-resp (user-get-prop-bets {:auth-token auth-token})
           get-body (:body user-get-prop-bet-resp)
@@ -1357,7 +1357,7 @@
           ;;admin end prop bet
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result "false"})
+                                             :result     "false"})
 
           _ (is (= 510 (-> (get-user {:auth-token auth-token}) :body :user/cash)))
 
@@ -1374,13 +1374,13 @@
              (mapv #(dissoc % :bet/time) get-body)))
 
       (is (= {:false {:bets  [{:bet/amount 200
-                              :user/name  "queefburglar"}]
-                     :odds  2.5
-                     :total 200}
-             :true  {:bets  [{:bet/amount 300
-                              :user/name  "queefburglar"}]
-                     :odds  1.666666666666667
-                     :total 300}}
+                               :user/name  "queefburglar"}]
+                      :odds  2.5
+                      :total 200}
+              :true  {:bets  [{:bet/amount 300
+                               :user/name  "queefburglar"}]
+                      :odds  1.666666666666667
+                      :total 300}}
              (:body current-prop-bets-response)))
 
       (is (= [{:score     10
@@ -1397,22 +1397,22 @@
   (testing "no ongoing event"
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login)]
       (user-submit-suggestion {:auth-token auth-token
-                               :text "foo"
-                               :status 405}))))
+                               :text       "foo"
+                               :status     405}))))
 
 (deftest user-cant-submit-suggestion-text
   (testing "invalid text"
     (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                       (assoc dummy-user :admin? true))]
       (admin-create-event {:auth-token auth-token
-                           :title "hi"
+                           :title      "hi"
                            :channel-id "donnie"})
       (user-submit-suggestion {:auth-token auth-token
-                               :text ""
-                               :status 405})
+                               :text       ""
+                               :status     405})
       (user-submit-suggestion {:auth-token auth-token
-                               :text "this string is going to be very long and possibly even over 100 characters wowee zowie. I don't know."
-                               :status 405}))))
+                               :text       "this string is going to be very long and possibly even over 100 characters wowee zowie. I don't know."
+                               :status     405}))))
 
 (deftest user-cant-suggest-email-not-verified
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -1432,8 +1432,8 @@
 (deftest dismiss-suggestions-success
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
-        _ (admin-create-event {:auth-token  auth-token
-                               :title       "hi"
+        _ (admin-create-event {:auth-token auth-token
+                               :title      "hi"
                                :channel-id "donnie"})
         _ (user-submit-suggestion {:auth-token auth-token
                                    :text       "Captain Falcon gets 2 or more dunks this round."})
@@ -1451,7 +1451,7 @@
                                     (filter #(= (:suggestion/text %) dismiss-text))
                                     (mapv :suggestion/uuid))
 
-        _ (admin-dismiss-suggestions {:auth-token auth-token
+        _ (admin-dismiss-suggestions {:auth-token  auth-token
                                       :suggestions suggestions-to-dismiss})
 
         ;; These UUIDs don't correspond to any suggestions
@@ -1492,18 +1492,18 @@
 (deftest admin-get-empty-suggestion-ongoing-event
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
-        _ (admin-create-event {:auth-token  auth-token
-                               :title       "hi"
+        _ (admin-create-event {:auth-token auth-token
+                               :title      "hi"
                                :channel-id "donnie"})
         get-suggestions (admin-get-suggestions {:auth-token auth-token
-                                                :status 204})]
+                                                :status     204})]
     (is (nil? (:body get-suggestions)))))
 
 (deftest admin-get-empty-suggestion-no-event
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
         get-suggestions (admin-get-suggestions {:auth-token auth-token
-                                                :status 204})]
+                                                :status     204})]
     (is (nil? (:body get-suggestions)))))
 
 (deftest end-betting-for-proposition
@@ -1512,17 +1512,17 @@
         title "Dirty Dan's Delirious Dance Party"
         twitch-user "drdisrespect"
         create-event-resp (admin-create-event {:auth-token auth-token
-                                               :title title
+                                               :title      title
                                                :channel-id twitch-user})
         text "Will Jon wipeout 2+ times this round?"
         end-betting-secs 30
-        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text text
+        create-prop-bet-resp (admin-create-prop {:auth-token       auth-token
+                                                 :text             text
                                                  :end-betting-secs end-betting-secs})
         now (time/now)]
-    (user-place-prop-bet {:auth-token auth-token
+    (user-place-prop-bet {:auth-token       auth-token
                           :projected-result true
-                          :bet-amount 300})
+                          :bet-amount       300})
     (is (string? (-> (get-prop) :body :current-prop :proposition/betting-end-time)))
     ;; TODO: change tests so we can move time forward more sanely
     ;; User cannot place a bet after the betting window is over
@@ -1533,9 +1533,9 @@
                             :bet-amount       200
                             :status           405}))
     (admin-end-prop {:auth-token auth-token
-                     :result "true"})
+                     :result     "true"})
     (admin-end-event {:auth-token auth-token
-                      :result true})))
+                      :result     true})))
 
 (deftest get-previous-prop
   (let [{:keys [auth-token]} (create-user-and-login
@@ -1543,12 +1543,12 @@
         title "Dirty Dan's Delirious Dance Party"
         twitch-user "drdisrespect"
         create-event-resp (admin-create-event {:auth-token auth-token
-                                               :title title
+                                               :title      title
                                                :channel-id twitch-user})
         text "Will Jon wipeout 2+ times this round?"
         end-betting-secs 30
-        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text text
+        create-prop-bet-resp (admin-create-prop {:auth-token       auth-token
+                                                 :text             text
                                                  :end-betting-secs end-betting-secs})]
 
     ;; asserts about current prop is good and previous prop is empty
@@ -1557,9 +1557,9 @@
            (-> (get-prop) :body :current-prop :proposition/text)))
 
     (admin-end-prop {:auth-token auth-token
-                     :result "true"})
-    (admin-create-prop {:auth-token auth-token
-                        :text "foo"
+                     :result     "true"})
+    (admin-create-prop {:auth-token       auth-token
+                        :text             "foo"
                         :end-betting-secs end-betting-secs})
 
     ;; asserts about current prop and previous prop
@@ -1571,7 +1571,7 @@
            (-> (get-prop) :body :current-prop :proposition/text)))
 
     (admin-end-prop {:auth-token auth-token
-                     :result "false"})
+                     :result     "false"})
 
     ;;asserts about prev prop but no current prop
     (is (= "foo"
@@ -1581,7 +1581,7 @@
     (is (empty? (-> (get-prop) :body :current-prop)))
 
     (admin-end-event {:auth-token auth-token
-                      :result true})))
+                      :result     true})))
 
 (deftest create-youtube-live-event
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -1591,11 +1591,11 @@
         resp (admin-create-event {:auth-token auth-token
                                   :title      title
                                   :channel-id youtube-channel-id
-                                  :source "youtube"})
+                                  :source     "youtube"})
         fail-create-again-resp (admin-create-event {:auth-token auth-token
                                                     :title      title
                                                     :channel-id youtube-channel-id
-                                                    :source "youtube"
+                                                    :source     "youtube"
                                                     :status     405})
 
         get-event-response (get-event)
@@ -1620,8 +1620,8 @@
           resp (admin-create-event {:auth-token auth-token
                                     :title      title
                                     :channel-id youtube-channel-id
-                                    :source "blarp"
-                                    :status 400})])))
+                                    :source     "blarp"
+                                    :status     400})])))
 
 (deftest empty-create-event-params
   (testing "can't create event because source is invalid"
@@ -1653,11 +1653,11 @@
         resp (admin-create-event {:auth-token auth-token
                                   :title      title
                                   :channel-id cnn-channel-id
-                                  :source "cnn-unauth"})
+                                  :source     "cnn-unauth"})
         fail-create-again-resp (admin-create-event {:auth-token auth-token
                                                     :title      title
                                                     :channel-id cnn-channel-id
-                                                    :source "cnn-unauth"
+                                                    :source     "cnn-unauth"
                                                     :status     405})
 
         get-event-response (get-event)
@@ -1679,13 +1679,13 @@
         title "Dirty Dan's Delirious Dance Party"
         twitch-user "drdisrespect"
         create-event-resp (admin-create-event {:auth-token auth-token
-                                               :title title
+                                               :title      title
                                                :channel-id twitch-user})
         text "Will Jon wipeout 2+ times this round?"
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text text})
-        current-prop-bets-response  (get-prop-bets-leaderboard)]
-   (is (= {} (:body current-prop-bets-response)))))
+                                                 :text       text})
+        current-prop-bets-response (get-prop-bets-leaderboard)]
+    (is (= {} (:body current-prop-bets-response)))))
 
 (deftest multiple-propositions-correct-score
   (testing ""
@@ -1696,18 +1696,18 @@
           twitch-user "drdisrespect"
           ;; Create and end to test event score leaderboard at end
           create-event-resp (admin-create-event {:auth-token auth-token
-                                                 :title title
+                                                 :title      title
                                                  :channel-id twitch-user})
 
           end-event-resp (admin-end-event {:auth-token auth-token})
 
           create-event-resp (admin-create-event {:auth-token auth-token
-                                                 :title title
+                                                 :title      title
                                                  :channel-id twitch-user})
 
           text "Will Jon wipeout 2+ times this round?"
           create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                   :text text})
+                                                   :text       text})
 
           _ (create-user dummy-user-2)
           _ (create-user dummy-user-3)
@@ -1715,58 +1715,58 @@
           ;; user 2 bets
           {:keys [auth-token] login-resp :response} (login dummy-user-2)
 
-          user-place-prop-bet-resp (user-place-prop-bet {:auth-token auth-token
+          user-place-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
                                                          :projected-result true
-                                                         :bet-amount 200})
+                                                         :bet-amount       200})
 
-          user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token auth-token
+          user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       auth-token
                                                           :projected-result false
-                                                          :bet-amount 300})
+                                                          :bet-amount       300})
 
           ;; user 3 bets
           {:keys [auth-token] login-resp :response} (login dummy-user-3)
 
-          user-place-prop-bet-resp3 (user-place-prop-bet {:auth-token auth-token
+          user-place-prop-bet-resp3 (user-place-prop-bet {:auth-token       auth-token
                                                           :projected-result false
-                                                          :bet-amount 100})
-          user-place-prop-bet-resp4 (user-place-prop-bet {:auth-token auth-token
+                                                          :bet-amount       100})
+          user-place-prop-bet-resp4 (user-place-prop-bet {:auth-token       auth-token
                                                           :projected-result true
-                                                          :bet-amount 400})
+                                                          :bet-amount       400})
 
-          current-prop-bets-response  (get-prop-bets-leaderboard)
+          current-prop-bets-response (get-prop-bets-leaderboard)
 
           event-score-before-prop-result (get-event-leaderboard)
           ;;admin end prop bet
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result "true"})
+                                             :result     "true"})
           all-time-leaderboard-first-prop ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))
 
           event-score-first-prop (get-event-leaderboard)
 
           create-second-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                          :text "zoinks"})
+                                                          :text       "zoinks"})
 
           ;; user 2 bets
           {:keys [auth-token] login-resp :response} (login dummy-user-2)
 
-          user-place-second-prop-bet-resp (user-place-prop-bet {:auth-token auth-token
+          user-place-second-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
                                                                 :projected-result true
-                                                                :bet-amount 100})
+                                                                :bet-amount       100})
 
           ;; user 3 bets
           {:keys [auth-token] login-resp :response} (login dummy-user-3)
 
-          user-place-second-prop-bet-resp2 (user-place-prop-bet {:auth-token auth-token
+          user-place-second-prop-bet-resp2 (user-place-prop-bet {:auth-token       auth-token
                                                                  :projected-result false
-                                                                 :bet-amount 120})
+                                                                 :bet-amount       120})
 
-          prop-bets-second-response  (get-prop-bets-leaderboard)
+          prop-bets-second-response (get-prop-bets-leaderboard)
 
           ;; login as admin
           {:keys [auth-token] login-resp :response} (login)
           end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                             :result "false"})
+                                             :result     "false"})
 
           event-score-second-prop (get-event-leaderboard)
           ;;admin end event
@@ -1808,7 +1808,7 @@
                :user_name "queefburglar"}
               ;; Users below 500 are filtered now
               #_{:cash      354
-               :user_name "donniedarko"}]
+                 :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-first-prop)))
 
       (is (= {:false {:bets  [{:bet/amount 120
@@ -1834,7 +1834,7 @@
                :user_name "queefburglar"}
               ;; Users below 500 are filtered now
               #_{:cash      254
-               :user_name "donniedarko"}]
+                 :user_name "donniedarko"}]
              (common/parse-json-body all-time-leaderboard-end))))))
 
 (deftest end-proposition-no-bets
@@ -1844,14 +1844,14 @@
         title "Dirty Dan's Delirious Dance Party"
         twitch-user "drdisrespect"
         create-event-resp (admin-create-event {:auth-token auth-token
-                                               :title title
+                                               :title      title
                                                :channel-id twitch-user})
 
         text "Will Jon wipeout 2+ times this round?"
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text text})
+                                                 :text       text})
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result "false"})
+                                           :result     "false"})
         end-event-resp (admin-end-event {:auth-token auth-token})]))
 
 (deftest weird-notifications-behavior-test
@@ -1861,49 +1861,49 @@
         title "Dirty Dan's Delirious Dance Party"
         twitch-user "drdisrespect"
         create-event-resp (admin-create-event {:auth-token auth-token
-                                               :title title
+                                               :title      title
                                                :channel-id twitch-user})
 
         text "Will Jon wipeout 2+ times this round?"
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text text})
+                                                 :text       text})
 
-        bet1 (user-place-prop-bet {:auth-token auth-token
-                              :projected-result true
-                              :bet-amount 500})
-
-        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result "false"})
-
-        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text "second one"})
-
-        bet2 (user-place-prop-bet {:auth-token auth-token
-                              :projected-result true
-                              :bet-amount 100})
-
-        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result "true"})
-
-        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text "third one"})
-
-        bet4 (user-place-prop-bet {:auth-token auth-token
+        bet1 (user-place-prop-bet {:auth-token       auth-token
                                    :projected-result true
-                                   :bet-amount 100})
+                                   :bet-amount       500})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result "true"})
+                                           :result     "false"})
 
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text "fourth one"})
+                                                 :text       "second one"})
 
-        bet6 (user-place-prop-bet {:auth-token auth-token
+        bet2 (user-place-prop-bet {:auth-token       auth-token
                                    :projected-result true
-                                   :bet-amount 100})
+                                   :bet-amount       100})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result "false"})
+                                           :result     "true"})
+
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       "third one"})
+
+        bet4 (user-place-prop-bet {:auth-token       auth-token
+                                   :projected-result true
+                                   :bet-amount       100})
+
+        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                           :result     "true"})
+
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       "fourth one"})
+
+        bet6 (user-place-prop-bet {:auth-token       auth-token
+                                   :projected-result true
+                                   :bet-amount       100})
+
+        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                           :result     "false"})
 
         ;; normally the get would happen on a regular interval between these requests
         get-user-resp (get-user {:auth-token auth-token})]
@@ -1926,15 +1926,15 @@
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))]
     (admin-create-next-event-ts {:auth-token auth-token
-                                 :status 400
-                                 :ts "foobar"})))
+                                 :status     400
+                                 :ts         "foobar"})))
 
 (deftest cant-create-next-event-ts-in-past
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))]
     (admin-create-next-event-ts {:auth-token auth-token
-                                 :status 400
-                                 :ts "2000-04-01T22:56:01Z"})))
+                                 :status     400
+                                 :ts         "2000-04-01T22:56:01Z"})))
 
 (deftest get-event-doesn't-return-old-next-event-ts
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -1976,7 +1976,7 @@
            (:body (get-event))))
 
     (admin-create-event {:auth-token auth-token
-                         :title "poops"
+                         :title      "poops"
                          :channel-id "pig boops"})
 
     (is (not= {:whiplash/next-event-time ts}
@@ -2031,27 +2031,27 @@
   (let [create-resp (create-user dummy-user)
         {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery {:email-count 2})
         new-password "big_ole_bears"
-        submit-password-recovery-resp (submit-password-recovery {:token token
+        submit-password-recovery-resp (submit-password-recovery {:token    token
                                                                  :password new-password})
         login-resp (login {:user_name (:user_name dummy-user)
-                           :password new-password})
+                           :password  new-password})
         request-recovery-resp2 (request-password-recovery {:email-count 3})
-        submit-password-recovery-resp (submit-password-recovery {:token (:recovery/token request-recovery-resp2)
+        submit-password-recovery-resp (submit-password-recovery {:token    (:recovery/token request-recovery-resp2)
                                                                  :password new-password})
         login-resp2 (login {:user_name (:user_name dummy-user)
-                            :password new-password})]
+                            :password  new-password})]
     ;; new token is issued after the old one is used
     (is (not= token (:recovery/token request-recovery-resp2)))))
 
 (deftest recover-account-with-email
   (let [create-resp (create-user dummy-user)
         {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery {:email-count 2
-                                                                                       :method :email})
+                                                                                       :method      :email})
         new-password "big_ole_bears"
-        submit-password-recovery-resp (submit-password-recovery {:token token
+        submit-password-recovery-resp (submit-password-recovery {:token    token
                                                                  :password new-password})
         login-resp (login {:user_name (:email dummy-user)
-                           :password new-password})]))
+                           :password  new-password})]))
 
 (deftest recover-account-request-twice
   (testing "reuse an unused token"
@@ -2091,10 +2091,10 @@
   (let [create-resp (create-user dummy-user)
         {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery {:email-count 2})
         new-password "big_ole_bears"
-        submit-password-recovery-resp (submit-password-recovery {:email "does-not-exist"
-                                                                 :token token
+        submit-password-recovery-resp (submit-password-recovery {:email    "does-not-exist"
+                                                                 :token    token
                                                                  :password new-password
-                                                                 :status 404})]
+                                                                 :status   404})]
     (is (= 401
            (:status
              ;; TODO: refactor login so we can pass status
@@ -2106,8 +2106,8 @@
   (let [create-resp (create-user dummy-user)
         {:keys [recovery/token] :as request-recovery-resp} (request-password-recovery {:email-count 2})
         new-password "invalid"
-        submit-password-recovery-resp (submit-password-recovery {:token token
-                                                                 :status 409
+        submit-password-recovery-resp (submit-password-recovery {:token    token
+                                                                 :status   409
                                                                  :password new-password})]
     (is (= 401
            (:status
@@ -2124,11 +2124,11 @@
                         :bet-amount       500
                         :status           403})
   (get-user {:auth-token nil
-             :ga-tag? false
+             :ga-tag?    false
              :twitch-id? false
-             :status 403}))
+             :status     403}))
 
-(deftest not-logged-in-user-can-bet
+(deftest not-logged-in-user-no-bailout
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
 
@@ -2156,11 +2156,11 @@
                                                        :bet-amount       100})
 
         user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       nil
-                                                       :projected-result true
-                                                       :bet-amount       400})
+                                                        :projected-result true
+                                                        :bet-amount       400})
 
         user-get-prop-bet-resp (user-get-prop-bets {:auth-token nil
-                                                    :status 403})
+                                                    :status     403})
         get-body (:body user-get-prop-bet-resp)
 
         current-prop-bets-response (get-prop-bets-leaderboard)
@@ -2234,6 +2234,111 @@
     (is (= []
            (-> user2-get-user-notifs-acked :body :user/notifications)))))
 
+(deftest not-logged-in-user-no-leaderboard
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+
+        event-score-before-event-creation (get-event-leaderboard {:status 204})
+
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title      title
+                                               :channel-id twitch-user})
+
+        event-score-before-prop-creation (get-event-leaderboard {:status 204})
+
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       text})
+
+        _ (user-place-prop-bet {:auth-token       auth-token
+                                :projected-result false
+                                :bet-amount       500})
+
+        ;; logged out user bets
+        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       nil
+                                                       :projected-result true
+                                                       :bet-amount       100})
+
+        user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       nil
+                                                        :projected-result true
+                                                        :bet-amount       400})
+
+        user-get-prop-bet-resp (user-get-prop-bets {:auth-token nil
+                                                    :status     403})
+        get-body (:body user-get-prop-bet-resp)
+
+        current-prop-bets-response (get-prop-bets-leaderboard)
+        event-score-before-prop-result (get-event-leaderboard)
+
+        ;;admin end prop bet
+        {:keys [auth-token] login-resp :response} (login)
+        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                           :result     "true"})
+
+        event-score-before-end (get-event-leaderboard)
+
+        admin-get-user (get-user {:auth-token auth-token})
+        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
+
+        user2-get-user (get-user nil)
+        user2-get-user-notifs-acked (get-user nil)
+
+        ;;admin end event
+        {:keys [auth-token] login-resp :response} (login)
+        end-event-resp (admin-end-event {:auth-token auth-token})
+
+        event-score-after-end (get-event-leaderboard)
+        all-time-leaderboard (all-time-top-ten {})]
+
+    ;; need auth to hit this endpoint
+    (is (= get-body {:message "Access to /user/prop-bet is not authorized"}))
+
+    (is (= {:false {:bets  [{:bet/amount 500
+                             :user/name  "queefburglar"}]
+                    :odds  2.0
+                    :total 500}
+            :true  {:bets  [{:bet/amount 500
+                             :user/name  "user-cAcwygPxycxxcPNxcczNgc"}]
+                    :odds  2.0
+                    :total 500}}
+           (:body current-prop-bets-response)))
+
+    (is (= nil
+           (:body event-score-before-event-creation)
+           (:body event-score-before-prop-creation)))
+
+    (testing "unauth user does not appear on current event leaderboard"
+      (is (= [{:score     0
+               :user_name "queefburglar"}]
+             (:body event-score-before-prop-result))))
+
+    (is (= [{:score     -500
+             :user_name "queefburglar"}]
+           (:body event-score-before-end)
+           (:body event-score-after-end)))
+
+    (testing "unauth user does not appear in all time leaderboard"
+      (is (= []
+             (:body all-time-leaderboard))))
+
+    ;; notifications
+    (is (= 100 (-> admin-get-user :body :user/cash)))
+    (is (= [#:notification{:type "notification.type/bailout"}]
+           (-> admin-get-user :body :user/notifications)))
+    (is (= []
+           (-> admin-get-user-notifs-acked :body :user/notifications)))
+
+    (is (= 1010 (-> user2-get-user :body :user/cash)))
+    (is (= [{:bet/payout         1010
+             :notification/type  "notification.type/payout"
+             :proposition/result "proposition.result/true"
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
+           (-> user2-get-user :body :user/notifications)))
+    (is (= []
+           (-> user2-get-user-notifs-acked :body :user/notifications)))))
+
 (deftest can-bet-under-100-on-existing-bet
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
@@ -2273,7 +2378,7 @@
         user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       auth-token
                                                         :projected-result true
                                                         :bet-amount       1
-                                                        :status 409})]))
+                                                        :status           409})]))
 
 (deftest event-reset-content-on-wrong-client
   (is (= 205 (:status
@@ -2285,7 +2390,7 @@
     (is (= 301 status))
     (is (= "http://localhost.com/" (get headers "Location")))))
 
-(deftest twitch-not-logged-in-user-can-bet
+(deftest twitch-not-logged-in-user-no-bailout
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
 
@@ -2309,17 +2414,17 @@
 
         ;; logged out user bets
         user-place-prop-bet-resp (user-place-prop-bet {:auth-token       nil
-                                                       :ga-tag? false
+                                                       :ga-tag?          false
                                                        :projected-result true
                                                        :bet-amount       100})
 
         user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       nil
-                                                        :ga-tag? false
+                                                        :ga-tag?          false
                                                         :projected-result true
                                                         :bet-amount       400})
 
         user-get-prop-bet-resp (user-get-prop-bets {:auth-token nil
-                                                    :status 403})
+                                                    :status     403})
         get-body (:body user-get-prop-bet-resp)
 
         current-prop-bets-response (get-prop-bets-leaderboard)
@@ -2389,6 +2494,114 @@
 
     (is (= 0 (-> user2-get-user :body :user/cash)))
     (is (= [#:notification{:type "notification.type/no-bailout"}]
+           (-> user2-get-user :body :user/notifications)))
+    (is (= []
+           (-> user2-get-user-notifs-acked :body :user/notifications)))))
+
+
+(deftest twitch-not-logged-in-user-not-on-all-time
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+
+        event-score-before-event-creation (get-event-leaderboard {:status 204})
+
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title      title
+                                               :channel-id twitch-user})
+
+        event-score-before-prop-creation (get-event-leaderboard {:status 204})
+
+        text "Will Jon wipeout 2+ times this round?"
+        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
+                                                 :text       text})
+
+        _ (user-place-prop-bet {:auth-token       auth-token
+                                :projected-result true
+                                :bet-amount       500})
+
+        ;; logged out user bets
+        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       nil
+                                                       :ga-tag?          false
+                                                       :projected-result false
+                                                       :bet-amount       100})
+
+        user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       nil
+                                                        :ga-tag?          false
+                                                        :projected-result false
+                                                        :bet-amount       400})
+
+        user-get-prop-bet-resp (user-get-prop-bets {:auth-token nil
+                                                    :status     403})
+        get-body (:body user-get-prop-bet-resp)
+
+        current-prop-bets-response (get-prop-bets-leaderboard)
+        event-score-before-prop-result (get-event-leaderboard)
+
+        ;;admin end prop bet
+        {:keys [auth-token] login-resp :response} (login)
+        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
+                                           :result     "false"})
+
+        event-score-before-end (get-event-leaderboard)
+
+        admin-get-user (get-user {:auth-token auth-token})
+        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
+
+        user2-get-user (get-user {:auth-token nil :ga-tag? false})
+        user2-get-user-notifs-acked (get-user {:auth-token nil :ga-tag? false})
+
+        ;;admin end event
+        {:keys [auth-token] login-resp :response} (login)
+        end-event-resp (admin-end-event {:auth-token auth-token})
+
+        event-score-after-end (get-event-leaderboard)
+        all-time-leaderboard (all-time-top-ten {})]
+
+    ;; need auth to hit this endpoint
+    (is (= get-body {:message "Access to /user/prop-bet is not authorized"}))
+
+    (is (= {:false {:bets  [{:bet/amount 500
+                             :user/name  "user-testIDcAg"}]
+                    :odds  2.0
+                    :total 500}
+            :true  {:bets  [{:bet/amount 500
+                             :user/name  "queefburglar"}]
+                    :odds  2.0
+                    :total 500}}
+           (:body current-prop-bets-response)))
+
+    (is (= nil
+           (:body event-score-before-event-creation)
+           (:body event-score-before-prop-creation)))
+
+    (testing "twitch unauth user does not appear on current event leaderboard"
+      (is (= [{:score     0
+               :user_name "queefburglar"}]
+             (:body event-score-before-prop-result))))
+
+    (is (= [{:score     -500
+             :user_name "queefburglar"}]
+           (:body event-score-before-end)
+           (:body event-score-after-end)))
+
+    (testing "twitch unauth user does not appear in all time leaderboard, other user doesnt appear because cash below 500"
+      (is (= []
+             (:body all-time-leaderboard))))
+
+    ;; notifications
+    (is (= 100 (-> admin-get-user :body :user/cash)))
+    (is (= [#:notification{:type "notification.type/bailout"}]
+           (-> admin-get-user :body :user/notifications)))
+    (is (= []
+           (-> admin-get-user-notifs-acked :body :user/notifications)))
+
+    (is (= 1010 (-> user2-get-user :body :user/cash)))
+    (is (= [{:bet/payout         1010
+             :notification/type  "notification.type/payout"
+             :proposition/result "proposition.result/false"
+             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> user2-get-user :body :user/notifications)))
     (is (= []
            (-> user2-get-user-notifs-acked :body :user/notifications)))))

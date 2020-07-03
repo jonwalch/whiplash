@@ -266,6 +266,7 @@
                      :where [?user :user/cash ?cash]
                      [?user :user/name ?user-name]
                      [(>= ?cash 500N)]
+                     (not [?user :user/status :user.status/twitch-ext-unauth])
                      (not [?user :user/status :user.status/unauth])]
             :args  [db]})
          (map #(hash-map :user_name (first %)
