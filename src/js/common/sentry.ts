@@ -7,7 +7,13 @@ export const initializeSentry = () => {
             ignoreErrors: [
                 // 'TypeError: Failed to fetch',
                 'TypeError: NetworkError when attempting to fetch resource.',
-                'TypeError: Cancelled'
+                'TypeError: cancelled',
+                'TypeError: Cancelled',
+                'TypeError: The Internet connection appears to be offline.',
+                'TypeError: The network connection was lost.',
+                'AbortError: The operation was aborted.',
+                'TypeError: La conexión de red se perdió.',
+                'TypeError: The request timed out.',
             ],
         });
     }
