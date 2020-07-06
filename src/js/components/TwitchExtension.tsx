@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useContext, useRef} from "react";
 import { useInterval } from "../common";
 import "../../../resources/public/css/App.css";
-import {LoginContext} from "../contexts/LoginContext";
+import {defaultLoggedIn, LoginContext} from "../contexts/LoginContext";
 import {CORSGetUser, twitch, twitchBaseUrl} from "../TwitchExtApp";
 import UIfx from 'uifx';
 
@@ -93,7 +93,8 @@ export function TwitchExtension(props: any) {
                 { userName: loggedInState.userName,
                     status: loggedInState.status,
                     cash: loggedInState.cash !== -1 ? loggedInState.cash - betAmount : 500 - betAmount,
-                    notifications: loggedInState.notifications})
+                    notifications: loggedInState.notifications,
+                    "gated?": loggedInState["gated?"]})
         }
     };
 
@@ -222,7 +223,9 @@ export function TwitchExtension(props: any) {
     };
 
     const renderBody = () => {
-        if (proposition["proposition/betting-seconds-left"] > 0 && loggedInState.cash >= 100) {
+        if (proposition["proposition/betting-seconds-left"] > 0 &&
+            (loggedInState.cash >= 100 || loggedInState.cash === defaultLoggedIn.cash) &&
+            !loggedInState["gated?"]) {
             return (
                 <>
                     <p style={{...textStyles, ...{margin: 0}}}>
@@ -271,7 +274,7 @@ export function TwitchExtension(props: any) {
                     </div>
                 </>
             );
-        } else if (loggedInState.cash < 100){
+        } else if ((loggedInState.cash < 100 && loggedInState.cash !== defaultLoggedIn.cash) || loggedInState["gated?"]){
             return (
                 <div style={{padding: "0 0.5rem 0.5rem 0.5rem"}}>Sign up on Whiplash.gg to keep playing!</div>
             );

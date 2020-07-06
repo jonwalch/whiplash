@@ -5,8 +5,9 @@ export interface loggedIn {
   status: string | null;
   cash: number;
   notifications: Object[];
+  "gated?": boolean;
 }
-export const defaultLoggedIn: loggedIn = { userName: null, status: null, cash: -1, notifications: []};
+export const defaultLoggedIn: loggedIn = { userName: null, status: null, cash: -1, notifications: [], "gated?": false};
 
 interface loggedInState {
   loggedInState: loggedIn;

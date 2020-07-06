@@ -184,33 +184,65 @@
               (dissoc :notification/trigger :db/id))))
       notifications)))
 
+;; TODO: do we want to implement this as a server check too?
+;; for now I'm saying no because I don't want an extra query and if they figure out
+;; how to bet outside of the extension they deserve to bet
+(defn- user-gated?
+  [user-name]
+  ;;TODO dont just rely on username format, this is actually fine because this format is reserved
+  ;; but it still feels wrong
+  (if (string/starts-with? user-name "user-")
+    ;; TODO async query
+    (let [result (ffirst
+                   ;; How many propositions did this user bet on?
+                   (d/q {:query '[:find (count ?prop)
+                                  :in $ ?user-name
+                                  :where [?event :event/running? true]
+                                  [?event :event/propositions ?prop]
+                                  [?bet :bet/proposition ?prop]
+                                  [?user :user/prop-bets ?bet]
+                                  [?user :user/name ?found-user-name]
+                                  [(= ?user-name ?found-user-name)]]
+                         :args  [(d/db (:conn db/datomic-cloud)) user-name]}))]
+      ;; in case user doesn't exist yet
+        (>= (or result 0)
+            10))
+    false))
+
 (defn get-user
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        user-entity (db/pull-user
-                      {:user/name (or user
-                                      (twitch-unauth-username req)
-                                      (unauthed-username req))
-                       :db        db
-                       :attrs     [{:user/status [:db/ident]}
-                                   :user/first-name :user/last-name :user/email
-                                   :user/name :user/cash :db/id
-                                   {:user/unacked-notifications
-                                    [:db/id {:notification/type [:db/ident]}
-                                     {:notification/trigger
-                                      [:bet/payout
-                                       :db/id
-                                       {:bet/proposition
-                                        [:db/id
-                                         :proposition/text
-                                         {:proposition/result [:db/ident]}]}]}]}]})]
+        user-name (or user
+                      (twitch-unauth-username req)
+                      (unauthed-username req))
+        valid-un? (and (string? user-name)
+                       (not (empty? user-name)))
+        gate-user? (when valid-un?
+                     (user-gated? user-name))
+        user-entity (when valid-un?
+                      (db/pull-user
+                        {:user/name user-name
+                         :db        db
+                         :attrs     [{:user/status [:db/ident]}
+                                     :user/first-name :user/last-name :user/email
+                                     :user/name :user/cash :db/id
+                                     {:user/unacked-notifications
+                                      [:db/id {:notification/type [:db/ident]}
+                                       {:notification/trigger
+                                        [:bet/payout
+                                         :db/id
+                                         {:bet/proposition
+                                          [:db/id
+                                           :proposition/text
+                                           {:proposition/result [:db/ident]}]}]}]}]}))]
     (if (some? user-entity)
       {:status  200
        :headers constants/CORS-GET-headers
        :body    (-> user-entity
                  (dissoc :db/id :user/unacked-notifications)
-                 (assoc :user/notifications (ack-user-notifications user-entity)))}
+                 (assoc :user/notifications (ack-user-notifications user-entity)
+                        :user/gated? gate-user?))}
       {:status  404
        :headers constants/CORS-GET-headers
        :body    {:message (format "User %s not found" user)}})))

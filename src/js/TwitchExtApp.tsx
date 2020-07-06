@@ -28,7 +28,8 @@ export const CORSGetUser = async (loggedInState: any, setLoggedInState: Function
             userName: resp["user/name"],
             status: resp["user/status"],
             cash: resp["user/cash"],
-            notifications: resp["user/notifications"]
+            notifications: resp["user/notifications"],
+            "gated?": resp["user/gated?"]
         });
         return resp["user/cash"] - loggedInState.cash;
     } else {

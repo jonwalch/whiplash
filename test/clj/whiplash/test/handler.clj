@@ -267,6 +267,7 @@
                     :first-name    first_name
                     :last-name     last_name
                     :status        "user.status/pending"
+                    :gated?        false
                     :name          user_name
                     :cash          500
                     :notifications []}
@@ -380,6 +381,7 @@
                     :last-name     "queen"
                     :name          "queefburglar"
                     :notifications []
+                    :gated?        false
                     :status        "user.status/active"}
              (:body get-verified-user))))))
 
@@ -2495,9 +2497,9 @@
     (is (= 0 (-> user2-get-user :body :user/cash)))
     (is (= [#:notification{:type "notification.type/no-bailout"}]
            (-> user2-get-user :body :user/notifications)))
+    (is (false? (-> user2-get-user :body :user/gated?)))
     (is (= []
            (-> user2-get-user-notifs-acked :body :user/notifications)))))
-
 
 (deftest twitch-not-logged-in-user-not-on-all-time
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -2605,3 +2607,35 @@
            (-> user2-get-user :body :user/notifications)))
     (is (= []
            (-> user2-get-user-notifs-acked :body :user/notifications)))))
+
+(defn- twitch-ext-user-bet-on-10-props
+  [auth-token]
+  (dotimes [_ 10]
+    (admin-create-prop {:auth-token auth-token
+                        :text       "this is a propositon"})
+    (user-place-prop-bet {:auth-token       nil
+                          :ga-tag?          false
+                          :projected-result true
+                          :bet-amount       100})
+
+    (user-place-prop-bet {:auth-token       nil
+                          :ga-tag?          false
+                          :projected-result false
+                          :bet-amount       100})
+    (admin-end-prop {:auth-token auth-token
+                     :result     "false"})))
+
+(deftest twitch-not-logged-in-user-is-gated
+  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
+                                                    (assoc dummy-user :admin? true))
+
+        title "Dirty Dan's Delirious Dance Party"
+        twitch-user "drdisrespect"
+        create-event-resp (admin-create-event {:auth-token auth-token
+                                               :title      title
+                                               :channel-id twitch-user})
+        _ (twitch-ext-user-bet-on-10-props auth-token)
+        user2-get-user (get-user {:auth-token nil :ga-tag? false})]
+
+    (testing "user/gated? is true after user bets on 10 props"
+      (is (true? (-> user2-get-user :body :user/gated?))))))

@@ -86,7 +86,8 @@ export function Vote (props: any) {
           { userName: loggedInState.userName,
             status: loggedInState.status,
             cash: loggedInState.cash - betAmount,
-            notifications: loggedInState.notifications})
+            notifications: loggedInState.notifications,
+            "gated?": loggedInState["gated?"]})
       // 403 will happen if they're not logged in AND they aren't sending the google analytics cookie.
     } else if (response.status === 403) {
       alert("Sign up or disable your ad blocker to bet!")

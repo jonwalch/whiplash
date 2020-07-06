@@ -13,7 +13,8 @@ export const getUser = async (setLoggedInState: Function) => {
             userName: resp["user/name"],
             status: resp["user/status"],
             cash: resp["user/cash"],
-            notifications: resp["user/notifications"]
+            notifications: resp["user/notifications"],
+            "gated?": resp["user/gated?"]
         });
     } else {
         setLoggedInState(defaultLoggedIn)
