@@ -4,6 +4,9 @@
             [buddy.hashers :as hashers]
             [whiplash.middleware :as middleware]
             [datomic.client.api :as d]
+            [datomic.client.api.async :as d.async]
+            [clojure.core.async :as async]
+            [cognitect.anomalies :as anom]
             [whiplash.integrations.amazon-ses :as ses]
             [clojure.tools.logging :as log]
             [whiplash.time :as time]
@@ -137,30 +140,34 @@
         ;;TODO dont return 200 if db/update-password fails
         (ok {})))))
 
-(defn- retrieve-and-ack-user-notifications
-  [db user-db-id]
-  (let [notifications (db/pull-unacked-notifications
-                        {:db/id              user-db-id
-                         :db                 db
-                         :attrs              [:db/id
-                                              {:notification/type [:db/ident]}
-                                              {:notification/trigger [:bet/payout
-                                                                      {:bet/proposition
-                                                                       [:db/id
-                                                                        :proposition/text
-                                                                        {:proposition/result [:db/ident]}]}]}]
-                         :notification/types #{:notification.type/bailout
-                                               :notification.type/payout
-                                               :notification.type/no-bailout}})
+(defn- ack-user-notifications
+  [{:keys [db/id user/unacked-notifications]}]
+  ;; TODO: maybe filter nofications by type, right now we want them all to be returned from this
+  (let [notifications (map (fn [notif]
+                             (update notif :notification/type :db/ident))
+                           unacked-notifications)
         ;; ack notifications, dubious because this makes this GET no longer idempotent
-        ack-time (time/to-date)
-        ack-tx (when notifications
-                 (d/transact (:conn db/datomic-cloud)
-                             {:tx-data (mapv (fn [{:keys [db/id]}]
-                                               {:db/id                      id
-                                                :notification/acknowledged? true
-                                                :notification/acknowledged-time ack-time})
-                                             notifications)}))]
+        ack-tx (when-not (empty? notifications)
+                 ;; TODO async transact, we dont need to wait for this to return to give the user their notifs
+                 ;; waiting to hear back from kenny github issue
+                 (let [ack-time (time/to-date)]
+                   (d/transact
+                     (:conn db/datomic-cloud)
+                     {:tx-data (into []
+                                     (concat
+                                       (map (fn [{:keys [db/id]}]
+                                              [:db/retractEntity id])
+                                            notifications)
+                                       (list
+                                         {:db/id id
+                                          :user/acked-notifications
+                                                 (mapv (fn [{:keys [notification/trigger notification/type]}]
+                                                         (merge
+                                                           {:notification/type              type
+                                                            :notification/acknowledged-time ack-time}
+                                                           (when trigger
+                                                             {:notification/trigger (:db/id trigger)})))
+                                                       notifications)})))})))]
     (map
       (comp
         (fn [{:keys [notification/type] :as munged-notif}]
@@ -181,20 +188,29 @@
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
-        user-entity (db/pull-user {:user/name (or user
-                                                  (twitch-unauth-username req)
-                                                  (unauthed-username req))
-                                   :db        db
-                                   :attrs     [{:user/status [:db/ident]}
-                                               :user/first-name :user/last-name :user/email
-                                               :user/name :user/cash :db/id]})]
+        user-entity (db/pull-user
+                      {:user/name (or user
+                                      (twitch-unauth-username req)
+                                      (unauthed-username req))
+                       :db        db
+                       :attrs     [{:user/status [:db/ident]}
+                                   :user/first-name :user/last-name :user/email
+                                   :user/name :user/cash :db/id
+                                   {:user/unacked-notifications
+                                    [:db/id {:notification/type [:db/ident]}
+                                     {:notification/trigger
+                                      [:bet/payout
+                                       :db/id
+                                       {:bet/proposition
+                                        [:db/id
+                                         :proposition/text
+                                         {:proposition/result [:db/ident]}]}]}]}]})]
     (if (some? user-entity)
       {:status  200
        :headers constants/CORS-GET-headers
        :body    (-> user-entity
-                 (dissoc :db/id)
-                 ;; TODO: make part of pull-user query
-                 (assoc :user/notifications (retrieve-and-ack-user-notifications db (:db/id user-entity))))}
+                 (dissoc :db/id :user/unacked-notifications)
+                 (assoc :user/notifications (ack-user-notifications user-entity)))}
       {:status  404
        :headers constants/CORS-GET-headers
        :body    {:message (format "User %s not found" user)}})))

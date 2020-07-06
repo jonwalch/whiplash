@@ -268,7 +268,9 @@
         :db/valueType   :db.type/string
         :db/cardinality :db.cardinality/one}]
 
-   :3 [{:db/doc         "Notifications to show to the user"
+   :3 [
+       ;; TODO: deprecate
+       {:db/doc         "Notifications to show to the user"
         :db/ident       :user/notifications
         :db/valueType   :db.type/ref
         :db/cardinality :db.cardinality/many
@@ -287,6 +289,7 @@
         :db/valueType   :db.type/ref
         :db/cardinality :db.cardinality/one}
 
+       ;; TODO: deprecate
        {:db/doc         "Has this notification already been acknowledged? (either by the user or automatically by code)"
         :db/ident       :notification/acknowledged?
         :db/valueType   :db.type/boolean
@@ -335,7 +338,17 @@
         :db/ident       :proposition/result
         :db/valueType   :db.type/ref
         :db/cardinality :db.cardinality/one}]
-   :8 [{:db/ident :user.status/twitch-ext-unauth}]})
+   :8 [{:db/ident :user.status/twitch-ext-unauth}]
+   :9 [{:db/doc         "Notifications to show to the user"
+        :db/ident       :user/unacked-notifications
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/many
+        :db/isComponent true}
+       {:db/doc         "Notifications that were already shown to the user"
+        :db/ident       :user/acked-notifications
+        :db/valueType   :db.type/ref
+        :db/cardinality :db.cardinality/many
+        :db/isComponent true}]})
 
 (defn migrations->schema-tx
   []

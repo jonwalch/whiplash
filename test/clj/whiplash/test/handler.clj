@@ -1913,13 +1913,13 @@
             {:bet/payout         110
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
-             :proposition/text   "third one"}
+             :proposition/text   "second one"}
             {:bet/payout         110
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
-             :proposition/text   "second one"}]
+             :proposition/text   "third one"}]
            (->> (-> get-user-resp :body :user/notifications)
-                (sort-by :bet/payout)
+                (sort-by :proposition/text)
                 vec)))))
 
 (deftest cant-create-next-event-ts-invalid-ts

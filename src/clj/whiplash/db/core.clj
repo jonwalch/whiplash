@@ -1,6 +1,9 @@
 (ns whiplash.db.core
   (:require
     [datomic.client.api :as d]
+    [datomic.client.api.async :as d.async]
+    [clojure.core.async :as async]
+    [cognitect.anomalies :as anom]
     [mount.core :refer [defstate]]
     [whiplash.config :refer [env]]
     [whiplash.time :as time]
@@ -21,34 +24,43 @@
    :region "us-west-2"
    :system "prod-whiplash-datomic"
    #_#_:creds-profile "<your_aws_profile_if_not_using_the_default>"
-   :endpoint "http://entry.prod-whiplash-datomic.us-west-2.datomic.net:8182"
-   })
+   :endpoint "http://entry.prod-whiplash-datomic.us-west-2.datomic.net:8182"})
 
 (defn create-client
   [datomic-config]
   (if (:prod env)
     (do
       (log/debug "using prod client with config: %s" cloud-config)
-      (d/client datomic-config))
+      {:client (d/client datomic-config)
+       :async-client (d.async/client datomic-config)})
     (do
       (log/debug "using dev memdb client")
       (require 'compute.datomic-client-memdb.core)
-      (if-let [v (resolve 'compute.datomic-client-memdb.core/client)]
-        (@v datomic-config)
-        (throw (ex-info "compute.datomic-client-memdb.core is not on the classpath." {}))))))
+      (require 'compute.datomic-client-memdb.async)
+      (let [v (resolve 'compute.datomic-client-memdb.core/client)
+            av (resolve 'compute.datomic-client-memdb.async/client)]
+        (if (and v av)
+          (do
+            (log/info v av)
+            {:client       (@v datomic-config)
+             :async-client (@av datomic-config)})
+          (throw (ex-info "compute.datomic-client-memdb is not on the classpath." {})))))))
 
 (defn create-datomic-cloud
   []
-  (let [client (create-client cloud-config)
+  (let [{:keys [client async-client]} (create-client cloud-config)
         created? (d/create-database client {:db-name "whiplash"})
         conn (d/connect client {:db-name "whiplash"})
+        async-conn (d.async/connect async-client {:db-name "whiplash"})
         ;; TODO: read current schema and only transact the schema if it has changed
         ;; TODO: transact all schemas one at a time instead of flattening and transacting them all at once
         schema-tx-result (d/transact conn {:tx-data (schemas/migrations->schema-tx)})]
     (log/debug "Migration to transact " (schemas/migrations->schema-tx))
     (log/debug "Schema transaction result " schema-tx-result)
-    {:client client
-     :conn conn}))
+    {:client       client
+     :async-client async-client
+     :conn         conn
+     :async-conn async-conn}))
 
 (defn destroy-datomic-cloud
   [datomic-cloud]
@@ -184,12 +196,11 @@
       (update result :user/status :db/ident)
       result)))
 
-(defn pull-unacked-notifications
+#_(defn pull-unacked-notifications
   [{:keys [db/id db attrs notification/types]}]
   (->> (d/q {:query '[:find (pull ?notif attrs)
                       :in $ ?id attrs ?types
-                      :where [?id :user/notifications ?notif]
-                      [?notif :notification/acknowledged? false]
+                      :where [?id :user/unacked-notifications ?notif]
                       [?notif :notification/type ?type]
                       [?type :db/ident ?atype]
                       [(contains? ?types ?atype)]]
@@ -457,14 +468,12 @@
                (and bailout? (not authed-user?) (not flip?))
                [cas
                 {:db/id              user-id
-                 :user/notifications [{:notification/type :notification.type/no-bailout
-                                       :notification/acknowledged? false}]}]
+                 :user/unacked-notifications [{:notification/type :notification.type/no-bailout}]}]
 
                (and bailout? (not flip?))
                [cas
                 {:db/id              user-id
-                 :user/notifications [{:notification/type :notification.type/bailout
-                                       :notification/acknowledged? false}]}]
+                 :user/unacked-notifications [{:notification/type :notification.type/bailout}]}]
 
                :else
                [cas]))))
@@ -487,9 +496,8 @@
               (if (> (:bet/payout tx) 0N)
                 [tx
                  {:db/id              db-id
-                  :user/notifications [{:notification/type          :notification.type/payout
-                                        :notification/trigger       id
-                                        :notification/acknowledged? false}]}]
+                  :user/unacked-notifications [{:notification/type          :notification.type/payout
+                                                :notification/trigger       id}]}]
                 [tx]))))
         (apply concat)
         (into []))))
