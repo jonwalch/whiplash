@@ -288,14 +288,13 @@ export function TwitchExtension(props: any) {
             <div className={extClass}>
                 <span style={{display: "flex", justifyContent: "space-between"}}>
                     <img
-                        src={twitchBaseUrl + "/img/favicon/favicon-228.png"}
+                        src={twitchBaseUrl + "/img/logos/whiplash-horizontal-4c-gg.svg"}
                         alt="Whiplash"
-                        width="45"
-                        height="45"
-                        // className="site-logo"
-                        style={{margin:"0.5rem"}}
+                        width="165"
+                        height="36"
+                        style={{margin:"0.5rem", height: "auto", width: "60%"}}
                     />
-                    <p style={{...textStyles, ...{ padding: "0.5rem", margin: 0}}}>
+                    <p style={{...textStyles, ...{ padding: "0.5rem", margin: 0, alignSelf: "center",}}}>
                     {/*Show 500 if cash is default. Cash gets set by getUser but only after someone has placed a bet.*/}
                         W$: <span ref={pulseP} style={{color: "gold"}}>{loggedInState.cash === -1 ? 500 : loggedInState.cash}</span>
                     </p>

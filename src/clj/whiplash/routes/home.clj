@@ -157,7 +157,6 @@
      {:options {:summary "Take care of CORS preflight"
                 :handler (fn [req] (CORS-GET-options [req]))}
       :get  {:summary    "get a user"
-             ;; TODO or twitch
              :middleware [middleware/wrap-restricted-or-ga-or-twitch]
              :handler    (fn [req] (user/get-user req))}}]
 
