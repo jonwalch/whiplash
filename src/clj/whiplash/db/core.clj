@@ -376,6 +376,20 @@
                           :event/running? false
                           :event/end-time (time/to-date)}]}))
 
+(defn reset-twitch-user-cash
+  []
+  (let [users (d/q {:query '[:find ?user
+                             :where [?user :user/status :user.status/twitch-ext-unauth]
+                             [?user :user/cash ?cash]
+                             [(not= 500N ?cash)]]
+                    :args  [(d/db (:conn datomic-cloud))]})]
+    (d/transact (:conn datomic-cloud)
+                {:tx-data (mapv
+                            (fn [res]
+                              {:db/id (first res)
+                               :user/cash 500N})
+                            users)})))
+
 ;; TODO deprecate
 (defn find-ongoing-proposition
   ([]

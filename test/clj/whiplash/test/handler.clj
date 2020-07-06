@@ -1764,6 +1764,7 @@
                                                                  :bet-amount       120})
 
           prop-bets-second-response (get-prop-bets-leaderboard)
+          user3-get-user (get-user {:auth-token auth-token})
 
           ;; login as admin
           {:keys [auth-token] login-resp :response} (login)
@@ -1775,6 +1776,9 @@
           {:keys [auth-token] login-resp :response} (login)
           end-event-resp (admin-end-event {:auth-token auth-token})
           event-score-after-end (get-event-leaderboard)
+
+          {:keys [auth-token] login-resp :response} (login dummy-user-3)
+          user3-get-user-after-event (get-user {:auth-token auth-token})
 
           all-time-leaderboard-end ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
 
@@ -1837,7 +1841,11 @@
               ;; Users below 500 are filtered now
               #_{:cash      254
                  :user_name "donniedarko"}]
-             (common/parse-json-body all-time-leaderboard-end))))))
+             (common/parse-json-body all-time-leaderboard-end)))
+
+      (testing "end event doesnt change normal user balance"
+        (= (-> user3-get-user :body :user/cash)
+           (-> user3-get-user-after-event :body :user/cash))))))
 
 (deftest end-proposition-no-bets
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -2449,6 +2457,9 @@
         {:keys [auth-token] login-resp :response} (login)
         end-event-resp (admin-end-event {:auth-token auth-token})
 
+        user2-get-user-after-end (get-user {:auth-token nil :ga-tag? false})
+        admin-get-user-after-end (get-user {:auth-token auth-token})
+
         event-score-after-end (get-event-leaderboard)
         all-time-leaderboard (all-time-top-ten {})]
 
@@ -2485,7 +2496,8 @@
              (:body all-time-leaderboard))))
 
     ;; notifications
-    (is (= 1010 (-> admin-get-user :body :user/cash)))
+    (is (= 1010 (-> admin-get-user :body :user/cash)
+           (-> admin-get-user-after-end :body :user/cash)))
     (is (= [{:bet/payout         1010
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/false"
@@ -2499,7 +2511,9 @@
            (-> user2-get-user :body :user/notifications)))
     (is (false? (-> user2-get-user :body :user/gated?)))
     (is (= []
-           (-> user2-get-user-notifs-acked :body :user/notifications)))))
+           (-> user2-get-user-notifs-acked :body :user/notifications)))
+    (testing "twitch ext user's cash is reset to 500"
+      (is (= 500 (-> user2-get-user-after-end :body :user/cash))))))
 
 (deftest twitch-not-logged-in-user-not-on-all-time
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login

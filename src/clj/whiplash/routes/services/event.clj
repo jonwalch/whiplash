@@ -81,6 +81,7 @@
 
       :else
       (do (db/end-event event)
+          (db/reset-twitch-user-cash)
           (ok {})))))
 
 (defn create-countdown
