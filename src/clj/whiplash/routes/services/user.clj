@@ -237,13 +237,13 @@
                                            {:proposition/result [:db/ident]}]}]}]}]}))]
     (if (some? user-entity)
       {:status  200
-       :headers constants/CORS-GET-headers
+       :headers constants/CORS-GET-headers-allow-creds
        :body    (-> user-entity
                  (dissoc :db/id :user/unacked-notifications)
                  (assoc :user/notifications (ack-user-notifications user-entity)
                         :user/gated? gate-user?))}
       {:status  404
-       :headers constants/CORS-GET-headers
+       :headers constants/CORS-GET-headers-allow-creds
        :body    {:message (format "User %s not found" user)}})))
 
 (defn login

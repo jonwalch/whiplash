@@ -40,6 +40,8 @@
       (f)
       (mount/stop #'whiplash.db.core/datomic-cloud))))
 
+;; TODO: add fixture that puts resources in dist folder if it doesnt exist already
+
 (defn twitch-view-fake
   [matches]
   (->> matches

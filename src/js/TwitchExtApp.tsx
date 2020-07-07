@@ -17,7 +17,7 @@ export const twitchBaseUrl = process.env.NODE_ENV === 'development' ? 'http://lo
 export const CORSGetUser = async (loggedInState: any, setLoggedInState: Function) => {
     const response = await fetch(twitchBaseUrl + "user", {
         method: "GET",
-        credentials: "omit",
+        credentials: "include",
         mode: "cors",
         redirect: "error",
         // headers: {"x-twitch-opaque-id": process.env.NODE_ENV === 'development' ? 'testID123' : twitch.viewer.opaqueId}
