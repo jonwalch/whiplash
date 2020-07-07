@@ -81,7 +81,6 @@ export function Vote (props: any) {
     setBetWaitingForResp(false);
     if (response.status == 200) {
       alert(`You successfully bet $${betAmount} on outcome ${booleanToButton()}.`);
-      // update user's cash
       setLoggedInState(
           { userName: loggedInState.userName,
             status: loggedInState.status,
@@ -106,15 +105,8 @@ export function Vote (props: any) {
           betAmount > loggedInState.cash ||
           betWaitingForResp;
 
-    } else if (loggedInState.status === "user.status/pending") {
+    } else if (loggedInState.status === "user.status/pending" || loggedInState.status === null) {
       return true;
-
-    } else {
-      return projectedResult === null ||
-          betAmount === 0 ||
-          // TODO: change this to a constant
-          betAmount > 500 ||
-          betWaitingForResp;
     }
   };
 
@@ -163,10 +155,7 @@ export function Vote (props: any) {
 
   const renderCTA = () => {
     if (loggedInState.status === null) {
-      return "You can bet up to $500 Whipcash!"
-    }
-    else if (loggedInState.status === "user.status/unauth") {
-      return "Sign up to receive bailouts when you drop below $100 Whipcash!"
+      return "Sign up to bet!"
     }
     else if (loggedInState.status === "user.status/pending") {
       return "Verify your email to bet!"

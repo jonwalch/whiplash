@@ -218,11 +218,11 @@
                                                (mock/cookie :value auth-token))))))))
 
 (defn- get-user
-  [{:keys [ga-tag? twitch-id? auth-token status]}]
+  [{:keys [ga-tag? auth-token status]}]
   (let [ga-tag? (if (some? ga-tag?)
                   ga-tag?
                   true)
-        twitch-id? (if (some? twitch-id?)
+        #_#_twitch-id? (if (some? twitch-id?)
                      twitch-id?
                      true)
         resp (cond
@@ -230,20 +230,15 @@
                ((common/test-app) (-> (mock/request :get "/user")
                                       (mock/cookie :_ga "GA1.2.1493569166.1576110731")
                                       (mock/cookie :value auth-token)))
-               twitch-id?
-               ((common/test-app) (-> (mock/request :get "/user")
-                                      (mock/cookie :value auth-token)
-                                      (mock/header "x-twitch-opaque-id" "testID123")))
-
                :else
                ((common/test-app) (-> (mock/request :get "/user")
                                       (mock/cookie :value auth-token))))
         parsed-body (common/parse-json-body resp)]
     (is (= (or status 200) (:status resp)))
     (when-not (= 403 (:status resp))
-      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
               "Access-Control-Allow-Methods" "GET"
-              "Access-Control-Allow-Origin"  "*"
+              "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
               "Content-Type"                 "application/json; charset=utf-8"
               "X-Content-Type-Options"       "nosniff"
               "X-Frame-Options"              "SAMEORIGIN"
@@ -474,18 +469,18 @@
 
      (if (= (:status resp) 200)
        (is
-         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
              "Access-Control-Allow-Methods" "GET"
-             "Access-Control-Allow-Origin"  "*"
+             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
              "Content-Type"                 "application/json; charset=utf-8"
              "X-Content-Type-Options"       "nosniff"
              "X-Frame-Options"              "SAMEORIGIN"
              "X-XSS-Protection"             "1; mode=block"}
             (:headers resp)))
        (is
-         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
              "Access-Control-Allow-Methods" "GET"
-             "Access-Control-Allow-Origin"  "*"
+             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
              "Content-Type"                 "application/octet-stream"
              "X-Content-Type-Options"       "nosniff"
              "X-Frame-Options"              "SAMEORIGIN"
@@ -500,9 +495,9 @@
     (let [resp ((common/test-app) (-> (mock/request :options "/leaderboard/event")))]
       (is (= 204
              (:status resp)))
-      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
               "Access-Control-Allow-Methods" "GET"
-              "Access-Control-Allow-Origin"  "*"
+              "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
               "Cache-Control"                "max-age=86400"
               "Content-Type"                 "application/octet-stream"
               "X-Content-Type-Options"       "nosniff"
@@ -519,9 +514,9 @@
                 200)
             (:status resp)))
      ;; Access-Control headers needed for CORS
-     (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+     (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
              "Access-Control-Allow-Methods" "GET"
-             "Access-Control-Allow-Origin"  "*"
+             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
              "Cache-Control"                "max-age=1"
              "Content-Type"                 "application/json; charset=utf-8"
              "X-Content-Type-Options"       "nosniff"
@@ -536,9 +531,9 @@
     (let [resp ((common/test-app) (-> (mock/request :options "/stream/prop")))]
       (is (= 204
              (:status resp)))
-      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept"
               "Access-Control-Allow-Methods" "GET"
-              "Access-Control-Allow-Origin"  "*"
+              "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
               "Cache-Control"                "max-age=86400"
               "Content-Type"                 "application/octet-stream"
               "X-Content-Type-Options"       "nosniff"
@@ -547,11 +542,11 @@
              (:headers resp))))))
 
 (defn- user-place-prop-bet
-  [{:keys [auth-token projected-result bet-amount status ga-tag? twitch-id?]}]
+  [{:keys [auth-token projected-result bet-amount status ga-tag?]}]
   (let [ga-tag? (if (some? ga-tag?)
                   ga-tag?
                   true)
-        twitch-id? (if (some? twitch-id?)
+        #_#_twitch-id? (if (some? twitch-id?)
                      twitch-id?
                      true)
         resp (cond
@@ -562,13 +557,6 @@
                                       (mock/cookie :value auth-token)
                                       (mock/json-body {:projected_result projected-result
                                                        :bet_amount       bet-amount})))
-               twitch-id?                                   ;;unauth twitch user
-               ((common/test-app) (-> (mock/request :post "/user/prop-bet")
-                                      (mock/header "x-twitch-opaque-id" "testID123")
-                                      (mock/cookie :value auth-token)
-                                      (mock/json-body {:projected_result projected-result
-                                                       :bet_amount       bet-amount})))
-
                :else
                ((common/test-app) (-> (mock/request :post "/user/prop-bet")
                                       (mock/cookie :value auth-token)
@@ -2126,16 +2114,14 @@
                                     (mock/json-body {:user_name (:user_name dummy-user)
                                                      :password  new-password}))))))))
 
-(deftest valid-auth-or-ga-cookie-or-twitch-opaque-id?-middleware-test
+(deftest valid-auth-or-ga-cookie?-middleware-test
   (user-place-prop-bet {:auth-token       nil
                         :projected-result false
                         :ga-tag?          false
-                        :twitch-id?       false
                         :bet-amount       500
                         :status           403})
   (get-user {:auth-token nil
              :ga-tag?    false
-             :twitch-id? false
              :status     403}))
 
 (deftest not-logged-in-user-no-bailout
@@ -2300,6 +2286,9 @@
         end-event-resp (admin-end-event {:auth-token auth-token})
 
         event-score-after-end (get-event-leaderboard)
+
+        user2-get-user-after-end (get-user nil)
+        admin-get-user-after-end (get-user {:auth-token auth-token})
         all-time-leaderboard (all-time-top-ten {})]
 
     ;; need auth to hit this endpoint
@@ -2334,7 +2323,8 @@
              (:body all-time-leaderboard))))
 
     ;; notifications
-    (is (= 100 (-> admin-get-user :body :user/cash)))
+    (is (= 100 (-> admin-get-user :body :user/cash)
+           (-> admin-get-user-after-end :body :user/cash)))
     (is (= [#:notification{:type "notification.type/bailout"}]
            (-> admin-get-user :body :user/notifications)))
     (is (= []
@@ -2347,7 +2337,9 @@
              :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> user2-get-user :body :user/notifications)))
     (is (= []
-           (-> user2-get-user-notifs-acked :body :user/notifications)))))
+           (-> user2-get-user-notifs-acked :body :user/notifications)))
+    (testing "twitch ext user's cash is reset to 500"
+      (is (= 500 (-> user2-get-user-after-end :body :user/cash))))))
 
 (deftest can-bet-under-100-on-existing-bet
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
@@ -2400,240 +2392,18 @@
     (is (= 301 status))
     (is (= "http://localhost.com/" (get headers "Location")))))
 
-(deftest twitch-not-logged-in-user-no-bailout
-  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
-                                                    (assoc dummy-user :admin? true))
-
-        event-score-before-event-creation (get-event-leaderboard {:status 204})
-
-        title "Dirty Dan's Delirious Dance Party"
-        twitch-user "drdisrespect"
-        create-event-resp (admin-create-event {:auth-token auth-token
-                                               :title      title
-                                               :channel-id twitch-user})
-
-        event-score-before-prop-creation (get-event-leaderboard {:status 204})
-
-        text "Will Jon wipeout 2+ times this round?"
-        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text       text})
-
-        _ (user-place-prop-bet {:auth-token       auth-token
-                                :projected-result false
-                                :bet-amount       500})
-
-        ;; logged out user bets
-        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       nil
-                                                       :ga-tag?          false
-                                                       :projected-result true
-                                                       :bet-amount       100})
-
-        user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       nil
-                                                        :ga-tag?          false
-                                                        :projected-result true
-                                                        :bet-amount       400})
-
-        user-get-prop-bet-resp (user-get-prop-bets {:auth-token nil
-                                                    :status     403})
-        get-body (:body user-get-prop-bet-resp)
-
-        current-prop-bets-response (get-prop-bets-leaderboard)
-        event-score-before-prop-result (get-event-leaderboard)
-
-        ;;admin end prop bet
-        {:keys [auth-token] login-resp :response} (login)
-        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result     "false"})
-
-        event-score-before-end (get-event-leaderboard)
-
-        admin-get-user (get-user {:auth-token auth-token})
-        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
-
-        user2-get-user (get-user {:auth-token nil :ga-tag? false})
-        user2-get-user-notifs-acked (get-user {:auth-token nil :ga-tag? false})
-
-        ;;admin end event
-        {:keys [auth-token] login-resp :response} (login)
-        end-event-resp (admin-end-event {:auth-token auth-token})
-
-        user2-get-user-after-end (get-user {:auth-token nil :ga-tag? false})
-        admin-get-user-after-end (get-user {:auth-token auth-token})
-
-        event-score-after-end (get-event-leaderboard)
-        all-time-leaderboard (all-time-top-ten {})]
-
-    ;; need auth to hit this endpoint
-    (is (= get-body {:message "Access to /user/prop-bet is not authorized"}))
-
-    (is (= {:false {:bets  [{:bet/amount 500
-                             :user/name  "queefburglar"}]
-                    :odds  2.0
-                    :total 500}
-            :true  {:bets  [{:bet/amount 500
-                             :user/name  "user-testIDcAg"}]
-                    :odds  2.0
-                    :total 500}}
-           (:body current-prop-bets-response)))
-
-    (is (= nil
-           (:body event-score-before-event-creation)
-           (:body event-score-before-prop-creation)))
-
-    (testing "twitch unauth user does not appear on current event leaderboard"
-      (is (= [{:score     0
-               :user_name "queefburglar"}]
-             (:body event-score-before-prop-result))))
-
-    (is (= [{:score     510
-             :user_name "queefburglar"}]
-           (:body event-score-before-end)
-           (:body event-score-after-end)))
-
-    (testing "twitch unauth user does not appear in all time leaderboard"
-      (is (= [{:cash      1010
-               :user_name "queefburglar"}]
-             (:body all-time-leaderboard))))
-
-    ;; notifications
-    (is (= 1010 (-> admin-get-user :body :user/cash)
-           (-> admin-get-user-after-end :body :user/cash)))
-    (is (= [{:bet/payout         1010
-             :notification/type  "notification.type/payout"
-             :proposition/result "proposition.result/false"
-             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
-           (-> admin-get-user :body :user/notifications)))
-    (is (= []
-           (-> admin-get-user-notifs-acked :body :user/notifications)))
-
-    (is (= 0 (-> user2-get-user :body :user/cash)))
-    (is (= [#:notification{:type "notification.type/no-bailout"}]
-           (-> user2-get-user :body :user/notifications)))
-    (is (false? (-> user2-get-user :body :user/gated?)))
-    (is (= []
-           (-> user2-get-user-notifs-acked :body :user/notifications)))
-    (testing "twitch ext user's cash is reset to 500"
-      (is (= 500 (-> user2-get-user-after-end :body :user/cash))))))
-
-(deftest twitch-not-logged-in-user-not-on-all-time
-  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
-                                                    (assoc dummy-user :admin? true))
-
-        event-score-before-event-creation (get-event-leaderboard {:status 204})
-
-        title "Dirty Dan's Delirious Dance Party"
-        twitch-user "drdisrespect"
-        create-event-resp (admin-create-event {:auth-token auth-token
-                                               :title      title
-                                               :channel-id twitch-user})
-
-        event-score-before-prop-creation (get-event-leaderboard {:status 204})
-
-        text "Will Jon wipeout 2+ times this round?"
-        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text       text})
-
-        _ (user-place-prop-bet {:auth-token       auth-token
-                                :projected-result true
-                                :bet-amount       500})
-
-        ;; logged out user bets
-        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       nil
-                                                       :ga-tag?          false
-                                                       :projected-result false
-                                                       :bet-amount       100})
-
-        user-place-prop-bet-resp2 (user-place-prop-bet {:auth-token       nil
-                                                        :ga-tag?          false
-                                                        :projected-result false
-                                                        :bet-amount       400})
-
-        user-get-prop-bet-resp (user-get-prop-bets {:auth-token nil
-                                                    :status     403})
-        get-body (:body user-get-prop-bet-resp)
-
-        current-prop-bets-response (get-prop-bets-leaderboard)
-        event-score-before-prop-result (get-event-leaderboard)
-
-        ;;admin end prop bet
-        {:keys [auth-token] login-resp :response} (login)
-        end-prop-bet-resp (admin-end-prop {:auth-token auth-token
-                                           :result     "false"})
-
-        event-score-before-end (get-event-leaderboard)
-
-        admin-get-user (get-user {:auth-token auth-token})
-        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
-
-        user2-get-user (get-user {:auth-token nil :ga-tag? false})
-        user2-get-user-notifs-acked (get-user {:auth-token nil :ga-tag? false})
-
-        ;;admin end event
-        {:keys [auth-token] login-resp :response} (login)
-        end-event-resp (admin-end-event {:auth-token auth-token})
-
-        event-score-after-end (get-event-leaderboard)
-        all-time-leaderboard (all-time-top-ten {})]
-
-    ;; need auth to hit this endpoint
-    (is (= get-body {:message "Access to /user/prop-bet is not authorized"}))
-
-    (is (= {:false {:bets  [{:bet/amount 500
-                             :user/name  "user-testIDcAg"}]
-                    :odds  2.0
-                    :total 500}
-            :true  {:bets  [{:bet/amount 500
-                             :user/name  "queefburglar"}]
-                    :odds  2.0
-                    :total 500}}
-           (:body current-prop-bets-response)))
-
-    (is (= nil
-           (:body event-score-before-event-creation)
-           (:body event-score-before-prop-creation)))
-
-    (testing "twitch unauth user does not appear on current event leaderboard"
-      (is (= [{:score     0
-               :user_name "queefburglar"}]
-             (:body event-score-before-prop-result))))
-
-    (is (= [{:score     -500
-             :user_name "queefburglar"}]
-           (:body event-score-before-end)
-           (:body event-score-after-end)))
-
-    (testing "twitch unauth user does not appear in all time leaderboard, other user doesnt appear because cash below 500"
-      (is (= []
-             (:body all-time-leaderboard))))
-
-    ;; notifications
-    (is (= 100 (-> admin-get-user :body :user/cash)))
-    (is (= [#:notification{:type "notification.type/bailout"}]
-           (-> admin-get-user :body :user/notifications)))
-    (is (= []
-           (-> admin-get-user-notifs-acked :body :user/notifications)))
-
-    (is (= 1010 (-> user2-get-user :body :user/cash)))
-    (is (= [{:bet/payout         1010
-             :notification/type  "notification.type/payout"
-             :proposition/result "proposition.result/false"
-             :proposition/text   "Will Jon wipeout 2+ times this round?"}]
-           (-> user2-get-user :body :user/notifications)))
-    (is (= []
-           (-> user2-get-user-notifs-acked :body :user/notifications)))))
-
 (defn- twitch-ext-user-bet-on-10-props
   [auth-token]
   (dotimes [_ 10]
     (admin-create-prop {:auth-token auth-token
                         :text       "this is a propositon"})
     (user-place-prop-bet {:auth-token       nil
-                          :ga-tag?          false
+                          :ga-tag?          true
                           :projected-result true
                           :bet-amount       100})
 
     (user-place-prop-bet {:auth-token       nil
-                          :ga-tag?          false
+                          :ga-tag?          true
                           :projected-result false
                           :bet-amount       100})
     (admin-end-prop {:auth-token auth-token
@@ -2649,7 +2419,7 @@
                                                :title      title
                                                :channel-id twitch-user})
         _ (twitch-ext-user-bet-on-10-props auth-token)
-        user2-get-user (get-user {:auth-token nil :ga-tag? false})]
+        user2-get-user (get-user {:auth-token nil :ga-tag? true})]
 
     (testing "user/gated? is true after user bets on 10 props"
       (is (true? (-> user2-get-user :body :user/gated?))))))

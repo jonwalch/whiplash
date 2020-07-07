@@ -96,7 +96,8 @@ export function Header(props:any) {
     const renderSignupForm = () => {
         if (showSignup) {
             return (
-                <Signup setShowSignup={setShowSignup}/>
+                <Signup setShowSignup={setShowSignup}
+                setShowLogin={setShowLogin}/>
             );
         }
     };

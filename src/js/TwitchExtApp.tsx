@@ -20,7 +20,7 @@ export const CORSGetUser = async (loggedInState: any, setLoggedInState: Function
         credentials: "omit",
         mode: "cors",
         redirect: "error",
-        headers: {"x-twitch-opaque-id": process.env.NODE_ENV === 'development' ? 'testID123' : twitch.viewer.opaqueId}
+        // headers: {"x-twitch-opaque-id": process.env.NODE_ENV === 'development' ? 'testID123' : twitch.viewer.opaqueId}
     });
     if (response.status === 200) {
         const resp = await response.json();

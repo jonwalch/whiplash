@@ -94,8 +94,9 @@
 
 (defn create-unauthed-user
   [username status]
-  (assert (or (= status :user.status/unauth)
-              (= status :user.status/twitch-ext-unauth)))
+  (assert (and (string? username)
+               (not-empty username)
+               (= status :user.status/twitch-ext-unauth)))
   (d/transact (:conn datomic-cloud)
               {:tx-data [{:user/name         username
                           :user/status       status

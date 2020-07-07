@@ -47,6 +47,7 @@ export function Signup(props: any) {
     if (response.status == 200) {
       props.setShowSignup(false)
       alert("Successful Signup!");
+      props.setShowLogin(true);
     } else {
       alert(resp.message);
     }

@@ -64,10 +64,10 @@ export function TwitchExtension(props: any) {
         const response = await fetch(twitchBaseUrl + "user/prop-bet", {
             headers: {
                 "Content-Type": "application/json",
-                "x-twitch-opaque-id": process.env.NODE_ENV === 'development' ? 'testID123' : twitch.viewer.opaqueId,
+                // "x-twitch-opaque-id": process.env.NODE_ENV === 'development' ? 'testID123' : twitch.viewer.opaqueId,
             },
             method: "POST",
-            credentials: "omit",
+            credentials: "include",
             mode: "cors",
             redirect: "error",
             body: JSON.stringify({

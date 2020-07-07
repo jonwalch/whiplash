@@ -117,16 +117,16 @@
                   (< (time/to-millis) exp)
                   (= "user.status/admin" status)))))
 
-;(defn valid-auth-or-ga-cookie?
-;  [req]
-;  (let [{:keys [user exp]} (req->token req)]
-;    (or (boolean (and (string? user)
-;                      (int? exp)
-;                      (< (time/to-millis) exp)))
-;        ;; TODO: regex validation of _ga tag
-;        (string? (-> req :cookies (get "_ga") :value)))))
+(defn valid-auth-or-ga-cookie?
+  [req]
+  (let [{:keys [user exp]} (req->token req)]
+    (or (boolean (and (string? user)
+                      (int? exp)
+                      (< (time/to-millis) exp)))
+        ;; TODO: regex validation of _ga tag
+        (string? (-> req :cookies (get "_ga") :value)))))
 
-(defn valid-auth-or-ga-cookie-or-twitch-opaque-id?
+#_(defn valid-auth-or-ga-cookie-or-twitch-opaque-id?
   [req]
   (let [{:keys [user exp]} (req->token req)]
     (or (boolean (and (string? user)
@@ -149,12 +149,12 @@
                      :on-error on-error}))
 
 ;; Add on a per route basis
-;(defn wrap-restricted-or-ga-unauth-user [handler]
-;  (restrict handler {:handler valid-auth-or-ga-cookie?
-;                     :on-error on-error}))
+(defn wrap-restricted-or-ga-unauth-user [handler]
+  (restrict handler {:handler valid-auth-or-ga-cookie?
+                     :on-error on-error}))
 
 ;; Add on a per route basis
-(defn wrap-restricted-or-ga-or-twitch [handler]
+#_(defn wrap-restricted-or-ga-or-twitch [handler]
   (restrict handler {:handler valid-auth-or-ga-cookie-or-twitch-opaque-id?
                      :on-error on-error}))
 
