@@ -48,10 +48,11 @@
 
 (defn create-datomic-cloud
   []
-  (let [{:keys [client async-client]} (create-client cloud-config)
-        created? (d/create-database client {:db-name "whiplash"})
-        conn (d/connect client {:db-name "whiplash"})
-        async-conn (d.async/connect async-client {:db-name "whiplash"})
+  (let [db-name {:db-name "whiplash"}
+        {:keys [client async-client]} (create-client cloud-config)
+        created? (d/create-database client db-name)
+        conn (d/connect client db-name)
+        async-conn-channel (d.async/connect async-client db-name)
         ;; TODO: read current schema and only transact the schema if it has changed
         ;; TODO: transact all schemas one at a time instead of flattening and transacting them all at once
         schema-tx-result (d/transact conn {:tx-data (schemas/migrations->schema-tx)})]
@@ -60,7 +61,7 @@
     {:client       client
      :async-client async-client
      :conn         conn
-     :async-conn async-conn}))
+     :async-conn   (async/<!! async-conn-channel)}))
 
 (defn destroy-datomic-cloud
   [datomic-cloud]

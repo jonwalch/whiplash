@@ -148,11 +148,9 @@
                            unacked-notifications)
         ;; ack notifications, dubious because this makes this GET no longer idempotent
         ack-tx (when-not (empty? notifications)
-                 ;; TODO async transact, we dont need to wait for this to return to give the user their notifs
-                 ;; waiting to hear back from kenny github issue
                  (let [ack-time (time/to-date)]
-                   (d/transact
-                     (:conn db/datomic-cloud)
+                   (d.async/transact
+                     (:async-conn db/datomic-cloud)
                      {:tx-data (into []
                                      (concat
                                        (map (fn [{:keys [db/id]}]
