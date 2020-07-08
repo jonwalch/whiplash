@@ -157,7 +157,7 @@
      {:options {:summary "Take care of CORS preflight"
                 :handler (fn [req] (CORS-GET-options [req]))}
       :get  {:summary    "get a user"
-             :middleware [middleware/wrap-restricted-or-ga-unauth-user]
+             :middleware [middleware/wrap-restricted-or-twitch]
              :handler    (fn [req] (user/get-user req))}}]
 
     ["/login"
@@ -230,7 +230,7 @@
       :post    {:summary    "create a guess for a user"
                 :parameters {:body {:projected_result boolean?
                                     :bet_amount       int?}}
-                :middleware [middleware/wrap-restricted-or-ga-unauth-user]
+                :middleware [middleware/wrap-restricted-or-twitch]
                 :handler    (fn [req]
                               (assoc (user/create-prop-bet req) :headers constants/CORS-GET-and-POST-headers))}}]
     ["/suggestion"

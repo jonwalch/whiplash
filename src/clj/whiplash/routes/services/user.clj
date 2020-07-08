@@ -78,7 +78,7 @@
                  (map #(get fuzz-map %))
                  (apply str)))))
 
-#_(defn- twitch-unauth-username
+(defn- twitch-unauth-username
   [{:keys [headers]}]
   (when-let [oid (get headers "x-twitch-opaque-id")]
     (format "user-%s"
@@ -212,7 +212,8 @@
   (let [{:keys [user exp]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
         user-name (or user
-                      (unauthed-username req))
+                      (twitch-unauth-username req)
+                      #_(unauthed-username req))
         valid-un? (and (string? user-name)
                        (not (empty? user-name)))
         gate-user? (when valid-un?
@@ -234,14 +235,15 @@
                                            :proposition/text
                                            {:proposition/result [:db/ident]}]}]}]}]}))]
     (if (some? user-entity)
-      {:status  200
-       :headers constants/CORS-GET-headers-allow-creds
-       :body    (-> user-entity
-                 (dissoc :db/id :user/unacked-notifications)
-                 (assoc :user/notifications (ack-user-notifications user-entity)
-                        :user/gated? gate-user?))}
+      (do
+        {:status  200
+         :headers constants/CORS-GET-headers
+         :body    (-> user-entity
+                      (dissoc :db/id :user/unacked-notifications)
+                      (assoc :user/notifications (ack-user-notifications user-entity)
+                             :user/gated? gate-user?))})
       {:status  404
-       :headers constants/CORS-GET-headers-allow-creds
+       :headers constants/CORS-GET-headers
        :body    {:message (format "User %s not found" user)}})))
 
 (defn login
@@ -289,22 +291,21 @@
                       :same-site :strict}}})
 
 (defn- pull-and-maybe-create-user
-  ;[{:keys [user unauthed-user twitch-ext-unauth-user db]}]
-  [{:keys [user unauthed-user db]}]
+  [{:keys [user twitch-ext-unauth-user db]}]
   (let [pulled-user (db/pull-user {:db        db
-                                   :user/name (or user unauthed-user)
+                                   :user/name (or user twitch-ext-unauth-user)
                                    :attrs     [:user/cash :db/id {:user/status [:db/ident]}]})]
     (cond
       pulled-user
       pulled-user
 
-      #_twitch-ext-unauth-user
-      #_(let [tx-result (db/create-unauthed-user twitch-ext-unauth-user :user.status/twitch-ext-unauth)]
+      twitch-ext-unauth-user
+      (let [tx-result (db/create-unauthed-user twitch-ext-unauth-user :user.status/twitch-ext-unauth)]
         (db/pull-user {:db (:db-after tx-result)
                        :user/name twitch-ext-unauth-user
                        :attrs     [:user/cash :db/id {:user/status [:db/ident]}]}))
-      unauthed-user
-      (let [tx-result (db/create-unauthed-user unauthed-user :user.status/twitch-ext-unauth)]
+      #_unauthed-user
+      #_(let [tx-result (db/create-unauthed-user unauthed-user :user.status/twitch-ext-unauth)]
         (db/pull-user {:db (:db-after tx-result)
                        :user/name unauthed-user
                        :attrs     [:user/cash :db/id {:user/status [:db/ident]}]})))))
@@ -313,16 +314,16 @@
   [{:keys [body-params] :as req}]
   (let [{:keys [bet_amount projected_result]} body-params
         {:keys [user exp]} (middleware/req->token req)
-        #_#_twitch-ext-unauth-user (when-not user
+        twitch-ext-unauth-user (when-not user
                                  (twitch-unauth-username req))
-        unauthed-user (when (and (not user)
+        #_#_unauthed-user (when (and (not user)
                                  #_(not twitch-ext-unauth-user))
                         (unauthed-username req))
         db (d/db (:conn db/datomic-cloud))
         {:keys [db/id user/cash user/status]} (pull-and-maybe-create-user
                                                 {:user user
-                                                 :unauthed-user unauthed-user
-                                                 #_#_:twitch-ext-unauth-user twitch-ext-unauth-user
+                                                 #_#_:unauthed-user unauthed-user
+                                                 :twitch-ext-unauth-user twitch-ext-unauth-user
                                                  :db db})
         ongoing-prop (db/pull-ongoing-proposition {:db db :attrs [:db/id]})
         ;; TODO: make this query part of pulling the user if it shaves off a query
