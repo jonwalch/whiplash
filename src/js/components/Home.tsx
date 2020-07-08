@@ -79,24 +79,25 @@ export function Home(props: any) {
   // keep user's cash and notifications up to date
   // the other pages don't need to do this regularly, because it doesn't matter if their cash is out of date
   // we also only need to fetch regularly if an event is happening, because that's the only time payouts happens
-  useInterval(() => {
-    if (channelID != failedToFetch) {
-        getUser(setLoggedInState);
-    }
-  }, 5000);
+    useEffect( () => {
+        if (channelID !== failedToFetch) {
+            getUser(setLoggedInState);
+        }
+        // @ts-ignore
+    }, [proposition["proposition/text"]])
 
     useEffect(() => {
-    getEvent().then((event) => {
-        getEventWrapper(event)
-    });
+        getEvent().then((event) => {
+            getEventWrapper(event)
+        });
 
-    getProp().then((event) => {
-        getPropWrapper(event)
-    });
-  }, []);
+        getProp().then((event) => {
+            getPropWrapper(event)
+        });
+    }, []);
 
   useInterval(() => {
-    if (channelID != failedToFetch) {
+    if (channelID !== failedToFetch) {
         getProp().then((event) => {
             getPropWrapper(event)
         });
@@ -110,7 +111,7 @@ export function Home(props: any) {
   }, 10000);
 
   useInterval(() => {
-    if (nextEventTime != "") {
+    if (nextEventTime !== "") {
         setCountdown(setCountdownWrapper(nextEventTime))
     }}, 1000);
 
@@ -130,30 +131,30 @@ export function Home(props: any) {
     };
 
     const streamSourceToStreamUrl = () => {
-      if (streamSource == "event.stream-source/cnn-unauth") {
+      if (streamSource === "event.stream-source/cnn-unauth") {
           return "https://fave.api.cnn.io/v1/fav/?video=cvplive/cvpstream0&customer=cnn&edition=domestic&env=prod&isLive=true";
       }
-      else if (streamSource == "event.stream-source/youtube") {
+      else if (streamSource === "event.stream-source/youtube") {
           return "https://www.youtube.com/embed/live_stream?channel=" + channelID;
       }
-      else if (streamSource == "event.stream-source/twitch") {
+      else if (streamSource === "event.stream-source/twitch") {
          return "https://player.twitch.tv/?channel=" + channelID + "&parent=" + embedBaseUrl;
       }
   };
 
     const streamSourceToChatUrl = () => {
         // TODO: youtube live chat seems to need the video id, not the channel id
-        if (streamSource == "event.stream-source/youtube") {
+        if (streamSource === "event.stream-source/youtube") {
             return "https://www.youtube.com/live_chat?channel=" + channelID;
         }
-        else if (streamSource == "event.stream-source/twitch") {
+        else if (streamSource === "event.stream-source/twitch") {
             return "https://www.twitch.tv/embed/" + channelID + "/chat?darkpopout&parent=" + embedBaseUrl;
         }
     };
 
   const renderContent = () => {
     // Loading
-    if (channelID == null) {
+    if (channelID === null) {
         return (
             <div className="twitch is-inactive">
                 <div className="container">
@@ -165,7 +166,7 @@ export function Home(props: any) {
             </div>
         );
     // no stream but countdown
-    } else if (channelID == failedToFetch && countdown != null) {
+    } else if (channelID === failedToFetch && countdown !== null) {
         return (
             <div className="twitch is-inactive">
                 <div className="container">
@@ -179,7 +180,7 @@ export function Home(props: any) {
         );
 
       // No stream and no countdown to show
-    } else if (channelID == failedToFetch) {
+    } else if (channelID === failedToFetch) {
       return (
           <div className="twitch is-inactive">
             <div className="container">

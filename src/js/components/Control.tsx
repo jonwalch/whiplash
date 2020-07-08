@@ -43,7 +43,7 @@ export const defaultProposition = {
     "proposition/result": ""
 };
 
-const defaultBetSecs = 16;
+const defaultBetSecs = 30;
 
 export function Control(props: any) {
     const { loggedInState, setLoggedInState } = useContext(LoginContext);

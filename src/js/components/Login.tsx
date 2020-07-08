@@ -31,7 +31,7 @@ export function Login(props: any) {
       redirect: "error",
       body: JSON.stringify({ password: password, user_name: userName })
     });
-    if (response.status == 200) {
+    if (response.status === 200) {
       getUser(setLoggedInState);
       setLogInWaitingForResp(false);
       props.setShowSignup(false);

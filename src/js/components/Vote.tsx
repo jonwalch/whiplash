@@ -79,7 +79,7 @@ export function Vote (props: any) {
     const resp = await response.json();
     setProjectedResult(null);
     setBetWaitingForResp(false);
-    if (response.status == 200) {
+    if (response.status === 200) {
       alert(`You successfully bet $${betAmount} on outcome ${booleanToButton()}.`);
       setLoggedInState(
           { userName: loggedInState.userName,

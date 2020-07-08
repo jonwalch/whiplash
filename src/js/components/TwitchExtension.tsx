@@ -151,7 +151,7 @@ export function TwitchExtension(props: any) {
         }
     }, [proposition])
 
-    useInterval(() => {
+    useEffect(() => {
         // @ts-ignore
         pulseP.current?.classList.remove("profit-pulse")
         if (userTriedBetting || loggedInState.userName) {
@@ -164,7 +164,7 @@ export function TwitchExtension(props: any) {
                 }
             );
         }
-    }, 5000);
+    }, [proposition["proposition/text"]]);
 
     useInterval(() => {
         getCORSProp().then((event) => {

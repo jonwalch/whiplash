@@ -1,5 +1,6 @@
 (ns whiplash.constants)
 
+;; TODO: in local dev change Access-Control-Allow-Origin to http://localhost:63342
 (def ^:const CORS-GET-headers
   {"Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
    "Access-Control-Allow-Headers" "Origin, Content-Type, Accept"

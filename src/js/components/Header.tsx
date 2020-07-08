@@ -80,7 +80,12 @@ export function Header(props:any) {
     useEffect(() => {
         if (loggedInState.notifications.length > 0) {
             setCurrentNotification(createNotificationMarkup())
-        } else {
+            const timer = setTimeout(() => {
+                setCurrentNotification(<></>);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+        else {
             setCurrentNotification(<></>);
         }
     }, [loggedInState.notifications])
