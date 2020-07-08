@@ -178,17 +178,39 @@ export function Header(props:any) {
         } else {
             return (
                 <>
+                    {/*<button*/}
+                    {/*    type="button"*/}
+                    {/*    className="button navigation__button__tiny"*/}
+                    {/*    onClick={() => {*/}
+                    {/*        // Trigger Google Analytics event*/}
+                    {/*        gtag('event', 'clicked-button', {*/}
+                    {/*            event_category: 'buy-whipcash',*/}
+                    {/*            event_label: loggedInState.userName,*/}
+                    {/*        });*/}
+                    {/*    }}>*/}
+                    {/*    Buy Whipcash*/}
+                    {/*</button>*/}
+                    <button
+                        type="button"
+                        style={{fontSize: "0.5rem", marginRight: "0.5rem"}}
+                        className="button navigation__button__tiny"
+                        onClick={() => {
+                            const win = window.open("https://discord.gg/GsG2G9t", '_blank');
+                            // @ts-ignore
+                            win.focus();
+                        }}>
+                        <img src={baseUrl + "/img/logos/Discord-Logo-Wordmark-White.svg"}/>
+                    </button>
                     <button
                         type="button"
                         className="button navigation__button__tiny"
+                        style={{fontSize: "0.5rem"}}
                         onClick={() => {
-                            // Trigger Google Analytics event
-                            gtag('event', 'clicked-button', {
-                                event_category: 'buy-whipcash',
-                                event_label: loggedInState.userName,
-                            });
+                            const win = window.open("https://twitter.com/WhiplashGG", '_blank');
+                            // @ts-ignore
+                            win.focus();
                         }}>
-                        Buy Whipcash
+                        <img style={{maxWidth: "35%"}} src={baseUrl + "/img/logos/Twitter_Logo_WhiteOnImage.svg"}/>
                     </button>
                     <li className="navigation__item">
                         <span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}
