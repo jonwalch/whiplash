@@ -94,7 +94,7 @@ export function Control(props: any) {
             });
             setSuggestions(await getSuggestions());
         }
-    }, 3000);
+    }, 1000);
 
     const createEvent = async () => {
         const response = await fetch(baseUrl + "admin/event", {

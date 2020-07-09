@@ -15,5 +15,4 @@
 (def ^:const CORS-GET-and-POST-headers
   {"Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
    "Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
-   "Access-Control-Allow-Credentials" "true"
    "Access-Control-Allow-Methods" "POST, GET"})

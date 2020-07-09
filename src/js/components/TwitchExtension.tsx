@@ -2,7 +2,7 @@ import React, {useState, useEffect, useContext, useRef} from "react";
 import { useInterval } from "../common";
 import "../../../resources/public/css/App.css";
 import {defaultLoggedIn, LoginContext} from "../contexts/LoginContext";
-import {CORSGetUser, twitch, twitchBaseUrl} from "../TwitchExtApp";
+import {CORSGetUser, twitch, twitchBaseUrl, twitchOpaqueID} from "../TwitchExtApp";
 import UIfx from 'uifx';
 
 const kc = new UIfx(
@@ -64,7 +64,7 @@ export function TwitchExtension(props: any) {
         const response = await fetch(twitchBaseUrl + "user/prop-bet", {
             headers: {
                 "Content-Type": "application/json",
-                "x-twitch-opaque-id": process.env.NODE_ENV === 'development' ? 'UtestID123' : twitch.viewer.opaqueId,
+                "x-twitch-opaque-id": twitchOpaqueID(),
             },
             method: "POST",
             credentials: "omit",
@@ -78,12 +78,17 @@ export function TwitchExtension(props: any) {
 
         // Trigger Google Analytics event
         // @ts-ignore
-        ga('send', {
-            hitType: 'event',
-            eventCategory: 'Betting',
-            eventAction: 'prop-bet',
-            eventLabel: loggedInState.userName,
-            eventValue: betAmount,
+        ga(function(tracker) {
+            const clientId = tracker.get('clientId');
+            // @ts-ignore
+            ga('send', 'event', 'Betting', 'ext-prop-bet', clientId, betAmount, {"dimension1": loggedInState.userName,})
+            // ga('send', {
+            //     hitType: 'event',
+            //     eventCategory: 'Betting',
+            //     eventAction: 'ext-prop-bet',
+            //     eventLabel: clientId,
+            //     eventValue: betAmount,
+            // })
         })
 
         setBetWaitingForResp(false);
