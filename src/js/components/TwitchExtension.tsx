@@ -13,6 +13,14 @@ const kc = new UIfx(
     }
 )
 
+const startSound = new UIfx(
+    (process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : "https://whiplashesports.com/") + "dist/sfx/swiftly.mp3",
+    {
+        volume: 0.4, // number between 0.0 ~ 1.0
+        throttleMs: 100
+    }
+)
+
 const textStyles = {fontSize: ".75rem", padding: "0 0.5rem 0.5rem 0.5rem",}
 
 export function TwitchExtension(props: any) {
@@ -25,6 +33,8 @@ export function TwitchExtension(props: any) {
     const [betAmount, setBetAmount] = useState<number>(0);
     const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
     const [userTriedBetting, setUserTriedBetting] = useState<boolean>(false);
+    const [sfxEnabled, setSfxEnabled] = useState<boolean>(false);
+
     // @ts-ignore
     const pulseP = useRef(null);
 
@@ -46,7 +56,7 @@ export function TwitchExtension(props: any) {
 
     //Play a ding if any notifications are a payout (this include cancels here)
     useEffect(() => {
-        if (loggedInState.notifications.length > 0) {
+        if (sfxEnabled && loggedInState.notifications.length > 0) {
             let i = 0;
             for (; i < loggedInState.notifications.length; i++) {
                 // @ts-ignore
@@ -57,6 +67,12 @@ export function TwitchExtension(props: any) {
             }
         }
     }, [loggedInState.notifications])
+
+    useEffect(() => {
+        if (proposition["proposition/text"] && sfxEnabled) {
+            startSound.play()
+        }
+    }, [proposition["proposition/text"]])
 
     const CORSMakePropBet = async (projectedResult : boolean) => {
         setBetWaitingForResp(true);
@@ -212,11 +228,11 @@ export function TwitchExtension(props: any) {
 
     const renderPropositionText = () => {
         if (proposition["proposition/text"]) {
-            return (<p style={{margin:0}}>Bet: {proposition["proposition/text"]}</p>);
+            return (<p style={{margin:0}}>{proposition["proposition/text"]}</p>);
         } else if (prevProposition["proposition/text"]){
             return (
                 <>
-                    <p>{"Last bet: " + prevProposition["proposition/text"]}</p>
+                    <p>{"Last proposition: " + prevProposition["proposition/text"]}</p>
                     <p style={{margin:0}}>
                         {"Outcome: " + renderOutcomeText(prevProposition["proposition/result"])}
                     </p>
@@ -303,6 +319,15 @@ export function TwitchExtension(props: any) {
                     {/*Show 500 if cash is default. Cash gets set by getUser but only after someone has placed a bet.*/}
                         W$: <span ref={pulseP} style={{color: "gold"}}>{loggedInState.cash === -1 ? 500 : loggedInState.cash}</span>
                     </p>
+                    <div>
+                        <label style={{fontSize: "0.5rem"}}
+                               htmlFor="sfxEnabled">SFX</label>
+                        <input type="checkbox"
+                               id="sfxEnabled"
+                               checked={sfxEnabled}
+                               onChange={() => {}}
+                               onClick={() => {setSfxEnabled(!sfxEnabled)}}/>
+                    </div>
                 </span>
                 <div style={{...textStyles, ...{fontSize: "1rem"}}}>
                     {renderPropositionText()}

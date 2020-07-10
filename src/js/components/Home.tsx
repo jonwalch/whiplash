@@ -102,7 +102,7 @@ export function Home(props: any) {
             getPropWrapper(event)
         });
     }
-  }, 500);
+  }, 1000);
 
   useInterval(() => {
     getEvent().then((event) => {
