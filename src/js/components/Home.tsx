@@ -268,7 +268,6 @@ export function Home(props: any) {
                         twitchUsername={channelID}/>
                     <Leaderboard
                         channelID={channelID}
-                        proposition={proposition}
                         eventScoreLeaderboard={eventScoreLeaderboard}
                         setEventScoreLeaderboard={setEventScoreLeaderboard}
                     />

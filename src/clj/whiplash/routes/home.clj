@@ -62,6 +62,7 @@
    ["/" {:get home-page}]
    ["/about" {:get home-page}]
    ["/account" {:get home-page}]
+   ["/leaderboard" {:get home-page}]
    ["/control" {:get home-page}]
 
    ;; admin only endpoints

@@ -8,6 +8,7 @@ import {defaultLoggedIn, LoginContext} from "./contexts/LoginContext";
 import { Account } from "./components/Account";
 import {getUser} from "./common/getUser";
 import {Recovery} from "./components/Recovery";
+import {LeaderboardPage} from "./components/LeaderboardPage";
 
 const { install } = require('ga-gtag');
 const Control = lazy(() => import("./components/Control").then(({ Control }) => ({default: Control})));
@@ -32,6 +33,11 @@ export const App = () => {
                 <Route exact path="/account" render={({ match, history}) =>
                     (
                         <Account match={match} history={history}/>
+                    )}
+                />
+                <Route exact path="/leaderboard" render={({ match, history}) =>
+                    (
+                        <LeaderboardPage match={match} history={history}/>
                     )}
                 />
                 <Route

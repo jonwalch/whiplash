@@ -30,6 +30,10 @@
     (let [response ((common/test-app) (mock/request :get "/account"))]
       (is (= 200 (:status response)))))
 
+  (testing "account"
+    (let [response ((common/test-app) (mock/request :get "/leaderboard"))]
+      (is (= 200 (:status response)))))
+
   (testing "recover"
     (let [response ((common/test-app) (mock/request :get "/user/password/recover"))]
       (is (= 200 (:status response)))))

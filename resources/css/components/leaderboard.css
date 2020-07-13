@@ -1,6 +1,10 @@
 .leaderboard {
   font-size: 0.85em;
 
+  &__no-grid-column {
+    grid-column: unset;
+   }
+
   @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
     grid-column: 1 / -1;
   }

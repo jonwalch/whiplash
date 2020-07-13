@@ -118,7 +118,7 @@ export function Leaderboard (props:any) {
   };
 
   return (
-    <div className="leaderboard">
+    <div className={props.noGrid ? "leaderboard__no-grid-column" : "leaderboard"}>
       <div className="container leaderboard__container">
         <header className="leaderboard__header leaderboard__header--primary">
           <h2 className="leaderboard__title">Leaderboard</h2>

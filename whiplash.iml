@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/clj" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/resources" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/clj" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/resources/public/dist" />
       <excludeFolder url="file://$MODULE_DIR$/target/default" />
     </content>
     <orderEntry type="inheritedJdk" />
