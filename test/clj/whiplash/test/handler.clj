@@ -2473,8 +2473,8 @@
     (is (= []
            (-> admin-get-user-notifs-acked :body :user/notifications)))
 
-    (is (= 0 (-> user2-get-user :body :user/cash)))
-    (is (= [#:notification{:type "notification.type/no-bailout"}]
+    (is (= 100 (-> user2-get-user :body :user/cash)))
+    (is (= [#:notification{:type "notification.type/bailout"}]
            (-> user2-get-user :body :user/notifications)))
     (is (false? (-> user2-get-user :body :user/gated?)))
     (is (= []

@@ -472,17 +472,17 @@
        (map
          (fn [[user-id {:keys [user/cash user/total-payout user/status]}]]
            (let [new-balance (+ cash total-payout)
-                 authed-user? (and (not= status :user.status/unauth)
-                                   (not= status :user.status/twitch-ext-unauth))
+                 #_#_ authed-user? (and (not= status :user.status/unauth)
+                                   #_(not= status :user.status/twitch-ext-unauth))
                  bailout? (> 100 new-balance)
-                 cas [:db/cas user-id :user/cash cash (if (and authed-user?
+                 cas [:db/cas user-id :user/cash cash (if (and #_authed-user?
                                                                bailout?
                                                                (not flip?))
                                                         100N
                                                         new-balance)]]
              (cond
-               (and bailout? (not authed-user?) (not flip?))
-               [cas
+               #_(and bailout? #_(not authed-user?) (not flip?))
+               #_[cas
                 {:db/id              user-id
                  :user/unacked-notifications [{:notification/type :notification.type/no-bailout}]}]
 

@@ -168,7 +168,7 @@ export function Header(props:any) {
                 <>
                     <li className="navigation__item">{loggedInState.userName}</li>
                     <li className="navigation__item">
-                        <span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}
+                        <span className="navigation__highlight">W$:</span> {loggedInState.cash}
                     </li>
                     <li>{renderLoginButton()}</li>
                     <li>{renderSignupButton()}</li>
@@ -213,7 +213,7 @@ export function Header(props:any) {
                         <img style={{maxWidth: "35%"}} src={baseUrl + "/img/logos/Twitter_Logo_WhiteOnImage.svg"}/>
                     </button>
                     <li className="navigation__item">
-                        <span className="navigation__highlight">Whipcash:</span> ${loggedInState.cash}
+                        <span className="navigation__highlight">W$:</span> {loggedInState.cash}
                     </li>
                     <li className="navigation__item">
                         <Link to="/account">{loggedInState.userName}</Link>
@@ -251,6 +251,7 @@ export function Header(props:any) {
                                 Donate
                             </a>
                         </li>
+                        <li><Link className="navigation__link" to="/leaderboard">Leaderboard</Link></li>
                     </ul>
                 </nav>
                 <nav className="navigation navigation--cta">
