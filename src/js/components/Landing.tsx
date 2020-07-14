@@ -34,6 +34,8 @@ export function Landing(props: any) {
 
     // @ts-ignore
     const pulseP = useRef(null);
+    const yesButton = useRef(null);
+    const noButton = useRef(null);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const numbers = /^[0-9]*$/;
@@ -44,19 +46,27 @@ export function Landing(props: any) {
     };
 
     useEffect(() => {
-        const buttons = document.querySelectorAll('.button--vote');
-
-        buttons.forEach((button) => {
-            if (betAmount <= cash && !pressed) {
-                // button text does match selection
-                if (!button.classList.contains('is-active')) {
-                    button.classList.add('is-active')
-                }
-            } else {
-                // button text does not match selection
-                button.classList.remove('is-active')
-            }
-        })
+        if (sideBetOn === null && betAmount <= cash) {
+            // @ts-ignore
+            yesButton.current?.classList.add("is-active")
+            // @ts-ignore
+            noButton.current?.classList.add("is-active")
+        } else if (sideBetOn) {
+            // @ts-ignore
+            yesButton.current?.classList.add("is-active")
+            // @ts-ignore
+            noButton.current?.classList.remove("is-active")
+        } else if (sideBetOn === false) {
+            // @ts-ignore
+            noButton.current?.classList.add("is-active")
+            // @ts-ignore
+            yesButton.current?.classList.remove("is-active")
+        } else {
+            // @ts-ignore
+            yesButton.current?.classList.remove("is-active")
+            // @ts-ignore
+            noButton.current?.classList.remove("is-active")
+        }
     }, [pressed, betAmount]);
 
     const resolveBet = (currentPrompt:any) => {
@@ -112,6 +122,14 @@ export function Landing(props: any) {
         return pressed || betAmount > cash
     }
 
+    const betText = () => {
+        if (secsLeftToBet >= 0) {
+            return "Timer: " + secsLeftToBet
+        } else {
+            return "Betting locked"
+        }
+    }
+
     const renderContent = () => {
         return (
             <>
@@ -137,7 +155,7 @@ export function Landing(props: any) {
                             style={{position: "absolute", top: "0", left: "0", height: "100%", width: "100%"}}
                             width="800"
                             height="450"
-                            src="https://www.youtube.com/embed/IwsSt4NZNRw?&autoplay=1&muted=1"
+                            src="https://www.youtube.com/embed/IwsSt4NZNRw?&autoplay=1&muted=1&modestbranding&rel=0"
                             frameBorder="0"
                             allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen>
@@ -146,9 +164,7 @@ export function Landing(props: any) {
                 </div>
                 <p style={{textAlign: "center"}}>Current Bet: {prompt}</p>
                 <p style={{textAlign: "center", margin: "0"}}>W$: <span style={{color:"gold"}} ref={pulseP}>{cash}</span></p>
-                { secsLeftToBet >= 0 &&
-                    <p style={{textAlign: "center", marginBottom: "0", fontSize: "0.75rem"}}>Timer: {secsLeftToBet}</p>
-                }
+                <p style={{textAlign: "center", marginBottom: "0", fontSize: "0.75rem"}}>{betText()}</p>
                 <div className="form__group"
                      style={{flexDirection: "row", justifyContent: "center"}}>
                     <input
@@ -160,14 +176,17 @@ export function Landing(props: any) {
                         name="betAmount"
                         id="betAmount"
                         autoComplete="off"
+                        placeholder="Bet Amount"
                     />
                 </div>
                 <div style={{display: "flex", margin: "1rem", justifyContent: "center"}}>
                     <button
+                        ref={yesButton}
                         className="button button--vote "
                         style={{margin: "0.5rem 0.5rem 0 0.5rem"}}
                         type="button"
                         key="Yes"
+                        id="yesButton"
                         disabled={betDisabled()}
                         onClick={() => {
                             setPressed(true)
@@ -178,10 +197,12 @@ export function Landing(props: any) {
                         Yes
                     </button>
                     <button
+                        ref={noButton}
                         className="button button--vote"
                         style={{margin: "0.5rem 0.5rem 0 0.5rem"}}
                         type="button"
                         key="No"
+                        id="noButton"
                         disabled={betDisabled()}
                         onClick={() => {
                             setPressed(true)
