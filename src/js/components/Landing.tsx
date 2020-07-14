@@ -46,7 +46,12 @@ export function Landing(props: any) {
     };
 
     useEffect(() => {
-        if (sideBetOn === null && betAmount <= cash) {
+        if (secsLeftToBet < 0 && sideBetOn === null) {
+            // @ts-ignore
+            yesButton.current?.classList.remove("is-active")
+            // @ts-ignore
+            noButton.current?.classList.remove("is-active")
+        } else if (sideBetOn === null && betAmount <= cash) {
             // @ts-ignore
             yesButton.current?.classList.add("is-active")
             // @ts-ignore
@@ -67,7 +72,7 @@ export function Landing(props: any) {
             // @ts-ignore
             noButton.current?.classList.remove("is-active")
         }
-    }, [pressed, betAmount]);
+    }, [pressed, betAmount, secsLeftToBet]);
 
     const resolveBet = (currentPrompt:any) => {
         if (sideBetOn === currentPrompt.result) {
@@ -119,7 +124,7 @@ export function Landing(props: any) {
     }, 1000);
 
     const betDisabled = () => {
-        return pressed || betAmount > cash
+        return secsLeftToBet < 0 || pressed || betAmount > cash
     }
 
     const betText = () => {
