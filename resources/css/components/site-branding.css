@@ -7,22 +7,19 @@
     + * {
       align-items: center;
       display: flex;
-      margin-left: 0.5em;
+      justify-content: space-between;
+      width: 100%;
     }
   }
 
   &__title {
     color: $orange;
-
-    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
-      margin: 0;
-    }
+    margin: 0;
   }
 
   & &__title {
 
     a {
-
       &:hover,
       &:focus {
         text-decoration: none;

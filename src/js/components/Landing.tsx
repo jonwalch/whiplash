@@ -23,7 +23,7 @@ const kc = new UIfx(
 
 export function Landing(props: any) {
     const [promptIndex, setPromptIndex] = useState<number>(0)
-    const [prompt, setPrompt] = useState<string>(prompts[promptIndex]["text"]);
+    const [prompt, setPrompt] = useState<string>(prompts[promptIndex].text);
     const [pressed, setPressed] = useState<boolean>(false);
     const [secsLeftToBet, setSecsLeftToBet] = useState<number>(20)
     const [betAmount, setBetAmount] = useState<number>(100)
@@ -32,7 +32,6 @@ export function Landing(props: any) {
     const [totalAmountBet, setTotalAmountBet] = useState<number>(0)
     const [sideBetOn, setSideBetOn] = useState<null | boolean>(null)
 
-    // @ts-ignore
     const pulseP = useRef(null);
     const yesButton = useRef(null);
     const noButton = useRef(null);
@@ -138,19 +137,20 @@ export function Landing(props: any) {
     const renderContent = () => {
         return (
             <>
-                <h1 style={{display:"flex", justifyContent: "center", margin:"0"}}>
-                    <img
-                        src={baseUrl + "/img/logos/whiplash-horizontal-4c-gg.svg"}
-                        alt="Whiplashgg"
-                        width="165"
-                        height="36"
-                        className="site-logo__big"
-                    />
-                </h1>
-                <h2 style={{textAlign: "center"}}>
+                {/*<h1 style={{display:"flex", justifyContent: "center", margin:"0"}}>*/}
+                {/*    <img*/}
+                {/*        src={baseUrl + "/img/logos/whiplash-horizontal-4c-gg.svg"}*/}
+                {/*        alt="Whiplashgg"*/}
+                {/*        width="165"*/}
+                {/*        height="36"*/}
+                {/*        className="site-logo__big"*/}
+                {/*    />*/}
+                {/*</h1>*/}
+                <h2 style={{textAlign: "center", margin: "0.5em 0 0.5em"}}>
                     Bet Points on Anything Live Streamed
                 </h2>
-                <div style={{margin: "0 25% 0.5rem 25%"}}>
+                {/*TODO: media query with no margins on the right and left side*/}
+                <div className="landing__video-container">
                     <div style={{
                         position: "relative",
                         paddingBottom: "56.25%", /* 16:9 */
@@ -160,20 +160,20 @@ export function Landing(props: any) {
                             style={{position: "absolute", top: "0", left: "0", height: "100%", width: "100%"}}
                             width="800"
                             height="450"
-                            src="https://www.youtube.com/embed/IwsSt4NZNRw?&autoplay=1&muted=1&modestbranding&rel=0"
+                            src="https://www.youtube.com/embed/al8sKdi5hW0?&autoplay=1&muted=1&modestbranding&rel=0"
                             frameBorder="0"
                             allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen>
                         </iframe>
                     </div>
                 </div>
-                <p style={{textAlign: "center"}}>Current Bet: {prompt}</p>
+                <p style={{textAlign: "center", margin: "0 1em 1em 1em"}}>Current Bet: {prompt}</p>
                 <p style={{textAlign: "center", margin: "0"}}>W$: <span style={{color:"gold"}} ref={pulseP}>{cash}</span></p>
                 <p style={{textAlign: "center", marginBottom: "0", fontSize: "0.75rem"}}>{betText()}</p>
                 <div className="form__group"
                      style={{flexDirection: "row", justifyContent: "center"}}>
                     <input
-                        style={{width: "20%"}}
+                        style={{width: "35%"}}
                         className="form__input"
                         value={betAmount > 0 ? betAmount : ""}
                         onChange={e => handleInputChange(e)}

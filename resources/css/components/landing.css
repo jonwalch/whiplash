@@ -1,0 +1,9 @@
+.landing {
+
+    &__video-container {
+         margin: 0 0 0.5rem 0;
+        @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+            margin: 0 25% 0.5rem 25%;
+        }
+     }
+}

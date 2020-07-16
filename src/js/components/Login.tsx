@@ -70,10 +70,10 @@ export function Login(props: any) {
       return (
           <form className="form form--login container" name="login">
             <hr className="form__hr"/>
-            <header className="form__header">
-              <h2 className="form__title">Log In</h2>
-              <p className="form__description">Enter your username and password to log in.</p>
-            </header>
+            {/*<header className="form__header">*/}
+            {/*  <h2 className="form__title">Log In</h2>*/}
+            {/*  <p className="form__description">Enter your username and password to log in.</p>*/}
+            {/*</header>*/}
             <fieldset className="form__fieldset">
               <div className="form__group">
                 <label className="form__label" htmlFor="userName">Username or Email</label>

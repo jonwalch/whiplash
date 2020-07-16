@@ -663,16 +663,20 @@
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
   (->>
-    (d/q {:query '[:find (pull ?user [:user/email :user/name :user/sign-up-time])
+    (d/q {:query '[:find (pull ?user [:user/email :user/name :user/sign-up-time {:user/status [:db/ident]}])
                    :in $
-                   :where [?user :user/status _]]
+                   :where [?user :user/status ?status]
+                   [?user :user/sign-up-time ?sign]
+                   [?status :db/ident ?ident]
+                   [(not= ?ident :user.status/twitch-ext-unauth)]
+                   [(> ?sign #inst"2020-07-05T04:01:13.752-00:00")]]
           :args  [(d/db conn)]})
 
     (apply concat)
     (sort-by :user/sign-up-time)
-    #_(map (fn [{:user/keys [email name sign-up-time]}]
-           (str email "," name "," sign-up-time "\n")))
-    #_(apply str))
+    (map (fn [{:user/keys [email name sign-up-time status]}]
+           (str email "," name "," sign-up-time "," (:db/ident status) "\n")))
+    (apply str))
 
   (defn find-loser-by-email
     [email conn]

@@ -4,7 +4,7 @@
   color: $dark-white;
 
   &__hr {
-    margin: 0 $space;
+     border-style: hidden;
   }
 
   &__content {

@@ -8,3 +8,10 @@
   position: sticky;
   top: 0;
 }
+
+.hamburger {
+  width: 26px;
+  height: 2px;
+  background-color: black;
+  margin: 4px 0;
+}
