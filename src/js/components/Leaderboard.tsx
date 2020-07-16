@@ -45,24 +45,30 @@ export function Leaderboard (props:any) {
 
   const renderLeaderboard = () => {
     return (
-      <table className="leaderboard__table">
-        <thead className="leaderboard__thead">
-          <tr className="leaderboard__tr">
-            <th className="leaderboard__th">User</th>
-            <th className="leaderboard__th">Total Whipcash</th>
-          </tr>
-        </thead>
-        <tbody>
-          {leaderboard.map((leader: Leader, index: number) => {
-            return (
-              <tr className="leaderboard__tr" key={leader.user_name}>
-                <td className="leaderboard__td">{(index + 1) + ". " + leader.user_name}</td>
-                <td className="leaderboard__td">${leader.cash}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+        <div className="leaderboard__table-container">
+          <table className="leaderboard__table">
+            <thead className="leaderboard__thead">
+            <tr className="leaderboard__tr">
+              <th className="leaderboard__th">User</th>
+              <th className="leaderboard__th">Total Whipcash</th>
+            </tr>
+            </thead>
+          </table>
+          <div className="leaderboard__innertable">
+            <table className="leaderboard__table">
+              <tbody>
+              {leaderboard.map((leader: Leader, index: number) => {
+                return (
+                    <tr className="leaderboard__tr" key={leader.user_name}>
+                      <td className="leaderboard__td">{(index + 1) + ". " + leader.user_name}</td>
+                      <td className="leaderboard__td">${leader.cash}</td>
+                    </tr>
+                );
+              })}
+              </tbody>
+            </table>
+          </div>
+        </div>
     );
   };
 

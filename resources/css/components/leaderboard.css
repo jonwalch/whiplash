@@ -18,20 +18,20 @@
       display: grid;
       grid-column-gap: $space;
       grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: auto minmax( auto, 349px );
+      /*grid-template-rows: auto minmax( auto, 349px );*/
     }
 
     @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
-      grid-template-rows: auto minmax( auto, 407px );
+      /*grid-template-rows: auto minmax( auto, 407px );*/
     }
 
     @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
-      grid-template-rows: auto minmax( auto, 444px );
+      /*grid-template-rows: auto minmax( auto, 444px );*/
     }
 
     > * {
       @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
-        overflow-y: auto;
+        /*overflow-y: auto;*/
       }
     }
   }
@@ -57,6 +57,7 @@
 
   &__section + &__section {
     margin-top: $space;
+    overflow: hidden;
 
     @supports(display: grid) {
       @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
@@ -93,7 +94,7 @@
 
   &__innertable {
      overflow-y: auto;
-     height: 28em;
+     height: 28.1em;
      width: 100%;
    }
 
