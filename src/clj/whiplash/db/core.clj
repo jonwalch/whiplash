@@ -648,8 +648,25 @@
                           :user/recovery [{:recovery/token       token
                                            :recovery/issued-time (time/to-date)}]}]}))
 
-(comment
+;; TODO: do we want to implement this as a server check too?
+;; for now I'm saying no because I don't want an extra query and if they figure out
+;; how to bet outside of the extension they deserve to bet
+(defn user-prop-count
+  [{:keys [user/name async-db]}]
+  ;; How many propositions did this user bet on?
+  (let [async-db (or async-db
+                     (d.async/db (:async-conn datomic-cloud)))]
+    (d.async/q {:query '[:find (count ?prop)
+                         :in $ ?user-name
+                         :where [?event :event/running? true]
+                         [?event :event/propositions ?prop]
+                         [?bet :bet/proposition ?prop]
+                         [?user :user/prop-bets ?bet]
+                         [?user :user/name ?found-user-name]
+                         [(= ?user-name ?found-user-name)]]
+                :args  [async-db name]})))
 
+(comment
   (def ^:private local-tunnel-cloud-config
     {:server-type :cloud
      :region "us-west-2"

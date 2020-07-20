@@ -12,7 +12,8 @@
             [clojure.string :as string]
             [whiplash.constants :as constants]
             [buddy.core.mac :as mac]
-            [buddy.core.codecs :as codecs])
+            [buddy.core.codecs :as codecs]
+            [clojure.core.async :as async])
   (:import (java.security MessageDigest)))
 
 ;; https://www.regular-expressions.info/email.html
@@ -182,30 +183,6 @@
               (dissoc :notification/trigger :db/id))))
       notifications)))
 
-;; TODO: do we want to implement this as a server check too?
-;; for now I'm saying no because I don't want an extra query and if they figure out
-;; how to bet outside of the extension they deserve to bet
-(defn- user-gated?
-  [user-name]
-  ;;TODO dont just rely on username format, this is actually fine because this format is reserved
-  ;; but it still feels wrong
-  (if (string/starts-with? user-name "user-")
-    ;; TODO async query
-    (let [result (ffirst
-                   ;; How many propositions did this user bet on?
-                   (d/q {:query '[:find (count ?prop)
-                                  :in $ ?user-name
-                                  :where [?event :event/running? true]
-                                  [?event :event/propositions ?prop]
-                                  [?bet :bet/proposition ?prop]
-                                  [?user :user/prop-bets ?bet]
-                                  [?user :user/name ?found-user-name]
-                                  [(= ?user-name ?found-user-name)]]
-                         :args  [(d/db (:conn db/datomic-cloud)) user-name]}))]
-      ;; in case user doesn't exist yet
-        (>= (or result 0)
-            10))
-    false))
 
 ;; TODO: revisit when we let users change their usernames because that will create
 ;; them as a seperate user in full story
@@ -224,8 +201,8 @@
                       #_(unauthed-username req))
         valid-un? (and (string? user-name)
                        (not (empty? user-name)))
-        gate-user? (when valid-un?
-                     (user-gated? user-name))
+        prop-count-chan (when (and valid-un? (string/starts-with? user-name "user-"))
+                          (db/user-prop-count {:user/name user-name}))
         user-entity (when valid-un?
                       (db/pull-user
                         {:user/name user-name
@@ -249,8 +226,12 @@
          :body    (-> user-entity
                       (dissoc :db/id :user/unacked-notifications)
                       (assoc :user/notifications (ack-user-notifications user-entity)
-                             :user/gated? gate-user?
-                             :user/id (user-id-hmac user-entity)))})
+                             :user/id (user-id-hmac user-entity)
+                             :user/gated? (>= (or (when prop-count-chan
+                                                    (ffirst
+                                                      (async/<!! prop-count-chan)))
+                                                  0)
+                                              10)))})
       {:status  404
        :headers constants/CORS-GET-headers
        :body    {:message (format "User %s not found" user)}})))
