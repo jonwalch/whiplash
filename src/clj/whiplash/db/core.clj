@@ -662,6 +662,11 @@
   (def test-client (d/client local-tunnel-cloud-config))
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
+  #_(let [db (d/db conn)
+        {:keys [db/id user/cash]} (pull-user {:db db :user/name "huddy" :attrs [:db/id :user/cash :user/name]})]
+    (d/transact conn {:tx-data [[:db/cas id :user/cash cash (+ cash 500N)]]})
+    )
+
   (->>
     (d/q {:query '[:find (pull ?user [:user/email :user/name :user/sign-up-time {:user/status [:db/ident]}])
                    :in $
@@ -669,9 +674,8 @@
                    [?user :user/sign-up-time ?sign]
                    [?status :db/ident ?ident]
                    [(not= ?ident :user.status/twitch-ext-unauth)]
-                   [(> ?sign #inst"2020-07-05T04:01:13.752-00:00")]]
+                   [(> ?sign #inst"2020-07-16T00:00:00.000-00:00")]]
           :args  [(d/db conn)]})
-
     (apply concat)
     (sort-by :user/sign-up-time)
     (map (fn [{:user/keys [email name sign-up-time status]}]

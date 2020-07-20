@@ -10,6 +10,7 @@ export const getUser = async (setLoggedInState: Function) => {
     if (response.status === 200) {
         const resp = await response.json();
         setLoggedInState({
+            uid: resp["user/id"],
             userName: resp["user/name"],
             status: resp["user/status"],
             cash: resp["user/cash"],
@@ -19,4 +20,5 @@ export const getUser = async (setLoggedInState: Function) => {
     } else {
         setLoggedInState(defaultLoggedIn)
     }
+    return response.status;
 };

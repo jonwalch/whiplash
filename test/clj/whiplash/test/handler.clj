@@ -272,6 +272,7 @@
                     :last-name     last_name
                     :status        "user.status/pending"
                     :gated?        false
+                    :id            "3b6f25e60ca93d61357f0d8af982fdbe2eb6fa2ec65d0693d50567a76ac43141"
                     :name          user_name
                     :cash          500
                     :notifications []}
@@ -383,6 +384,7 @@
                     :email         "butt@cheek.com"
                     :first-name    "yas"
                     :last-name     "queen"
+                    :id            "3b6f25e60ca93d61357f0d8af982fdbe2eb6fa2ec65d0693d50567a76ac43141"
                     :name          "queefburglar"
                     :notifications []
                     :gated?        false

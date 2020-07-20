@@ -82,11 +82,14 @@ export function Vote (props: any) {
     if (response.status === 200) {
       alert(`You successfully bet $${betAmount} on outcome ${booleanToButton()}.`);
       setLoggedInState(
-          { userName: loggedInState.userName,
+          {
+            uid: loggedInState.uid,
+            userName: loggedInState.userName,
             status: loggedInState.status,
             cash: loggedInState.cash - betAmount,
             notifications: loggedInState.notifications,
-            "gated?": loggedInState["gated?"]})
+            "gated?": loggedInState["gated?"],
+          })
       // 403 will happen if they're not logged in AND they aren't sending the google analytics cookie.
     } else if (response.status === 403) {
       alert("Sign up or disable your ad blocker to bet!")
@@ -155,10 +158,10 @@ export function Vote (props: any) {
 
   const renderCTA = () => {
     if (loggedInState.status === null) {
-      return "Sign up to bet!"
+      return "Sign up and log in to bet!"
     }
     else if (loggedInState.status === "user.status/pending") {
-      return "Verify your email to bet!"
+      return "Check your email and click on the link within to bet!"
     }
   };
 

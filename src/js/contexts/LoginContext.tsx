@@ -1,13 +1,22 @@
 import React, { createContext, useState } from "react";
 
 export interface loggedIn {
+  uid: string | null;
   userName: string | null;
   status: string | null;
   cash: number;
   notifications: Object[];
   "gated?": boolean;
 }
-export const defaultLoggedIn: loggedIn = { userName: null, status: null, cash: -1, notifications: [], "gated?": false};
+
+export const defaultLoggedIn: loggedIn = {
+  uid: null,
+  userName: null,
+  status: null,
+  cash: -1,
+  notifications: [],
+  "gated?": false,
+};
 
 interface loggedInState {
   loggedInState: loggedIn;

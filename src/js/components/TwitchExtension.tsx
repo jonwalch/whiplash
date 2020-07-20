@@ -111,7 +111,8 @@ export function TwitchExtension(props: any) {
         if (response.status === 200) {
             // update user's cash
             setLoggedInState(
-                { userName: loggedInState.userName,
+                {uid: loggedInState.uid,
+                    userName: loggedInState.userName,
                     status: loggedInState.status,
                     cash: loggedInState.cash !== -1 ? loggedInState.cash - betAmount : 500 - betAmount,
                     notifications: loggedInState.notifications,

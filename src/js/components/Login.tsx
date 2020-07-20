@@ -2,6 +2,7 @@ import React, { useState, ChangeEvent, useContext } from "react";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const"
 import {getUser} from "../common/getUser";
+import {identify} from "../common/fullstory";
 
 export function Login(props: any) {
   const [userName, setUserName] = useState("");
@@ -32,7 +33,11 @@ export function Login(props: any) {
       body: JSON.stringify({ password: password, user_name: userName })
     });
     if (response.status === 200) {
-      getUser(setLoggedInState);
+      getUser(setLoggedInState).then( (status) => {
+        if (status === 200) {
+          identify(loggedInState);
+        }
+      });
       setLogInWaitingForResp(false);
       props.setShowSignup(false);
     } else {

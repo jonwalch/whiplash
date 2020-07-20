@@ -5,14 +5,14 @@
             [whiplash.middleware :as middleware]
             [datomic.client.api :as d]
             [datomic.client.api.async :as d.async]
-            [clojure.core.async :as async]
-            [cognitect.anomalies :as anom]
             [whiplash.integrations.amazon-ses :as ses]
             [clojure.tools.logging :as log]
             [whiplash.time :as time]
             [java-time :as jtime]
             [clojure.string :as string]
-            [whiplash.constants :as constants])
+            [whiplash.constants :as constants]
+            [buddy.core.mac :as mac]
+            [buddy.core.codecs :as codecs])
   (:import (java.security MessageDigest)))
 
 ;; https://www.regular-expressions.info/email.html
@@ -70,7 +70,7 @@
   {\0 "z" \1 "c" \2 "A" \3 "g" \4 "w" \5 "P" \6 "x" \7 "N" \8 "v" \9 "y"})
 
 ;; user-ccPxgcAwcwNcPvNNxcywg
-(defn- unauthed-username
+#_(defn- unauthed-username
   [{:keys [cookies]}]
   (when-let [ga (:value (get cookies "_ga"))]
     (format "user-%s"
@@ -207,6 +207,14 @@
             10))
     false))
 
+;; TODO: revisit when we let users change their usernames because that will create
+;; them as a seperate user in full story
+(defn- user-id-hmac
+  "This is used to identify users across fullstory sessions. Shouldn't be rotated."
+  [{:keys [user/name]}]
+  (-> (mac/hash name {:key "dd6f3c930d84dc5930280d3d110e9249" :alg :hmac+sha256})
+      (codecs/bytes->hex)))
+
 (defn get-user
   [{:keys [params] :as req}]
   (let [{:keys [user exp]} (middleware/req->token req)
@@ -241,7 +249,8 @@
          :body    (-> user-entity
                       (dissoc :db/id :user/unacked-notifications)
                       (assoc :user/notifications (ack-user-notifications user-entity)
-                             :user/gated? gate-user?))})
+                             :user/gated? gate-user?
+                             :user/id (user-id-hmac user-entity)))})
       {:status  404
        :headers constants/CORS-GET-headers
        :body    {:message (format "User %s not found" user)}})))

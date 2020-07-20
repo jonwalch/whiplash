@@ -9,6 +9,7 @@ import { Account } from "./components/Account";
 import {getUser} from "./common/getUser";
 import {Recovery} from "./components/Recovery";
 import {LeaderboardPage} from "./components/LeaderboardPage";
+import {identify} from "./common/fullstory";
 
 const { install } = require('ga-gtag');
 const Control = lazy(() => import("./components/Control").then(({ Control }) => ({default: Control})));
@@ -22,7 +23,11 @@ export const App = () => {
         // in the GA admin panel
         install('UA-154430212-2');
 
-        getUser(setLoggedInState);
+        getUser(setLoggedInState).then( (status) => {
+            if (status === 200) {
+                identify(loggedInState);
+            }
+        });
     }, []);
 
     return (
