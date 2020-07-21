@@ -96,6 +96,7 @@
 
 (defn- verify-email
   [{:keys [email verify-token status]}]
+  (assert (and email verify-token))
   (let [resp ((common/test-app) (-> (mock/request :post "/user/verify")
                                     (mock/json-body {:email email
                                                      :token verify-token})))]
@@ -801,20 +802,22 @@
         event-score-before-end (get-event-leaderboard)
 
         admin-get-user (get-user {:auth-token auth-token})
-        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
 
         {:keys [auth-token] login-resp :response} (login dummy-user-2)
         user2-get-user (get-user {:auth-token auth-token})
-        user2-get-user-notifs-acked (get-user {:auth-token auth-token})
 
         {:keys [auth-token] login-resp :response} (login dummy-user-3)
         user3-get-user (get-user {:auth-token auth-token})
-        user3-get-user-notifs-acked (get-user {:auth-token auth-token})
 
         ;;admin end event
         {:keys [auth-token] login-resp :response} (login)
         end-event-resp (admin-end-event {:auth-token auth-token})
 
+        ;; moved get user calls lower because the notifcations acknowledgement happens
+        ;; async and wouldnt always finish in time for the next get-user call
+        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
+        user2-get-user-notifs-acked (get-user {:auth-token auth-token})
+        user3-get-user-notifs-acked (get-user {:auth-token auth-token})
         event-score-after-end (get-event-leaderboard)]
 
     (is (= [#:bet{:amount            300
@@ -852,12 +855,15 @@
            (:body event-score-before-prop-creation)))
 
     (is (= [{:score     0
-             :user_name "queefburglar"}
-            {:score     0
              :user_name "donniedarko"}
             {:score     0
-             :user_name "kittycuddler420"}]
-           (:body event-score-before-prop-result)))
+             :user_name "kittycuddler420"}
+            {:score     0
+             :user_name "queefburglar"}]
+           (->> event-score-before-prop-result
+                :body
+                (sort-by :user_name)
+                vec)))
 
     (is (= [{:score     520
              :user_name "kittycuddler420"}
@@ -1814,7 +1820,10 @@
                :user_name "donniedarko"}
               {:score     0
                :user_name "kittycuddler420"}]
-             (:body event-score-before-prop-result)))
+             (->> event-score-before-prop-result
+                  :body
+                  (sort-by :user_name)
+                  vec)))
 
       (is (= [{:score     187
                :user_name "kittycuddler420"}
@@ -2417,10 +2426,7 @@
         event-score-before-end (get-event-leaderboard)
 
         admin-get-user (get-user {:auth-token auth-token})
-        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
-
         user2-get-user (get-user {:auth-token nil :twitch-id? true})
-        user2-get-user-notifs-acked (get-user {:auth-token nil :twitch-id? true})
 
         ;;admin end event
         {:keys [auth-token] login-resp :response} (login)
@@ -2473,14 +2479,14 @@
              :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (-> admin-get-user :body :user/notifications)))
     (is (= []
-           (-> admin-get-user-notifs-acked :body :user/notifications)))
+           (-> admin-get-user-after-end :body :user/notifications)))
 
     (is (= 100 (-> user2-get-user :body :user/cash)))
     (is (= [#:notification{:type "notification.type/bailout"}]
            (-> user2-get-user :body :user/notifications)))
     (is (false? (-> user2-get-user :body :user/gated?)))
     (is (= []
-           (-> user2-get-user-notifs-acked :body :user/notifications)))
+           (-> user2-get-user-after-end :body :user/notifications)))
     (testing "twitch ext user's cash is reset to 500"
       (is (= 500 (-> user2-get-user-after-end :body :user/cash))))))
 
@@ -2532,15 +2538,14 @@
         event-score-before-end (get-event-leaderboard)
 
         admin-get-user (get-user {:auth-token auth-token})
-        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
-
         user2-get-user (get-user {:auth-token nil :twitch-id? true})
-        user2-get-user-notifs-acked (get-user {:auth-token nil :twitch-id? true})
 
         ;;admin end event
         {:keys [auth-token] login-resp :response} (login)
         end-event-resp (admin-end-event {:auth-token auth-token})
 
+        admin-get-user-notifs-acked (get-user {:auth-token auth-token})
+        user2-get-user-notifs-acked (get-user {:auth-token nil :twitch-id? true})
         event-score-after-end (get-event-leaderboard)
         all-time-leaderboard (all-time-top-ten {})]
 

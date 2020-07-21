@@ -150,8 +150,9 @@
         ;; ack notifications, dubious because this makes this GET no longer idempotent
         ack-tx (when-not (empty? notifications)
                  (let [ack-time (time/to-date)]
+                   ;; TODO move this tx into db.core
                    (d.async/transact
-                     (:async-conn db/datomic-cloud)
+                     (:conn db/datomic-cloud)
                      {:tx-data (into []
                                      (concat
                                        (map (fn [{:keys [db/id]}]
@@ -182,7 +183,6 @@
                      :proposition/result (get-in trigger [:bet/proposition :proposition/result :db/ident]))
               (dissoc :notification/trigger :db/id))))
       notifications)))
-
 
 ;; TODO: revisit when we let users change their usernames because that will create
 ;; them as a seperate user in full story

@@ -2,8 +2,6 @@
   (:require
     [datomic.client.api :as d]
     [datomic.client.api.async :as d.async]
-    [clojure.core.async :as async]
-    [cognitect.anomalies :as anom]
     [mount.core :refer [defstate]]
     [whiplash.config :refer [env]]
     [whiplash.time :as time]
@@ -14,11 +12,6 @@
     [clj-uuid :as uuid]
     [java-time :as jtime]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; DO NOT USE DATOMIC ON PREM SCALAR OR COLLECTION FIND SYNTAX, IT'LL WORK LOCALLY BUT NOT IN PRODUCTION ;;
-;; https://github.com/ComputeSoftware/datomic-client-memdb#caveats                                       ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defonce ^:private cloud-config
   {:server-type :cloud
    :region "us-west-2"
@@ -26,47 +19,42 @@
    #_#_:creds-profile "<your_aws_profile_if_not_using_the_default>"
    :endpoint "http://entry.prod-whiplash-datomic.us-west-2.datomic.net:8182"})
 
+(defonce ^:private local-config
+         {:server-type :dev-local
+          :system "dev"
+          :storage-dir "/home/jonwalch/Developer/local-db"})
+
 (defn create-client
-  [datomic-config]
-  (if (:prod env)
-    (do
-      (log/debug "using prod client with config: %s" cloud-config)
-      {:client (d/client datomic-config)
-       :async-client (d.async/client datomic-config)})
-    (do
-      (log/debug "using dev memdb client")
-      (require 'compute.datomic-client-memdb.core)
-      (require 'compute.datomic-client-memdb.async)
-      (let [v (resolve 'compute.datomic-client-memdb.core/client)
-            av (resolve 'compute.datomic-client-memdb.async/client)]
-        (if (and v av)
-          (do
-            (log/info v av)
-            {:client       (@v datomic-config)
-             :async-client (@av datomic-config)})
-          (throw (ex-info "compute.datomic-client-memdb is not on the classpath." {})))))))
+  []
+  (let [config (if (:prod env)
+                 (do
+                   (log/debug "using prod client with config: %s" cloud-config)
+                   cloud-config)
+                 (do
+                   (log/debug "using dev local client")
+                   local-config))]
+    {:client       (d/client config)}))
 
 (defn create-datomic-cloud
   []
-  (let [db-name {:db-name "whiplash"}
-        {:keys [client async-client]} (create-client cloud-config)
+  (let [db-name {:db-name (if (:prod env)
+                            "whiplash"
+                            "dev")}
+        {:keys [client]} (create-client)
         created? (d/create-database client db-name)
         conn (d/connect client db-name)
-        async-conn-channel (d.async/connect async-client db-name)
         ;; TODO: read current schema and only transact the schema if it has changed
         ;; TODO: transact all schemas one at a time instead of flattening and transacting them all at once
         schema-tx-result (d/transact conn {:tx-data (schemas/migrations->schema-tx)})]
-    (log/debug "Migration to transact " (schemas/migrations->schema-tx))
-    (log/debug "Schema transaction result " schema-tx-result)
+    #_(log/debug "Migration to transact " (schemas/migrations->schema-tx))
+    #_(log/debug "Schema transaction result " schema-tx-result)
     {:client       client
-     :async-client async-client
-     :conn         conn
-     :async-conn   (async/<!! async-conn-channel)}))
+     :conn         conn}))
 
 (defn destroy-datomic-cloud
   [datomic-cloud]
   (when-not (:prod env)
-    (.close (:client datomic-cloud))))
+    (d/delete-database (:client datomic-cloud) {:db-name "dev"})))
 
 (defstate datomic-cloud
           :start (create-datomic-cloud)
@@ -652,10 +640,9 @@
 ;; for now I'm saying no because I don't want an extra query and if they figure out
 ;; how to bet outside of the extension they deserve to bet
 (defn user-prop-count
-  [{:keys [user/name async-db]}]
+  [{:keys [user/name db]}]
   ;; How many propositions did this user bet on?
-  (let [async-db (or async-db
-                     (d.async/db (:async-conn datomic-cloud)))]
+  (let [db (or db (d/db (:conn datomic-cloud)))]
     (d.async/q {:query '[:find (count ?prop)
                          :in $ ?user-name
                          :where [?event :event/running? true]
@@ -664,7 +651,7 @@
                          [?user :user/prop-bets ?bet]
                          [?user :user/name ?found-user-name]
                          [(= ?user-name ?found-user-name)]]
-                :args  [async-db name]})))
+                :args  [db name]})))
 
 (comment
   (def ^:private local-tunnel-cloud-config

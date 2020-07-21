@@ -13,6 +13,9 @@ FIXME
 [lein]: https://github.com/technomancy/leiningen
 [node]: https://nodejs.org/en/download/
 
+## Set up local DB
+https://docs.datomic.com/cloud/dev-local.html
+
 ## Backend tests
 Run from repl or:
 
