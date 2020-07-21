@@ -47,6 +47,13 @@
       {:status  204
        :headers constants/CORS-GET-headers})))
 
+(defonce ^:private empty-bets  {:true  {:bets  []
+                                        :odds  1.00
+                                        :total 0}
+                                :false {:bets  []
+                                        :odds  1.00
+                                        :total 0}})
+
 (defn get-prop-bets
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
@@ -91,5 +98,7 @@
                                              :total total
                                              :odds  odds}})))
                            (apply merge))
-                      {})})
-      (no-content))))
+                      empty-bets)})
+      {:status  200
+       :headers {"Cache-Control" "max-age=1"}
+       :body    empty-bets})))

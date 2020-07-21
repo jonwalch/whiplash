@@ -185,7 +185,7 @@
       notifications)))
 
 ;; TODO: revisit when we let users change their usernames because that will create
-;; them as a seperate user in full story
+;; them as a separate user in full story
 (defn- user-id-hmac
   "This is used to identify users across fullstory sessions. Shouldn't be rotated."
   [{:keys [user/name]}]
@@ -323,9 +323,9 @@
                                                    :prop-id               (:db/id ongoing-prop)
                                                    :bet/projected-result? projected_result}))]
     (cond
-      (not-any? #(= % status) [:user.status/active :user.status/admin
+      #_(not-any? #(= % status) [:user.status/active :user.status/admin
                                :user.status/unauth :user.status/twitch-ext-unauth])
-      (conflict {:message "User not in betable state."})
+      #_(conflict {:message "User not in betable state."})
 
       (and (some? existing-bet) (>= 0 bet_amount))
       (conflict {:message "You must bet more than 0."})
@@ -341,7 +341,7 @@
 
       (try
         (jtime/after? (time/now)
-                      ;; Doing the query again to make sure that betting hasnt closed since we grabbed the last db
+                      ;; Doing the query again to make sure that betting hasn't closed since we grabbed the last db
                       (time/date-to-zdt (:proposition/betting-end-time
                                           (db/pull-ongoing-proposition
                                             {:attrs [:proposition/betting-end-time]}))))
@@ -433,17 +433,18 @@
 (defn verify-email
   [{:keys [body-params] :as req}]
   (let [{:keys [email token]} body-params
-        {:keys [db/id user/verify-token user/status]} (db/pull-user
-                                                        {:user/email email
-                                                         :attrs [:db/id
-                                                                 {:user/status [:db/ident]}
-                                                                 :user/verify-token]})]
+        {:keys [db/id user/verify-token user/status user/cash]} (db/pull-user
+                                                                  {:user/email email
+                                                                   :attrs [:db/id
+                                                                           :user/cash
+                                                                           {:user/status [:db/ident]}
+                                                                           :user/verify-token]})]
     (cond
       (and (= token verify-token)
            (= :user.status/pending status))
       ;;TODO dont return 200 if db/verify-email fails
       (do
-        (db/verify-email (:conn db/datomic-cloud) {:db/id id})
+        (db/verify-email {:db/id id :user/cash cash})
         (ok {:message (format "Successfully verified %s" email)}))
 
       (= token verify-token)

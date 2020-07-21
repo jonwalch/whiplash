@@ -99,18 +99,21 @@ export function Vote (props: any) {
   };
 
   const toggleValid = () => {
-    if (loggedInState.status === "user.status/unauth" ||
-        loggedInState.status === "user.status/active" ||
-        loggedInState.status === "user.status/admin")
-    {
-      return projectedResult === null ||
-          betAmount == 0 ||
-          betAmount > loggedInState.cash ||
-          betWaitingForResp;
+    // if (loggedInState.status === "user.status/unauth" ||
+    //     loggedInState.status === "user.status/active" ||
+    //     loggedInState.status === "user.status/admin" ||
+    //     loggedInState.status === "user.status/pending"
+    // )
+      if (!(loggedInState.status === null))
+      {
+          return projectedResult === null ||
+              betAmount === 0 ||
+              betAmount > loggedInState.cash ||
+              betWaitingForResp;
 
-    } else if (loggedInState.status === "user.status/pending" || loggedInState.status === null) {
-      return true;
-    }
+      } else  {
+          return true;
+      }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,12 +159,12 @@ export function Vote (props: any) {
     }
   };
 
-  const renderCTA = () => {
+  const CTAtext = () => {
     if (loggedInState.status === null) {
       return "Sign up and log in to bet!"
     }
     else if (loggedInState.status === "user.status/pending") {
-      return "Check your email and click on the link within to bet!"
+      return "Check your email and click on the link within to get more Whipcash!"
     }
   };
 
@@ -208,8 +211,6 @@ export function Vote (props: any) {
                     placeholder="Min. bet is 100"
                 />
               </div>
-              {/*TODO: remove inline style and pick proper color*/}
-              <p style={{color: "red"}}>{renderCTA()}</p>
               <button
                   className={"button button--make-bet " + (!toggleValid() ? "is-active" : "")}
                   type="button"
@@ -234,10 +235,14 @@ export function Vote (props: any) {
             <form className="form form--vote"
                   onSubmit={(e: any) => e.preventDefault()}
             >
-              <fieldset className="form__fieldset">
-                {renderPropositionText()}
-                {renderBettingOptions()}
-              </fieldset>
+                <fieldset className="form__fieldset">
+                    {/*TODO: remove inline style and pick proper color*/}
+                    {CTAtext() &&
+                        <p style={{color: "red"}}>{CTAtext()}</p>
+                    }
+                    {renderPropositionText()}
+                    {renderBettingOptions()}
+                </fieldset>
             </form>
           </div>
       );

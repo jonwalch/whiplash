@@ -63,7 +63,7 @@ export function Header(props:any) {
                     } else if (notif["notification/type"] == "notification.type/no-bailout") {
                         return (
                             <li className="navigation__item navigation__fade-in">
-                                <span className="navigation__highlight">Make an account to get bailed out when your Whipcash drops too low!</span>
+                                <span className="navigation__highlight">Verify your email address to get bailed out when your Whipcash drops too low!</span>
                             </li>
                         );
                     }

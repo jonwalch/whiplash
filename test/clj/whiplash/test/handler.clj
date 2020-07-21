@@ -1,6 +1,7 @@
 (ns whiplash.test.handler
   (:require
     [clojure.test :refer :all]
+    [whiplash.test.helpers :refer :all]
     [ring.mock.request :as mock]
     [clojure.string :as string]
     [whiplash.test.common :as common]
@@ -47,27 +48,6 @@
     (let [response ((common/test-app) (mock/request :get "/v1/healthz"))]
       (is (= 200 (:status response))))))
 
-(def dummy-user
-  {:first_name "yas"
-   :last_name  "queen"
-   :email      "butt@cheek.com"
-   :password   "foobar2000"
-   :user_name  "queefburglar"})
-
-(def dummy-user-2
-  {:first_name "yas"
-   :last_name  "queen"
-   :email      "butt@crack.com"
-   :password   "foobar2000"
-   :user_name  "donniedarko"})
-
-(def dummy-user-3
-  {:first_name "Joan"
-   :last_name  "Walters"
-   :email      "butt@snack.com"
-   :password   "foobar2001"
-   :user_name  "kittycuddler420"})
-
 (deftest test-user-400s
   (testing "cant get user, not logged in"
     (let [response ((common/test-app) (-> (mock/request :get "/user")))]
@@ -85,66 +65,6 @@
                                                              :password  (:password dummy-user)})))]
 
       (is (= 401 (:status login-resp))))))
-
-(defn get-token-from-headers
-  [headers]
-  (some->> (get headers "Set-Cookie")
-           (filter #(string/includes? % "value="))
-           first
-           (re-find #"^value=(.*)$")
-           second))
-
-(defn- verify-email
-  [{:keys [email verify-token status]}]
-  (assert (and email verify-token))
-  (let [resp ((common/test-app) (-> (mock/request :post "/user/verify")
-                                    (mock/json-body {:email email
-                                                     :token verify-token})))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- create-user
-  ([]
-   (create-user dummy-user))
-  ([{:keys [first_name email admin? verify?] :as user}]
-   (assert user)
-   (let [verify? (if (nil? verify?)
-                   true
-                   verify?)
-         resp ((common/test-app) (-> (mock/request :post "/user/create")
-                                     (mock/json-body user)))
-         parsed-body (common/parse-json-body resp)
-         sent-emails (-> common/test-state deref :emails)
-         {:keys [body subject] :as sent-email} (first sent-emails)]
-
-     (is (= 200 (:status resp)))
-     (is (empty? parsed-body))
-
-     (when verify?
-       (verify-email {:email        email
-                      :verify-token (:user/verify-token sent-email)}))
-
-     (when admin?
-       (d/transact (:conn db/datomic-cloud)
-                   {:tx-data [{:db/id       (:db/id
-                                              (db/pull-user {:user/email email
-                                                             :attrs      [:db/id]}))
-                               :user/status :user.status/admin}]}))
-
-     (is (= 1 (count (filter #(= email (:user/email %))
-                             sent-emails))))
-     (is (= {:subject         "Whiplash: Please verify your email!"
-             :user/email      email
-             :user/first-name first_name
-             :email/type      :email.type/verification}
-            (dissoc sent-email :body :user/verify-token)))
-     (is (some? (re-find #"https:\/\/www\.whiplashesports\.com\/user\/verify\?email=.*&token=.{32}" body)))
-     (is (not (string/blank? (:user/verify-token sent-email))))
-
-     (assoc resp :body parsed-body
-                 :token (:user/verify-token sent-email)))))
 
 (deftest test-uncommon-name-success
   (create-user (assoc dummy-user :last_name "de Flandres")))
@@ -172,42 +92,6 @@
     (is (= 409 (:status resp)))
     (is (= {:message "Email taken"} parsed-body))))
 
-(defn- login
-  ([]
-   (login dummy-user))
-  ([{:keys [user_name password] :as user}]
-   (assert (and user_name password))
-   (let [resp ((common/test-app) (-> (mock/request :post "/user/login")
-                                     (mock/json-body {:user_name user_name
-                                                      :password  password})))
-         parsed-body (common/parse-json-body resp)
-         auth-token (-> resp :headers get-token-from-headers)]
-
-     (is (= 200 (:status resp)))
-     (is (string? auth-token))
-
-     {:auth-token auth-token
-      :response   (assoc resp :body parsed-body)})))
-
-(defn- create-user-and-login
-  ([]
-   (create-user-and-login dummy-user))
-  ([user]
-   (let [create-user (create-user user)]
-     (assoc (login user) :create-user create-user))))
-
-(defn- change-password
-  ([auth-token]
-   (change-password auth-token dummy-user))
-  ([auth-token {:keys [password] :as user}]
-   (let [resp ((common/test-app) (-> (mock/request :post "/user/password")
-                                     (mock/json-body {:password password})
-                                     (mock/cookie :value auth-token)))
-         parsed-body (common/parse-json-body resp)]
-
-     (is (= 200 (:status resp)))
-
-     (assoc resp :body parsed-body))))
 
 (deftest create-user-and-change-password
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login)
@@ -221,41 +105,6 @@
     (is (= 409 (:status ((common/test-app) (-> (mock/request :post "/user/password")
                                                (mock/json-body {:password "bigfart"})
                                                (mock/cookie :value auth-token))))))))
-
-(defn- get-user
-  [{:keys [twitch-id? auth-token status]}]
-  (let [#_#_ga-tag? (if (some? ga-tag?)
-                  ga-tag?
-                  true)
-        twitch-id? (if (some? twitch-id?)
-                     twitch-id?
-                     true)
-        resp (cond
-               #_ga-tag?
-               #_((common/test-app) (-> (mock/request :get "/user")
-                                      (mock/cookie :_ga "GA1.2.1493569166.1576110731")
-                                      (mock/cookie :value auth-token)))
-
-               twitch-id?
-               ((common/test-app) (-> (mock/request :get "/user")
-                                      (mock/cookie :value auth-token)
-                                      (mock/header "x-twitch-opaque-id" "UtestID123")))
-               :else
-               ((common/test-app) (-> (mock/request :get "/user")
-                                      (mock/cookie :value auth-token))))
-        parsed-body (common/parse-json-body resp)]
-    (is (= (or status 200) (:status resp)))
-    (when-not (= 403 (:status resp))
-      (is (= {"Access-Control-Allow-Headers"     "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
-              "Access-Control-Allow-Methods"     "GET"
-              "Access-Control-Allow-Origin"      "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
-              "Content-Type"                     "application/json; charset=utf-8"
-              "X-Content-Type-Options"           "nosniff"
-              "X-Frame-Options"                  "SAMEORIGIN"
-              "X-XSS-Protection"                 "1; mode=block"}
-             (:headers resp))))
-
-    (assoc resp :body parsed-body)))
 
 (deftest test-user
   (testing "create and get user success "
@@ -299,20 +148,6 @@
   (create-user)
   (login {:user_name (:email dummy-user)
           :password  (:password dummy-user)}))
-
-(defn- create-user-failure
-  ([]
-   (create-user dummy-user))
-  ([user]
-   (assert user)
-   (let [resp ((common/test-app) (-> (mock/request :post "/user/create")
-                                     (mock/json-body user)))
-         parsed-body (common/parse-json-body resp)]
-
-     (is (= 409 (:status resp)))
-     (is (some? parsed-body))
-
-     (assoc resp :body parsed-body))))
 
 (deftest bad-create-user-inputs
   (is (= "First name invalid"
@@ -392,13 +227,6 @@
                     :status        "user.status/active"}
              (:body get-verified-user))))))
 
-(defn- all-time-top-ten
-  [{:keys [status]}]
-  (let [resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
-    (is (= (:status resp)
-           (or status 200)))
-    (assoc resp :body (common/parse-json-body resp))))
-
 (deftest all-time-top-25-test
   (testing "only returns 25 users"
     (doseq [x (range 27)]
@@ -406,101 +234,6 @@
     (let [all-time-leaderboard-resp ((common/test-app) (-> (mock/request :get "/leaderboard/all-time")))]
       (is (= 25
              (count (common/parse-json-body all-time-leaderboard-resp)))))))
-
-;; Prop betting MVP tests
-
-(defn- admin-create-event
-  [{:keys [auth-token title channel-id source status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/event")
-                                    (mock/cookie :value auth-token)
-                                    (mock/json-body {:title      title
-                                                     :channel-id channel-id
-                                                     :source     (or source
-                                                                     "twitch")})))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- admin-end-event
-  [{:keys [auth-token status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
-                                    (mock/cookie :value auth-token)))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- admin-create-prop
-  [{:keys [auth-token text end-betting-secs status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop")
-                                    (mock/cookie :value auth-token)
-                                    (mock/json-body {:text             text
-                                                     :end-betting-secs (or end-betting-secs
-                                                                           30)})))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- admin-end-prop
-  [{:keys [auth-token result]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop/end")
-                                    (mock/cookie :value auth-token)
-                                    (mock/json-body {:result result})))]
-    (is (= 200 (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- admin-flip-prop-outcome
-  [{:keys [auth-token status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop/flip-previous")
-                                    (mock/cookie :value auth-token)))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- get-event
-  ([]
-   (get-event {}))
-  ([{:keys [status]}]
-   (let [resp ((common/test-app) (-> (mock/request :get "/stream/event")))]
-     (is (= (or status
-                200)
-            (:status resp)))
-     (assoc resp :body (common/parse-json-body resp)))))
-
-(defn- get-event-leaderboard
-  ([]
-   (get-event-leaderboard {}))
-  ([{:keys [status]}]
-   (let [resp ((common/test-app) (-> (mock/request :get "/leaderboard/event")))]
-     (is (= (or status
-                200)
-            (:status resp)))
-
-     (if (= (:status resp) 200)
-       (is
-         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
-             "Access-Control-Allow-Methods" "GET"
-             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
-             "Content-Type"                 "application/json; charset=utf-8"
-             "X-Content-Type-Options"       "nosniff"
-             "X-Frame-Options"              "SAMEORIGIN"
-             "X-XSS-Protection"             "1; mode=block"}
-            (:headers resp)))
-       (is
-         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
-             "Access-Control-Allow-Methods" "GET"
-             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
-             "Content-Type"                 "application/octet-stream"
-             "X-Content-Type-Options"       "nosniff"
-             "X-Frame-Options"              "SAMEORIGIN"
-             "X-XSS-Protection"             "1; mode=block"}
-            (:headers resp))))
-     (if (= 200 (:status resp))
-       (assoc resp :body (common/parse-json-body resp))
-       resp))))
 
 (deftest options-event-leaderboard
   (testing "need this endpoint and headers for CORS (twitch extension)"
@@ -551,101 +284,6 @@
               "X-XSS-Protection"             "1; mode=block"}
              (:headers resp))))))
 
-(defn- user-place-prop-bet
-  [{:keys [auth-token projected-result bet-amount status twitch-id?]}]
-  (let [#_#_ga-tag? (if (some? ga-tag?)
-                  ga-tag?
-                  true)
-        twitch-id? (if (some? twitch-id?)
-                     twitch-id?
-                     true)
-        resp (cond
-               #_ga-tag?                                      ;;unauth user
-               #_((common/test-app) (-> (mock/request :post "/user/prop-bet")
-                                      ;; All requests should have this cookie set by google analytics
-                                      (mock/cookie :_ga "GA1.2.1493569166.1576110731")
-                                      (mock/cookie :value auth-token)
-                                      (mock/json-body {:projected_result projected-result
-                                                       :bet_amount       bet-amount})))
-
-               twitch-id?                                   ;;unauth twitch user
-               ((common/test-app) (-> (mock/request :post "/user/prop-bet")
-                                      (mock/header "x-twitch-opaque-id" "UtestID123")
-                                      (mock/cookie :value auth-token)
-                                      (mock/json-body {:projected_result projected-result
-                                                       :bet_amount       bet-amount})))
-
-               :else
-               ((common/test-app) (-> (mock/request :post "/user/prop-bet")
-                                      (mock/cookie :value auth-token)
-                                      (mock/json-body {:projected_result projected-result
-                                                       :bet_amount       bet-amount}))))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (when-not (= 403 (:status resp))
-      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
-              "Access-Control-Allow-Methods" "POST, GET"
-              "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
-              "Content-Type"                 "application/json; charset=utf-8"
-              "X-Content-Type-Options"       "nosniff"
-              "X-Frame-Options"              "SAMEORIGIN"
-              "X-XSS-Protection"             "1; mode=block"}
-             (:headers resp))))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- user-get-prop-bets
-  [{:keys [auth-token status]}]
-  (let [resp ((common/test-app) (-> (mock/request :get "/user/prop-bet")
-                                    (mock/cookie :value auth-token)))]
-    (is (= (or status 200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- get-prop-bets-leaderboard
-  []
-  (let [resp ((common/test-app) (-> (mock/request :get "/leaderboard/prop-bets")))]
-    (is (= 200 (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- user-submit-suggestion
-  [{:keys [auth-token text status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/user/suggestion")
-                                    (mock/cookie :value auth-token)
-                                    (mock/json-body {:text text})))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- admin-get-suggestions
-  [{:keys [auth-token status]}]
-  (let [resp ((common/test-app) (-> (mock/request :get "/admin/suggestion")
-                                    (mock/cookie :value auth-token)))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- admin-dismiss-suggestions
-  [{:keys [auth-token status suggestions]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/suggestion")
-                                    (mock/cookie :value auth-token)
-                                    (mock/json-body {:suggestions suggestions})))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
-(defn- admin-create-next-event-ts
-  [{:keys [auth-token status ts]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/event/countdown")
-                                    (mock/cookie :value auth-token)
-                                    (mock/json-body {:ts ts})))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
 
 (deftest fail-admin-create-event
   (testing "fail to create event because not admin"
@@ -1277,29 +915,6 @@
              :proposition/text   "Will Jon wipeout 2+ times this round?"}]
            (sort-by :bet/payout #(compare %2 %1) (-> user3-get-user :body :user/notifications))))))
 
-(deftest cant-bet-email-not-verified
-  (let [{:keys [auth-token] login-resp :response} (create-user-and-login
-                                                    (assoc dummy-user :admin? true))
-
-        title "Dirty Dan's Delirious Dance Party"
-        twitch-user "drdisrespect"
-        create-event-resp (admin-create-event {:auth-token auth-token
-                                               :title      title
-                                               :channel-id twitch-user})
-
-        text "Will Jon wipeout 2+ times this round?"
-        create-prop-bet-resp (admin-create-prop {:auth-token auth-token
-                                                 :text       text})
-
-        _ (create-user (assoc dummy-user-2 :verify? false))
-
-        {:keys [auth-token] login-resp :response} (login dummy-user-2)
-
-        user-place-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
-                                                       :projected-result true
-                                                       :bet-amount       100
-                                                       :status           409})]))
-
 (deftest no-payout-doesnt-break
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
@@ -1707,7 +1322,13 @@
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
                                                  :text       text})
         current-prop-bets-response (get-prop-bets-leaderboard)]
-    (is (= {} (:body current-prop-bets-response)))))
+    (is (= {:false {:bets  []
+                    :odds  1.0
+                    :total 0}
+            :true  {:bets  []
+                    :odds  1.0
+                    :total 0}}
+           (:body current-prop-bets-response)))))
 
 (deftest multiple-propositions-correct-score
   (testing ""
@@ -2014,51 +1635,6 @@
 
     (is (not= {:whiplash/next-event-time ts}
               (:body (get-event))))))
-
-(defn- request-password-recovery
-  [{:keys [status user email-count method]}]
-  (let [user (or user
-                 dummy-user)
-        method (or method :user_name)
-        _ (assert (or (= :user_name method)
-                      (= :email method)))
-        resp ((common/test-app) (-> (mock/request :post "/user/password/request-recovery")
-                                    (mock/json-body {:user (method user)})))
-        sent-emails (-> common/test-state deref :emails)
-        {:keys [body] :as sent-email} (first (filter #(= :email.type/recovery (:email/type %)) sent-emails))]
-
-    (is (= (or status
-               200)
-           (:status resp)))
-
-    (is (= (or email-count
-               1)
-           (count (filter #(= (:email user) (:user/email %)) sent-emails))))
-
-    (when (> email-count 0)
-      (is (= {:user/email      (:email user)
-              :user/first-name (:first_name user)
-              :email/type      :email.type/recovery
-              :subject         "Whiplash: Reset your password"}
-             (dissoc sent-email :body :recovery/token :db/id :user/recovery)))
-
-      (is (some? (re-find #"https:\/\/www\.whiplashesports\.com\/user\/password\/recover\?email=.*&token=.{32}" body)))
-      (is (not (string/blank? (:recovery/token sent-email)))))
-
-    (assoc resp :body (common/parse-json-body resp)
-                :recovery/token (:recovery/token sent-email))))
-
-(defn- submit-password-recovery
-  [{:keys [status email token password]}]
-  (let [email (or email (:email dummy-user))
-        resp ((common/test-app) (-> (mock/request :post "/user/password/recover")
-                                    (mock/json-body {:email        email
-                                                     :token        token
-                                                     :new_password password})))]
-    (is (= (or status
-               200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
 
 (deftest recover-account-with-username
   (let [create-resp (create-user dummy-user)
@@ -2647,25 +2223,6 @@
     (is (= 301 status))
     (is (= "http://localhost.com/" (get headers "Location")))))
 
-(defn- twitch-ext-user-bet-on-10-props
-  [auth-token]
-  (dotimes [_ 10]
-    (admin-create-prop {:auth-token auth-token
-                        :text       "this is a propositon"})
-    (user-place-prop-bet {:auth-token       nil
-                          ;:ga-tag?          true
-                          :twitch-id? true
-                          :projected-result true
-                          :bet-amount       100})
-
-    (user-place-prop-bet {:auth-token       nil
-                          ;:ga-tag?          true
-                          :twitch-id? true
-                          :projected-result false
-                          :bet-amount       100})
-    (admin-end-prop {:auth-token auth-token
-                     :result     "false"})))
-
 (deftest twitch-not-logged-in-user-is-gated
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))
@@ -2680,3 +2237,33 @@
 
     (testing "user/gated? is true after user bets on 10 props"
       (is (true? (-> user2-get-user :body :user/gated?))))))
+
+(deftest user-without-email-verification-no-bailout
+  []
+  (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+        _ (admin-create-event {:auth-token auth-token
+                                               :title      "Dirty Dan's Delirious Dance Party"
+                                               :channel-id "drdisrespect"})
+        _ (admin-create-prop {:auth-token auth-token
+                            :text       "this is a propositon"})
+
+        {user-auth-token :auth-token} (create-user-and-login (assoc dummy-user-2 :verify? false))
+
+        _ (user-place-prop-bet {:auth-token       user-auth-token
+                              :projected-result true
+                              :bet-amount       500})
+        _ (admin-end-prop {:auth-token auth-token
+                           :result     "false"})
+        get-user-resp (get-user {:auth-token user-auth-token})
+
+        _ (verify-email {:email        (:email dummy-user-2)
+                         :verify-token (-> common/test-state deref :emails first :user/verify-token)})
+
+        get-user-resp2 (get-user {:auth-token user-auth-token})]
+    (is (= 0 (-> get-user-resp :body :user/cash)))
+    (is (= [#:notification{:type "notification.type/no-bailout"}]
+           (-> get-user-resp :body :user/notifications)))
+
+    (is (= 100 (-> get-user-resp2 :body :user/cash)))
+    (is (= [#:notification{:type "notification.type/bailout"}]
+           (-> get-user-resp2 :body :user/notifications)))))

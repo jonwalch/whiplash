@@ -129,10 +129,18 @@
                                          (bigint additional-amount))}]}))
 
 (defn verify-email
-  [conn {:keys [db/id]}]
-  (d/transact conn {:tx-data [{:db/id       id
-                               :user/status :user.status/active
-                               :user/verified-email-time (time/to-date)}]}))
+  [{:keys [db/id user/cash]}]
+  (let [tx-data [{:db/id                    id
+                  :user/status              :user.status/active
+                  :user/verified-email-time (time/to-date)}]]
+    (d/transact (:conn datomic-cloud)
+                {:tx-data (if (> 100N cash)
+                            ;; bail user out if they ran out of cash
+                            (conj tx-data
+                                  [:db/cas id :user/cash cash 100N]
+                                  {:db/id              id
+                                   :user/unacked-notifications [{:notification/type :notification.type/bailout}]})
+                            tx-data)})))
 
 (defn- find-user-by-email-db
   [db email]
@@ -460,17 +468,19 @@
        (map
          (fn [[user-id {:keys [user/cash user/total-payout user/status]}]]
            (let [new-balance (+ cash total-payout)
+                 verified-user? (not= status :user.status/pending)
                  #_#_ authed-user? (and (not= status :user.status/unauth)
                                    #_(not= status :user.status/twitch-ext-unauth))
                  bailout? (> 100 new-balance)
                  cas [:db/cas user-id :user/cash cash (if (and #_authed-user?
-                                                               bailout?
-                                                               (not flip?))
+                                                            verified-user?
+                                                            bailout?
+                                                            (not flip?))
                                                         100N
                                                         new-balance)]]
              (cond
-               #_(and bailout? #_(not authed-user?) (not flip?))
-               #_[cas
+               (and bailout? (not verified-user?) (not flip?))
+               [cas
                 {:db/id              user-id
                  :user/unacked-notifications [{:notification/type :notification.type/no-bailout}]}]
 
@@ -667,8 +677,8 @@
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
   #_(let [db (d/db conn)
-        {:keys [db/id user/cash]} (pull-user {:db db :user/name "huddy" :attrs [:db/id :user/cash :user/name]})]
-    (d/transact conn {:tx-data [[:db/cas id :user/cash cash (+ cash 500N)]]})
+        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "wearwolf" :attrs [:db/id :user/cash :user/name]})]
+    (d/transact conn {:tx-data [[:db/cas id :user/cash cash (+ cash 989N)]]})
     )
 
   (->>
@@ -678,7 +688,7 @@
                    [?user :user/sign-up-time ?sign]
                    [?status :db/ident ?ident]
                    [(not= ?ident :user.status/twitch-ext-unauth)]
-                   [(> ?sign #inst"2020-07-16T00:00:00.000-00:00")]]
+                   [(> ?sign #inst"2020-07-18T00:00:00.000-00:00")]]
           :args  [(d/db conn)]})
     (apply concat)
     (sort-by :user/sign-up-time)

@@ -52,9 +52,9 @@ export function Suggestion(props: any) {
 
     const placeholderText = () => {
         if (!loggedInState.userName) {
-            return "Log in to suggest a proposition!";
+            return "Sign up and log in to suggest a proposition!";
         } else if (loggedInState.status === "user.status/pending") {
-            return "Verify your email to suggest a proposition!";
+            return "Check your email and click the link to suggest a proposition!";
         } else if (loggedInState.status === "user.status/unauth") {
            return "Sign up to suggest a proposition!"
         } else {
