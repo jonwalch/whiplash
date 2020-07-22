@@ -158,36 +158,37 @@ export function Home(props: any) {
       } else if (channelID !== failedToFetch){
           return (
               <>
+                  <header className="container twitch__header">
+                      <h2 className="twitch__title">{matchName}</h2>
+                      {streamSource == "event.stream-source/twitch" &&
+                      // TODO: undo inline style
+                      <div style={{paddingRight: "1rem"}}
+                      >
+                          <button
+                              className="button twitch__button"
+                              type="button"
+                              onClick={() => {
+                                  setSfx(!sfx)
+                                  // Trigger Google Analytics event
+                                  gtag('event', 'toggled-sfx', { //TODO change to two different
+                                      event_category: 'SFX',
+                                      event_label: loggedInState.userName,
+                                  });
+                              }}>
+                              {sfx ? 'Turn SFX Off' : 'Turn SFX On'}
+                          </button>
+                          <button
+                              className="button twitch__button"
+                              type="button"
+                              onClick={() => {
+                                  setChatIsOpen(!chatIsOpen)
+                              }}>
+                              {chatIsOpen ? 'Close Chat' : 'Open Chat'}
+                          </button>
+                      </div>
+                      }
+                  </header>
                   <div className={"twitch" + (!chatIsOpen ? " chat-is-closed" : "")}>
-                      <header className="container twitch__header">
-                          <h2 className="twitch__title">{matchName}</h2>
-                          {streamSource == "event.stream-source/twitch" &&
-                          // TODO: undo inline stlye
-                          <div style={{display: "flex", width: "20%",justifyContent: "space-between"}}>
-                              <button
-                                  className="button twitch__button"
-                                  type="button"
-                                  onClick={() => {
-                                      setSfx(!sfx)
-                                      // Trigger Google Analytics event
-                                      gtag('event', 'toggled-sfx', { //TODO change to two different
-                                          event_category: 'SFX',
-                                          event_label: loggedInState.userName,
-                                      });
-                                  }}>
-                                  {sfx ? 'Turn SFX Off' : 'Turn SFX On'}
-                              </button>
-                              <button
-                                  className="button twitch__button"
-                                  type="button"
-                                  onClick={() => {
-                                      setChatIsOpen(!chatIsOpen)
-                                  }}>
-                                  {chatIsOpen ? 'Close Chat' : 'Open Chat'}
-                              </button>
-                          </div>
-                          }
-                      </header>
                       <div className="aspect-ratio-wide twitch__video">
                           <iframe
                               src={streamSourceToStreamUrl()}

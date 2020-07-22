@@ -15,7 +15,7 @@
 
   @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
     grid-column: 1 / -2;
-    grid-row: 1 / span 2;
+    grid-row: 2 / span 2;
   }
 
   @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
@@ -99,9 +99,11 @@
 
   &__chat {
     grid-column: 1 / -1;
+    grid-row: 2 / 4;
 
     @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
       grid-column: unset;
+      grid-row: unset;
     }
 
     iframe {

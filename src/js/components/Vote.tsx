@@ -18,10 +18,10 @@ const startSound = new UIfx(
 export function Vote (props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [betAmount, setBetAmount] = useState<number>(0);
-  const [projectedResult, setProjectedResult] = useState<null | boolean>(null);
+  // const [projectedResult, setProjectedResult] = useState<null | boolean>(null);
   const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
 
-  const booleanToButton = () => {
+  const booleanToButton = (projectedResult : boolean) => {
     if (projectedResult === null) {
       return "none"
     }
@@ -31,22 +31,21 @@ export function Vote (props: any) {
     return 'No';
   };
 
-  useEffect(() => {
-    // TODO: Refactor and use useRef
-    const buttons = document.querySelectorAll('.button--vote');
+    useEffect(() => {
+        const buttons = document.querySelectorAll('.button--vote');
 
-    buttons.forEach((button) => {
-      if (button.innerHTML == booleanToButton()) {
-        // button text does match selection
-        if (!button.classList.contains('is-active')) {
-          button.classList.add('is-active')
-        }
-      } else {
-        // button text does not match selection
-        button.classList.remove('is-active')
-      }
-    })
-  }, [projectedResult]);
+        buttons.forEach((button) => {
+            if (!toggleValid()) {
+                // button text does match selection
+                if (!button.classList.contains('is-active')) {
+                    button.classList.add('is-active')
+                }
+            } else {
+                // button text does not match selection
+                button.classList.remove('is-active')
+            }
+        })
+    }, [betAmount, loggedInState.cash]);
 
   useEffect(() => {
     if (props.proposition["proposition/text"] && props.sfx) {
@@ -54,7 +53,7 @@ export function Vote (props: any) {
     }
   }, [props.proposition["proposition/text"]])
 
-  const makePropBet = async () => {
+  const makePropBet = async (projectedResult : boolean) => {
     setBetWaitingForResp(true);
     const response = await fetch(baseUrl + "user/prop-bet", {
       headers: {
@@ -77,10 +76,9 @@ export function Vote (props: any) {
     });
 
     const resp = await response.json();
-    setProjectedResult(null);
     setBetWaitingForResp(false);
     if (response.status === 200) {
-      alert(`You successfully bet $${betAmount} on outcome ${booleanToButton()}.`);
+      alert(`You successfully bet $${betAmount} on outcome ${booleanToButton(projectedResult)}.`);
       setLoggedInState(
           {
             uid: loggedInState.uid,
@@ -106,11 +104,9 @@ export function Vote (props: any) {
     // )
       if (!(loggedInState.status === null))
       {
-          return projectedResult === null ||
-              betAmount === 0 ||
+          return betAmount === 0 ||
               betAmount > loggedInState.cash ||
               betWaitingForResp;
-
       } else  {
           return true;
       }
@@ -152,13 +148,6 @@ export function Vote (props: any) {
     }
   };
 
-  const betOnKeyPress = (e: any) => {
-    const key = e.key;
-    if (key == "Enter" && !toggleValid()) {
-      makePropBet();
-    }
-  };
-
   const CTAtext = () => {
     if (loggedInState.status === null) {
       return "Sign up and log in to bet!"
@@ -175,52 +164,47 @@ export function Vote (props: any) {
       if (props.proposition["proposition/betting-seconds-left"] > 0) {
         return (
             <>
-              <p>Timer: {props.proposition["proposition/betting-seconds-left"]}</p>
-              <div className="form__button-group">
+              <p style={{fontSize: "0.75rem"}}>Timer: {props.proposition["proposition/betting-seconds-left"]}</p>
+                <div className="form__group">
+                    <label className="form__label" htmlFor="betAmount">Bet Amount</label>
+                    <input
+                        className="form__input"
+                        value={betAmount > 0 ? betAmount : ""}
+                        onChange={e => handleInputChange(e)}
+                        // onKeyPress={e => betOnKeyPress(e)}
+                        type="text"
+                        min="1"
+                        name="betAmount"
+                        id="betAmount"
+                        autoComplete="off"
+                        placeholder="Min. bet is 100"
+                    />
+                </div>
+              <div className="form__button-group" style={{marginBottom: "0"}}>
                 <button
                     className="button button--vote"
                     type="button"
                     key="Yes"
                     onClick={() => {
-                      setProjectedResult(true)
+                      makePropBet(true)
                     }}>
-                  Yes
+                    <div className={betWaitingForResp ? "loading" : ""}>
+                        {betWaitingForResp ? "" : "Yes"}
+                    </div>
                 </button>
                 <button
                     className="button button--vote"
+                    style={{marginRight: "0"}}
                     type="button"
                     key="No"
                     onClick={() => {
-                      setProjectedResult(false)
+                      makePropBet(false)
                     }}>
-                  No
+                    <div className={betWaitingForResp ? "loading" : ""}>
+                        {betWaitingForResp ? "" : "No"}
+                    </div>
                 </button>
               </div>
-              <div className="form__group">
-                <label className="form__label" htmlFor="betAmount">Bet Amount</label>
-                <input
-                    className="form__input"
-                    value={betAmount > 0 ? betAmount : ""}
-                    onChange={e => handleInputChange(e)}
-                    onKeyPress={e => betOnKeyPress(e)}
-                    type="text"
-                    min="1"
-                    name="betAmount"
-                    id="betAmount"
-                    autoComplete="off"
-                    placeholder="Min. bet is 100"
-                />
-              </div>
-              <button
-                  className={"button button--make-bet " + (!toggleValid() ? "is-active" : "")}
-                  type="button"
-                  disabled={toggleValid()}
-                  onClick={() => makePropBet()}
-              >
-                <div className={betWaitingForResp ? "loading" : ""}>
-                  {betWaitingForResp ? "" : "Make Bet"}
-                </div>
-              </button>
             </>
         );
       } else {
@@ -231,7 +215,7 @@ export function Vote (props: any) {
 
   const renderContent = () => {
       return (
-          <div className="container">
+          <div className="container" style={{paddingTop: "0"}}>
             <form className="form form--vote"
                   onSubmit={(e: any) => e.preventDefault()}
             >
