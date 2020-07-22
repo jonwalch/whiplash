@@ -1,14 +1,15 @@
 .home {
 
-&__layout {
-   background: $light-black;
-   color: $dark-white;
-   display: grid;
- &__gridless {
-    display: unset;
-  }
+    &__layout {
+       background: $light-black;
+       color: $dark-white;
+       display: grid;
 
-@media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+     &__gridless {
+        display: unset;
+      }
+
+    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: auto 1fr;
     }
@@ -25,5 +26,12 @@
     @media screen and (min-width: 112.5rem) { /* Big Desktop / 112.5rem / 1800px */
       grid-template-columns: repeat(4, 1fr);
     }
-  }
+
+    &_novideo {
+        @media screen and (min-width: 75rem) { /* Desktop / 75rem / 1200px */
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    }
 }

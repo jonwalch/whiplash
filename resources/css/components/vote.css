@@ -17,6 +17,11 @@
     text-align: center;
     color: $orange;
   }
+   &_novideo {
+      @media screen and (min-width: 56.25rem) { /* Tablet Landscape / 56.25rem / 900px */
+        grid-column: 1 / -3;
+      }
+    }
 }
 
 /**
@@ -39,6 +44,12 @@
       @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
         display: block;
       }
+
+      &_novideo {
+        @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+          min-height: 24rem;
+        }
+       }
     }
 
     &__button-group {

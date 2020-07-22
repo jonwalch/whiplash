@@ -219,7 +219,7 @@ export function Vote (props: any) {
             <form className="form form--vote"
                   onSubmit={(e: any) => e.preventDefault()}
             >
-                <fieldset className="form__fieldset">
+                <fieldset className={props.noVideo? "form__fieldset form__fieldset_novideo" : "form__fieldset"}>
                     {/*TODO: remove inline style and pick proper color*/}
                     {CTAtext() &&
                         <p style={{color: "red"}}>{CTAtext()}</p>
@@ -233,7 +233,7 @@ export function Vote (props: any) {
   };
 
   return (
-    <div className="vote">
+    <div className={props.noVideo? "vote vote_novideo" : "vote"}>
       {renderContent()}
     </div>
   );

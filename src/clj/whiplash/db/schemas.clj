@@ -348,7 +348,8 @@
         :db/ident       :user/acked-notifications
         :db/valueType   :db.type/ref
         :db/cardinality :db.cardinality/many
-        :db/isComponent true}]})
+        :db/isComponent true}]
+   :10 [{:db/ident :event.stream-source/none}]})
 
 (defn migrations->schema-tx
   []

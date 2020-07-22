@@ -12,6 +12,7 @@ import {getUser} from "../common/getUser";
 import moment from "moment";
 import { embedBaseUrl } from "../config/const";
 import {Landing} from "./Landing";
+import WidgetBot from '@widgetbot/react-embed';
 
 const { gtag } = require('ga-gtag');
 
@@ -138,103 +139,170 @@ export function Home(props: any) {
         }
     };
 
+    const renderEventNoVideo = () => {
+        return (
+        <>
+            <header className="container twitch__header">
+                <h2 className="twitch__title">{matchName}</h2>
+                <div style={{paddingRight: "1rem"}}>
+                    <button
+                        className="button twitch__button"
+                        type="button"
+                        onClick={() => {
+                            setSfx(!sfx)
+                            // Trigger Google Analytics event
+                            gtag('event', 'toggled-sfx', { //TODO change to two different
+                                event_category: 'SFX',
+                                event_label: loggedInState.userName,
+                            });
+                        }}>
+                        {sfx ? 'Turn SFX Off' : 'Turn SFX On'}
+                    </button>
+                </div>
+            </header>
+            <Vote
+                sfx={sfx}
+                proposition={proposition}
+                prevProposition={prevProposition}
+                noVideo={true}
+            />
+            <WidgetBot
+                style={{padding: "0 1rem 1rem", background: "inherit", height: "25rem"}}
+                server="654456328831369229"
+                channel="735604120278532139"
+            />
+            <Bets
+                channelID={channelID}
+                proposition={proposition}
+                noVideo={true}
+            />
+            <Suggestion
+                channelID={channelID}
+                noVideo={true}
+            />
+            <Leaderboard
+                channelID={channelID}
+                eventScoreLeaderboard={eventScoreLeaderboard}
+                setEventScoreLeaderboard={setEventScoreLeaderboard}
+                noVideo={true}
+            />
+        </>
+        )
+    }
+
+    const renderEventWithVideo = () => {
+        return (
+            <>
+                <header className="container twitch__header">
+                    <h2 className="twitch__title">{matchName}</h2>
+                    {streamSource === "event.stream-source/twitch" &&
+                    // TODO: undo inline style
+                    <div style={{paddingRight: "1rem"}}>
+                        <button
+                            className="button twitch__button"
+                            type="button"
+                            onClick={() => {
+                                setSfx(!sfx)
+                                // Trigger Google Analytics event
+                                gtag('event', 'toggled-sfx', { //TODO change to two different
+                                    event_category: 'SFX',
+                                    event_label: loggedInState.userName,
+                                });
+                            }}>
+                            {sfx ? 'Turn SFX Off' : 'Turn SFX On'}
+                        </button>
+                        <button
+                            className="button twitch__button"
+                            type="button"
+                            onClick={() => {
+                                setChatIsOpen(!chatIsOpen)
+                            }}>
+                            {chatIsOpen ? 'Close Chat' : 'Open Chat'}
+                        </button>
+                    </div>
+                    }
+                </header>
+                <div className={"twitch" + (!chatIsOpen ? " chat-is-closed" : "")}>
+                    <div className="aspect-ratio-wide twitch__video">
+                        <iframe
+                            src={streamSourceToStreamUrl()}
+                            frameBorder="0"
+                            allowFullScreen={true}>
+                        </iframe>
+                    </div>
+                    {/*disable chat for non twitch*/}
+                    {chatIsOpen && streamSource == "event.stream-source/twitch" &&
+                    <div className="twitch__chat">
+                        <iframe
+                            frameBorder="0"
+                            scrolling="true"
+                            src={streamSourceToChatUrl()}>
+                        </iframe>
+                    </div>
+                    }
+                </div>
+                <Vote
+                    sfx={sfx}
+                    proposition={proposition}
+                    prevProposition={prevProposition}
+                />
+                <Bets
+                    channelID={channelID}
+                    proposition={proposition}
+                />
+                <Suggestion
+                    channelID={channelID}/>
+                <Leaderboard
+                    channelID={channelID}
+                    eventScoreLeaderboard={eventScoreLeaderboard}
+                    setEventScoreLeaderboard={setEventScoreLeaderboard}
+                />
+            </>
+        )
+    }
+
     const renderContent = () => {
         if (channelID === null) {
-          return (
-              <div className="twitch is-inactive">
-                  <div className="container">
-                      <h2 className="twitch__title">Loading...</h2>
-                      <div className="twitch__placeholder">
-                          <p className="twitch__subtitle">Hang tight, your event is loading.</p>
-                      </div>
-                  </div>
-              </div>
-          );
+            return (
+                <div className="home__layout">
+                    <div className="twitch is-inactive">
+                        <div className="container">
+                            <h2 className="twitch__title">Loading...</h2>
+                            <div className="twitch__placeholder">
+                                <p className="twitch__subtitle">Hang tight, your event is loading.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
           // new landing page goes here
       } else if (channelID === failedToFetch) {
             return (
-                <Landing/>
+                <div className="home__layout__gridless">
+                    <Landing/>
+                </div>
             );
-      } else if (channelID !== failedToFetch){
+      } else if (channelID !== failedToFetch && streamSource !== "event.stream-source/none"){
+
           return (
-              <>
-                  <header className="container twitch__header">
-                      <h2 className="twitch__title">{matchName}</h2>
-                      {streamSource == "event.stream-source/twitch" &&
-                      // TODO: undo inline style
-                      <div style={{paddingRight: "1rem"}}
-                      >
-                          <button
-                              className="button twitch__button"
-                              type="button"
-                              onClick={() => {
-                                  setSfx(!sfx)
-                                  // Trigger Google Analytics event
-                                  gtag('event', 'toggled-sfx', { //TODO change to two different
-                                      event_category: 'SFX',
-                                      event_label: loggedInState.userName,
-                                  });
-                              }}>
-                              {sfx ? 'Turn SFX Off' : 'Turn SFX On'}
-                          </button>
-                          <button
-                              className="button twitch__button"
-                              type="button"
-                              onClick={() => {
-                                  setChatIsOpen(!chatIsOpen)
-                              }}>
-                              {chatIsOpen ? 'Close Chat' : 'Open Chat'}
-                          </button>
-                      </div>
-                      }
-                  </header>
-                  <div className={"twitch" + (!chatIsOpen ? " chat-is-closed" : "")}>
-                      <div className="aspect-ratio-wide twitch__video">
-                          <iframe
-                              src={streamSourceToStreamUrl()}
-                              frameBorder="0"
-                              allowFullScreen={true}>
-                          </iframe>
-                      </div>
-                      {/*disable chat for non twitch*/}
-                      {chatIsOpen && streamSource == "event.stream-source/twitch" &&
-                      <div className="twitch__chat">
-                          <iframe
-                              frameBorder="0"
-                              scrolling="true"
-                              src={streamSourceToChatUrl()}>
-                          </iframe>
-                      </div>
-                      }
-                  </div>
-                  <Vote
-                      sfx={sfx}
-                      proposition={proposition}
-                      prevProposition={prevProposition}
-                  />
-                  <Bets
-                      twitchUsername={channelID}
-                      proposition={proposition}
-                  />
-                  <Suggestion
-                      twitchUsername={channelID}/>
-                  <Leaderboard
-                      channelID={channelID}
-                      eventScoreLeaderboard={eventScoreLeaderboard}
-                      setEventScoreLeaderboard={setEventScoreLeaderboard}
-                  />
-              </>
+              <div className="home__layout">
+                  {renderEventWithVideo()}
+              </div>
           );
-      }
+      } else {
+            return (
+                <div className="home__layout home__layout_novideo">
+                    {renderEventNoVideo()}
+                </div>
+            );
+        }
   }
 
     return (
         <>
             <Header sfx={sfx}/>
             <main id="content" role="main">
-                <div className={channelID === failedToFetch ? "home__layout__gridless" : "home__layout"}>
-                    {renderContent()}
-                </div>
+                {renderContent()}
             </main>
             <Footer/>
         </>

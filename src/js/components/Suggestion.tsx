@@ -64,7 +64,7 @@ export function Suggestion(props: any) {
 
     const renderSuggestion = () => {
         return (
-            <form className="form form__suggestion"
+            <form className={"form " + (props.noVideo? "form__suggestion form__suggestion_novideo" : "form__suggestion")}
                  onSubmit={(e: any) => e.preventDefault()}
             >
                 <input
@@ -93,7 +93,7 @@ export function Suggestion(props: any) {
         );
     };
 
-    if (props.twitchUsername === failedToFetch) {
+    if (props.channelID === failedToFetch) {
         return (<></>);
     } else {
         return renderSuggestion();

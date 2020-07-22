@@ -26,21 +26,24 @@ export function About() {
             <h3>How are odds and payouts calculated?</h3>
             <p>Odds and payouts update in real-time and are based on <a href="https://en.wikipedia.org/wiki/Parimutuel_betting">parimutuel betting</a>.</p>
             <p>The winning side gets an additional payout bonus based on how many players that bet on that side.</p>
-            <p>Payouts are rounded down to the nearest whole dollar.</p>
+            <p>Payouts are rounded up to the nearest whole Whipcash.</p>
             <h3>How can I chat with other Whiplash users?</h3>
             <p>Join our <a href="https://discord.gg/GsG2G9t">Discord server</a>!</p>
             <p>Follow us on <a href="https://twitter.com/whiplashgg">Twitter</a>!</p>
-            <h3>How does Whiplash decide which stream to play?</h3>
-            <p>We're currently testing a bunch of ideas. Suggest a stream/event and we'll cover it!</p>
+            <h3>How does Whiplash decide which streamer to play?</h3>
+            <p>We're partnered with the streamers we cover. If you're interested, DM Bazooka or Jawbreaker on Discord.</p>
             <h3>Why can’t I see the embedded Twitch chat?</h3>
             <p>You need to allow third party cookies in your browser settings.</p>
+            <h3>How do I verify my email <address></address>?</h3>
+            <p>Click the link in the email we sent you when you signed up.</p>
             <h3>Why didn’t I get a verification email?</h3>
             <p>Check your spam. If it’s not there, email us at <a href="mailto:support@whiplashesports.com">support@whiplashesports.com</a>.</p>
             <h3>How do I change my password?</h3>
             <p>Login and click your name in the header. It will bring you to your account page.</p>
             <h3>Why can't I bet?</h3>
             <p>If you're signed up and logged in, make sure your email is verified.</p>
-            <p>If you're not logged in and you're getting an error when you try to bet, either sign up or disable your adblocker.</p>
+            <h3>Why aren't I getting bailed out?</h3>
+            <p>Make sure you verified your email address.</p>
             <h3>Why aren't I on the leaderboards?</h3>
             <p>You need to sign up for an account to appear on leaderboards.</p>
             <h3>How can I help support Whiplash?</h3>

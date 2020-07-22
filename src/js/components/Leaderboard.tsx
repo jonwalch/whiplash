@@ -123,8 +123,18 @@ export function Leaderboard (props:any) {
     return "Live"
   };
 
+  const chooseCSS = () => {
+    if (props.noGrid) {
+      return "leaderboard__no-grid-column"
+    } else if (props.noVideo) {
+      return "leaderboard leaderboard_novideo"
+    } else {
+      return "leaderboard"
+    }
+  }
+
   return (
-    <div className={props.noGrid ? "leaderboard__no-grid-column" : "leaderboard"}>
+    <div className={chooseCSS()}>
       <div className="container leaderboard__container">
         <header className="leaderboard__header leaderboard__header--primary">
           <h2 className="leaderboard__title">Leaderboard</h2>

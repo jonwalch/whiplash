@@ -10,9 +10,7 @@
   [{:keys [body-params] :as req}]
   ;; TODO: don't require channel-id for cnn-unauth
   (let [{:keys [title channel-id source]} body-params
-        source-valid? (or (= source "twitch")
-                          (= source "youtube")
-                          (= source "cnn-unauth"))]
+        source-valid? (contains? #{"twitch" "youtube" "cnn-unauth" "none"} source)]
     (cond
       (some empty? [title channel-id source])
       (bad-request {:message "No args can be empty."})
@@ -30,7 +28,8 @@
                           :source (case source
                                     "twitch" :event.stream-source/twitch
                                     "youtube" :event.stream-source/youtube
-                                    "cnn-unauth" :event.stream-source/cnn-unauth)})
+                                    "cnn-unauth" :event.stream-source/cnn-unauth
+                                    "none" :event.stream-source/none)})
         (ok {})))))
 
 (defn get-current-event

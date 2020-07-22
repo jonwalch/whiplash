@@ -20,9 +20,6 @@
   (layout/render request "index.html")
   #_(layout/render request "home.html" {:docs (-> "docs/docs.md" io/resource slurp)}))
 
-#_(defn twitch-extension-page [request]
-  (layout/render request "twitch-extension.html"))
-
 (defn- CORS-GET-options
   [req]
   {:status  204

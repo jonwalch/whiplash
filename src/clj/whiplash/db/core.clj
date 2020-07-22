@@ -28,10 +28,10 @@
   []
   (let [config (if (:prod env)
                  (do
-                   (log/debug "using prod client with config: %s" cloud-config)
+                   (log/info "using prod client with config: %s" cloud-config)
                    cloud-config)
                  (do
-                   (log/debug "using dev local client")
+                   (log/info "using dev local client")
                    local-config))]
     {:client       (d/client config)}))
 
@@ -355,9 +355,11 @@
 
 (defn create-event
   [{:keys [title channel-id source]}]
-  (assert (or (= :event.stream-source/twitch source)
-              (= :event.stream-source/youtube source)
-              (= :event.stream-source/cnn-unauth source)))
+  (assert (contains? #{:event.stream-source/twitch
+                       :event.stream-source/youtube
+                       :event.stream-source/cnn-unauth
+                       :event.stream-source/none}
+                     source))
   (d/transact (:conn datomic-cloud)
               {:tx-data [{:db/id            "temp"
                           :event/title      title

@@ -14,7 +14,7 @@ export function Bets(props: any) {
 
   // TODO: only when there's an event
   useInterval(() => {
-    if (props.twitchUsername != failedToFetch) {
+    if (props.channelID !== failedToFetch) {
       getPropBets();
     }
   }, 1000);
@@ -106,10 +106,19 @@ export function Bets(props: any) {
     );
   };
 
+  const pickStyle = () => {
+    if (props.noVideo) {
+      return {paddingTop: "0"}
+    } else {
+      return {}
+    }
+  }
+
   const renderBets = () => {
     return (
         <div className="bets">
-          <div className="container">
+          <div style={pickStyle()}
+               className="container">
             <header className="bets__header">
               <h2 className="bets__title">Current Bets</h2>
             </header>
