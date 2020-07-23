@@ -45,7 +45,7 @@ export function Vote (props: any) {
                 button.classList.remove('is-active')
             }
         })
-    }, [betAmount, loggedInState.cash]);
+    }, [betAmount, loggedInState.cash, props.proposition["proposition/text"]]);
 
   useEffect(() => {
     if (props.proposition["proposition/text"] && props.sfx) {

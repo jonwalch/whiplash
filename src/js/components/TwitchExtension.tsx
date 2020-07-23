@@ -52,7 +52,7 @@ export function TwitchExtension(props: any) {
                 button.classList.remove('is-active')
             }
         })
-    }, [betAmount, loggedInState.cash]);
+    }, [betAmount, loggedInState.cash, props.proposition["proposition/text"]]);
 
     //Play a ding if any notifications are a payout (this include cancels here)
     useEffect(() => {
