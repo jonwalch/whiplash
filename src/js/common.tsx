@@ -26,6 +26,15 @@ export function useInterval(callback: () => void, delay: number) {
   }, [delay]);
 }
 
+// custom hook for getting previous value
+export function usePrevious(value: any) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
 export function scrollToTop() {
   window.scrollTo(0,0);
 }

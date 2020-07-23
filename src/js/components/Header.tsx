@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import {Link} from "react-router-dom";
 import {Login} from "./Login";
 import {Signup} from "./Signup";
-import {scrollToTop} from "../common";
+import {scrollToTop, usePrevious} from "../common";
 import {LoginContext} from "../contexts/LoginContext";
 import {baseUrl} from "../config/const";
 import {logout} from "../common/logout";
@@ -28,8 +28,13 @@ export function Header(props:any) {
     const [currentNotification, setCurrentNotification] = useState<any>(<></>)
     const [hamburgerOpen, setHamburgerOpen] = useState<boolean>(false);
 
+    const prevLoggedInState = usePrevious(loggedInState)
+
     const navigation = useRef(null);
     const hamburger = useRef(null);
+
+    // @ts-ignore
+    const pulseP = useRef(null);
 
     function handleResize() {
         if (window.innerWidth <= 600) {
@@ -49,6 +54,17 @@ export function Header(props:any) {
         handleResize()
         window.addEventListener('resize', handleResize)
     },[])
+
+    useEffect( () => {
+        // @ts-ignore
+        pulseP.current?.classList.remove("profit-pulse")
+        // @ts-ignore
+        if (prevLoggedInState && prevLoggedInState.cash < loggedInState.cash){
+            // @ts-ignore
+            pulseP.current?.classList.add("profit-pulse")
+        }
+
+    }, [loggedInState.cash])
 
     const createNotificationMarkup = () => {
         return (
@@ -246,7 +262,7 @@ export function Header(props:any) {
                     {/*</button>*/}
                     {renderSocialCTAs()}
                     <li className="navigation__item">
-                        <span className="navigation__highlight">W$:</span> {loggedInState.cash}
+                        <span className="navigation__highlight">W$: </span><span ref={pulseP}>{loggedInState.cash}</span>
                     </li>
                     <li className="navigation__item">
                         <Link to="/account">{loggedInState.userName}</Link>
