@@ -174,6 +174,14 @@
          (-> (create-user-failure (assoc dummy-user :user_name "USER-qwerTyuiopaSdfghjklzx"))
              :body
              :message)))
+  (is (= "User name invalid"
+         (-> (create-user-failure (assoc dummy-user :user_name "donnie darko"))
+             :body
+             :message)))
+  (is (= "User name invalid"
+         (-> (create-user-failure (assoc dummy-user :user_name " "))
+             :body
+             :message)))
   (is (= "Password must be at least 8 characters"
          (-> (create-user-failure (assoc dummy-user :password "1234567"))
              :body

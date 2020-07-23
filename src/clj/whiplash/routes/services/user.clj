@@ -23,7 +23,7 @@
 ;; at least 2 characters, max 100
 (def valid-name #"^[a-zA-Z ,.'-]{1,100}$")
 ;; anything 1 - 50
-(def valid-user-name #"^.{1,50}$")
+(def valid-user-name #"^[^ ]{1,50}$")
 ;; unauthed user format
 (def unauth-user-name #"(?i)user-[a-zA-Z]{21}")
 
