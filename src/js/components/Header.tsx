@@ -51,6 +51,9 @@ export function Header(props:any) {
     }
 
     useEffect( () => {
+        if (window.innerWidth <= 600) {
+            setHamburgerOpen(true)
+        }
         handleResize()
         window.addEventListener('resize', handleResize)
     },[])
