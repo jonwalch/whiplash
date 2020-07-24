@@ -678,9 +678,11 @@
   (def test-client (d/client local-tunnel-cloud-config))
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
-  #_(let [db (d/db conn)
-        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "wearwolf" :attrs [:db/id :user/cash :user/name]})]
-    (d/transact conn {:tx-data [[:db/cas id :user/cash cash (+ cash 989N)]]})
+  (let [db (d/db conn)
+        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "huddy" :attrs [:db/id :user/cash :user/name]})]
+    (d/transact conn {:tx-data [{:db/id id
+                                 :user/status :user.status/active}]})
+    #_(d/transact conn {:tx-data [[:db/cas id :user/cash cash (+ cash 989N)]]})
     )
 
   (->>
