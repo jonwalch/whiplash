@@ -3,8 +3,10 @@ import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const"
 import {getUser} from "../common/getUser";
 import {identify} from "../common/fullstory";
+import {HeaderContext} from "../contexts/HeaderContext";
 
-export function Login(props: any) {
+export function Login() {
+  const { headerState, setHeaderState } = useContext(HeaderContext);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
@@ -39,7 +41,7 @@ export function Login(props: any) {
         }
       });
       setLogInWaitingForResp(false);
-      props.setShowSignup(false);
+      setHeaderState({showLogin: headerState.showLogin, showSignup: false})
     } else {
       const resp = await response.json();
       setLogInWaitingForResp(false);

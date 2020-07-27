@@ -27,11 +27,15 @@
     (let [response ((common/test-app) (mock/request :get "/control"))]
       (is (= 200 (:status response)))))
 
+  (testing "nba landing"
+    (let [response ((common/test-app) (mock/request :get "/nba"))]
+      (is (= 200 (:status response)))))
+
   (testing "account"
     (let [response ((common/test-app) (mock/request :get "/account"))]
       (is (= 200 (:status response)))))
 
-  (testing "account"
+  (testing "leaderboard"
     (let [response ((common/test-app) (mock/request :get "/leaderboard"))]
       (is (= 200 (:status response)))))
 

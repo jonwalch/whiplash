@@ -1,9 +1,11 @@
-import React, { useState, ChangeEvent } from "react";
+import React, {useState, ChangeEvent, useContext} from "react";
 import { baseUrl } from "../config/const";
+import {HeaderContext} from "../contexts/HeaderContext";
 
 const { gtag } = require('ga-gtag');
 
-export function Signup(props: any) {
+export function Signup() {
+  const { headerState, setHeaderState } = useContext(HeaderContext);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userName, setUserName] = useState("");
@@ -45,9 +47,8 @@ export function Signup(props: any) {
     });
     const resp = await response.json();
     if (response.status == 200) {
-      props.setShowSignup(false)
       alert("Successful Signup!");
-      props.setShowLogin(true);
+      setHeaderState({showLogin: true, showSignup: false})
     } else {
       alert(resp.message);
     }

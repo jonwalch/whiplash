@@ -1,17 +1,23 @@
 import React, {useState, useEffect, useContext, useRef} from "react";
-import { useInterval } from "../common";
-import {baseUrl} from "../config/const";
+import {scrollToTop, useInterval} from "../common";
 import UIfx from 'uifx';
 
+const { gtag } = require('ga-gtag');
+
 const prompts = [
-    {text:"Birdfood gets one or more headshot kills this round", end: 27, result: true},
-    {text:"HackoruTV says 'STOOPID' before the next match starts", end: 72, result: true},
-    {text:"Poison lands 10 or more lashes with her whip", end: 114, result: false},
-    {text:"Rillo says a curse word this round", end: 148, result: true},
+    {text:"Bledsoe scores the next basket", end: 15, result: true},
+    {text:"Next basket is an alley-oop", end: 30, result: true},
+    {text:"Ball passes the ball before the Pelicans score", end: 38, result: true},
+    {text:"Lebron scores the next basket", end: 48, result: false},
 ]
 
 // @ts-ignore
 import kaChing from '../sfx/ka-ching.mp3'
+import {Footer} from "./Footer";
+import {Header} from "./Header";
+import {HeaderContext} from "../contexts/HeaderContext";
+import {getEvent} from "../common/stream";
+import {baseUrl} from "../config/const";
 
 const kc = new UIfx(
     kaChing,
@@ -21,11 +27,14 @@ const kc = new UIfx(
     }
 )
 
-export function Landing() {
+const betSecs = 8;
+
+export function NBALanding(props: any) {
+    const { headerState, setHeaderState } = useContext(HeaderContext);
     const [promptIndex, setPromptIndex] = useState<number>(0)
     const [prompt, setPrompt] = useState<string>(prompts[promptIndex].text);
     const [pressed, setPressed] = useState<boolean>(false);
-    const [secsLeftToBet, setSecsLeftToBet] = useState<number>(20)
+    const [secsLeftToBet, setSecsLeftToBet] = useState<number>(betSecs)
     const [betAmount, setBetAmount] = useState<number>(100)
     const [secondsElapsed, setSecondsElapsed] = useState<number>(0)
     const [cash, setCash] = useState<number>(500)
@@ -43,6 +52,17 @@ export function Landing() {
             setBetAmount(amount);
         }
     };
+
+    //TODO: rewrite get event to be more general
+    const getEventUgh = async () => {
+        const response = await fetch(baseUrl + "stream/event", {
+            method: "GET",
+            mode: "same-origin",
+            redirect: "error",
+            credentials: "omit",
+        });
+        return response.status
+    }
 
     useEffect(() => {
         if (secsLeftToBet < 0 && sideBetOn === null) {
@@ -72,6 +92,24 @@ export function Landing() {
             noButton.current?.classList.remove("is-active")
         }
     }, [pressed, betAmount, secsLeftToBet]);
+
+    // redirect when there's an event
+    useEffect(() => {
+        getEventUgh().then((status) => {
+            if (status === 200) {
+                window.location.href = baseUrl
+            }
+        })
+    },[])
+
+    // redirect when there's an event
+    useInterval(() => {
+        getEventUgh().then((status) => {
+            if (status === 200) {
+                window.location.href = baseUrl
+            }
+        })
+    }, 10000);
 
     const resolveBet = (currentPrompt:any) => {
         if (sideBetOn === currentPrompt.result) {
@@ -106,12 +144,12 @@ export function Landing() {
         if (nextPrompt && secondsElapsed >= currentPrompt.end) {
             setPromptIndex(promptIndex + 1)
             setPrompt(nextPrompt.text)
-            setSecsLeftToBet(20)
+            setSecsLeftToBet(betSecs)
             setPressed(false)
 
             resolveBet(currentPrompt)
 
-        // @ts-ignore
+            // @ts-ignore
         } else if (!nextPrompt && (promptIndex + 1) === prompts.length && secondsElapsed >= currentPrompt.end){
             resolveBet(currentPrompt)
         }
@@ -137,17 +175,8 @@ export function Landing() {
     const renderContent = () => {
         return (
             <>
-                {/*<h1 style={{display:"flex", justifyContent: "center", margin:"0"}}>*/}
-                {/*    <img*/}
-                {/*        src={baseUrl + "/img/logos/whiplash-horizontal-4c-gg.svg"}*/}
-                {/*        alt="Whiplashgg"*/}
-                {/*        width="165"*/}
-                {/*        height="36"*/}
-                {/*        className="site-logo__big"*/}
-                {/*    />*/}
-                {/*</h1>*/}
                 <h2 style={{textAlign: "center", margin: "0.5em 0 0.5em"}}>
-                    Bet Points on Anything Live Streamed
+                    Bet Points on Anything While Watching the NBA
                 </h2>
                 {/*TODO: media query with no margins on the right and left side*/}
                 <div className="landing__video-container">
@@ -160,7 +189,7 @@ export function Landing() {
                             style={{position: "absolute", top: "0", left: "0", height: "100%", width: "100%"}}
                             width="800"
                             height="450"
-                            src="https://www.youtube.com/embed/al8sKdi5hW0?&autoplay=1&muted=1&modestbranding&rel=0"
+                            src="https://www.youtube.com/embed/K6F_wM273W0?start=597&autoplay=1&muted=1&modestbranding&rel=0"
                             frameBorder="0"
                             allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen>
@@ -219,23 +248,30 @@ export function Landing() {
                     </button>
                 </div>
                 <div style={{display: "flex", justifyContent: "center", margin: "1.5rem", alignItems: "center"}}>
-                    <h3 style={{margin: "0"}}>Join our</h3>
                     <button
+                        style={{marginRight: "0.75rem"}}
                         type="button"
-                        style={{margin: "0 0.5rem"}}
-                        className="button navigation__button__tiny"
+                        className="button"
                         onClick={() => {
-                            const win = window.open("https://discord.gg/GsG2G9t", '_blank');
-                            // @ts-ignore
-                            win.focus();
+                            scrollToTop();
+                            setHeaderState({showLogin: false, showSignup: !headerState.showSignup})
+                            gtag('event', 'nba-open-sign-up-form', {
+                                event_category: 'Sign Up',
+                            });
                         }}>
-                        <img src={baseUrl + "/img/logos/Discord-Logo-Wordmark-White.svg"}/>
+                        Sign Up
                     </button>
-                    <h3 style={{margin: "0"}}>to find out when we're live next.</h3>
+                    <h3 style={{margin: "0"}}>to be ready for game time.</h3>
                 </div>
             </>
         );
     }
 
-    return renderContent();
+    return (
+        <>
+            <Header/>
+            {renderContent()}
+            <Footer/>
+        </>
+    );
 }

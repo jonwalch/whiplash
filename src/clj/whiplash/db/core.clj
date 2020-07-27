@@ -679,7 +679,7 @@
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
   (let [db (d/db conn)
-        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "huddy" :attrs [:db/id :user/cash :user/name]})]
+        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "7digits" :attrs [:db/id :user/cash :user/name]})]
     (d/transact conn {:tx-data [{:db/id id
                                  :user/status :user.status/active}]})
     #_(d/transact conn {:tx-data [[:db/cas id :user/cash cash (+ cash 989N)]]})

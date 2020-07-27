@@ -61,6 +61,7 @@
    ["/account" {:get home-page}]
    ["/leaderboard" {:get home-page}]
    ["/control" {:get home-page}]
+   ["/nba" {:get home-page}]
 
    ;; admin only endpoints
    ["/admin"

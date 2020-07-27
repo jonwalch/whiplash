@@ -26,8 +26,8 @@ export function Home(props: any) {
   const [chatIsOpen, setChatIsOpen] = useState<boolean>(true);
   const [proposition, setProposition] = useState<Object>({});
   const [prevProposition, setPrevProposition] = useState<Object>({});
-  const [nextEventTime, setNextEventTime] = useState<string>("");
-  const [countdown, setCountdown] = useState<any>(null);
+  // const [nextEventTime, setNextEventTime] = useState<string>("");
+  // const [countdown, setCountdown] = useState<any>(null);
   const [sfx, setSfx] = useState<boolean>(true);
 
   // child state
@@ -40,8 +40,8 @@ export function Home(props: any) {
       if (event["event/stream-source"] !== "event.stream-source/twitch") {
           setChatIsOpen(false)
       }
-      setNextEventTime(event["whiplash/next-event-time"] || "");
-      setCountdown(setCountdownWrapper(event["whiplash/next-event-time"] || ""));
+      // setNextEventTime(event["whiplash/next-event-time"] || "");
+      // setCountdown(setCountdownWrapper(event["whiplash/next-event-time"] || ""));
     };
 
   const getPropWrapper = (event:any) => {
@@ -58,25 +58,25 @@ export function Home(props: any) {
   };
 
   // TODO: Redo all of this on the backend, I no longer trust JS/system times
-  const setCountdownWrapper = (arg: string) => {
-      if (arg == "") {
-          return null;
-      }
-
-      const now = moment();
-      let exp = moment(arg, "YYYY-MM-DDTHH:mm:ssZ");
-
-      if (exp.isBefore(now)) {
-          return null;
-      }
-
-      const days = exp.diff(now, 'days');
-      const hours = exp.subtract(days, 'days').diff(now, 'hours');
-      const minutes = exp.subtract(hours, 'hours').diff(now, 'minutes');
-      const seconds = exp.subtract(minutes, 'minutes').diff(now, 'seconds');
-
-      return {days: days, hours: hours, minutes: minutes, seconds: seconds}
-  };
+  // const setCountdownWrapper = (arg: string) => {
+  //     if (arg == "") {
+  //         return null;
+  //     }
+  //
+  //     const now = moment();
+  //     let exp = moment(arg, "YYYY-MM-DDTHH:mm:ssZ");
+  //
+  //     if (exp.isBefore(now)) {
+  //         return null;
+  //     }
+  //
+  //     const days = exp.diff(now, 'days');
+  //     const hours = exp.subtract(days, 'days').diff(now, 'hours');
+  //     const minutes = exp.subtract(hours, 'hours').diff(now, 'minutes');
+  //     const seconds = exp.subtract(minutes, 'minutes').diff(now, 'seconds');
+  //
+  //     return {days: days, hours: hours, minutes: minutes, seconds: seconds}
+  // };
 
   // keep user's cash and notifications up to date
   // the other pages don't need to do this regularly, because it doesn't matter if their cash is out of date
@@ -112,10 +112,10 @@ export function Home(props: any) {
     });
   }, 10000);
 
-  useInterval(() => {
-    if (nextEventTime !== "") {
-        setCountdown(setCountdownWrapper(nextEventTime))
-    }}, 1000);
+  // useInterval(() => {
+  //   if (nextEventTime !== "") {
+  //       setCountdown(setCountdownWrapper(nextEventTime))
+  //   }}, 1000);
 
     const streamSourceToStreamUrl = () => {
       if (streamSource === "event.stream-source/cnn-unauth") {

@@ -4,6 +4,7 @@ import {Login} from "./Login";
 import {Signup} from "./Signup";
 import {scrollToTop, usePrevious} from "../common";
 import {LoginContext} from "../contexts/LoginContext";
+import {HeaderContext} from "../contexts/HeaderContext";
 import {baseUrl} from "../config/const";
 import {logout} from "../common/logout";
 
@@ -23,8 +24,7 @@ const kc = new UIfx(
 
 export function Header(props:any) {
     const { loggedInState, setLoggedInState } = useContext(LoginContext);
-    const [showSignup, setShowSignup] = useState(false);
-    const [showLogin, setShowLogin] = useState(false);
+    const { headerState, setHeaderState } = useContext(HeaderContext);
     const [currentNotification, setCurrentNotification] = useState<any>(<></>)
     const [hamburgerOpen, setHamburgerOpen] = useState<boolean>(false);
 
@@ -132,18 +132,17 @@ export function Header(props:any) {
     }, [loggedInState.notifications])
 
     const renderLoginForm = () => {
-        if (showLogin) {
+        if (headerState.showLogin) {
             return (
-                <Login setShowSignup={setShowSignup}/>
+                <Login/>
             );
         }
     };
 
     const renderSignupForm = () => {
-        if (showSignup) {
+        if (headerState.showSignup) {
             return (
-                <Signup setShowSignup={setShowSignup}
-                setShowLogin={setShowLogin}/>
+                <Signup/>
             );
         }
     };
@@ -155,10 +154,9 @@ export function Header(props:any) {
                 className="navigation__link"
                 onClick={() => {
                     scrollToTop();
-                    setShowLogin(!showLogin);
-                    setShowSignup(false);
+                    setHeaderState({showLogin: !headerState.showLogin, showSignup: false});
                 }}>
-                {showLogin ? "Cancel" : "Log In"}
+                {headerState.showLogin ? "Cancel" : "Log In"}
             </button>
         );
     };
@@ -170,7 +168,7 @@ export function Header(props:any) {
                 className="navigation__link"
                 onClick={() => {
                     logout(setLoggedInState);
-                    setShowLogin(false);
+                    setHeaderState({showLogin: false, showSignup: headerState.showSignup});
                 }}>
                 Log Out
             </button>
@@ -184,13 +182,12 @@ export function Header(props:any) {
                 className="button navigation__button__tiny"
                 onClick={() => {
                     scrollToTop();
-                    setShowSignup(!showSignup);
-                    setShowLogin(false);
+                    setHeaderState({showLogin: false, showSignup: !headerState.showSignup});
                     gtag('event', 'open-sign-up-form', {
                         event_category: 'Sign Up',
                     });
                 }}>
-                {showSignup ? "Cancel" : "Sign Up"}
+                {headerState.showSignup ? "Cancel" : "Sign Up"}
             </button>
         );
     };
