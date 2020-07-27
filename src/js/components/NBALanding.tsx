@@ -53,17 +53,6 @@ export function NBALanding(props: any) {
         }
     };
 
-    //TODO: rewrite get event to be more general
-    const getEventUgh = async () => {
-        const response = await fetch(baseUrl + "stream/event", {
-            method: "GET",
-            mode: "same-origin",
-            redirect: "error",
-            credentials: "omit",
-        });
-        return response.status
-    }
-
     useEffect(() => {
         if (secsLeftToBet < 0 && sideBetOn === null) {
             // @ts-ignore
@@ -95,8 +84,8 @@ export function NBALanding(props: any) {
 
     // redirect when there's an event
     useEffect(() => {
-        getEventUgh().then((status) => {
-            if (status === 200) {
+        getEvent().then((event) => {
+            if (event["event/stream-source"] === "event.stream-source/none") {
                 window.location.href = baseUrl
             }
         })
@@ -104,8 +93,8 @@ export function NBALanding(props: any) {
 
     // redirect when there's an event
     useInterval(() => {
-        getEventUgh().then((status) => {
-            if (status === 200) {
+        getEvent().then((event) => {
+            if (event["event/stream-source"] === "event.stream-source/none") {
                 window.location.href = baseUrl
             }
         })
