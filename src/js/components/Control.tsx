@@ -78,7 +78,7 @@ export function Control(props: any) {
     }, []);
 
     useInterval(async () => {
-        if (loggedInState.status == "user.status/admin") {
+        if (loggedInState.status == "user.status/admin" || loggedInState.status == "user.status/mod") {
             setEventInfo(await getEvent());
             getProp().then((event) => {
                 if (event["current-prop"]){
@@ -254,7 +254,7 @@ export function Control(props: any) {
     };
 
     function renderControlMarkup() {
-        if (loggedInState.status == "user.status/admin") {
+        if (loggedInState.status == "user.status/admin" || loggedInState.status == "user.status/mod" ) {
             return (
                 <form className="container">
                     <div>Current Event:</div>

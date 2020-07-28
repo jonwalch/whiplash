@@ -2339,3 +2339,5 @@
           _ (admin-end-event {:auth-token mod-auth-token
                               :status     403})
           _ (admin-end-event {:auth-token auth-token})])))
+
+;;TODO test that admin endpoints check db role vs cookie role
