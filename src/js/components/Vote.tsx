@@ -125,7 +125,7 @@ export function Vote (props: any) {
       return "Yes";
     } else if (result === "proposition.result/false") {
       return "No";
-    } else {
+    } else if (result === "proposition.result/cancelled") {
       return "Cancelled"
     }
   };
