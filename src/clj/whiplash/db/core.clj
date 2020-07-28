@@ -243,6 +243,17 @@
                      (dissoc :user/_prop-bets)))
                first))))
 
+(defn find-all-user-bets-for-running-proposition
+  [{:keys [db]}]
+  (d/q
+    {:query '[:find (pull ?bet [:bet/amount
+                                :bet/projected-result?
+                                {:user/_prop-bets [:user/name]}])
+              :in $
+              :where [?prop :proposition/running? true]
+              [?bet :bet/proposition ?prop]]
+     :args  [db]}))
+
 (defn find-all-user-bets-for-proposition
   [{:keys [db prop-bet-id]}]
   (d/q

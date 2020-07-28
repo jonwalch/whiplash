@@ -132,7 +132,9 @@
                 :handler (fn [req] (CORS-GET-options [req]))}
       :get     {:summary "Get the current prop bet"
                 :handler (fn [req]
-                           (proposition/get-current-proposition req))}}]]
+                           (assoc (proposition/get-current-proposition req)
+                             :headers
+                             (merge constants/CORS-GET-headers {"Cache-Control" "max-age=1"})))}}]]
 
    ["/leaderboard"
     ["/all-time"
@@ -141,9 +143,9 @@
                        (leaderboard/all-time-top-ten req))}}]
 
     ["/prop-bets"
-     {:get  {:summary    "get all prop bets for current event"
-             :handler    (fn [req]
-                           (leaderboard/get-prop-bets req))}}]
+     {:get {:summary "get all prop bets for current event"
+            :handler (fn [req]
+                       (assoc (leaderboard/get-prop-bets req) :headers {"Cache-Control" "max-age=1"}))}}]
     ["/event"
      {:options {:summary "CORS preflight"
                 :handler (fn [req] (CORS-GET-options req))}

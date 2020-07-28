@@ -12,6 +12,7 @@
 (defn event-score-leaderboard
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
+        ;; TODO: retrieve event with most recent start time, this greatly simplifys this logic
         ongoing-event (db/find-ongoing-event db)
         last-event (when-not ongoing-event
                      (db/find-last-event db))
@@ -57,12 +58,9 @@
 (defn get-prop-bets
   [{:keys [params] :as req}]
   (let [db (d/db (:conn db/datomic-cloud))
-        ;; TODO: use pull-ongoing-proposiiton
-        current-proposition (db/find-ongoing-proposition db)]
-    (if current-proposition
-      (let [current-bets (->> (db/find-all-user-bets-for-proposition {:db          db
-                                                                      :prop-bet-id current-proposition})
-                              (apply concat)
+        current-bets (apply concat (db/find-all-user-bets-for-running-proposition {:db db}))]
+    (if (seq current-bets)
+      (let [current-bets (->> current-bets
                               (map (fn [bet]
                                      (-> bet
                                          (assoc :user/name (get-in bet [:user/_prop-bets :user/name]))
@@ -82,23 +80,13 @@
 
                              :else
                              grouped-bets)]
-        {:status  200
-         :headers {"Cache-Control" "max-age=1"}
-         :body    (or (->> add-other-side
-                           (map (fn [[result bets]]
-                                  (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
-                                    {result {:bets  (sort-by :bet/amount
-                                                             #(compare %2 %1)
-                                                             (->> bets
-                                                                  (group-by :user/name)
-                                                                  (mapv (fn [[user-name bets]]
-                                                                          {:user/name  user-name
-                                                                           :bet/amount (apply +
-                                                                                              (map :bet/amount bets))}))))
-                                             :total total
-                                             :odds  odds}})))
-                           (apply merge))
-                      empty-bets)})
-      {:status  200
-       :headers {"Cache-Control" "max-age=1"}
-       :body    empty-bets})))
+        (ok (or (->> add-other-side
+                     (map (fn [[result bets]]
+                            (let [{:keys [bet/total bet/odds]} (get total-amounts-and-odds result)]
+                              {result {:bets (sort-by :bet/amount #(compare %2 %1)
+                                                      (map #(dissoc % :bet/projected-result?) bets))
+                                       :total total
+                                       :odds  odds}})))
+                     (apply merge))
+                empty-bets)))
+      (ok empty-bets))))
