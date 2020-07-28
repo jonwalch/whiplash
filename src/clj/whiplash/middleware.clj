@@ -117,6 +117,15 @@
                   (< (time/to-millis) exp)
                   (= "user.status/admin" status)))))
 
+(defn valid-admin-or-mod-auth?
+  [req]
+  (let [{:keys [user exp status]} (req->token req)]
+    (boolean (and (string? user)
+                  (int? exp)
+                  (< (time/to-millis) exp)
+                  (or (= "user.status/admin" status)
+                      (= "user.status/mod" status))))))
+
 #_(defn valid-auth-or-ga-cookie?
   [req]
   (let [{:keys [user exp]} (req->token req)]
@@ -163,6 +172,10 @@
   (restrict handler {:handler valid-admin-auth?
                      :on-error on-error}))
 
+(defn wrap-admin-or-mod [handler]
+  (restrict handler {:handler valid-admin-or-mod-auth?
+                     :on-error on-error}))
+
 ;; Will add :identity to request if passed in as properly formatted Authorization Header
 (defn wrap-auth [handler]
   (let [backend token-backend]
@@ -176,7 +189,8 @@
           redirect-url (string/replace url #"://www\." "://")]
       (if (not= url redirect-url)
         {:status 301
-         :headers {"Location" redirect-url}
+         :headers {"Location" redirect-url
+                   "Cache-Control" "max-age=86400"}         ;; cache for a day
          :body ""}
         (handler request)))))
 

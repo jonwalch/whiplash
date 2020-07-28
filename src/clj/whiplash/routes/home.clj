@@ -90,7 +90,7 @@
     ["/prop"
      [""
       {:post {:summary    "Create a new proposition"
-              :middleware [middleware/wrap-admin]
+              :middleware [middleware/wrap-admin-or-mod]
               :parameters {:body {:text string?
                                   :end-betting-secs int?}}
               :handler    (fn [req]
@@ -98,24 +98,24 @@
      ["/end"
       [""
        {:post {:summary    "End the current proposition"
-               :middleware [middleware/wrap-admin]
+               :middleware [middleware/wrap-admin-or-mod]
                :parameters {:body {:result string?}}
                :handler    (fn [req]
                              (proposition/end-current-proposition req))}}]]
      ["/flip-previous"
       {:post {:summary    "Flip the outcome of the previous proposition"
-              :middleware [middleware/wrap-admin]
+              :middleware [middleware/wrap-admin-or-mod]
               :handler    (fn [req]
                             (proposition/flip-prev-prop-outcome req))}}]]
 
     ["/suggestion"
      {:get  {:summary    "get prop suggestions for current event"
-             :middleware [middleware/wrap-admin]
+             :middleware [middleware/wrap-admin-or-mod]
              :handler    (fn [req]
                            (suggestion/get-suggestions req))}
 
       :post {:summary    "Dismiss prop suggestions"
-             :middleware [middleware/wrap-admin]
+             :middleware [middleware/wrap-admin-or-mod]
              :parameters {:suggestions [string?]}
              :handler    (fn [req]
                            (suggestion/dismiss-suggestions req))}}]]

@@ -383,7 +383,8 @@
         ongoing-event (db/find-ongoing-event db)]
 
     (cond
-      (not-any? #(= % status) [:user.status/active :user.status/admin])
+      ;; TODO add mod
+      (not-any? #(= % status) [:user.status/active :user.status/admin :user.status/mod])
       (method-not-allowed {:message "Must have email verified to suggest."})
 
       (nil? ongoing-event)

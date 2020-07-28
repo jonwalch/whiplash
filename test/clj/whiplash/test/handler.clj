@@ -2307,3 +2307,35 @@
     (is (= 100 (-> get-user-resp2 :body :user/cash)))
     (is (= [#:notification{:type "notification.type/bailout"}]
            (-> get-user-resp2 :body :user/notifications)))))
+
+(deftest mod-happy-path
+  (testing "mods cant start or end events, but they can do everything else on the admin panel"
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          {mod-auth-token :auth-token} (create-user-and-login (assoc dummy-user-2 :mod? true))
+          _ (admin-create-event {:auth-token mod-auth-token
+                                 :title      "Dirty Dan's Delirious Dance Party"
+                                 :channel-id "drdisrespect"
+                                 :status 403})
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      "Dirty Dan's Delirious Dance Party"
+                                 :channel-id "drdisrespect"})
+
+          _ (admin-create-prop {:auth-token mod-auth-token
+                                :text       "this is a propositon"})
+          _ (user-submit-suggestion {:auth-token mod-auth-token
+                                   :text       "foo"})
+
+          get-suggestions-resp (admin-get-suggestions {:auth-token mod-auth-token})
+          suggestions-to-dismiss (->> get-suggestions-resp
+                                      :body
+                                      (filter #(= (:suggestion/text %) "foo"))
+                                      (mapv :suggestion/uuid))
+
+          _ (admin-dismiss-suggestions {:auth-token  mod-auth-token
+                                        :suggestions suggestions-to-dismiss})
+          _ (admin-end-prop {:auth-token mod-auth-token
+                             :result     "false"})
+          _ (admin-flip-prop-outcome {:auth-token mod-auth-token})
+          _ (admin-end-event {:auth-token mod-auth-token
+                              :status     403})
+          _ (admin-end-event {:auth-token auth-token})])))

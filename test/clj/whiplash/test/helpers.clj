@@ -49,7 +49,7 @@
 (defn create-user
   ([]
    (create-user dummy-user))
-  ([{:keys [first_name email admin? verify?] :as user}]
+  ([{:keys [first_name email admin? verify? mod?] :as user}]
    (assert user)
    (let [verify? (if (nil? verify?)
                    true
@@ -73,6 +73,12 @@
                                               (db/pull-user {:user/email email
                                                              :attrs      [:db/id]}))
                                :user/status :user.status/admin}]}))
+     (when mod?
+       (d/transact (:conn db/datomic-cloud)
+                   {:tx-data [{:db/id       (:db/id
+                                              (db/pull-user {:user/email email
+                                                             :attrs      [:db/id]}))
+                               :user/status :user.status/mod}]}))
 
      (is (= 1 (count (filter #(= email (:user/email %))
                              sent-emails))))

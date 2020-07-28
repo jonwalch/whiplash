@@ -349,7 +349,8 @@
         :db/valueType   :db.type/ref
         :db/cardinality :db.cardinality/many
         :db/isComponent true}]
-   :10 [{:db/ident :event.stream-source/none}]})
+   :10 [{:db/ident :event.stream-source/none}]
+   :11 [{:db/ident :user.status/mod}]})
 
 (defn migrations->schema-tx
   []
