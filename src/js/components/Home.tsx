@@ -12,7 +12,7 @@ import {getUser} from "../common/getUser";
 import moment from "moment";
 import { embedBaseUrl } from "../config/const";
 import {Landing} from "./Landing";
-import WidgetBot from '@widgetbot/react-embed';
+// import WidgetBot from '@widgetbot/react-embed';
 
 const { gtag } = require('ga-gtag');
 
@@ -166,11 +166,23 @@ export function Home(props: any) {
                 prevProposition={prevProposition}
                 noVideo={true}
             />
-            <WidgetBot
-                style={{padding: "0 1rem 1rem", background: "inherit", height: "25rem"}}
-                server="654456328831369229"
-                channel="735604120278532139"
-            />
+            <iframe src="https://minnit.chat/Whiplash?embed&nickname="
+                    style={{
+                        padding: "0 1rem 1rem",
+                        background: "inherit",
+                        height: "25rem",
+                        border: "none",
+                        width: "100%",
+                    }}
+                    // style="border:none;width:90%;height:500px;"
+                    // allowTransparency="true"
+            >
+            </iframe>
+            {/*<WidgetBot*/}
+            {/*    style={{padding: "0 1rem 1rem", background: "inherit", height: "25rem"}}*/}
+            {/*    server="654456328831369229"*/}
+            {/*    channel="735604120278532139"*/}
+            {/*/>*/}
             <Bets
                 channelID={channelID}
                 proposition={proposition}
