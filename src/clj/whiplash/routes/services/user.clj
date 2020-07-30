@@ -303,7 +303,7 @@
 (defn create-prop-bet
   [{:keys [body-params] :as req}]
   (let [{:keys [bet_amount projected_result]} body-params
-        {:keys [user exp]} (middleware/req->token req)
+        {:keys [user]} (middleware/req->token req)
         twitch-ext-unauth-user (when-not user
                                  (twitch-unauth-username req))
         #_#_unauthed-user (when (and (not user)

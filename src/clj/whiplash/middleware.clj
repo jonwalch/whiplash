@@ -19,7 +19,8 @@
     [whiplash.time :as time]
     [clojure.string :as string]
     [ring.util.request :as req]
-    [whiplash.constants :as constants]))
+    [whiplash.constants :as constants]
+    [whiplash.db.core :as db]))
 
 (defn wrap-internal-error [handler]
   (fn [req]
@@ -97,7 +98,8 @@
   (when-let [cookie-value (some-> cookies (get "value") :value)]
     (try
       (jwt/decrypt cookie-value secret)
-      (catch Throwable t (when (not= "deleted" cookie-value)
+      (catch Throwable t nil
+                         #_(when (not= "deleted" cookie-value)
                            (log/error (format "Failed to decrypt JWT %s "
                                               cookie-value)
                                       nil))))))
@@ -111,20 +113,22 @@
 
 (defn valid-admin-auth?
   [req]
-  (let [{:keys [user exp status]} (req->token req)]
+  (let [{:keys [user exp]} (req->token req)
+        {:user/keys [status]} (db/pull-user {:user/name user :attrs [:user/status]})]
     (boolean (and (string? user)
                   (int? exp)
                   (< (time/to-millis) exp)
-                  (= "user.status/admin" status)))))
+                  (= :user.status/admin status)))))
 
 (defn valid-admin-or-mod-auth?
   [req]
-  (let [{:keys [user exp status]} (req->token req)]
+  (let [{:keys [user exp]} (req->token req)
+        {:user/keys [status]} (db/pull-user {:user/name user :attrs [:user/status]})]
     (boolean (and (string? user)
                   (int? exp)
                   (< (time/to-millis) exp)
-                  (or (= "user.status/admin" status)
-                      (= "user.status/mod" status))))))
+                  (or (= :user.status/admin status)
+                      (= :user.status/mod status))))))
 
 #_(defn valid-auth-or-ga-cookie?
   [req]

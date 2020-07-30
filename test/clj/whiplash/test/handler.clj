@@ -2340,4 +2340,19 @@
                               :status     403})
           _ (admin-end-event {:auth-token auth-token})])))
 
-;;TODO test that admin endpoints check db role vs cookie role
+(deftest unmod-cant-control-panel
+  (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+        {mod-auth-token :auth-token} (create-user-and-login (assoc dummy-user-2 :mod? true))]
+    (admin-create-event {:auth-token auth-token
+                         :title      "Dirty Dan's Delirious Dance Party"
+                         :channel-id "drdisrespect"})
+    (d/transact (:conn db/datomic-cloud) {:tx-data [{:db/id [:user/email (:email dummy-user-2)]
+                                                     :user/status :user.status/active}
+                                                    {:db/id [:user/email (:email dummy-user)]
+                                                     :user/status :user.status/active}]})
+    (admin-create-prop {:auth-token mod-auth-token
+                        :text       "this is a propositon"
+                        :status 403})
+    (admin-create-prop {:auth-token auth-token
+                        :text       "this is a propositon"
+                        :status 403})))
