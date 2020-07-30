@@ -90,7 +90,7 @@ export function Vote (props: any) {
           })
       // 403 will happen if they're not logged in AND they aren't sending the google analytics cookie.
     } else if (response.status === 403) {
-      alert("Sign up or disable your ad blocker to bet!")
+      alert("Sign up to bet!")
     } else {
       alert(resp.message);
     }
@@ -172,7 +172,7 @@ export function Vote (props: any) {
                         value={betAmount > 0 ? betAmount : ""}
                         onChange={e => handleInputChange(e)}
                         // onKeyPress={e => betOnKeyPress(e)}
-                        type="text"
+                        type="tel"
                         min="1"
                         name="betAmount"
                         id="betAmount"
