@@ -134,24 +134,26 @@ export function Leaderboard (props:any) {
   }
 
   return (
-    <div className={chooseCSS()}>
-      <div className="container leaderboard__container">
-        <header className="leaderboard__header leaderboard__header--primary">
-          <h2 className="leaderboard__title">Leaderboard</h2>
-        </header>
-        <section className="leaderboard__section">
-          <header className="leaderboard__header">
-            <h3 className="leaderboard__subtitle">All Time Top 25</h3>
+      <div className={chooseCSS()}>
+        <div className="container leaderboard__container">
+          <header className="leaderboard__header leaderboard__header--primary">
+            <h2 className="leaderboard__title">Leaderboard</h2>
           </header>
-          {renderLeaderboard()}
-        </section>
-        <section className="leaderboard__section">
-          <header className="leaderboard__header">
-            <h3 className="leaderboard__subtitle"> {scoreText()} Event Scores</h3>
-          </header>
-          {renderEventScoreLeaderboard()}
-        </section>
+          <div className="leaderboard__boards">
+            <section className="leaderboard__section">
+              <header className="leaderboard__header">
+                <h3 className="leaderboard__subtitle">All Time Top 25</h3>
+              </header>
+              {renderLeaderboard()}
+            </section>
+            <section className="leaderboard__section">
+              <header className="leaderboard__header">
+                <h3 className="leaderboard__subtitle"> {scoreText()} Event Scores</h3>
+              </header>
+              {renderEventScoreLeaderboard()}
+            </section>
+          </div>
+        </div>
       </div>
-    </div>
   );
 }

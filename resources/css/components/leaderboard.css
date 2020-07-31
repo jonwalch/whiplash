@@ -131,4 +131,13 @@
       color: $dark-white;
     }
   }
+  &__boards {
+    display: flex;
+    flex-direction: column-reverse;
+
+    @media screen and (min-width: 37.5rem) { /* Tablet Portrait / 37.5rem / 600px */
+      display: contents;
+      /*grid-template-rows: auto minmax( auto, 349px );*/
+    }
+  }
 }
