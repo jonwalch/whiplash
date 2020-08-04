@@ -102,3 +102,43 @@
    border-color: $medium-gray;
  }
 }
+
+.vote--flash {
+  -webkit-animation-name: flash-animation;
+  -webkit-animation-duration: 15s;
+  -webkit-animation-iteration-count: infinite;
+
+  animation-name: flash-animation;
+  animation-duration: 15s;
+  animation-iteration-count: infinite;
+}
+
+@-webkit-keyframes flash-animation {
+  0% {
+    background-color: inherit;
+  }
+  10% {
+    background-color: $orange;
+  }
+  20% {
+    background-color: inherit;
+  }
+  100% {
+    background-color: inherit;
+  }
+}
+
+@keyframes flash-animation {
+  0% {
+    background-color: inherit;
+  }
+  10% {
+    background-color: $orange;
+  }
+  20% {
+    background-color: inherit;
+  }
+  100% {
+    background-color: inherit;
+  }
+}

@@ -47,7 +47,7 @@ export function Signup() {
     });
     const resp = await response.json();
     if (response.status == 200) {
-      alert("Successful Signup!");
+      alert("Check your email and click on the link within to complete sign up!");
       setHeaderState({showLogin: true, showSignup: false})
     } else {
       alert(resp.message);

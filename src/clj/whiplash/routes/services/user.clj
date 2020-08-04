@@ -334,10 +334,10 @@
       (conflict {:message "You must bet 100 or more!"})
 
       (> bet_amount cash)
-      (conflict {:message "Bet cannot exceed total user cash."})
+      (conflict {:message "You don't have enough Whipcash!"})
 
       (nil? (:db/id ongoing-prop))
-      (method-not-allowed {:message "No ongoing prop bet, cannot make bet."})
+      (method-not-allowed {:message "No ongoing prop, cannot make bet."})
 
       (try
         (jtime/after? (time/now)

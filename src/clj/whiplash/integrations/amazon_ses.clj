@@ -33,6 +33,11 @@
   [url email token]
   (format "%s?email=%s&token=%s" url email token))
 
+(comment
+  (let [email "foo"
+        token "bars"]
+    (generate-url "https://www.whiplashesports.com/user/verify" email token)))
+
 (defn send-verification-email
   [{:user/keys [email first-name verify-token] :as user}]
   (let [verify-url (generate-url "https://www.whiplashesports.com/user/verify" email verify-token)

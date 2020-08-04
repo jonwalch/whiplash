@@ -10,7 +10,8 @@
     [whiplash.payouts :as payouts]
     [clojure.string :as string]
     [clj-uuid :as uuid]
-    [java-time :as jtime]))
+    [java-time :as jtime]
+    [whiplash.integrations.amazon-ses :as ses]))
 
 (defonce ^:private cloud-config
   {:server-type :cloud
@@ -697,7 +698,7 @@
     )
 
   (->>
-    (d/q {:query '[:find (pull ?user [:user/email :user/name :user/sign-up-time {:user/status [:db/ident]}])
+    (d/q {:query '[:find (pull ?user [:user/email :user/verify-token :user/name :user/sign-up-time {:user/status [:db/ident]}])
                    :in $
                    :where [?user :user/status ?status]
                    [?user :user/sign-up-time ?sign]
@@ -707,9 +708,9 @@
           :args  [(d/db conn)]})
     (apply concat)
     (sort-by :user/sign-up-time)
-    (map (fn [{:user/keys [email name sign-up-time status]}]
+    #_(map (fn [{:user/keys [email name sign-up-time status]}]
            (str email "," name "," sign-up-time "," (:db/ident status) "\n")))
-    (apply str))
+    #_(apply str))
 
   (defn find-loser-by-email
     [email conn]

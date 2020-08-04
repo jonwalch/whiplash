@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, {useState, useEffect, useContext, useRef} from "react";
 import { LoginContext } from "../contexts/LoginContext";
 import { baseUrl } from "../config/const";
 const { gtag } = require('ga-gtag');
@@ -20,16 +20,7 @@ export function Vote (props: any) {
   const [betAmount, setBetAmount] = useState<number>(0);
   // const [projectedResult, setProjectedResult] = useState<null | boolean>(null);
   const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
-
-  const booleanToButton = (projectedResult : boolean) => {
-    if (projectedResult === null) {
-      return "none"
-    }
-    else if (projectedResult) {
-      return 'Yes';
-    }
-    return 'No';
-  };
+  const [lastSuccessfulBetSide, setLastSuccessfulBetSide] = useState<null | boolean>(null);
 
     useEffect(() => {
         const buttons = document.querySelectorAll('.button--vote');
@@ -77,8 +68,13 @@ export function Vote (props: any) {
 
     const resp = await response.json();
     setBetWaitingForResp(false);
+
     if (response.status === 200) {
-      alert(`You successfully bet $${betAmount} on outcome ${booleanToButton(projectedResult)}.`);
+      setLastSuccessfulBetSide(projectedResult);
+      const timer = setTimeout(() => {
+        // setLastSuccessfulBetSide(null)
+      }, 1500);
+
       setLoggedInState(
           {
             uid: loggedInState.uid,
@@ -88,9 +84,10 @@ export function Vote (props: any) {
             notifications: loggedInState.notifications,
             "gated?": loggedInState["gated?"],
           })
-      // 403 will happen if they're not logged in AND they aren't sending the google analytics cookie.
+        return () => clearTimeout(timer);
+      // 403 will happen if they're not logged in
     } else if (response.status === 403) {
-      alert("Sign up to bet!")
+      alert("Sign up and log in to bet!")
     } else {
       alert(resp.message);
     }
@@ -157,8 +154,23 @@ export function Vote (props: any) {
     }
   };
 
-  const renderBettingOptions = () => {
-    if (props.proposition["proposition/text"] &&
+    const renderButtonContents = (defaultText:string) => {
+      if (betWaitingForResp){
+          return <div className="loading"/>
+      } else if ((lastSuccessfulBetSide === true && defaultText === "Yes") ||
+                 (lastSuccessfulBetSide === false && defaultText === "No")){
+          return (
+              <img src={baseUrl + "/img/logos/check-mark.svg"}
+                   style={{height: "1rem", width: "1rem", marginTop: "0.25rem"}}
+              />
+          )
+      } else {
+          return <div>{defaultText}</div>
+      }
+  };
+
+    const renderBettingOptions = () => {
+        if (props.proposition["proposition/text"] &&
         props.proposition["proposition/betting-end-time"]){
       // if (moment().utc().isBefore(endBettingDate())) {
       if (props.proposition["proposition/betting-seconds-left"] > 0) {
@@ -188,9 +200,7 @@ export function Vote (props: any) {
                     onClick={() => {
                       makePropBet(true)
                     }}>
-                    <div className={betWaitingForResp ? "loading" : ""}>
-                        {betWaitingForResp ? "" : "Yes"}
-                    </div>
+                    {renderButtonContents("Yes")}
                 </button>
                 <button
                     className="button button--vote"
@@ -200,9 +210,7 @@ export function Vote (props: any) {
                     onClick={() => {
                       makePropBet(false)
                     }}>
-                    <div className={betWaitingForResp ? "loading" : ""}>
-                        {betWaitingForResp ? "" : "No"}
-                    </div>
+                    {renderButtonContents("No")}
                 </button>
               </div>
             </>
@@ -222,7 +230,7 @@ export function Vote (props: any) {
                 <fieldset className={props.noVideo? "form__fieldset form__fieldset_novideo" : "form__fieldset"}>
                     {/*TODO: remove inline style and pick proper color*/}
                     {CTAtext() &&
-                        <p style={{color: "red"}}>{CTAtext()}</p>
+                        <p className="vote--flash">{CTAtext()}</p>
                     }
                     {renderPropositionText()}
                     {renderBettingOptions()}

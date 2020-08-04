@@ -264,28 +264,28 @@ export function Control(props: any) {
                     <div className="form__group"
                         // TODO: remove inline style
                          style={{marginTop: "30px"}}>
-                        <label className="form__label" htmlFor="eventTitle">Next Event Countdown</label>
-                        <input
-                            className="form__input"
-                            value={nextEventTs}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                setNextEventTs(e.currentTarget.value);
-                            }}
-                            placeholder="Must be ISO 8601 format in UTC time zone. i.e. 2020-04-01T22:56:01Z"
-                            maxLength={20}
-                            name="nextEventTs"
-                            id="nextEventTs"
-                        />
-                        < button
-                            className="button twitch__button"
-                            // TODO: remove inline style
-                            style = {{marginRight: "30px"}}
-                            type="button"
-                            onClick={() => {
-                                createCountdown()
-                            }}>
-                            Create Countdown
-                        </button>
+                        {/*<label className="form__label" htmlFor="eventTitle">Next Event Countdown</label>*/}
+                        {/*<input*/}
+                        {/*    className="form__input"*/}
+                        {/*    value={nextEventTs}*/}
+                        {/*    onChange={(e: ChangeEvent<HTMLInputElement>) => {*/}
+                        {/*        setNextEventTs(e.currentTarget.value);*/}
+                        {/*    }}*/}
+                        {/*    placeholder="Must be ISO 8601 format in UTC time zone. i.e. 2020-04-01T22:56:01Z"*/}
+                        {/*    maxLength={20}*/}
+                        {/*    name="nextEventTs"*/}
+                        {/*    id="nextEventTs"*/}
+                        {/*/>*/}
+                        {/*< button*/}
+                        {/*    className="button twitch__button"*/}
+                        {/*    // TODO: remove inline style*/}
+                        {/*    style = {{marginRight: "30px"}}*/}
+                        {/*    type="button"*/}
+                        {/*    onClick={() => {*/}
+                        {/*        createCountdown()*/}
+                        {/*    }}>*/}
+                        {/*    Create Countdown*/}
+                        {/*</button>*/}
                         <label style={{marginTop: "30px"}}
                                // TODO remove inline style
                                className="form__label"
