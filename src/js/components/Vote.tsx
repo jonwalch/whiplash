@@ -72,7 +72,7 @@ export function Vote (props: any) {
     if (response.status === 200) {
       setLastSuccessfulBetSide(projectedResult);
       const timer = setTimeout(() => {
-        // setLastSuccessfulBetSide(null)
+        setLastSuccessfulBetSide(null)
       }, 1500);
 
       setLoggedInState(
