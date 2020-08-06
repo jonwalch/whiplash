@@ -2358,7 +2358,100 @@
                         :status 403})))
 
 ;; TODO flesh tests out further, especially with more real data
-(deftest csgo-game-state
+(deftest csgo-game-state-no-event
   (let [response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
                                         (mock/json-body {:test "test"})))]
-    (is (= 200 (:status response)))))
+    (is (= 204 (:status response)))))
+
+(deftest csgo-game-state-wrong-channel-id
+  (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+        _ (admin-create-event {:auth-token auth-token
+                                   :title      "Dirty Dan's Delirious Dance Party"
+                                   :channel-id "drdisrespect"})
+        response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                        (mock/json-body {:round {:phase "freezetime"}})))]
+    (is (= 204 (:status response)))))
+
+(deftest csgo-game-state-wrong-event-type
+  (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+        _ (admin-create-event {:auth-token auth-token
+                               :source "none"
+                               :title      "Dirty Dan's Delirious Dance Party"
+                               :channel-id "drdisrespect"})
+        response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                        (mock/json-body {:round {:phase "freezetime"}})))]
+    (is (= 204 (:status response)))))
+
+;;TODO big refactor and generalize like other endpoint tests
+(deftest csgo-game-state-happy-path
+  (testing "endpoint always return 2xx for csgo game client"
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      "Dirty Dan's Delirious Dance Party"
+                                 :channel-id "birdfood"})
+          create-response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                                 (mock/json-body {:round {:phase "freezetime"}})))
+          create-response-fail ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                                      (mock/json-body {:round {:phase "freezetime"}})))
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500})
+
+          end-response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                              (mock/json-body {:round {:phase "over" :win_team "T"}})))
+
+          get-user-resp (get-user {:auth-token auth-token})
+
+          end-response-fail ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                                   (mock/json-body {:round {:phase "over" :win_team "T"}})))
+          ;; get prop, check prev prop outcome, assert they match
+
+          create-response2 ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                                 (mock/json-body {:round {:phase "freezetime"}})))
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result false
+                                  :bet-amount       510})
+
+          end-response2 ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                              (mock/json-body {:round {:phase "over" :win_team "CT"}})))
+
+          get-user-resp2 (get-user {:auth-token auth-token})
+
+          create-response3 ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                                  (mock/json-body {:round {:phase "freezetime"}})))
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result false
+                                  :bet-amount       520})
+
+          end-response3 ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                               (mock/json-body {:round {:phase "over" :win_team "T"}})))
+
+          get-user-resp3 (get-user {:auth-token auth-token})]
+      (is (= 201 (:status create-response)))
+      (is (= 204 (:status create-response-fail)))
+      (is (= 200 (:status end-response)))
+      (is (= 510 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         510
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   "Terrorists win this round"}]
+             (-> get-user-resp :body :user/notifications)))
+      (is (= 204 (:status end-response-fail)))
+
+      (is (= 201 (:status create-response2)))
+      (is (= 200 (:status end-response2)))
+      (is (= 520 (-> get-user-resp2 :body :user/cash)))
+      (is (= [{:bet/payout         520
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/false"
+               :proposition/text   "Terrorists win this round"}]
+             (-> get-user-resp2 :body :user/notifications)))
+
+      (is (= 201 (:status create-response3)))
+      (is (= 200 (:status end-response3)))
+      (is (= 100 (-> get-user-resp3 :body :user/cash)))
+      (is (= [#:notification{:type "notification.type/bailout"}]
+             (-> get-user-resp3 :body :user/notifications))))))

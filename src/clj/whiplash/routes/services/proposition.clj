@@ -30,36 +30,19 @@
                                 :end-betting-secs end-betting-secs})
         (ok {})))))
 
-(defn- add-countdown-seconds
-  [{:proposition/keys [start-time betting-end-time] :as proposition}]
-  (assert (and start-time betting-end-time))
-  (assoc proposition :proposition/betting-seconds-left
-                     (time/delta-between (time/now)
-                                         (time/date-to-zdt betting-end-time)
-                                         :seconds)))
-
 (defn get-current-proposition
   [req]
-  (let [db (d/db (:conn db/datomic-cloud))
-        {:keys [event/propositions] :as ongoing-event} (db/pull-ongoing-event
-                                                         {:db    db
-                                                          :attrs [:db/id
-                                                                  {:event/propositions
-                                                                   '[:proposition/start-time
-                                                                     :proposition/text
-                                                                     :proposition/running?
-                                                                     :proposition/betting-end-time
-                                                                     {:proposition/result [:db/ident]}]}]})
-        props (group-by :proposition/running? propositions)
-        ongoing-prop (first (get props true))
-        previous-prop (first (sort-by :proposition/start-time #(compare %2 %1) (get props false)))]
-    (if (or ongoing-prop previous-prop)
-      (ok {:current-prop  (if ongoing-prop
-                            (add-countdown-seconds ongoing-prop)
-                            {})
-           :previous-prop (if previous-prop
-                            (update previous-prop :proposition/result :db/ident)
-                            {})})
+  (let [{:keys [current-prop previous-prop]} (db/pull-event-info
+                                               {:attrs [:db/id
+                                                        {:event/propositions
+                                                         '[:proposition/start-time
+                                                           :proposition/text
+                                                           :proposition/running?
+                                                           :proposition/betting-end-time
+                                                           {:proposition/result [:db/ident]}]}]})]
+    (if (or current-prop previous-prop)
+      (ok {:current-prop  (or current-prop {})
+           :previous-prop (or previous-prop {})})
       (no-content))))
 
 (defn end-current-proposition
@@ -86,6 +69,7 @@
       :else
       (method-not-allowed {:message "No ongoing proposition"}))))
 
+;; TODO move this to db core
 (defn- flip-outcome
   [db {:keys [db/id proposition/result] :as previous-prop}]
   (assert (or (= (:db/ident result) :proposition.result/true)

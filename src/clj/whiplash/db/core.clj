@@ -278,6 +278,7 @@
                 :in $ ?event-id]
        :args  [db event-id]})))
 
+
 (defn find-all-time-leaderboard
   []
   (let [db (d/db (:conn datomic-cloud))]
@@ -337,6 +338,32 @@
     (if (contains? result :event/stream-source)
       (update result :event/stream-source :db/ident)
       result)))
+
+(defn- add-countdown-seconds
+  [{:proposition/keys [start-time betting-end-time] :as proposition}]
+  (assert (and start-time betting-end-time))
+  (assoc proposition :proposition/betting-seconds-left
+                     (time/delta-between (time/now)
+                                         (time/date-to-zdt betting-end-time)
+                                         :seconds)))
+
+(defn pull-event-info
+  [{:keys [db attrs]}]
+  (let [db (or db
+               (d/db (:conn datomic-cloud)))
+        {:keys [event/propositions] :as ongoing-event} (pull-ongoing-event
+                                                         {:db    db
+                                                          :attrs attrs})
+        props (group-by :proposition/running? propositions)
+        ongoing-prop (some-> (get props true)
+                             first
+                             (add-countdown-seconds))
+        previous-prop (some-> (sort-by :proposition/start-time #(compare %2 %1) (get props false))
+                              first
+                              (update :proposition/result :db/ident))]
+    {:event ongoing-event
+     :current-prop ongoing-prop
+     :previous-prop previous-prop}))
 
 (defn pull-next-event-time
   "assumes only one of these exists in the db"
@@ -691,9 +718,9 @@
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
   (let [db (d/db conn)
-        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "7digits" :attrs [:db/id :user/cash :user/name]})]
+        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "caligan" :attrs [:db/id :user/cash :user/name]})]
     (d/transact conn {:tx-data [{:db/id id
-                                 :user/status :user.status/active}]})
+                                 :user/status :user.status/mod}]})
     #_(d/transact conn {:tx-data [[:db/cas id :user/cash cash (+ cash 989N)]]})
     )
 
