@@ -2356,3 +2356,9 @@
     (admin-create-prop {:auth-token auth-token
                         :text       "this is a propositon"
                         :status 403})))
+
+;; TODO flesh tests out further, especially with more real data
+(deftest csgo-game-state
+  (let [response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                        (mock/json-body {:test "test"})))]
+    (is (= 200 (:status response)))))

@@ -7,7 +7,8 @@
     [reitit.ring.middleware.parameters :as parameters]
     [whiplash.middleware.formats :as formats]
     [whiplash.middleware.exception :as exception]
-    [ring.util.http-response :refer :all]))
+    [ring.util.http-response :refer :all]
+    [whiplash.routes.services.csgo-game-state :as csgo]))
 
 (defn service-routes []
   ["/v1"
@@ -30,7 +31,10 @@
                  coercion/coerce-request-middleware
                  ;; multipart
                  multipart/multipart-middleware]}
-
    ["/healthz"
     ;; TODO: add actual checks to this
-    {:get (fn [req] (ok))}]])
+    {:get (fn [req] (ok))}]
+
+   ["/gs"
+    ["/csgo/:channel-id"
+     {:post (fn [req] (csgo/receive-from-game-client req))}]]])
