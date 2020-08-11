@@ -301,8 +301,9 @@
                        :attrs     [:user/cash :db/id {:user/status [:db/ident]}]})))))
 
 (defn create-prop-bet
-  [{:keys [body-params] :as req}]
+  [{:keys [body-params path-params] :as req}]
   (let [{:keys [bet_amount projected_result]} body-params
+        {:keys [channel-id]} path-params
         {:keys [user]} (middleware/req->token req)
         twitch-ext-unauth-user (when-not user
                                  (twitch-unauth-username req))
@@ -315,12 +316,22 @@
                                                  #_#_:unauthed-user unauthed-user
                                                  :twitch-ext-unauth-user twitch-ext-unauth-user
                                                  :db db})
-        ongoing-prop (db/pull-ongoing-proposition {:db db :attrs [:db/id]})
+        {:keys [current-prop]} (db/pull-event-info
+                                 {:attrs [:db/id
+                                          :event/channel-id
+                                          {:event/propositions
+                                           '[:db/id
+                                             :proposition/start-time
+                                             :proposition/text
+                                             :proposition/running?
+                                             :proposition/betting-end-time
+                                             {:proposition/result [:db/ident]}]}]
+                                  :event/channel-id channel-id})
         ;; TODO: make this query part of pulling the user if it shaves off a query
-        existing-bet (when (and id ongoing-prop)
+        existing-bet (when (and id current-prop)
                        (db/find-existing-prop-bet {:db                    db
                                                    :user-id               id
-                                                   :prop-id               (:db/id ongoing-prop)
+                                                   :prop-id               (:db/id current-prop)
                                                    :bet/projected-result? projected_result}))]
     (cond
       #_(not-any? #(= % status) [:user.status/active :user.status/admin
@@ -336,15 +347,22 @@
       (> bet_amount cash)
       (conflict {:message "You don't have enough Whipcash!"})
 
-      (nil? (:db/id ongoing-prop))
+      (nil? (:db/id current-prop))
       (method-not-allowed {:message "No ongoing prop, cannot make bet."})
 
       (try
         (jtime/after? (time/now)
                       ;; Doing the query again to make sure that betting hasn't closed since we grabbed the last db
-                      (time/date-to-zdt (:proposition/betting-end-time
-                                          (db/pull-ongoing-proposition
-                                            {:attrs [:proposition/betting-end-time]}))))
+                      (time/date-to-zdt (-> (db/pull-event-info
+                                              {:attrs            [:db/id
+                                                                  {:event/propositions
+                                                                   '[:db/id
+                                                                     :proposition/running?
+                                                                     :proposition/betting-end-time
+                                                                     :proposition/start-time]}]
+                                               :event/channel-id channel-id})
+                                            :current-prop
+                                            :proposition/betting-end-time)))
         ;; Catch the NPE in case :proposition/betting-end-time is nil because no ongoing prop was found
         ;; Default to true because we want to hit method not allowed if no ongoing prop
         (catch NullPointerException e true))
@@ -363,7 +381,7 @@
                                          :bet/projected-result? projected_result
                                          :bet/amount            bet_amount
                                          :user/cash             cash
-                                         :bet/proposition       (:db/id ongoing-prop)})
+                                         :bet/proposition       (:db/id current-prop)})
               (catch Throwable t (log/error "cas failed for adding prop bet: " t)))
           (ok {})
           (conflict {:message "CAS failed"})))
@@ -372,15 +390,19 @@
       (not-found {:message "User not found."}))))
 
 (defn create-suggestion
-  [{:keys [body-params] :as req}]
+  [{:keys [body-params path-params] :as req}]
   (let [{:keys [text]} body-params
+        {:keys [channel-id]} path-params
         {:keys [user]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
         {:keys [db/id user/status]} (when user
                                       (db/pull-user {:db        db
                                                      :user/name user
                                                      :attrs     [:db/id {:user/status [:db/ident]}]}))
-        ongoing-event (db/find-ongoing-event db)]
+        ongoing-event (:db/id
+                        (db/pull-ongoing-event {:db               db
+                                                :attrs            [:db/id]
+                                                :event/channel-id channel-id}))]
 
     (cond
       (not-any? #(= % status) [:user.status/active :user.status/admin :user.status/mod])
@@ -409,26 +431,6 @@
 
       :else
       (not-found {:message ""}))))
-
-(defn get-prop-bets
-  [{:keys [params] :as req}]
-  (let [{:keys [user exp]} (middleware/req->token req)
-        db (d/db (:conn db/datomic-cloud))
-        user-id (db/find-user-by-user-name user)
-        ongoing-prop (db/find-ongoing-proposition db)]
-    (cond
-      (nil? ongoing-prop)
-      (no-content)
-
-      (some? user-id)
-      (ok (sort-by :bet/amount
-                   #(compare %2 %1)
-                   (db/find-prop-bets-for-user {:db          db
-                                                :user-id     user-id
-                                                :prop-bet-id ongoing-prop})))
-
-      :else
-      (not-found {:message "User not found."}))))
 
 (defn verify-email
   [{:keys [body-params] :as req}]

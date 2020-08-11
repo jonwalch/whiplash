@@ -200,8 +200,8 @@
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn admin-end-event
-  [{:keys [auth-token status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/event/end")
+  [{:keys [auth-token status channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :post (format "/admin/event/end/%s" channel-id))
                                     (mock/cookie :value auth-token)))]
     (is (= (or status
                200)
@@ -209,8 +209,8 @@
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn admin-create-prop
-  [{:keys [auth-token text end-betting-secs status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop")
+  [{:keys [auth-token text end-betting-secs channel-id status]}]
+  (let [resp ((common/test-app) (-> (mock/request :post (format "/admin/prop/%s" channel-id))
                                     (mock/cookie :value auth-token)
                                     (mock/json-body {:text             text
                                                      :end-betting-secs (or end-betting-secs
@@ -221,66 +221,88 @@
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn admin-end-prop
-  [{:keys [auth-token result]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop/end")
+  [{:keys [auth-token result channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :post (format "/admin/prop/end/%s" channel-id))
                                     (mock/cookie :value auth-token)
                                     (mock/json-body {:result result})))]
     (is (= 200 (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn admin-flip-prop-outcome
-  [{:keys [auth-token status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/prop/flip-previous")
+  [{:keys [auth-token status channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :post (format "/admin/prop/flip-previous/%s" channel-id))
                                     (mock/cookie :value auth-token)))]
     (is (= (or status
                200)
            (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
-(defn get-event
+(defn get-events
   ([]
-   (get-event {}))
+   (get-events {}))
   ([{:keys [status]}]
-   (let [resp ((common/test-app) (-> (mock/request :get "/stream/event")))]
+   (let [resp ((common/test-app) (-> (mock/request :get "/stream/events")))]
      (is (= (or status
                 200)
             (:status resp)))
      (assoc resp :body (common/parse-json-body resp)))))
 
-(defn get-event-leaderboard
-  ([]
-   (get-event-leaderboard {}))
-  ([{:keys [status]}]
-   (let [resp ((common/test-app) (-> (mock/request :get "/leaderboard/event")))]
-     (is (= (or status
-                200)
-            (:status resp)))
+(defn get-event
+  [{:keys [status channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :get (str "/stream/events/" channel-id))))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    (assoc resp :body (common/parse-json-body resp))))
 
-     (if (= (:status resp) 200)
-       (is
-         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
-             "Access-Control-Allow-Methods" "GET"
-             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
-             "Content-Type"                 "application/json; charset=utf-8"
-             "X-Content-Type-Options"       "nosniff"
-             "X-Frame-Options"              "SAMEORIGIN"
-             "X-XSS-Protection"             "1; mode=block"}
-            (:headers resp)))
-       (is
-         (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
-             "Access-Control-Allow-Methods" "GET"
-             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
-             "Content-Type"                 "application/octet-stream"
-             "X-Content-Type-Options"       "nosniff"
-             "X-Frame-Options"              "SAMEORIGIN"
-             "X-XSS-Protection"             "1; mode=block"}
-            (:headers resp))))
-     (if (= 200 (:status resp))
-       (assoc resp :body (common/parse-json-body resp))
-       resp))))
+(defn get-prop
+  [{:keys [status channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :get (format "/stream/prop/%s" channel-id))))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+            "Access-Control-Allow-Methods" "GET"
+            "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
+            "Cache-Control"                "max-age=1"
+            "Content-Type"                 "application/json; charset=utf-8"
+            "X-Content-Type-Options"       "nosniff"
+            "X-Frame-Options"              "SAMEORIGIN"
+            "X-XSS-Protection"             "1; mode=block"}
+           (:headers resp)))
+    (assoc resp :body (common/parse-json-body resp))))
+
+(defn get-event-leaderboard
+  [{:keys [status channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :get (format "/leaderboard/event/%s" channel-id))))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    (if (= (:status resp) 200)
+      (is
+        (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+            "Access-Control-Allow-Methods" "GET"
+            "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
+            "Content-Type"                 "application/json; charset=utf-8"
+            "X-Content-Type-Options"       "nosniff"
+            "X-Frame-Options"              "SAMEORIGIN"
+            "X-XSS-Protection"             "1; mode=block"}
+           (:headers resp)))
+      (is
+        (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+            "Access-Control-Allow-Methods" "GET"
+            "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
+            "Content-Type"                 "application/octet-stream"
+            "X-Content-Type-Options"       "nosniff"
+            "X-Frame-Options"              "SAMEORIGIN"
+            "X-XSS-Protection"             "1; mode=block"}
+           (:headers resp))))
+    (if (= 200 (:status resp))
+      (assoc resp :body (common/parse-json-body resp))
+      resp)))
 
 (defn user-place-prop-bet
-  [{:keys [auth-token projected-result bet-amount status twitch-id?]}]
+  [{:keys [auth-token projected-result bet-amount status channel-id twitch-id?]}]
   (let [#_#_ga-tag? (if (some? ga-tag?)
                       ga-tag?
                       true)
@@ -297,14 +319,14 @@
                                                          :bet_amount       bet-amount})))
 
                twitch-id?                                   ;;unauth twitch user
-               ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+               ((common/test-app) (-> (mock/request :post (format "/user/prop-bet/%s" channel-id))
                                       (mock/header "x-twitch-opaque-id" "UtestID123")
                                       (mock/cookie :value auth-token)
                                       (mock/json-body {:projected_result projected-result
                                                        :bet_amount       bet-amount})))
 
                :else
-               ((common/test-app) (-> (mock/request :post "/user/prop-bet")
+               ((common/test-app) (-> (mock/request :post (format "/user/prop-bet/%s" channel-id))
                                       (mock/cookie :value auth-token)
                                       (mock/json-body {:projected_result projected-result
                                                        :bet_amount       bet-amount}))))]
@@ -322,23 +344,15 @@
              (:headers resp))))
     (assoc resp :body (common/parse-json-body resp))))
 
-(defn user-get-prop-bets
-  [{:keys [auth-token status]}]
-  (let [resp ((common/test-app) (-> (mock/request :get "/user/prop-bet")
-                                    (mock/cookie :value auth-token)))]
-    (is (= (or status 200)
-           (:status resp)))
-    (assoc resp :body (common/parse-json-body resp))))
-
 (defn get-prop-bets-leaderboard
-  []
-  (let [resp ((common/test-app) (-> (mock/request :get "/leaderboard/prop-bets")))]
+  [{:keys [channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :get (format "/leaderboard/prop-bets/%s" channel-id))))]
     (is (= 200 (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn user-submit-suggestion
-  [{:keys [auth-token text status]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/user/suggestion")
+  [{:keys [auth-token text status channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :post (format "/user/suggestion/%s" channel-id))
                                     (mock/cookie :value auth-token)
                                     (mock/json-body {:text text})))]
     (is (= (or status
@@ -347,8 +361,8 @@
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn admin-get-suggestions
-  [{:keys [auth-token status]}]
-  (let [resp ((common/test-app) (-> (mock/request :get "/admin/suggestion")
+  [{:keys [auth-token status channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :get (format "/admin/suggestion/%s" channel-id))
                                     (mock/cookie :value auth-token)))]
     (is (= (or status
                200)
@@ -356,8 +370,8 @@
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn admin-dismiss-suggestions
-  [{:keys [auth-token status suggestions]}]
-  (let [resp ((common/test-app) (-> (mock/request :post "/admin/suggestion")
+  [{:keys [auth-token status suggestions channel-id]}]
+  (let [resp ((common/test-app) (-> (mock/request :post (format "/admin/suggestion/%s" channel-id))
                                     (mock/cookie :value auth-token)
                                     (mock/json-body {:suggestions suggestions})))]
     (is (= (or status
@@ -365,7 +379,7 @@
            (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
-(defn admin-create-next-event-ts
+#_(defn admin-create-next-event-ts
   [{:keys [auth-token status ts]}]
   (let [resp ((common/test-app) (-> (mock/request :post "/admin/event/countdown")
                                     (mock/cookie :value auth-token)
@@ -422,20 +436,24 @@
     (assoc resp :body (common/parse-json-body resp))))
 
 (defn twitch-ext-user-bet-on-10-props
-  [auth-token]
+  [auth-token channel-id]
   (dotimes [_ 10]
     (admin-create-prop {:auth-token auth-token
-                        :text       "this is a propositon"})
+                        :text       "this is a propositon"
+                        :channel-id channel-id})
     (user-place-prop-bet {:auth-token       nil
                           ;:ga-tag?          true
                           :twitch-id? true
                           :projected-result true
-                          :bet-amount       100})
+                          :bet-amount       100
+                          :channel-id channel-id})
 
     (user-place-prop-bet {:auth-token       nil
                           ;:ga-tag?          true
                           :twitch-id? true
                           :projected-result false
-                          :bet-amount       100})
+                          :bet-amount       100
+                          :channel-id channel-id})
     (admin-end-prop {:auth-token auth-token
-                     :result     "false"})))
+                     :result     "false"
+                     :channel-id channel-id})))

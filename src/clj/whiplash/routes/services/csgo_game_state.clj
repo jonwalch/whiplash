@@ -9,7 +9,8 @@
 ;; TODO add check for proper auth token corresponding with proper channel-id
 (defn receive-from-game-client
   [{:keys [path-params body-params] :as req}]
-  (let [{:keys [event current-prop]} (db/pull-event-info
+  (let [channel-id (:channel-id path-params)
+        {:keys [event current-prop]} (db/pull-event-info
                                        {:attrs [:db/id
                                                 :event/stream-source
                                                 :event/channel-id
@@ -19,10 +20,12 @@
                                                    :proposition/text
                                                    :proposition/running?
                                                    :proposition/betting-end-time
-                                                   {:proposition/result [:db/ident]}]}]})]
+                                                   {:proposition/result [:db/ident]}]}]
+                                        :event/channel-id channel-id})]
     (cond
       ;;TODO add false? event/auto-run? to or
-      (or (not= (:channel-id path-params) (:event/channel-id event))
+      ;; TODO: lowercase these comparison
+      (or (not= channel-id (:event/channel-id event))
           (not= :event.stream-source/twitch (:event/stream-source event)))
       (no-content)
 

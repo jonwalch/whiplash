@@ -75,12 +75,12 @@
               :handler    (fn [req]
                             (event/create-event req))}}]
 
-     ["/end"
-      {:post {:summary "End the current event"
+     ["/end/:channel-id"
+      {:post {:summary "End a running event"
               :middleware [middleware/wrap-admin]
               :handler (fn [req]
                          (event/end-current-event req))}}]
-     ["/countdown"
+     #_["/countdown"
       {:post {:summary "Set the timestamp of the next event to show countdown on home page"
               :middleware [middleware/wrap-admin]
               :parameters {:body {:ts string?}}
@@ -88,27 +88,28 @@
                          (event/create-countdown req))}}]]
 
     ["/prop"
-     [""
+     ["/:channel-id"
       {:post {:summary    "Create a new proposition"
               :middleware [middleware/wrap-admin-or-mod]
               :parameters {:body {:text string?
                                   :end-betting-secs int?}}
               :handler    (fn [req]
                             (proposition/admin-create-proposition req))}}]
-     ["/end"
-      [""
-       {:post {:summary    "End the current proposition"
-               :middleware [middleware/wrap-admin-or-mod]
-               :parameters {:body {:result string?}}
-               :handler    (fn [req]
-                             (proposition/end-current-proposition req))}}]]
-     ["/flip-previous"
+
+     ["/end/:channel-id"
+      {:post {:summary    "End the current proposition"
+              :middleware [middleware/wrap-admin-or-mod]
+              :parameters {:body {:result string?}}
+              :handler    (fn [req]
+                            (proposition/end-current-proposition req))}}]
+
+     ["/flip-previous/:channel-id"
       {:post {:summary    "Flip the outcome of the previous proposition"
               :middleware [middleware/wrap-admin-or-mod]
               :handler    (fn [req]
                             (proposition/flip-prev-prop-outcome req))}}]]
 
-    ["/suggestion"
+    ["/suggestion/:channel-id"
      {:get  {:summary    "get prop suggestions for current event"
              :middleware [middleware/wrap-admin-or-mod]
              :handler    (fn [req]
@@ -122,12 +123,18 @@
 
    ;;endpoints client talks to
    ["/stream"
-    ["/event"
-     {:get  {:summary    "Get the current event"
-             :handler    (fn [req]
-                           (event/get-current-event req))}}]
+    ["/events"
+     [""
+      {:get {:summary "Get all current events"
+             :handler (fn [req]
+                        (event/get-all-current-events req))}}]
 
-    ["/prop"
+     ["/:channel-id"
+      {:get  {:summary    "Get a specific current event"
+              :handler    (fn [req]
+                            (event/get-current-event req))}}]]
+
+    ["/prop/:channel-id"
      {:options {:summary "Take care of CORS preflight"
                 :handler (fn [req] (CORS-GET-options [req]))}
       :get     {:summary "Get the current prop bet"
@@ -142,16 +149,16 @@
             :handler (fn [req]
                        (leaderboard/all-time-top-ten req))}}]
 
-    ["/prop-bets"
+    ["/prop-bets/:channel-id"
      {:get {:summary "get all prop bets for current event"
             :handler (fn [req]
                        (assoc (leaderboard/get-prop-bets req) :headers {"Cache-Control" "max-age=1"}))}}]
-    ["/event"
+    ["/event/:channel-id"
      {:options {:summary "CORS preflight"
                 :handler (fn [req] (CORS-GET-options req))}
-      :get  {:summary    "get scores from current or most recent event"
-             :handler    (fn [req]
-                           (leaderboard/event-score-leaderboard req))}}]]
+      :get     {:summary "get scores from current or most recent event"
+                :handler (fn [req]
+                           (assoc (leaderboard/event-score-leaderboard req) :headers constants/CORS-GET-headers))}}]]
 
    ["/user"
     [""
@@ -219,14 +226,9 @@
               :handler    (fn [req]
                             (user/account-recovery req))}}]]
 
-    ["/prop-bet"
+    ["/prop-bet/:channel-id"
      {:options {:summary "Take care of CORS preflight"
                 :handler (fn [req] (CORS-GET-and-POST-options [req]))}
-
-      :get     {:summary    "get any current prop bets"
-                :middleware [middleware/wrap-restricted]
-                :handler    (fn [req]
-                              (user/get-prop-bets req))}
 
       :post    {:summary    "create a guess for a user"
                 :parameters {:body {:projected_result boolean?
@@ -234,7 +236,7 @@
                 :middleware [middleware/wrap-restricted-or-twitch]
                 :handler    (fn [req]
                               (assoc (user/create-prop-bet req) :headers constants/CORS-GET-and-POST-headers))}}]
-    ["/suggestion"
+    ["/suggestion/:channel-id"
      {:post {:summary    "create a prop bet suggestion"
              :parameters {:body {:text string?}}
              :middleware [middleware/wrap-restricted]

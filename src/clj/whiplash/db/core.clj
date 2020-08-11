@@ -10,8 +10,7 @@
     [whiplash.payouts :as payouts]
     [clojure.string :as string]
     [clj-uuid :as uuid]
-    [java-time :as jtime]
-    [whiplash.integrations.amazon-ses :as ses]))
+    [java-time :as jtime]))
 
 (defonce ^:private cloud-config
   {:server-type :cloud
@@ -109,7 +108,7 @@
 
 (defn find-existing-prop-bet
   [{:keys [db user-id prop-id bet/projected-result?]}]
-  ;; Consider finding all bets from prop instead of all bets from user and then filtering by prop
+  ;; TODO: Consider finding all bets from prop instead of all bets from user and then filtering by prop
   (ffirst
     (d/q {:query '[:find (pull ?prop-bets [:db/id :bet/amount])
                    :in $ ?user-id ?prop-id ?projected-result?
@@ -245,15 +244,18 @@
                first))))
 
 (defn find-all-user-bets-for-running-proposition
-  [{:keys [db]}]
+  [{:keys [db event/channel-id]}]
   (d/q
     {:query '[:find (pull ?bet [:bet/amount
                                 :bet/projected-result?
                                 {:user/_prop-bets [:user/name]}])
-              :in $
-              :where [?prop :proposition/running? true]
+              :in $ ?channel-id
+              :where [?event :event/running? true]
+              [?event :event/channel-id ?channel-id]
+              [?event :event/propositions ?prop]
+              [?prop :proposition/running? true]
               [?bet :bet/proposition ?prop]]
-     :args  [db]}))
+     :args  [db channel-id]}))
 
 (defn find-all-user-bets-for-proposition
   [{:keys [db prop-bet-id]}]
@@ -277,7 +279,6 @@
                                                                                 {:user/status [:db/ident]}]}]}]}])
                 :in $ ?event-id]
        :args  [db event-id]})))
-
 
 (defn find-all-time-leaderboard
   []
@@ -303,22 +304,20 @@
 ;; TODO: adjust threshold at a later time and add a test that won't return n days later
 ;; We're pull n and then figuring out the largest because aggregation doesn't work with :db/ids
 (defn find-last-event
-  ([]
-   (find-last-event (d/db (:conn datomic-cloud))))
-  ([db]
-   (->>
-     (d/q {:query '[:find ?event ?end-time
-                    :in $ ?threshold
-                    :where [?event :event/end-time ?end-time]
-                    [(> ?end-time ?threshold)]
-                    [?event :event/running? false]]
-           :args  [db (time/to-date (time/days-delta -60))]})
-     (sort-by second #(compare %2 %1))
-     ffirst)))
+  [{:keys [db event/channel-id]}]
+  (->>
+    (d/q {:query '[:find ?event ?end-time
+                   :in $ ?threshold ?channel-id
+                   :where [?event :event/channel-id ?c-id]
+                   [(= ?c-id ?channel-id)]
+                   [?event :event/end-time ?end-time]
+                   [(> ?end-time ?threshold)]
+                   [?event :event/running? false]]
+          :args  [db (time/to-date (time/days-delta -365)) channel-id]})
+    (sort-by second #(compare %2 %1))
+    ffirst))
 
-;; Prop betting MVP db functions
-
-(defn find-ongoing-event
+#_(defn find-ongoing-event
   ([]
    (find-ongoing-event (d/db (:conn datomic-cloud))))
   ([db]
@@ -327,33 +326,50 @@
                     :where [?event :event/running? true]]
            :args  [db]}))))
 
-(defn pull-ongoing-event
+(defn pull-all-ongoing-events
   [{:keys [db attrs]}]
+  (let [db (or db (d/db (:conn datomic-cloud)))
+        results (d/q {:query '[:find (pull ?event attrs)
+                       :in $ attrs
+                       :where [?event :event/running? true]]
+              :args  [db attrs]})]
+    (map
+      (fn [result]
+        (if (contains? result :event/stream-source)
+          (update result :event/stream-source :db/ident)
+          result))
+      (flatten results))))
+
+(defn pull-ongoing-event
+  [{:keys [db attrs event/channel-id]}]
   (let [db (or db (d/db (:conn datomic-cloud)))
         result (ffirst
                  (d/q {:query '[:find (pull ?event attrs)
-                                :in $ attrs
-                                :where [?event :event/running? true]]
-                       :args  [db attrs]}))]
+                                :in $ attrs ?channel-id
+                                :where [?event :event/running? true]
+                                [?event :event/channel-id ?c-id]
+                                [(= ?c-id ?channel-id)]]
+                       :args  [db attrs channel-id]}))]
     (if (contains? result :event/stream-source)
       (update result :event/stream-source :db/ident)
       result)))
 
 (defn- add-countdown-seconds
   [{:proposition/keys [start-time betting-end-time] :as proposition}]
-  (assert (and start-time betting-end-time))
-  (assoc proposition :proposition/betting-seconds-left
-                     (time/delta-between (time/now)
-                                         (time/date-to-zdt betting-end-time)
-                                         :seconds)))
+  (if (and start-time betting-end-time)
+    (assoc proposition :proposition/betting-seconds-left
+                       (time/delta-between (time/now)
+                                           (time/date-to-zdt betting-end-time)
+                                           :seconds))
+    proposition))
 
 (defn pull-event-info
-  [{:keys [db attrs]}]
-  (let [db (or db
-               (d/db (:conn datomic-cloud)))
+  [{:keys [db attrs event/channel-id]}]
+  (let [db (or db (d/db (:conn datomic-cloud)))
         {:keys [event/propositions] :as ongoing-event} (pull-ongoing-event
                                                          {:db    db
-                                                          :attrs attrs})
+                                                          :attrs attrs
+                                                          :event/channel-id channel-id})
         props (group-by :proposition/running? propositions)
         ongoing-prop (some-> (get props true)
                              first
@@ -438,27 +454,6 @@
      (d/q {:query '[:find ?prop
                     :where [?prop :proposition/running? true]]
            :args  [db]}))))
-
-;; TODO make this depend on an event
-(defn pull-ongoing-proposition
-  [{:keys [db attrs]}]
-  (let [db (or db (d/db (:conn datomic-cloud)))]
-    (ffirst
-      (d/q {:query '[:find (pull ?prop attrs)
-                     :in $ attrs
-                     :where [?prop :proposition/running? true]]
-            :args  [db attrs]}))))
-
-(defn pull-previous-proposition
-  [{:keys [db event-eid attrs]}]
-  (->> (d/q {:query '[:find (pull ?prop attrs) ?ts
-                      :in $ ?event-eid attrs
-                      :where [?event-eid :event/propositions ?prop]
-                      [?prop :proposition/running? false]
-                      [?prop :proposition/end-time ?ts]]
-             :args  [db event-eid attrs]})
-       (sort-by second #(compare %2 %1))
-       ffirst))
 
 (defn create-proposition
   [{:keys [text event-eid end-betting-secs]}]
@@ -718,7 +713,7 @@
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
   (let [db (d/db conn)
-        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "caligan" :attrs [:db/id :user/cash :user/name]})]
+        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "dfleur" :attrs [:db/id :user/cash :user/name]})]
     (d/transact conn {:tx-data [{:db/id id
                                  :user/status :user.status/mod}]})
     #_(d/transact conn {:tx-data [[:db/cas id :user/cash cash (+ cash 989N)]]})
