@@ -154,13 +154,13 @@
         parsed-body (common/parse-json-body resp)]
     (is (= (or status 200) (:status resp)))
     (when-not (= 403 (:status resp))
-      (is (= {"Access-Control-Allow-Headers"     "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
-              "Access-Control-Allow-Methods"     "GET"
-              "Access-Control-Allow-Origin"      "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
-              "Content-Type"                     "application/json; charset=utf-8"
-              "X-Content-Type-Options"           "nosniff"
-              "X-Frame-Options"                  "SAMEORIGIN"
-              "X-XSS-Protection"                 "1; mode=block"}
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID, X-Twitch-User-ID"
+              "Access-Control-Allow-Methods" "GET"
+              "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
+              "Content-Type"                 "application/json; charset=utf-8"
+              "X-Content-Type-Options"       "nosniff"
+              "X-Frame-Options"              "SAMEORIGIN"
+              "X-XSS-Protection"             "1; mode=block"}
              (:headers resp))))
 
     (assoc resp :body parsed-body)))
@@ -261,7 +261,7 @@
     (is (= (or status
                200)
            (:status resp)))
-    (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+    (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID, X-Twitch-User-ID"
             "Access-Control-Allow-Methods" "GET"
             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
             "Cache-Control"                "max-age=1"
@@ -280,7 +280,7 @@
            (:status resp)))
     (if (= (:status resp) 200)
       (is
-        (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+        (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID, X-Twitch-User-ID"
             "Access-Control-Allow-Methods" "GET"
             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
             "Content-Type"                 "application/json; charset=utf-8"
@@ -289,7 +289,7 @@
             "X-XSS-Protection"             "1; mode=block"}
            (:headers resp)))
       (is
-        (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+        (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID, X-Twitch-User-ID"
             "Access-Control-Allow-Methods" "GET"
             "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
             "Content-Type"                 "application/octet-stream"
@@ -334,7 +334,7 @@
                200)
            (:status resp)))
     (when-not (= 403 (:status resp))
-      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID, X-Twitch-User-ID"
               "Access-Control-Allow-Methods" "POST, GET"
               "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
               "Content-Type"                 "application/json; charset=utf-8"

@@ -260,7 +260,7 @@
     (let [resp ((common/test-app) (-> (mock/request :options "/leaderboard/event/foo")))]
       (is (= 204
              (:status resp)))
-      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID, X-Twitch-User-ID"
               "Access-Control-Allow-Methods" "GET"
               "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
               "Cache-Control"                "max-age=86400"
@@ -275,7 +275,7 @@
     (let [resp ((common/test-app) (-> (mock/request :options "/stream/prop/foo")))]
       (is (= 204
              (:status resp)))
-      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID"
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID, X-Twitch-User-ID"
               "Access-Control-Allow-Methods" "GET"
               "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
               "Cache-Control"                "max-age=86400"
