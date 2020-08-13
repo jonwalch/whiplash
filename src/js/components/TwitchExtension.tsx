@@ -24,6 +24,10 @@ const startSound = new UIfx(
 const textStyles = {fontSize: ".75rem", padding: "0 0.5rem 0.5rem 0.5rem",}
 
 export function TwitchExtension(props: any) {
+    console.log(window.location)
+    console.log(window.parent.location)
+    console.log(document.referrer)
+    console.log(document.location.href)
     const { loggedInState, setLoggedInState } = useContext(LoginContext);
     const [proposition, setProposition] = useState<any>({});
     const [prevProposition, setPrevProposition] = useState<any>({});
@@ -77,7 +81,7 @@ export function TwitchExtension(props: any) {
     const CORSMakePropBet = async (projectedResult : boolean) => {
         setBetWaitingForResp(true);
         setUserTriedBetting(true);
-        const response = await fetch(twitchBaseUrl + "user/prop-bet", {
+        const response = await fetch(twitchBaseUrl + "user/prop-bet/" +, {
             headers: {
                 "Content-Type": "application/json",
                 "x-twitch-opaque-id": twitchOpaqueID(),
@@ -121,7 +125,7 @@ export function TwitchExtension(props: any) {
     };
 
     const getCORSProp = async () => {
-        const response = await fetch(twitchBaseUrl + "stream/prop", {
+        const response = await fetch(twitchBaseUrl + "stream/prop/" +, {
             method: "GET",
             credentials: "omit",
             mode: "cors",

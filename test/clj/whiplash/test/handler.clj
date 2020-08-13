@@ -27,7 +27,7 @@
     (let [response ((common/test-app) (mock/request :get "/control"))]
       (is (= 200 (:status response)))))
 
-  (testing "nba landing"
+  #_(testing "nba landing"
     (let [response ((common/test-app) (mock/request :get "/nba"))]
       (is (= 200 (:status response)))))
 
@@ -35,7 +35,15 @@
     (let [response ((common/test-app) (mock/request :get "/account"))]
       (is (= 200 (:status response)))))
 
-  (testing "leaderboard"
+  (testing "live"
+    (let [response ((common/test-app) (mock/request :get "/live"))]
+      (is (= 200 (:status response)))))
+
+  (testing "user page"
+    (let [response ((common/test-app) (mock/request :get "/u/donnie"))]
+      (is (= 200 (:status response)))))
+
+  #_(testing "leaderboard"
     (let [response ((common/test-app) (mock/request :get "/leaderboard"))]
       (is (= 200 (:status response)))))
 
