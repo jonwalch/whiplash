@@ -2681,3 +2681,18 @@
                                         (mock/header "x-twitch-user-id" "207580146")))]
     (is (= 200 (:status response)))
     (is (= {:login "huddlesworth"} (common/parse-json-body response)))))
+
+(deftest options-twitch-username-lookup
+  (testing "need this endpoint and headers for CORS (twitch extension)"
+    (let [resp ((common/test-app) (-> (mock/request :options "/twitch/user-id-lookup")))]
+      (is (= 204
+             (:status resp)))
+      (is (= {"Access-Control-Allow-Headers" "Origin, Content-Type, Accept, X-Twitch-Opaque-ID, X-Twitch-User-ID"
+              "Access-Control-Allow-Methods" "GET"
+              "Access-Control-Allow-Origin"  "https://0ntgqty6boxxg10ghiw0tfwdc19u85.ext-twitch.tv"
+              "Cache-Control"                "max-age=86400"
+              "Content-Type"                 "application/octet-stream"
+              "X-Content-Type-Options"       "nosniff"
+              "X-Frame-Options"              "SAMEORIGIN"
+              "X-XSS-Protection"             "1; mode=block"}
+             (:headers resp))))))

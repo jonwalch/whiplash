@@ -144,9 +144,8 @@ export function TwitchExtension() {
     };
 
     const getTwitchUsername = (auth: any) => {
-        fetch(twitchBaseUrl + "/twitch/user-id-lookup", {
+        fetch(twitchBaseUrl + "twitch/user-id-lookup", {
             headers: {
-                "Content-Type": "application/json",
                 "x-twitch-user-id": auth.channelId,
             },
             method: "GET",
@@ -170,9 +169,11 @@ export function TwitchExtension() {
             getTwitchUsername(auth)
         })
 
-        getCORSProp().then((event) => {
-            getPropWrapper(event)
-        });
+        if (channelID && channelID !== failedToFetch) {
+            getCORSProp().then((event) => {
+                getPropWrapper(event)
+            });
+        }
 
         twitch.configuration.onChanged(() => {
             let config = twitch.configuration.broadcaster ? twitch.configuration.broadcaster.content : "";
@@ -210,9 +211,11 @@ export function TwitchExtension() {
     }, [proposition["proposition/text"]]);
 
     useInterval(() => {
-        getCORSProp().then((event) => {
-            getPropWrapper(event)
-        });
+        if (channelID && channelID !== failedToFetch) {
+            getCORSProp().then((event) => {
+                getPropWrapper(event)
+            });
+        }
     }, 1000);
 
     useInterval(() => {
