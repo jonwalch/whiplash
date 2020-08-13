@@ -56,12 +56,16 @@
 
                  middleware/wrap-formats]}
    ;; user pages
-   ["/" {:get home-page}]
-   ["/about" {:get home-page}]
-   ["/account" {:get home-page}]
-   ["/leaderboard" {:get home-page}]
-   ["/control" {:get home-page}]
-   ["/nba" {:get home-page}]
+   ["/"
+    ["" {:get home-page}]
+    ["about" {:get home-page}]
+    ["account" {:get home-page}]
+    ["control" {:get home-page}]
+    ["live" {:get home-page}]
+    ["u/:channel-id" {:get home-page}]
+    ;["leaderboard" {:get home-page}]
+    ;["nba" {:get home-page}]
+    ]
 
    ;; admin only endpoints
    ["/admin"

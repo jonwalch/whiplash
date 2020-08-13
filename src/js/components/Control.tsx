@@ -4,7 +4,7 @@ import {Header} from "./Header";
 import {Footer} from "./Footer";
 import {baseUrl} from "../config/const";
 import {useInterval} from "../common";
-import { getEvent, getProp} from "../common/stream"
+import {getAllEvents, getEvent, getProp} from "../common/stream"
 
 export interface Event {
     "event/start-time": string;
@@ -47,9 +47,9 @@ const defaultBetSecs = 30;
 
 export function Control(props: any) {
     const { loggedInState, setLoggedInState } = useContext(LoginContext);
-    const [nextEventTs, setNextEventTs] = useState("");
+    // const [nextEventTs, setNextEventTs] = useState("");
     const [eventTitle, setEventTitle] = useState("");
-    const [channelID, setChannelID] = useState("");
+    const [inputChannelID, setInputChannelID] = useState("");
     const [propText, setPropText] = useState("");
     const [proposition, setProposition] = useState<Proposition>(defaultProposition);
     const [prevProposition, setPrevProposition] = useState<Proposition>(defaultProposition);
@@ -60,40 +60,41 @@ export function Control(props: any) {
     const [eventSource, setEventSource] = useState<string>("");
     const [bettingDuration, setBettingDuration] = useState<number>(defaultBetSecs);
 
+    const [selectedChannelID, setSelectedChannelID] = useState<string>("")
+    const [runningEvents, setRunningEvents] = useState<Event[]>([])
+
     useEffect(() => {
-        getEvent().then((event) => {setEventInfo(event)});
-        getProp().then((event) => {
-            if (event["current-prop"]){
-                setProposition(event["current-prop"]);
-            } else {
-                setProposition(defaultProposition)
-            }
-            if (event["previous-prop"]) {
-                setPrevProposition(event["previous-prop"]);
-            } else {
-                setPrevProposition(defaultProposition);
-            }
-        });
-        getSuggestions().then((event) => {setSuggestions(event)});
+        getAllEvents().then((events) => {setRunningEvents(events)})
     }, []);
 
-    useInterval(async () => {
-        if (loggedInState.status == "user.status/admin" || loggedInState.status == "user.status/mod") {
-            setEventInfo(await getEvent());
-            getProp().then((event) => {
-                if (event["current-prop"]){
-                    setProposition(event["current-prop"]);
-                } else {
-                    setProposition(defaultProposition)
-                }
-                if (event["previous-prop"]) {
-                    setPrevProposition(event["previous-prop"]);
-                } else {
-                    setPrevProposition(defaultProposition)
-                }
-            });
-            setSuggestions(await getSuggestions());
+    const fetchAllEventInfo = async () => {
+        if (loggedInState.status === "user.status/admin" || loggedInState.status === "user.status/mod") {
+            setRunningEvents(await getAllEvents())
+            if (selectedChannelID !== "") {
+                setEventInfo(await getEvent(selectedChannelID));
+                getProp(selectedChannelID).then((event) => {
+                    if (event["current-prop"]){
+                        setProposition(event["current-prop"]);
+                    } else {
+                        setProposition(defaultProposition)
+                    }
+                    if (event["previous-prop"]) {
+                        setPrevProposition(event["previous-prop"]);
+                    } else {
+                        setPrevProposition(defaultProposition)
+                    }
+                });
+                setSuggestions(await getSuggestions(selectedChannelID));
+            }
         }
+    }
+
+    useEffect(() => {
+        fetchAllEventInfo()
+    }, [selectedChannelID])
+
+    useInterval(async () => {
+        fetchAllEventInfo()
     }, 1000);
 
     const createEvent = async () => {
@@ -106,12 +107,12 @@ export function Control(props: any) {
             redirect: "error",
             body: JSON.stringify({
                 title: eventTitle,
-                "channel-id": channelID,
+                "channel-id": inputChannelID,
                 "source": eventSource
             })
         });
         const resp = await response.json();
-        if (response.status == 200) {
+        if (response.status === 200) {
             alert("Successfully started event")
         } else {
             alert(resp.message)
@@ -119,22 +120,23 @@ export function Control(props: any) {
         setEventSource("");
     };
 
-    const endEvent = async () => {
-        const response = await fetch(baseUrl + "admin/event/end", {
+    const endEvent = async (channelID : string) => {
+        const response = await fetch(baseUrl + "admin/event/end/" + channelID, {
             method: "POST",
             mode: "same-origin",
             redirect: "error",
         });
         const resp = await response.json();
-        if (response.status == 200) {
+        if (response.status === 200) {
             alert("Successfully ended current event")
+            setSelectedChannelID("")
         } else {
             alert(resp.message)
         }
     };
 
-    const createProp = async () => {
-        const response = await fetch(baseUrl + "admin/prop", {
+    const createProp = async (channelID : string) => {
+        const response = await fetch(baseUrl + "admin/prop/" + channelID, {
             headers: {
                 "Content-Type": "application/json",
             },
@@ -146,15 +148,15 @@ export function Control(props: any) {
                 "end-betting-secs": bettingDuration,
             })
         });
-        if (response.status == 200) {
+        if (response.status === 200) {
             alert("Successfully created proposition")
         } else {
             alert("ERROR: Couldn't create proposition")
         }
     };
 
-    const endProp = async (result:string) => {
-        const response = await fetch(baseUrl + "admin/prop/end", {
+    const endProp = async (result:string, channelID : string) => {
+        const response = await fetch(baseUrl + "admin/prop/end/" + channelID, {
             headers: {
                 "Content-Type": "application/json",
             },
@@ -166,29 +168,29 @@ export function Control(props: any) {
             })
         });
         const resp = await response.json();
-        if (response.status == 200) {
+        if (response.status === 200) {
             alert("Successfully ended proposition")
         } else {
             alert(resp.message)
         }
     };
 
-    const flipPreviousOutcome = async () => {
-        const response = await fetch(baseUrl + "admin/prop/flip-previous", {
+    const flipPreviousOutcome = async (channelID : string) => {
+        const response = await fetch(baseUrl + "admin/prop/flip-previous/" + channelID, {
             method: "POST",
             mode: "same-origin",
             redirect: "error",
         });
         const resp = await response.json();
-        if (response.status == 200) {
+        if (response.status === 200) {
             alert("Successfully flipped previous proposition outcome")
         } else {
             alert(resp.message)
         }
     };
 
-    const getSuggestions = async () => {
-        const response = await fetch(baseUrl + "admin/suggestion", {
+    const getSuggestions = async (channelID : string) => {
+        const response = await fetch(baseUrl + "admin/suggestion/" +  channelID, {
             method: "GET",
             mode: "same-origin",
             redirect: "error",
@@ -200,8 +202,8 @@ export function Control(props: any) {
         }
     };
 
-    const dismissSuggestions = async () => {
-        const response = await fetch(baseUrl + "admin/suggestion", {
+    const dismissSuggestions = async (channelID : string) => {
+        const response = await fetch(baseUrl + "admin/suggestion/" + channelID, {
             headers: {
                 "Content-Type": "application/json",
             },
@@ -222,26 +224,26 @@ export function Control(props: any) {
         setSelectedSuggestions([])
     };
 
-    const createCountdown = async () => {
-        const response = await fetch(baseUrl + "admin/event/countdown", {
-            headers: {
-                "Content-Type": "application/json",
-            },
-            method: "POST",
-            mode: "same-origin",
-            body: JSON.stringify({
-                ts: nextEventTs,
-            }),
-            redirect: "error",
-        });
-        const resp = await response.json();
-        if (response.status == 200) {
-            alert("successfully created countdown")
-        }
-        else {
-            alert("failed to crete countdown, error message: " + resp.message)
-        }
-    };
+    // const createCountdown = async () => {
+    //     const response = await fetch(baseUrl + "admin/event/countdown", {
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //         },
+    //         method: "POST",
+    //         mode: "same-origin",
+    //         body: JSON.stringify({
+    //             ts: nextEventTs,
+    //         }),
+    //         redirect: "error",
+    //     });
+    //     const resp = await response.json();
+    //     if (response.status == 200) {
+    //         alert("successfully created countdown")
+    //     }
+    //     else {
+    //         alert("failed to crete countdown, error message: " + resp.message)
+    //     }
+    // };
 
     const toggleValid = () => {
         return !(selectedSuggestions.length > 0);
@@ -253,17 +255,19 @@ export function Control(props: any) {
         }
     };
 
+    function renderEventInfo() {
+        if (selectedChannelID !== ""){
+            return (<div>{JSON.stringify(eventInfo)}</div>)
+        } else {
+            return(<div>No event selected</div>)
+        }
+    }
+
     function renderControlMarkup() {
-        if (loggedInState.status == "user.status/admin" || loggedInState.status == "user.status/mod" ) {
+        if (loggedInState.status === "user.status/admin" || loggedInState.status === "user.status/mod" ) {
             return (
                 <form className="container">
-                    <div>Current Event:</div>
-                    <div>{JSON.stringify(eventInfo)}</div>
-                    {!eventInfo["event/channel-id"] &&
-                    <>
-                    <div className="form__group"
-                        // TODO: remove inline style
-                         style={{marginTop: "30px"}}>
+                    <div className="form__group">
                         {/*<label className="form__label" htmlFor="eventTitle">Next Event Countdown</label>*/}
                         {/*<input*/}
                         {/*    className="form__input"*/}
@@ -287,7 +291,7 @@ export function Control(props: any) {
                         {/*    Create Countdown*/}
                         {/*</button>*/}
                         <label style={{marginTop: "30px"}}
-                               // TODO remove inline style
+                            // TODO remove inline style
                                className="form__label"
                                htmlFor="eventTitle">Event Title</label>
                         <input
@@ -302,85 +306,102 @@ export function Control(props: any) {
                             id="eventTitle"
                         />
                     </div>
-                        <div className="form__group">
-                            <label className="form__label" htmlFor="twitchUser">Event Channel ID</label>
+                    <div className="form__group">
+                        <label className="form__label" htmlFor="twitchUser">Event Channel ID</label>
+                        <input
+                            className="form__input"
+                            value={inputChannelID}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                setInputChannelID(e.currentTarget.value);
+                            }}
+                            maxLength={50}
+                            minLength={4}
+                            placeholder="Type anything here for cnn or none"
+                            name="channelID"
+                            id="channelID"
+                        />
+                    </div>
+                    {/*TODO: remove inline style*/}
+                    <div style={{display: "flex",
+                        flexDirection: "column"
+                    }}
+                    >
+                        <div>
                             <input
-                                className="form__input"
-                                value={channelID}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                    setChannelID(e.currentTarget.value);
-                                }}
-                                maxLength={50}
-                                minLength={4}
-                                placeholder="Type anything here for cnn or none"
-                                name="channelID"
-                                id="channelID"
-                            />
+                                type='radio'
+                                checked={eventSource === "twitch"}
+                                name="twitchRadioButton"
+                                key="twitchRadioButton"
+                                onChange={() => {setEventSource("twitch")}}>
+                            </input>
+                            <label htmlFor="twitchRadioButton">Twitch</label>
+                            <input
+                                type='radio'
+                                checked={eventSource === "youtube"}
+                                name="youTubeRadioButton"
+                                key="youTubeRadioButton"
+                                onChange={() => {setEventSource("youtube")}}>
+                            </input>
+                            <label htmlFor="youTubeRadioButton">YouTube Live</label>
+                            <input
+                                type='radio'
+                                checked={eventSource === "cnn-unauth"}
+                                name="cnnUnAuthRadioButton"
+                                key="cnnUnAuthRadioButton"
+                                onChange={() => {setEventSource("cnn-unauth")}}>
+                            </input>
+                            <label htmlFor="cnnUnAuthRadioButton">CNN Unauth</label>
+                            <input
+                                type='radio'
+                                checked={eventSource === "none"}
+                                name="noneRadioButton"
+                                key="noneRadioButton"
+                                onChange={() => {setEventSource("none")}}>
+                            </input>
+                            <label htmlFor="noneRadioButton">None</label>
                         </div>
-                        {/*TODO: remove inline style*/}
-                        <div style={{display: "flex",
-                            flexDirection: "column"
-                        }}
-                        >
-                            <div>
-                                <input
-                                    type='radio'
-                                    value={eventSource}
-                                    name="twitchRadioButton"
-                                    key="twitchRadioButton"
-                                    onChange={() => {setEventSource("twitch")}}>
-                                </input>
-                                <label htmlFor="twitchRadioButton">Twitch</label>
-                                <input
-                                    type='radio'
-                                    value={eventSource}
-                                    name="youTubeRadioButton"
-                                    key="youTubeRadioButton"
-                                    onChange={() => {setEventSource("youtube")}}>
-                                </input>
-                                <label htmlFor="youTubeRadioButton">YouTube Live</label>
-                                <input
-                                    type='radio'
-                                    value={eventSource}
-                                    name="cnnUnAuthRadioButton"
-                                    key="cnnUnAuthRadioButton"
-                                    onChange={() => {setEventSource("cnn-unauth")}}>
-                                </input>
-                                <label htmlFor="cnnUnAuthRadioButton">CNN Unauth</label>
-                                <input
-                                    type='radio'
-                                    value={eventSource}
-                                    name="noneRadioButton"
-                                    key="noneRadioButton"
-                                    onChange={() => {setEventSource("none")}}>
-                                </input>
-                                <label htmlFor="noneRadioButton">None</label>
-                            </div>
-                            < button
-                                className="button twitch__button"
-                                // TODO: remove inline style
-                                style = {{marginRight: "30px"}}
-                                type="button"
-                                onClick={() => {
-                                    createEvent()
-                                }}>
-                                Create Event
-                            </button>
-                        </div>
-                    </>
-                    }
-                    {eventInfo["event/channel-id"] &&
+                        < button
+                            className="button twitch__button"
+                            // TODO: remove inline style
+                            style = {{marginRight: "30px"}}
+                            type="button"
+                            onClick={() => {
+                                createEvent()
+                            }}>
+                            Create Event
+                        </button>
+                    </div>
+                    <div style={{marginTop: "0.5rem"}}>Current Events:</div>
+                    <div style={{display: "flex", flexWrap: "wrap"}}>
+                        {runningEvents.length > 0 && runningEvents.map((event: Event) => {
+                            return (
+                                <button
+                                    onClick={(e:any) => {
+                                        e.preventDefault()
+                                        setSelectedChannelID(e.target.value)
+                                    }}
+                                    type="button"
+                                    className="button twitch__button"
+                                    style={{marginRight: "0.5rem"}}
+                                    value={event["event/channel-id"]}
+                                    key={event["event/channel-id"]}>
+                                    {event["event/channel-id"]}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div style={{marginTop: "1rem"}}>Selected Event:</div>
+                    {renderEventInfo()}
+                    {selectedChannelID &&
                     <>
                         <button
                             className="button twitch__button"
                             type="button"
                             onClick={() => {
-                            endEvent()
+                            endEvent(selectedChannelID)
                         }}>
                             End Event
                         </button>
-                    </>
-                    }
                     <div
                         // TODO: remove inline style
                         style = {{marginTop: "30px"}}
@@ -395,7 +416,7 @@ export function Control(props: any) {
                             style={{marginRight: "30px"}}
                             type="button"
                             onClick={() => {
-                                endProp("true")
+                                endProp("true", selectedChannelID)
                             }}>
                             Proposition outcome: True
                         </button>
@@ -403,7 +424,7 @@ export function Control(props: any) {
                             className="button twitch__button"
                             type="button"
                             onClick={() => {
-                                endProp("false")
+                                endProp("false", selectedChannelID)
                             }}>
                             Proposition outcome: False
                         </button>
@@ -412,7 +433,7 @@ export function Control(props: any) {
                             style={{background: "red"}}
                             type="button"
                             onClick={() => {
-                                endProp("cancel")
+                                endProp("cancel", selectedChannelID)
                             }}>
                             CANCEL PROPOSITION
                         </button>
@@ -461,7 +482,7 @@ export function Control(props: any) {
                         type="button"
                         onClick={() => {
                             if (bettingDuration >= 10) {
-                                createProp()
+                                createProp(selectedChannelID)
                             } else {
                                 alert("Enter a valid value for betting duration")
                             }
@@ -508,7 +529,7 @@ export function Control(props: any) {
                             type="button"
                             disabled={toggleValid()}
                             onClick={() => {
-                                dismissSuggestions()
+                                dismissSuggestions(selectedChannelID)
                             }}
                         >
                             Dismiss Suggestions
@@ -534,10 +555,12 @@ export function Control(props: any) {
                         className="button twitch__button"
                         type="button"
                         onClick={() => {
-                            flipPreviousOutcome()
+                            flipPreviousOutcome(selectedChannelID)
                         }}>
                         Flip Previous Prop Outcome
                     </button>
+                    </>
+                    }
                 </form>
             );
         }

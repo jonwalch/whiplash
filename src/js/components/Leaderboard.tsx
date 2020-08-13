@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { baseUrl } from "../config/const"
 import { useInterval } from "../common";
 import {LoginContext} from "../contexts/LoginContext";
-import {failedToFetch} from "./Home";
+import {failedToFetch} from "./Event";
 
 export interface EventScore {
   user_name: string;
@@ -73,19 +73,19 @@ export function Leaderboard (props:any) {
   };
 
   const getEventScoreLeaderboard = async () => {
-    const response = await fetch(baseUrl + "leaderboard/event", {
+    const response = await fetch(baseUrl + "leaderboard/event/" + props.channelID, {
       method: "GET",
       mode: "same-origin",
       credentials: "omit",
       redirect: "error"
     });
-    if (response.status == 200) {
+    if (response.status === 200) {
       const resp = await response.json();
       props.setEventScoreLeaderboard(resp);
-    } else if (response.status === 204){
+    } else if (response.status === 204) {
       props.setEventScoreLeaderboard([]);
     }
-  };
+};
 
   const renderEventScoreLeaderboard = () => {
     return (

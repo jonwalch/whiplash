@@ -1,6 +1,6 @@
 import React, { useEffect, useState, lazy, Suspense} from "react";
 import "../../resources/public/css/App.css";
-import { BrowserRouter, Route } from "react-router-dom";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { Home } from "./components/Home";
 import { About } from "./components/About";
 import { Verify } from "./components/Verify";
@@ -9,9 +9,11 @@ import {defaultHeader, HeaderContext} from "./contexts/HeaderContext";
 import { Account } from "./components/Account";
 import {getUser} from "./common/getUser";
 import {Recovery} from "./components/Recovery";
-import {LeaderboardPage} from "./components/LeaderboardPage";
+// import {LeaderboardPage} from "./components/LeaderboardPage";
 import {identify} from "./common/fullstory";
-import {NBALanding} from "./components/NBALanding";
+// import {NBALanding} from "./components/NBALanding";
+import {Event} from "./components/Event"
+import {Live} from "./components/Live"
 
 const { install } = require('ga-gtag');
 const Control = lazy(() => import("./components/Control").then(({ Control }) => ({default: Control})));
@@ -45,11 +47,11 @@ export const App = () => {
                             <Account match={match} history={history}/>
                         )}
                     />
-                    <Route exact path="/leaderboard" render={({ match, history}) =>
-                        (
-                            <LeaderboardPage match={match} history={history}/>
-                        )}
-                    />
+                    {/*<Route exact path="/leaderboard" render={({ match, history}) =>*/}
+                    {/*    (*/}
+                    {/*        <LeaderboardPage match={match} history={history}/>*/}
+                    {/*    )}*/}
+                    {/*/>*/}
                     <Route
                         path="/user/verify"
                         render={({ match, history, location }) => (
@@ -69,11 +71,13 @@ export const App = () => {
                             </Suspense>
                         )}
                     />
-                    <Route exact path="/nba" render={({ match, history}) =>
-                        (
-                            <NBALanding match={match} history={history}/>
-                        )}
-                    />
+                    <Route path="/u/:channel_id" component={Event}/>
+                    <Route path="/live" component={Live}/>
+                    {/*<Route exact path="/nba" render={({ match, history}) =>*/}
+                    {/*    (*/}
+                    {/*        <NBALanding match={match} history={history}/>*/}
+                    {/*    )}*/}
+                    {/*/>*/}
                 </BrowserRouter>
             </HeaderContext.Provider>
         </LoginContext.Provider>

@@ -19,13 +19,13 @@ import {HeaderContext} from "../contexts/HeaderContext";
 import {getEvent} from "../common/stream";
 import {baseUrl} from "../config/const";
 
-const kc = new UIfx(
-    kaChing,
-    {
-        volume: 0.4, // number between 0.0 ~ 1.0
-        throttleMs: 100
-    }
-)
+// const kc = new UIfx(
+//     kaChing,
+//     {
+//         volume: 0.4, // number between 0.0 ~ 1.0
+//         throttleMs: 100
+//     }
+// )
 
 const betSecs = 8;
 
@@ -83,22 +83,22 @@ export function NBALanding(props: any) {
     }, [pressed, betAmount, secsLeftToBet]);
 
     // redirect when there's an event
-    useEffect(() => {
-        getEvent().then((event) => {
-            if (event["event/stream-source"] === "event.stream-source/none") {
-                window.location.href = baseUrl
-            }
-        })
-    },[])
-
-    // redirect when there's an event
-    useInterval(() => {
-        getEvent().then((event) => {
-            if (event["event/stream-source"] === "event.stream-source/none") {
-                window.location.href = baseUrl
-            }
-        })
-    }, 10000);
+    // useEffect(() => {
+    //     getEvent().then((event) => {
+    //         if (event["event/stream-source"] === "event.stream-source/none") {
+    //             window.location.href = baseUrl
+    //         }
+    //     })
+    // },[])
+    //
+    // // redirect when there's an event
+    // useInterval(() => {
+    //     getEvent().then((event) => {
+    //         if (event["event/stream-source"] === "event.stream-source/none") {
+    //             window.location.href = baseUrl
+    //         }
+    //     })
+    // }, 10000);
 
     const resolveBet = (currentPrompt:any) => {
         if (sideBetOn === currentPrompt.result) {
@@ -106,7 +106,7 @@ export function NBALanding(props: any) {
 
             // @ts-ignore
             pulseP.current?.classList.add("profit-pulse")
-            kc.play()
+            // kc.play()
 
         } else if (cash === 0) {
             setCash(100)
@@ -258,9 +258,9 @@ export function NBALanding(props: any) {
 
     return (
         <>
-            <Header/>
-            {renderContent()}
-            <Footer/>
+            {/*<Header/>*/}
+            {/*{renderContent()}*/}
+            {/*<Footer/>*/}
         </>
     );
 }

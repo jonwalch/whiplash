@@ -61,7 +61,7 @@
                                                       {:event/stream-source [:db/ident]}]})]
       (cond
         (not (empty? events))
-        (ok events)
+        (ok (sort-by :event/channel-id events))
 
         :else
         (no-content)))))

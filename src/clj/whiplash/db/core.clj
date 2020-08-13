@@ -392,14 +392,16 @@
             :args  [db attrs]}))))
 
 (defn pull-undismissed-suggestions-for-ongoing-event
-  [{:keys [db attrs]}]
+  [{:keys [db attrs event/channel-id]}]
   (let [db (or db (d/db (:conn datomic-cloud)))]
     (->> (d/q {:query '[:find (pull ?suggestions attrs)
-                          :in $ attrs
+                          :in $ attrs ?channel-id
                           :where [?event :event/running? true]
+                          [?event :event/channel-id ?c-id]
+                          [(= ?c-id ?channel-id)]
                           [?event :event/suggestions ?suggestions]
                           [?suggestions :suggestion/dismissed? false]]
-                 :args  [db attrs]})
+                 :args  [db attrs channel-id]})
          (apply concat)
          (map (fn [{:keys [suggestion/user] :as suggestion}]
                 (if user

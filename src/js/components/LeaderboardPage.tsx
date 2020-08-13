@@ -3,7 +3,7 @@ import {Header} from "./Header";
 import {Footer} from "./Footer";
 import {EventScore, Leaderboard} from "./Leaderboard";
 import {getEvent} from "../common/stream";
-import {failedToFetch} from "./Home";
+// import {failedToFetch} from "./Home";
 
 export function LeaderboardPage(props: any) {
     const [channelID, setChannelID] = useState<null | string>(null);
@@ -17,25 +17,25 @@ export function LeaderboardPage(props: any) {
         return "";
     };
 
-    useEffect(() => {
-        getEvent().then((event) => {
-            setChannelID(event["event/channel-id"] || failedToFetch);
-        });
-
-    }, []);
+    // useEffect(() => {
+    //     getEvent().then((event) => {
+    //         setChannelID(event["event/channel-id"] || failedToFetch);
+    //     });
+    //
+    // }, []);
 
     return (
         <>
-            <Header/>
-            <p className="twitch__subtitle" style={{padding: "1rem", textAlign: "center"}}>
-                Event Winner: {lastWinner()}
-            </p>
-            <Leaderboard
-                noGrid={true}
-                channelID={channelID}
-                eventScoreLeaderboard={eventScoreLeaderboard}
-                setEventScoreLeaderboard={setEventScoreLeaderboard}/>
-            <Footer/>
+            {/*<Header/>*/}
+            {/*<p className="twitch__subtitle" style={{padding: "1rem", textAlign: "center"}}>*/}
+            {/*    Event Winner: {lastWinner()}*/}
+            {/*</p>*/}
+            {/*<Leaderboard*/}
+            {/*    noGrid={true}*/}
+            {/*    channelID={channelID}*/}
+            {/*    eventScoreLeaderboard={eventScoreLeaderboard}*/}
+            {/*    setEventScoreLeaderboard={setEventScoreLeaderboard}/>*/}
+            {/*<Footer/>*/}
         </>
     );
 }

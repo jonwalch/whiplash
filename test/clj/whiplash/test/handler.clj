@@ -341,6 +341,7 @@
              (dissoc get-response-body :event/start-time))))))
 
 ;; TODO: test user cash and notifications
+;; TODO: test suggestions
 (deftest events-in-parallel-happy-path
   (let [{:keys [auth-token] login-resp :response} (create-user-and-login
                                                     (assoc dummy-user :admin? true))

@@ -292,15 +292,16 @@ export function Header(props:any) {
                 <div ref={navigation}>
                     <nav className="navigation">
                         <ul className="navigation__list">
+                            <li><Link className="navigation__link" to="/live">Live Events</Link></li>
                             <li><Link className="navigation__link" to="/about">About</Link></li>
-                            <li>
-                                <a className="navigation__link"
-                                   href="https://streamelements.com/whiplash_gg/tip"
-                                   target="_blank">
-                                    Donate
-                                </a>
-                            </li>
-                            <li><Link className="navigation__link" to="/leaderboard">Leaderboard</Link></li>
+                            {/*<li>*/}
+                            {/*    <a className="navigation__link"*/}
+                            {/*       href="https://streamelements.com/whiplash_gg/tip"*/}
+                            {/*       target="_blank">*/}
+                            {/*        Donate*/}
+                            {/*    </a>*/}
+                            {/*</li>*/}
+                            {/*<li><Link className="navigation__link" to="/leaderboard">Leaderboard</Link></li>*/}
                         </ul>
                     </nav>
                     <nav className="navigation navigation--cta">
@@ -327,15 +328,16 @@ export function Header(props:any) {
             {hamburgerOpen &&
             <div  className="site-navigation">
                 <ul className="navigation__list" style={{display: "flex", flexWrap: "wrap", alignItems: "center"}}>
+                    <li><Link className="navigation__link" to="/live">Live Events</Link></li>
                     <li><Link className="navigation__link" to="/about">About</Link></li>
-                    <li>
-                        <a className="navigation__link"
-                           href="https://streamelements.com/whiplash_gg/tip"
-                           target="_blank">
-                            Donate
-                        </a>
-                    </li>
-                    <li><Link className="navigation__link" to="/leaderboard">Leaderboard</Link></li>
+                    {/*<li>*/}
+                    {/*    <a className="navigation__link"*/}
+                    {/*       href="https://streamelements.com/whiplash_gg/tip"*/}
+                    {/*       target="_blank">*/}
+                    {/*        Donate*/}
+                    {/*    </a>*/}
+                    {/*</li>*/}
+                    {/*<li><Link className="navigation__link" to="/leaderboard">Leaderboard</Link></li>*/}
                     {renderNavCtaButtons()}
                 </ul>
             </div>

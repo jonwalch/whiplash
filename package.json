@@ -65,7 +65,6 @@
     "@fullstory/browser": "^1.4.4",
     "@sentry/browser": "^5.17.0",
     "@types/react-router-dom": "^5.1.5",
-    "@widgetbot/react-embed": "^1.2.2",
     "ga-gtag": "^1.0.1",
     "moment": "^2.26.0",
     "query-string": "^6.13.1",
