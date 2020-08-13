@@ -1,15 +1,16 @@
 (ns whiplash.routes.services.csgo-game-state
   (:require [clojure.tools.logging :as log]
             [ring.util.http-response :refer :all]
-            [whiplash.db.core :as db]))
+            [whiplash.db.core :as db]
+            [clojure.string :as string]))
 
 ;; add ability to toggle auto-run? on admin panel, admins only
 ;; props can have a new subcomponent :prop/csgo which holds {:csgo/round-number int}
 
 ;; TODO add check for proper auth token corresponding with proper channel-id
 (defn receive-from-game-client
-  [{:keys [path-params body-params] :as req}]
-  (let [channel-id (:channel-id path-params)
+  [{:keys [path-params body-params]}]
+  (let [channel-id (some-> path-params :channel-id string/lower-case)
         {:keys [event current-prop]} (db/pull-event-info
                                        {:attrs [:db/id
                                                 :event/stream-source
@@ -24,7 +25,6 @@
                                         :event/channel-id channel-id})]
     (cond
       ;;TODO add false? event/auto-run? to or
-      ;; TODO: lowercase these comparison
       (or (not= channel-id (:event/channel-id event))
           (not= :event.stream-source/twitch (:event/stream-source event)))
       (no-content)

@@ -335,22 +335,22 @@ export function Control(props: any) {
                                 onChange={() => {setEventSource("twitch")}}>
                             </input>
                             <label htmlFor="twitchRadioButton">Twitch</label>
-                            <input
-                                type='radio'
-                                checked={eventSource === "youtube"}
-                                name="youTubeRadioButton"
-                                key="youTubeRadioButton"
-                                onChange={() => {setEventSource("youtube")}}>
-                            </input>
-                            <label htmlFor="youTubeRadioButton">YouTube Live</label>
-                            <input
-                                type='radio'
-                                checked={eventSource === "cnn-unauth"}
-                                name="cnnUnAuthRadioButton"
-                                key="cnnUnAuthRadioButton"
-                                onChange={() => {setEventSource("cnn-unauth")}}>
-                            </input>
-                            <label htmlFor="cnnUnAuthRadioButton">CNN Unauth</label>
+                            {/*<input*/}
+                            {/*    type='radio'*/}
+                            {/*    checked={eventSource === "youtube"}*/}
+                            {/*    name="youTubeRadioButton"*/}
+                            {/*    key="youTubeRadioButton"*/}
+                            {/*    onChange={() => {setEventSource("youtube")}}>*/}
+                            {/*</input>*/}
+                            {/*<label htmlFor="youTubeRadioButton">YouTube Live</label>*/}
+                            {/*<input*/}
+                            {/*    type='radio'*/}
+                            {/*    checked={eventSource === "cnn-unauth"}*/}
+                            {/*    name="cnnUnAuthRadioButton"*/}
+                            {/*    key="cnnUnAuthRadioButton"*/}
+                            {/*    onChange={() => {setEventSource("cnn-unauth")}}>*/}
+                            {/*</input>*/}
+                            {/*<label htmlFor="cnnUnAuthRadioButton">CNN Unauth</label>*/}
                             <input
                                 type='radio'
                                 checked={eventSource === "none"}

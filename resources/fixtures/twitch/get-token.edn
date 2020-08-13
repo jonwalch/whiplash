@@ -1,0 +1,22 @@
+{:cached nil,
+ :request-time 301,
+ :repeatable? false,
+ :protocol-version {:name "HTTP", :major 1, :minor 1},
+ :streaming? true,
+ ;:http-client #object[org.apache.http.impl.client.InternalHttpClient
+ ;                     0x7fe844dd
+ ;                     "org.apache.http.impl.client.InternalHttpClient@7fe844dd"],
+ :chunked? false,
+ :reason-phrase "OK",
+ :headers {"Date" "Thu, 13 Aug 2020 21:39:36 GMT",
+           "Content-Type" "application/json",
+           "Content-Length" "93",
+           "Connection" "close",
+           "Server" "nginx/1.14.1",
+           "Access-Control-Allow-Origin" "*",
+           "X-Ctxlog-Logid" "1-5f35b318-44abd03c8fb1c1c6d52e1ba6"},
+ :orig-content-encoding nil,
+ :status 200,
+ :length 93,
+ :body "{\"access_token\":\"2mypjnug57rjt8nui70vlnagnf8dor\",\"expires_in\":5220693,\"token_type\":\"bearer\"}\n",
+ :trace-redirects []}

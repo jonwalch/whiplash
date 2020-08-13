@@ -21,23 +21,22 @@ const startSound = new UIfx(
     }
 )
 
+const failedToFetch = "failed to fetch";
 const textStyles = {fontSize: ".75rem", padding: "0 0.5rem 0.5rem 0.5rem",}
 
-export function TwitchExtension(props: any) {
-    console.log(window.location)
-    console.log(window.parent.location)
-    console.log(document.referrer)
-    console.log(document.location.href)
+export function TwitchExtension() {
     const { loggedInState, setLoggedInState } = useContext(LoginContext);
     const [proposition, setProposition] = useState<any>({});
     const [prevProposition, setPrevProposition] = useState<any>({});
     const [extClass, setExtClass] = useState<string>("twitch-extension slide-out");
     const [extPositionClass, setExtPositionClass] = useState<string>("");
-
     const [betAmount, setBetAmount] = useState<number>(0);
     const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
     const [userTriedBetting, setUserTriedBetting] = useState<boolean>(false);
     const [sfxEnabled, setSfxEnabled] = useState<boolean>(false);
+
+    const [channelID, setChannelId] = useState<string | null>(null);
+    const [twitchOnAuthorized, setTwitchOnAuthorized] = useState<any>(null);
 
     // @ts-ignore
     const pulseP = useRef(null);
@@ -56,7 +55,7 @@ export function TwitchExtension(props: any) {
                 button.classList.remove('is-active')
             }
         })
-    }, [betAmount, loggedInState.cash, props.proposition["proposition/text"]]);
+    }, [betAmount, loggedInState.cash, proposition["proposition/text"]]);
 
     //Play a ding if any notifications are a payout (this include cancels here)
     useEffect(() => {
@@ -81,7 +80,7 @@ export function TwitchExtension(props: any) {
     const CORSMakePropBet = async (projectedResult : boolean) => {
         setBetWaitingForResp(true);
         setUserTriedBetting(true);
-        const response = await fetch(twitchBaseUrl + "user/prop-bet/" +, {
+        const response = await fetch(twitchBaseUrl + "user/prop-bet/" + channelID, {
             headers: {
                 "Content-Type": "application/json",
                 "x-twitch-opaque-id": twitchOpaqueID(),
@@ -102,13 +101,6 @@ export function TwitchExtension(props: any) {
             const clientId = tracker.get('clientId');
             // @ts-ignore
             ga('send', 'event', 'Betting', 'ext-prop-bet', clientId, betAmount, {"dimension1": loggedInState.userName,})
-            // ga('send', {
-            //     hitType: 'event',
-            //     eventCategory: 'Betting',
-            //     eventAction: 'ext-prop-bet',
-            //     eventLabel: clientId,
-            //     eventValue: betAmount,
-            // })
         })
 
         setBetWaitingForResp(false);
@@ -125,7 +117,7 @@ export function TwitchExtension(props: any) {
     };
 
     const getCORSProp = async () => {
-        const response = await fetch(twitchBaseUrl + "stream/prop/" +, {
+        const response = await fetch(twitchBaseUrl + "stream/prop/" + channelID, {
             method: "GET",
             credentials: "omit",
             mode: "cors",
@@ -151,7 +143,33 @@ export function TwitchExtension(props: any) {
         }
     };
 
+    const getTwitchUsername = (auth: any) => {
+        fetch(twitchBaseUrl + "/twitch/user-id-lookup", {
+            headers: {
+                "Content-Type": "application/json",
+                "x-twitch-user-id": auth.channelId,
+            },
+            method: "GET",
+            credentials: "omit",
+            mode: "cors",
+            redirect: "error",
+        }).then((response) => {
+            if (response.status === 200) {
+                response.json().then((resp) => {
+                    setChannelId(resp.login)
+                })
+            } else {
+                setChannelId(failedToFetch)
+            }
+        })
+    }
+
     useEffect(() => {
+        twitch.onAuthorized((auth: any) => {
+            setTwitchOnAuthorized(auth)
+            getTwitchUsername(auth)
+        })
+
         getCORSProp().then((event) => {
             getPropWrapper(event)
         });
@@ -166,7 +184,6 @@ export function TwitchExtension(props: any) {
             }
             setExtPositionClass(config === "bottomleft" ? "is-bottom-left" : "");
         })
-
     }, []);
 
     useEffect( () => {
@@ -197,6 +214,12 @@ export function TwitchExtension(props: any) {
             getPropWrapper(event)
         });
     }, 1000);
+
+    useInterval(() => {
+        if (channelID === failedToFetch && twitchOnAuthorized && twitchOnAuthorized.channelId) {
+            getTwitchUsername(twitchOnAuthorized)
+        }
+    }, 5000);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const numbers = /^[0-9]*$/;
@@ -232,9 +255,9 @@ export function TwitchExtension(props: any) {
     };
 
     const renderPropositionText = () => {
-        if (proposition["proposition/text"]) {
+        if (proposition && proposition["proposition/text"]) {
             return (<p style={{margin:0}}>{proposition["proposition/text"]}</p>);
-        } else if (prevProposition["proposition/text"]){
+        } else if (prevProposition && prevProposition["proposition/text"]){
             return (
                 <>
                     <p>{"Last proposition: " + prevProposition["proposition/text"]}</p>
@@ -249,7 +272,11 @@ export function TwitchExtension(props: any) {
     };
 
     const renderBody = () => {
-        if (proposition["proposition/betting-seconds-left"] > 0 &&
+        if (channelID === null) {
+            return (<div>Loading...</div>);
+        } else if (channelID === failedToFetch) {
+            return (<div>Something went wrong. Retrying...</div>);
+        } else if (proposition && proposition["proposition/betting-seconds-left"] > 0 &&
             (loggedInState.cash >= 100 || loggedInState.cash === defaultLoggedIn.cash) &&
             !loggedInState["gated?"]) {
             return (

@@ -4,13 +4,15 @@
             [datomic.client.api :as d]
             [whiplash.time :as time]
             [clojure.tools.logging :as log]
-            [whiplash.constants :as constants]))
+            [whiplash.constants :as constants]
+            [clojure.string :as string]))
 
 (defn admin-create-proposition
   [{:keys [body-params path-params] :as req}]
   ;; TODO: input validation end-betting-secs must be greater than n
   (let [{:keys [text end-betting-secs]} body-params
         {:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         {:keys [event current-prop]} (db/pull-event-info
                                        {:attrs [:db/id
                                                 {:event/propositions
@@ -38,6 +40,7 @@
 (defn get-current-proposition
   [{:keys [path-params] :as req}]
   (let [{:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         {:keys [current-prop previous-prop]} (db/pull-event-info
                                                {:attrs [:db/id
                                                         {:event/propositions
@@ -56,6 +59,7 @@
   [{:keys [body-params path-params] :as req}]
   (let [{:keys [result]} body-params
         {:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         db (d/db (:conn db/datomic-cloud))
         {:keys [current-prop]} (db/pull-event-info
                                        {:attrs [:db/id
@@ -114,6 +118,7 @@
 (defn flip-prev-prop-outcome
   [{:keys [path-params]}]
   (let [{:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         db (d/db (:conn db/datomic-cloud))
         {:keys [previous-prop]} (db/pull-event-info
                                   {:attrs            [:db/id

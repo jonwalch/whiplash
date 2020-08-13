@@ -4,19 +4,21 @@
             [datomic.client.api :as d]
             [whiplash.time :as time]
             [clojure.tools.logging :as log]
-            [selmer.parser :as parser]))
+            [selmer.parser :as parser]
+            [clojure.string :as string]))
 
 (defn create-event
   [{:keys [body-params] :as req}]
   ;; TODO: don't require channel-id for cnn-unauth
   ;; TODO: channel-id cannot have spaces
   (let [{:keys [title channel-id source]} body-params
+        channel-id (string/lower-case channel-id)
         source-valid? (contains? #{"twitch" "youtube" "cnn-unauth" "none"} source)]
     (cond
       (some empty? [title channel-id source])
       (bad-request {:message "No args can be empty."})
 
-      (some? (db/pull-ongoing-event {:attrs [:db/id]
+      (some? (db/pull-ongoing-event {:attrs            [:db/id]
                                      :event/channel-id channel-id}))
       (method-not-allowed {:message (format "Cannot create event. Event already ongoing for %s" channel-id)})
 
@@ -68,7 +70,8 @@
 
 (defn get-current-event
   [{:keys [body-params path-params headers]}]
-  (let [{:keys [channel-id]} path-params]
+  (let [{:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)]
     (if (outdated-client? headers)
       (reset-content)
       (let [db (d/db (:conn db/datomic-cloud))
@@ -88,7 +91,7 @@
 
 (defn end-current-event
   [{:keys [body-params path-params] :as req}]
-  (let [channel-id (:channel-id path-params)
+  (let [channel-id (some-> path-params :channel-id string/lower-case)
         {:keys [event current-prop]} (db/pull-event-info
                                        {:attrs [:db/id
                                                 :event/channel-id

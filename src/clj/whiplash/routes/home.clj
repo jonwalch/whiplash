@@ -14,7 +14,8 @@
     [reitit.ring.middleware.parameters :as parameters]
     [whiplash.middleware.formats :as formats]
     [reitit.coercion.spec :as spec-coercion]
-    [whiplash.constants :as constants]))
+    [whiplash.constants :as constants]
+    [whiplash.integrations.twitch :as twitch]))
 
 (defn home-page [request]
   (layout/render request "index.html")
@@ -146,6 +147,20 @@
                            (assoc (proposition/get-current-proposition req)
                              :headers
                              (merge constants/CORS-GET-headers {"Cache-Control" "max-age=1"})))}}]]
+
+   ["/twitch/user-id-lookup"
+    {:options {:summary "Take care of CORS preflight"
+               :handler (fn [req] (CORS-GET-options [req]))}
+     :get     {:summary "Lookup"
+               :handler (fn [{:keys [headers]}]
+                          (let [twitch-user-id (get headers "x-twitch-user-id")
+                                found (when twitch-user-id
+                                        (twitch/get-login-from-user-id twitch-user-id))]
+                            (if (string? found)
+                              {:status  200
+                               :body    {:login found}
+                               :headers (merge constants/CORS-GET-headers {"Cache-Control" "max-age=86400"})}
+                              {:status 404})))}}]
 
    ["/leaderboard"
     ["/all-time"

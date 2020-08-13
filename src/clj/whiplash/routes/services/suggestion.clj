@@ -2,11 +2,13 @@
   (:require [whiplash.db.core :as db]
             [ring.util.http-response :refer :all]
             [datomic.client.api :as d]
-            [clj-uuid :as uuid]))
+            [clj-uuid :as uuid]
+            [clojure.string :as string]))
 
 (defn get-suggestions
   [{:keys [params path-params]}]
   (let [{:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         db (d/db (:conn db/datomic-cloud))
         suggestions (db/pull-undismissed-suggestions-for-ongoing-event
                       {:db    db
