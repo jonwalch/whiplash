@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useContext} from "react";
 import { useInterval } from "../common";
 import { baseUrl } from "../config/const";
-import {failedToFetch} from "./Home";
+import {failedToFetch} from "./Event";
 import {LoginContext} from "../contexts/LoginContext";
 
 export function Bets(props: any) {
@@ -9,7 +9,9 @@ export function Bets(props: any) {
   const [bets, setBets] = useState<any>(null);
 
   useEffect(() => {
+    if (props.channelID !== failedToFetch) {
       getPropBets();
+    }
   }, [loggedInState.cash]);
 
   // TODO: only when there's an event
@@ -20,14 +22,14 @@ export function Bets(props: any) {
   }, 1000);
 
   const getPropBets = async () => {
-    const url = baseUrl + "leaderboard/prop-bets";
+    const url = baseUrl + "leaderboard/prop-bets/" + props.channelID;
     const response = await fetch(url, {
       method: "GET",
       mode: "same-origin",
       credentials: "omit",
       redirect: "error"
     });
-    if (response.status == 200) {
+    if (response.status === 200) {
       const resp = await response.json();
       setBets(resp);
     } else {

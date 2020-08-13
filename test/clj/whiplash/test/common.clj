@@ -18,6 +18,18 @@
   (swap! test-state (fn [{:keys [emails] :as val}]
                       (assoc val :emails (conj emails params)))))
 
+(defn twitch-get-token-fake
+  []
+  (-> (io/resource "fixtures/twitch/get-token.edn")
+      slurp
+      edn/read-string))
+
+(defn twitch-get-user-name-fake
+  [token user-id]
+  (-> (io/resource "fixtures/twitch/get-user-id-huddy.edn")
+      slurp
+      edn/read-string))
+
 (defn app-fixtures
   []
   (use-fixtures
@@ -25,7 +37,9 @@
     (fn [f]
       (mount/start #'whiplash.config/env
                    #'whiplash.handler/app-routes)
-      (with-redefs [whiplash.integrations.amazon-ses/internal-send-email internal-send-email-fake]
+      (with-redefs [whiplash.integrations.amazon-ses/internal-send-email internal-send-email-fake
+                    whiplash.integrations.twitch/get-token twitch-get-token-fake
+                    whiplash.integrations.twitch/get-user-by-id twitch-get-user-name-fake]
         (f))
       (mount/stop #'whiplash.config/env
                   #'whiplash.handler/app-routes))))

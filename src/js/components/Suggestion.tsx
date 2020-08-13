@@ -1,5 +1,5 @@
 import React, {useState, ChangeEvent, useContext} from "react";
-import {failedToFetch} from "./Home";
+import {failedToFetch} from "./Event";
 import { baseUrl } from "../config/const";
 import {LoginContext} from "../contexts/LoginContext";
 
@@ -10,7 +10,7 @@ export function Suggestion(props: any) {
 
     const createSuggestion = async () => {
         setSuggestWaitingForResp(true);
-        const response = await fetch(baseUrl + "user/suggestion", {
+        const response = await fetch(baseUrl + "user/suggestion/" + props.channelID, {
             headers: {
                 "Content-Type": "application/json",
             },

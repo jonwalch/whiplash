@@ -4,65 +4,85 @@
             [datomic.client.api :as d]
             [whiplash.time :as time]
             [clojure.tools.logging :as log]
-            [whiplash.constants :as constants]))
+            [whiplash.constants :as constants]
+            [clojure.string :as string]))
 
 (defn admin-create-proposition
-  [{:keys [body-params] :as req}]
+  [{:keys [body-params path-params] :as req}]
   ;; TODO: input validation end-betting-secs must be greater than n
   (let [{:keys [text end-betting-secs]} body-params
-        ongoing-event (db/find-ongoing-event)
-        ongoing-prop (db/find-ongoing-proposition)]
+        {:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
+        {:keys [event current-prop]} (db/pull-event-info
+                                       {:attrs [:db/id
+                                                {:event/propositions
+                                                 '[:db/id
+                                                   :proposition/running?]}]
+                                        :event/channel-id channel-id})]
     (cond
-      (nil? ongoing-event)
+      (nil? event)
       (method-not-allowed {:message "Cannot create prop bet, no ongoing event"})
 
       ;; TODO more validation of text
       (empty? text)
       (method-not-allowed {:message "An empty proposition is not allowed."})
 
-      (some? ongoing-prop)
+      (some? current-prop)
       (method-not-allowed {:message "Cannot create prop bet, ongoing proposition exists"})
 
       :else
       (do
-        (db/create-proposition {:text   text
-                                :event-eid ongoing-event
+        (db/create-proposition {:text             text
+                                :event-eid        (:db/id event)
                                 :end-betting-secs end-betting-secs})
         (ok {})))))
 
 (defn get-current-proposition
-  [req]
-  (let [{:keys [current-prop previous-prop]} (db/pull-event-info
+  [{:keys [path-params] :as req}]
+  (let [{:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
+        {:keys [current-prop previous-prop]} (db/pull-event-info
                                                {:attrs [:db/id
                                                         {:event/propositions
                                                          '[:proposition/start-time
                                                            :proposition/text
                                                            :proposition/running?
                                                            :proposition/betting-end-time
-                                                           {:proposition/result [:db/ident]}]}]})]
+                                                           {:proposition/result [:db/ident]}]}]
+                                                :event/channel-id channel-id})]
     (if (or current-prop previous-prop)
       (ok {:current-prop  (or current-prop {})
            :previous-prop (or previous-prop {})})
       (no-content))))
 
 (defn end-current-proposition
-  [{:keys [body-params] :as req}]
+  [{:keys [body-params path-params] :as req}]
   (let [{:keys [result]} body-params
+        {:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         db (d/db (:conn db/datomic-cloud))
-        prop (db/pull-ongoing-proposition {:db db
-                                           :attrs [:proposition/betting-end-time
-                                                   :db/id]})]
+        {:keys [current-prop]} (db/pull-event-info
+                                       {:attrs [:db/id
+                                                :event/channel-id
+                                                {:event/propositions
+                                                 '[:db/id
+                                                   :proposition/start-time
+                                                   :proposition/text
+                                                   :proposition/running?
+                                                   :proposition/betting-end-time
+                                                   {:proposition/result [:db/ident]}]}]
+                                        :event/channel-id channel-id})]
     (cond
       (not (contains? #{"true" "false" "cancel"} result))
       (method-not-allowed {:message "Invalid parameter"})
 
-      prop
-      (let [{:keys [db-after] :as tx-result} (db/end-betting-for-proposition prop)]
+      current-prop
+      (let [{:keys [db-after] :as tx-result} (db/end-betting-for-proposition current-prop)]
         (if-not (= "cancel" result)
           (db/payouts-for-proposition {:result?     (boolean (Boolean/valueOf result))
-                                       :proposition prop
+                                       :proposition current-prop
                                        :db          db-after})
-          (db/cancel-proposition-and-return-cash {:proposition prop
+          (db/cancel-proposition-and-return-cash {:proposition current-prop
                                                   :db          db-after}))
         (ok {}))
 
@@ -72,10 +92,9 @@
 ;; TODO move this to db core
 (defn- flip-outcome
   [db {:keys [db/id proposition/result] :as previous-prop}]
-  (assert (or (= (:db/ident result) :proposition.result/true)
-              (= (:db/ident result) :proposition.result/false)))
-  (let [result (:db/ident result)
-        result? (= result :proposition.result/true)
+  (assert (or (= result :proposition.result/true)
+              (= result :proposition.result/false)))
+  (let [result? (= result :proposition.result/true)
         user-id->total-payout (->> (db/pull-bet-payout-info
                                      {:db          db
                                       :prop-bet-id id
@@ -97,19 +116,24 @@
                                                         :result?     (not result?)})})))
 
 (defn flip-prev-prop-outcome
-  [req]
-  (let [db (d/db (:conn db/datomic-cloud))
-        ongoing-event (db/find-ongoing-event db)
-        previous-prop (when ongoing-event
-                        (db/pull-previous-proposition {:db        db
-                                                       :attrs     '[:db/id
-                                                                    {:proposition/result [:db/ident]}
-                                                                    :proposition/betting-end-time]
-                                                       :event-eid ongoing-event}))
-        prev-result (-> previous-prop :proposition/result :db/ident)
-        result-valid? (or (= :proposition.result/true prev-result)
-                          (= :proposition.result/false prev-result))]
-    (if result-valid?
+  [{:keys [path-params]}]
+  (let [{:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
+        db (d/db (:conn db/datomic-cloud))
+        {:keys [previous-prop]} (db/pull-event-info
+                                  {:attrs            [:db/id
+                                                      :event/channel-id
+                                                      {:event/propositions
+                                                       '[:db/id
+                                                         :proposition/start-time
+                                                         :proposition/text
+                                                         :proposition/running?
+                                                         :proposition/betting-end-time
+                                                         {:proposition/result [:db/ident]}]}]
+                                   :event/channel-id channel-id})
+        prev-result (:proposition/result previous-prop)]
+    (if (or (= :proposition.result/true prev-result)
+            (= :proposition.result/false prev-result))
       (do (flip-outcome db previous-prop)
           (ok {}))
       (method-not-allowed {:message "Cannot flip prev prop. Either there isnt one or it was cancelled"}))))

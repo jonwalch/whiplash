@@ -18,7 +18,6 @@ const startSound = new UIfx(
 export function Vote (props: any) {
   const { loggedInState, setLoggedInState } = useContext(LoginContext);
   const [betAmount, setBetAmount] = useState<number>(0);
-  // const [projectedResult, setProjectedResult] = useState<null | boolean>(null);
   const [betWaitingForResp, setBetWaitingForResp] = useState<boolean>(false);
   const [lastSuccessfulBetSide, setLastSuccessfulBetSide] = useState<null | boolean>(null);
 
@@ -46,7 +45,7 @@ export function Vote (props: any) {
 
   const makePropBet = async (projectedResult : boolean) => {
     setBetWaitingForResp(true);
-    const response = await fetch(baseUrl + "user/prop-bet", {
+    const response = await fetch(baseUrl + "user/prop-bet/" + props.channelID, {
       headers: {
         "Content-Type": "application/json",
       },
