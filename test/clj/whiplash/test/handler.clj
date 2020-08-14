@@ -1077,9 +1077,11 @@
                                                :channel-id channel-id})
 
         text "Will Jon wipeout 2+ times this round?"
+        end-betting-secs 30
         create-prop-bet-resp (admin-create-prop {:auth-token auth-token
                                                  :text       text
-                                                 :channel-id channel-id})
+                                                 :channel-id channel-id
+                                                 :end-betting-secs end-betting-secs})
 
         user-place-prop-bet-resp (user-place-prop-bet {:auth-token       auth-token
                                                        :projected-result true
@@ -1087,6 +1089,11 @@
                                                        :channel-id channel-id})
 
         current-prop-bets-response (get-prop-bets-leaderboard {:channel-id channel-id})
+        now (time/now)
+        future-prop-bets-response (with-redefs [whiplash.time/now (fn []
+                                                                    (time/seconds-delta now end-betting-secs))]
+                                    (get-prop-bets-leaderboard {:channel-id channel-id}))
+
 
         ;;admin end prop bet
         {:keys [auth-token] login-resp :response} (login)
@@ -1104,12 +1111,21 @@
 
     (is (= {:true  {:bets  [{:bet/amount 500
                              :user/name  "queefburglar"}]
-                    :odds  1.00
+                    :odds  1.0
                     :total 500}
             :false {:bets  []
-                    :odds  500.00
+                    :odds  500.0
                     :total 0}}
-           (:body current-prop-bets-response)))))
+           (:body current-prop-bets-response)))
+    ;; Odds and total are faked when people bet only on one side after betting has concluded
+    (is (= {:true  {:bets  [{:bet/amount 500
+                             :user/name  "queefburglar"}]
+                    :odds  2.00
+                    :total 500}
+            :false {:bets  []
+                    :odds  1.0
+                    :total 1000}}
+           (:body future-prop-bets-response)))))
 
 (deftest bet-both-sides-doesnt-break
   (testing ""
@@ -1774,7 +1790,7 @@
 
         bet4 (user-place-prop-bet {:auth-token       auth-token
                                    :projected-result true
-                                   :bet-amount       100
+                                   :bet-amount       210
                                    :channel-id channel-id})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
@@ -1787,7 +1803,7 @@
 
         bet6 (user-place-prop-bet {:auth-token       auth-token
                                    :projected-result true
-                                   :bet-amount       100
+                                   :bet-amount       420
                                    :channel-id channel-id})
 
         end-prop-bet-resp (admin-end-prop {:auth-token auth-token
@@ -1799,11 +1815,11 @@
 
     (is (= [#:notification{:type "notification.type/bailout"}
             #:notification{:type "notification.type/bailout"}
-            {:bet/payout         110
+            {:bet/payout         210
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
              :proposition/text   "second one"}
-            {:bet/payout         110
+            {:bet/payout         430
              :notification/type  "notification.type/payout"
              :proposition/result "proposition.result/true"
              :proposition/text   "third one"}]
@@ -2665,7 +2681,7 @@
 
           _ (user-place-prop-bet {:auth-token       auth-token
                                   :projected-result false
-                                  :bet-amount       520
+                                  :bet-amount       1530
                                   :channel-id channel-id})
 
           end-response3 ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
@@ -2682,8 +2698,8 @@
       (is (= 201 (:status create-response)))
       (is (= 204 (:status create-response-fail)))
       (is (= 200 (:status end-response)))
-      (is (= 510 (-> get-user-resp :body :user/cash)))
-      (is (= [{:bet/payout         510
+      (is (= 1010 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         1010
                :notification/type  "notification.type/payout"
                :proposition/result "proposition.result/true"
                :proposition/text   "Terrorists win this round"}]
@@ -2692,8 +2708,8 @@
 
       (is (= 201 (:status create-response2)))
       (is (= 200 (:status end-response2)))
-      (is (= 520 (-> get-user-resp2 :body :user/cash)))
-      (is (= [{:bet/payout         520
+      (is (= 1530 (-> get-user-resp2 :body :user/cash)))
+      (is (= [{:bet/payout         1030
                :notification/type  "notification.type/payout"
                :proposition/result "proposition.result/false"
                :proposition/text   "Terrorists win this round"}]

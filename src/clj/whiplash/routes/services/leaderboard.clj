@@ -3,8 +3,10 @@
             [whiplash.db.core :as db]
             [datomic.client.api :as d]
             [whiplash.payouts :as payouts]
-            [whiplash.constants :as constants]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clojure.string :as string]
+            [java-time :as jtime]
+            [whiplash.time :as time]))
 
 (defn all-time-top-ten
   [{:keys [params] :as req}]
@@ -13,6 +15,7 @@
 (defn event-score-leaderboard
   [{:keys [params path-params]}]
   (let [{:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         db (d/db (:conn db/datomic-cloud))
         ;; TODO: pull current and last n events in 1 query
         event-db-id (:db/id
@@ -50,6 +53,29 @@
                  (sort-by :score #(compare %2 %1)))))
       {:status 204})))
 
+;; clean up this monstrosity
+(defn- fake-odds-if-one-sided
+  [bet-stats betting-end-time]
+  (let [true-side (get bet-stats true)
+        false-side (get bet-stats false)]
+    (cond
+      (jtime/before? (time/now)
+                     (time/date-to-zdt betting-end-time))
+      bet-stats
+
+      (= 1.0 (:bet/odds true-side))                          ;; only bettors on true
+      {true  (assoc true-side :bet/odds 2.0)
+       false {:bet/total (* 2 (:bet/total true-side))
+              :bet/odds  1.0}}
+
+      (= 1.0 (:bet/odds false-side))                        ;; only bettors on false
+      {true  {:bet/total (* 2 (:bet/total false-side))
+              :bet/odds  1.0}
+       false (assoc false-side :bet/odds 2.0)}
+
+      :else                                                 ;; bettors on both
+      bet-stats)))
+
 (defonce ^:private empty-bets  {:true  {:bets  []
                                         :odds  1.00
                                         :total 0}
@@ -58,10 +84,21 @@
                                         :total 0}})
 
 (defn get-prop-bets
-  [{:keys [params path-params]}]
+  [{:keys [path-params]}]
   (let [{:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         db (d/db (:conn db/datomic-cloud))
-        current-bets (apply concat (db/find-all-user-bets-for-running-proposition {:db db :event/channel-id channel-id}))]
+        {:keys [current-prop]} (db/pull-event-info
+                                 {:db db
+                                  :attrs [{:event/propositions
+                                           '[:db/id
+                                             :proposition/start-time
+                                             :proposition/text
+                                             :proposition/running?
+                                             :proposition/betting-end-time
+                                             {:proposition/result [:db/ident]}]}]
+                                  :event/channel-id channel-id})
+        current-bets (db/find-all-user-bets-for-running-proposition {:db db :event/channel-id channel-id})]
     (if (seq current-bets)
       (let [current-bets (->> current-bets
                               (map (fn [bet]
@@ -70,7 +107,8 @@
                                          (dissoc :user/_prop-bets)))))
             total-amounts-and-odds (-> current-bets
                                        (payouts/game-bet-totals :bet/projected-result?)
-                                       (payouts/team-odds))
+                                       (payouts/team-odds)
+                                       (fake-odds-if-one-sided (:proposition/betting-end-time current-prop)))
             grouped-bets (group-by :bet/projected-result? current-bets)
             add-other-side (cond
                              (and (nil? (get grouped-bets true))

@@ -304,6 +304,7 @@
   [{:keys [body-params path-params] :as req}]
   (let [{:keys [bet_amount projected_result]} body-params
         {:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         {:keys [user]} (middleware/req->token req)
         twitch-ext-unauth-user (when-not user
                                  (twitch-unauth-username req))
@@ -393,6 +394,7 @@
   [{:keys [body-params path-params] :as req}]
   (let [{:keys [text]} body-params
         {:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
         {:keys [user]} (middleware/req->token req)
         db (d/db (:conn db/datomic-cloud))
         {:keys [db/id user/status]} (when user

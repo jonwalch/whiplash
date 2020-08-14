@@ -245,17 +245,19 @@
 
 (defn find-all-user-bets-for-running-proposition
   [{:keys [db event/channel-id]}]
-  (d/q
-    {:query '[:find (pull ?bet [:bet/amount
-                                :bet/projected-result?
-                                {:user/_prop-bets [:user/name]}])
-              :in $ ?channel-id
-              :where [?event :event/running? true]
-              [?event :event/channel-id ?channel-id]
-              [?event :event/propositions ?prop]
-              [?prop :proposition/running? true]
-              [?bet :bet/proposition ?prop]]
-     :args  [db channel-id]}))
+  (->>
+    (d/q
+      {:query '[:find (pull ?bet [:bet/amount
+                                  :bet/projected-result?
+                                  {:user/_prop-bets [:user/name]}])
+                :in $ ?channel-id
+                :where [?event :event/running? true]
+                [?event :event/channel-id ?channel-id]
+                [?event :event/propositions ?prop]
+                [?prop :proposition/running? true]
+                [?bet :bet/proposition ?prop]]
+       :args  [db channel-id]})
+    (apply concat)))
 
 (defn find-all-user-bets-for-proposition
   [{:keys [db prop-bet-id]}]
@@ -730,9 +732,7 @@
   (let [db (d/db conn)
         {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "dfleur" :attrs [:db/id :user/cash :user/name]})]
     (d/transact conn {:tx-data [{:db/id id
-                                 :user/status :user.status/mod}]})
-    #_(d/transact conn {:tx-data [[:db/cas id :user/cash cash (+ cash 989N)]]})
-    )
+                                 :user/status :user.status/mod}]}))
 
   (->>
     (d/q {:query '[:find (pull ?user [:user/email :user/verify-token :user/name :user/sign-up-time {:user/status [:db/ident]}])

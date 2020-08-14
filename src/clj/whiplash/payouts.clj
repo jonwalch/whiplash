@@ -48,8 +48,15 @@
                                 ;; This happens when no one bet for the other team and there are no odds
                                 0.0)))
           floored-payout (Math/ceil payout)]
-      #_(when (< 0 (- payout floored-payout))
-        (log/info (format "Casino floored payout take %s dollars" (- payout floored-payout))))
-      (if (= winner id)
-        (bigint floored-payout)
-        0N))))
+      (cond
+        (not= winner id)
+        0N
+
+        ;; Payout 2x when no one bet on the other side
+        (= 0N (-> bet-stats
+                  (get (not winner))
+                  :bet/total))
+        (bigint (* 2 floored-payout))
+
+        :else
+        (bigint floored-payout)))))
