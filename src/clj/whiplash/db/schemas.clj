@@ -350,7 +350,13 @@
         :db/cardinality :db.cardinality/many
         :db/isComponent true}]
    :10 [{:db/ident :event.stream-source/none}]
-   :11 [{:db/ident :user.status/mod}]})
+   :11 [{:db/ident :user.status/mod}]
+   :12 [{:db/doc         "Current event auto run status"
+         :db/ident       :event/auto-run
+         :db/valueType   :db.type/ref
+         :db/cardinality :db.cardinality/one}
+        {:db/ident :event.auto-run/csgo}
+        {:db/ident :event.auto-run/off}]})
 
 (defn migrations->schema-tx
   []

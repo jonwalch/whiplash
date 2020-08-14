@@ -79,7 +79,14 @@
                                   :source string?}}
               :handler    (fn [req]
                             (event/create-event req))}}]
+     ["/:channel-id"
+      {:patch {:summary    "Update the current event. For now just sets auto run"
+               :middleware [middleware/wrap-admin]
+               :parameters {:body {:auto-run string?}}
+               :handler    (fn [req]
+                             (event/change-auto-run req))}}]
 
+     ;; TODO move into patch above
      ["/end/:channel-id"
       {:post {:summary "End a running event"
               :middleware [middleware/wrap-admin]
@@ -135,9 +142,9 @@
                         (event/get-all-current-events req))}}]
 
      ["/:channel-id"
-      {:get  {:summary    "Get a specific current event"
-              :handler    (fn [req]
-                            (event/get-current-event req))}}]]
+      {:get   {:summary "Get a specific current event"
+               :handler (fn [req]
+                          (event/get-current-event req))}}]]
 
     ["/prop/:channel-id"
      {:options {:summary "Take care of CORS preflight"

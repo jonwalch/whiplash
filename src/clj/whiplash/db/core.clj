@@ -326,6 +326,16 @@
                     :where [?event :event/running? true]]
            :args  [db]}))))
 
+(defn update-ident-vals
+  [m]
+  (reduce
+    #(update-in % [%2] (fn [val]
+                         (if (map? val)
+                           (:db/ident val)
+                           val)))
+    m
+    (keys m)))
+
 (defn pull-all-ongoing-events
   [{:keys [db attrs]}]
   (let [db (or db (d/db (:conn datomic-cloud)))
@@ -335,9 +345,7 @@
               :args  [db attrs]})]
     (map
       (fn [result]
-        (if (contains? result :event/stream-source)
-          (update result :event/stream-source :db/ident)
-          result))
+        (update-ident-vals result))
       (flatten results))))
 
 (defn pull-ongoing-event
@@ -350,9 +358,7 @@
                                 [?event :event/channel-id ?c-id]
                                 [(= ?c-id ?channel-id)]]
                        :args  [db attrs channel-id]}))]
-    (if (contains? result :event/stream-source)
-      (update result :event/stream-source :db/ident)
-      result)))
+    (update-ident-vals result)))
 
 (defn- add-countdown-seconds
   [{:proposition/keys [start-time betting-end-time] :as proposition}]
@@ -423,8 +429,15 @@
                           :event/channel-id channel-id
                           :event/stream-source source
                           :event/running?   true
-                          :event/start-time (time/to-date)}
+                          :event/start-time (time/to-date)
+                          :event/auto-run :event.auto-run/off}
                          {:whiplash/events ["temp"]}]}))
+
+(defn update-auto-run
+  [{:keys [db/id event/auto-run]}]
+  (d/transact (:conn datomic-cloud)
+              {:tx-data [{:db/id id
+                          :event/auto-run auto-run}]}))
 
 (defn end-event
   [event-id]

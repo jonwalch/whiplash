@@ -60,6 +60,7 @@
                                                       :event/running?
                                                       :event/channel-id
                                                       :event/title
+                                                      :event/auto-run
                                                       {:event/stream-source [:db/ident]}]})]
       (cond
         (not (empty? events))
@@ -80,6 +81,7 @@
                                                    :event/running?
                                                    :event/channel-id
                                                    :event/title
+                                                   :event/auto-run
                                                    {:event/stream-source [:db/ident]}]
                                            :event/channel-id channel-id})]
         (cond
@@ -88,6 +90,40 @@
 
           :else
           (no-content))))))
+
+(defn change-auto-run
+  [{:keys [body-params path-params]}]
+  (let [{arg-auto-run :auto-run} body-params
+        {:keys [channel-id]} path-params
+        channel-id (string/lower-case channel-id)
+        {:keys [event/auto-run db/id]} (db/pull-ongoing-event
+                                         {:attrs [:db/id
+                                                  :event/start-time
+                                                  :event/running?
+                                                  :event/channel-id
+                                                  :event/title
+                                                  :event/auto-run
+                                                  {:event/stream-source [:db/ident]}]
+                                          :event/channel-id channel-id})]
+    (cond
+      (and (not= "csgo" arg-auto-run)
+           (not= "off" arg-auto-run))
+      (bad-request)
+
+      (nil? id)
+      (do
+        (not-found))
+
+      ;;TODO return no op if auto run is already set to what you want to set it to
+
+      :else
+      (do
+        ;; TODO make sure this succeeds before returning 200
+        (db/update-auto-run {:db/id id
+                             :event/auto-run (case arg-auto-run
+                                               "csgo" :event.auto-run/csgo
+                                               "off" :event.auto-run/off)})
+        (ok)))))
 
 (defn end-current-event
   [{:keys [body-params path-params] :as req}]

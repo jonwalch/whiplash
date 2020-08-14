@@ -114,7 +114,8 @@
 (defn valid-admin-auth?
   [req]
   (let [{:keys [user exp]} (req->token req)
-        {:user/keys [status]} (db/pull-user {:user/name user :attrs [:user/status]})]
+        {:user/keys [status]} (when-not (nil? user)
+                                (db/pull-user {:user/name user :attrs [:user/status]}))]
     (boolean (and (string? user)
                   (int? exp)
                   (< (time/to-millis) exp)

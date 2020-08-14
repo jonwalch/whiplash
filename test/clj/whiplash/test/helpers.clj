@@ -199,6 +199,18 @@
            (:status resp)))
     (assoc resp :body (common/parse-json-body resp))))
 
+(defn patch-event
+  [{:keys [auth-token status channel-id auto-run]}]
+  (assert (or (= "off" auto-run)
+              (= "csgo" auto-run)))
+  (let [resp ((common/test-app) (-> (mock/request :patch (format "/admin/event/%s" channel-id))
+                                    (mock/cookie :value auth-token)
+                                    (mock/json-body {:auto-run auto-run})))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    resp))
+
 (defn admin-end-event
   [{:keys [auth-token status channel-id]}]
   (let [resp ((common/test-app) (-> (mock/request :post (format "/admin/event/end/%s" channel-id))

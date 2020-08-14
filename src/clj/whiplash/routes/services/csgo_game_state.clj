@@ -4,7 +4,6 @@
             [whiplash.db.core :as db]
             [clojure.string :as string]))
 
-;; add ability to toggle auto-run? on admin panel, admins only
 ;; props can have a new subcomponent :prop/csgo which holds {:csgo/round-number int}
 
 ;; TODO add check for proper auth token corresponding with proper channel-id
@@ -15,6 +14,7 @@
                                        {:attrs [:db/id
                                                 :event/stream-source
                                                 :event/channel-id
+                                                :event/auto-run
                                                 {:event/propositions
                                                  '[:db/id
                                                    :proposition/start-time
@@ -24,9 +24,9 @@
                                                    {:proposition/result [:db/ident]}]}]
                                         :event/channel-id channel-id})]
     (cond
-      ;;TODO add false? event/auto-run? to or
       (or (not= channel-id (:event/channel-id event))
-          (not= :event.stream-source/twitch (:event/stream-source event)))
+          (not= :event.stream-source/twitch (:event/stream-source event))
+          (not= :event.auto-run/csgo (:event/auto-run event)))
       (no-content)
 
       ;; TODO: cancel bet if round number (-> body :map :round) changes but we didnt see :phase "over" on :round

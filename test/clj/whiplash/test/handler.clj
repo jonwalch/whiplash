@@ -342,7 +342,8 @@
              (dissoc current-prop :proposition/start-time :proposition/betting-end-time)))
 
       (is (string? (:event/start-time get-response-body)))
-      (is (= #:event{:running?      true
+      (is (= #:event{:auto-run      "event.auto-run/off"
+                     :running?      true
                      :title         title
                      :stream-source "event.stream-source/twitch"
                      :channel-id    "drdisrespect"}
@@ -458,11 +459,13 @@
              :user_name "queefburglar"}]
            (:body event-score-after-prop-result2)))
 
-    (is (= '(#:event{:channel-id    "donkeykong"
+    (is (= '(#:event{:auto-run      "event.auto-run/off"
+                     :channel-id    "donkeykong"
                      :running?      true
                      :stream-source "event.stream-source/twitch"
                      :title         "yert"}
-              #:event{:channel-id   "drdisrespect"
+              #:event{:auto-run      "event.auto-run/off"
+                      :channel-id   "drdisrespect"
                       :running?      true
                       :stream-source "event.stream-source/twitch"
                       :title         "Dirty Dan's Delirious Dance Party"})
@@ -471,7 +474,8 @@
                 (sort-by :event/channel-id)
                 (map #(dissoc % :event/start-time)))))
 
-    (is (= '(#:event{:channel-id    "drdisrespect"
+    (is (= '(#:event{:auto-run      "event.auto-run/off"
+                     :channel-id    "drdisrespect"
                      :running?      true
                      :stream-source "event.stream-source/twitch"
                      :title         "Dirty Dan's Delirious Dance Party"})
@@ -1441,7 +1445,8 @@
                           :channel-id channel-id})]
 
     (is (string? (:event/start-time get-response-body)))
-    (is (= #:event{:running?      true
+    (is (= #:event{:auto-run      "event.auto-run/off"
+                   :running?      true
                    :title         title
                    :stream-source "event.stream-source/none"
                    :channel-id   channel-id}
@@ -1505,7 +1510,8 @@
                           :channel-id cnn-channel-id})]
 
     (is (string? (:event/start-time get-response-body)))
-    (is (= #:event{:running?      true
+    (is (= #:event{:auto-run      "event.auto-run/off"
+                   :running?      true
                    :title         title
                    :stream-source "event.stream-source/cnn-unauth"
                    :channel-id    cnn-channel-id}
@@ -2592,7 +2598,16 @@
         _ (admin-create-event {:auth-token auth-token
                                :source "none"
                                :title      "Dirty Dan's Delirious Dance Party"
-                               :channel-id "drdisrespect"})
+                               :channel-id "birdfood"})
+        response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
+                                        (mock/json-body {:round {:phase "freezetime"}})))]
+    (is (= 204 (:status response)))))
+
+(deftest csgo-game-state-auto-run-off
+  (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+        _ (admin-create-event {:auth-token auth-token
+                               :title      "Dirty Dan's Delirious Dance Party"
+                               :channel-id "birdfood"})
         response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
                                         (mock/json-body {:round {:phase "freezetime"}})))]
     (is (= 204 (:status response)))))
@@ -2602,9 +2617,17 @@
   (testing "endpoint always return 2xx for csgo game client"
     (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
           channel-id "birdfood"
+          title "Dirty Dan's Delirious Dance Party"
           _ (admin-create-event {:auth-token auth-token
-                                 :title      "Dirty Dan's Delirious Dance Party"
+                                 :title title
                                  :channel-id channel-id})
+          _ (patch-event {:channel-id channel-id
+                           :auto-run  "csgo"
+                           :status    403})
+          _ (patch-event {:channel-id  channel-id
+                           :auto-run   "csgo"
+                           :auth-token auth-token})
+          get-event (get-event {:channel-id channel-id})
           create-response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
                                                  (mock/json-body {:round {:phase "freezetime"}})))
           create-response-fail ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
@@ -2649,6 +2672,13 @@
                                                (mock/json-body {:round {:phase "over" :win_team "T"}})))
 
           get-user-resp3 (get-user {:auth-token auth-token})]
+
+      (is (= #:event{:auto-run      "event.auto-run/csgo"
+                     :running?      true
+                     :title         title
+                     :stream-source "event.stream-source/twitch"
+                     :channel-id    channel-id}
+             (dissoc (:body get-event) :event/start-time)))
       (is (= 201 (:status create-response)))
       (is (= 204 (:status create-response-fail)))
       (is (= 200 (:status end-response)))

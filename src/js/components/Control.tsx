@@ -120,8 +120,27 @@ export function Control(props: any) {
         setEventSource("");
     };
 
-    const endEvent = async (channelID : string) => {
-        const response = await fetch(baseUrl + "admin/event/end/" + channelID, {
+    const patchEvent = async () => {
+        const response = await fetch(baseUrl + "admin/event/" + selectedChannelID, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "PATCH",
+            mode: "same-origin",
+            redirect: "error",
+            body: JSON.stringify({
+                "auto-run": eventInfo["event/auto-run"] === "event.auto-run/csgo" ? "off": "csgo"
+            })
+        });
+        if (response.status === 200) {
+            alert("Successfully changed auto run mode")
+        } else {
+            alert("Failed to change auto run mode")
+        }
+    };
+
+    const endEvent = async () => {
+        const response = await fetch(baseUrl + "admin/event/end/" + selectedChannelID, {
             method: "POST",
             mode: "same-origin",
             redirect: "error",
@@ -155,8 +174,8 @@ export function Control(props: any) {
         }
     };
 
-    const endProp = async (result:string, channelID : string) => {
-        const response = await fetch(baseUrl + "admin/prop/end/" + channelID, {
+    const endProp = async (result:string) => {
+        const response = await fetch(baseUrl + "admin/prop/end/" + selectedChannelID, {
             headers: {
                 "Content-Type": "application/json",
             },
@@ -257,7 +276,19 @@ export function Control(props: any) {
 
     function renderEventInfo() {
         if (selectedChannelID !== ""){
-            return (<div>{JSON.stringify(eventInfo)}</div>)
+            return (
+                <>
+                    <div>{JSON.stringify(eventInfo)}</div>
+                    <button
+                        className="button twitch__button"
+                        type="button"
+                        onClick={() => {
+                            patchEvent()
+                        }}>
+                        {eventInfo["event/auto-run"] === "event.auto-run/csgo" ? "Turn autorun off" : "Turn CSGO autorun on"}
+                    </button>
+
+                </>)
         } else {
             return(<div>No event selected</div>)
         }
@@ -398,7 +429,7 @@ export function Control(props: any) {
                             className="button twitch__button"
                             type="button"
                             onClick={() => {
-                            endEvent(selectedChannelID)
+                            endEvent()
                         }}>
                             End Event
                         </button>
@@ -416,7 +447,7 @@ export function Control(props: any) {
                             style={{marginRight: "30px"}}
                             type="button"
                             onClick={() => {
-                                endProp("true", selectedChannelID)
+                                endProp("true")
                             }}>
                             Proposition outcome: True
                         </button>
@@ -424,7 +455,7 @@ export function Control(props: any) {
                             className="button twitch__button"
                             type="button"
                             onClick={() => {
-                                endProp("false", selectedChannelID)
+                                endProp("false")
                             }}>
                             Proposition outcome: False
                         </button>
@@ -433,7 +464,7 @@ export function Control(props: any) {
                             style={{background: "red"}}
                             type="button"
                             onClick={() => {
-                                endProp("cancel", selectedChannelID)
+                                endProp("cancel")
                             }}>
                             CANCEL PROPOSITION
                         </button>
