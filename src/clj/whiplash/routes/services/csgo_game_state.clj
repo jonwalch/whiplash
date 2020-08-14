@@ -27,7 +27,9 @@
       (or (not= channel-id (:event/channel-id event))
           (not= :event.stream-source/twitch (:event/stream-source event))
           (not= :event.auto-run/csgo (:event/auto-run event)))
-      (no-content)
+      (do
+        (log/infof "ignoring event from %s" channel-id)
+        (no-content))
 
       ;; TODO: cancel bet if round number (-> body :map :round) changes but we didnt see :phase "over" on :round
       ;; requires tracking the round number
