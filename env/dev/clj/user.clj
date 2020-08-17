@@ -7,6 +7,7 @@
     [mount.core :as mount]
     [whiplash.db.core :as db]
     [whiplash.core :refer [start-app]]
+    [whiplash.event-manager :refer [event-manager]]
     [whiplash.routes.services.user :as user]
     [datomic.client.api :as d]))
 

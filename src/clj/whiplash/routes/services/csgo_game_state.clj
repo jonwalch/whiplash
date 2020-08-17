@@ -55,7 +55,7 @@
           (some? current-prop)
           (let [phase (some-> body-params :round :phase)
                 winning-team (some-> body-params :round :win_team)]
-            (log/infof "%s" body-params)
+            (log/info (dissoc body-params :auth))
             (if (= "over" phase)
               (do
                 (assert (contains? #{"T" "CT"} winning-team))
@@ -68,7 +68,7 @@
 
           (nil? current-prop)
           (do
-            (log/infof "%s" body-params)
+            (log/info (dissoc body-params :auth))
             (if (= "freezetime" (-> body-params :round :phase))
               (do
                 (db/create-proposition {:text             "Terrorists win this round"

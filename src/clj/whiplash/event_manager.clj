@@ -56,7 +56,7 @@
         live-streamers (twitch/live-whiplash-csgo-streamers)
         result (async/<!! events-chan)
         live-whiplash-channels (when-not (::anom/anomaly result)
-                                 (map db/update-ident-vals (flatten result)))]
+                                 (mapv db/update-ident-vals (flatten result)))]
     ;; when both network calls succeed
     (when (and (some? live-whiplash-channels)
                (some? live-streamers))
@@ -80,10 +80,10 @@
 
 (mount/defstate event-manager
                 :start
-                (fn []
+                (do
                   (log/info "starting event manager")
                   (set-interval maybe-start-or-stop-csgo-events one-minute))
 
                 :stop
                 (when event-manager
-                    (async/close! event-manager)))
+                  (async/close! event-manager)))
