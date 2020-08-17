@@ -14,13 +14,14 @@
   []
   (let [m {"akoozabazooka"    "jydPmMjLgMsjqovquKqVQNQEPKInwuNx"
            "jawbreakerplease" "tIaoxTuffKBzwLvgYheGmljDMgYaYeDC"
-           "birdfood"         "uHeyOMgIzPtouFlxZMBQmoasDZbKljbB"
-           "rillo"            "ewzaBsSgilmffxiHjNQFjUNDvCfmCbuE"
-           "huddlesworth"     "YtWaLjgnOIQPZdGBjaIEOcoqoPioVwQZ"
-           "trixxytrix"       "AkxCnYSscmkQHwOBIYURmWJPSwxkklJA"
-           "fitnesswiberg"    "ZxIjPtAlVHQWoQPcmJqTiOdnKWYfwklY"
-           "qizarjry"         "eeAyWUZmxbEGPKmedvZonBOXjbCSBMWq"
-           "mackenziey"       "pZCXYzqUAEohmwlLMBvgCmIPAonfHKMa"}]
+           ;"birdfood"         "uHeyOMgIzPtouFlxZMBQmoasDZbKljbB"
+           ;"rillo"            "ewzaBsSgilmffxiHjNQFjUNDvCfmCbuE"
+           ;"huddlesworth"     "YtWaLjgnOIQPZdGBjaIEOcoqoPioVwQZ"
+           ;"trixxytrix"       "AkxCnYSscmkQHwOBIYURmWJPSwxkklJA"
+           ;"fitnesswiberg"    "ZxIjPtAlVHQWoQPcmJqTiOdnKWYfwklY"
+           ;"qizarjry"         "eeAyWUZmxbEGPKmedvZonBOXjbCSBMWq"
+           ;"mackenziey"       "pZCXYzqUAEohmwlLMBvgCmIPAonfHKMa"
+           }]
     (if (:prod env)
       m
       (assoc m "iyujzorpcrazwysxdjvnslittepwkxqs" "VXFOGLGUSETVZPECHRGTGLPECPNOEAON"))))
