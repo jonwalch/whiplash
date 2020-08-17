@@ -16,6 +16,7 @@
                                  (into #{} (map :event/channel-id live-whiplash-channels)))]
     (mapv
       (fn [channel-id]
+        (log/infof "attempting to start event for %s" channel-id)
         (db/create-event {:title      (->> live-streamers
                                            (filter (fn [{:keys [user_name]}]
                                                      (= channel-id (string/lower-case user_name))))
@@ -33,6 +34,7 @@
                                     (into #{} (map (comp string/lower-case :user_name) live-streamers)))]
     (mapv
       (fn [chan-id]
+        (log/infof "attempting to end event for %s" chan-id)
         (db/end-event (->> live-whiplash-channels
                            (filter (fn [{:keys [event/channel-id]}]
                                      (= chan-id channel-id)))
