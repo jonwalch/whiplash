@@ -6,6 +6,7 @@
     [whiplash.config :refer [env]]
     [clojure.tools.cli :refer [parse-opts]]
     [whiplash.db.core :refer [datomic-cloud]]
+    [whiplash.event-manager :refer [event-manager]]
     [clojure.tools.logging :as log]
     [mount.core :as mount]
     [whiplash.middleware.exception :as ex])

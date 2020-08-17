@@ -2,12 +2,15 @@
   (:require [clj-http.client :as client]
             [clojure.string :as string]
             [whiplash.integrations.common :as common]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [whiplash.routes.services.csgo-game-state :as csgo]))
 
 (def twitch-page-size 100)
 ;; TODO: Rotate and remove from source
 (def twitch-client-id "lcqp3mnqxolecsk3e3tvqcueb2sx8x")
 (def twitch-client-secret "t5lt4ikmp0ovweuhi6zsex1lic98ls")
+
+(def twitch-csgo-game-id "32399")
 
 (defn get-token
   []
@@ -16,17 +19,6 @@
                 :query-params  {:client_id twitch-client-id
                                 :client_secret twitch-client-secret
                                 :grant_type "client_credentials"}}))
-
-;; TODO potentially get all pages like in pandascore
-;; TODO add rate limit logging
-;; TODO make this an interface and serve a fixture for tests
-(defn- get-streams
-  [usernames]
-  (client/get "https://api.twitch.tv/helix/streams"
-              {:headers      {"Client-ID" twitch-client-id}
-               :content-type :json
-               :query-params {:first      (str twitch-page-size)
-                              :user_login usernames}}))
 
 ;; https://dev.twitch.tv/docs/api/reference#get-users
 (defn get-user-by-id
@@ -45,6 +37,17 @@
                :content-type :json
                :query-params  {:login login}}))
 
+;; https://dev.twitch.tv/docs/api/reference#get-streams
+(defn get-live-streams
+  [token logins game-ids]
+  (client/get "https://api.twitch.tv/helix/streams"
+              {:headers      {"Authorization" (format "Bearer %s" token)
+                              "Client-ID"     twitch-client-id}
+               :content-type :json
+               ;; TODO: make multiple requests when 100 or more streamers
+               :query-params {:user_login logins
+                              :game_id game-ids}}))
+
 (defn get-login-from-user-id
   [user-id]
   (try
@@ -58,20 +61,40 @@
             :login)
     (catch Throwable t (log/error t))))
 
+(defn live-whiplash-csgo-streamers
+  []
+  (try
+    (some->> (get-live-streams (some-> (get-token)
+                                       common/resp->body
+                                       :access_token)
+                               (keys (csgo/whiplash-streamers))
+                               [twitch-csgo-game-id])
+             common/resp->body
+             :data)
+    (catch Throwable t (do (log/error t)
+                           nil))))
+
 (comment
   ;; Huddlesworth
-  (get-login-from-user-id "207580146")
-  (get-token)
+  (get-login-from-user-id ["207580146"])
+  (live-whiplash-csgo-streamers)
+  (client/get "https://api.twitch.tv/helix/games"
+              {:headers {"Authorization" (format "Bearer %s" (-> (get-token)
+                                                                 common/resp->body
+                                                                 :access_token))
+                              "Client-ID" twitch-client-id}
+               :content-type :json
+               :query-params  {:id "32399"}})
   (get-user-by-id "2mypjnug57rjt9nui70vlnagnf8dor" "207580146")
   )
 
-(defn- standarize-twitch-user-name
+#_(defn- standarize-twitch-user-name
   [user-name]
   (some-> user-name
           string/lower-case
           (string/replace #" " "")))
 
-(defn- add-twitch-usernames-and-url
+#_(defn- add-twitch-usernames-and-url
   [matches]
   (let [twitch-regex #"^https:\/\/player\.twitch\.tv\/\?channel=(.+?)(?=&|$).*$|^https:\/\/www\.twitch\.tv\/(.+?)(?=&|$).*$"]
     (map (fn [{:keys [live_url] :as match}]
@@ -85,7 +108,7 @@
                           :live_url (format "https://player.twitch.tv/?channel=%s" username))))
          matches)))
 
-(defn- views-per-twitch-stream
+#_(defn- views-per-twitch-stream
   [matches]
   (let [usernames (keep :twitch/username matches)]
     (if (not-empty usernames)
@@ -101,7 +124,7 @@
            (apply conj))
       {})))
 
-(defn add-live-viewer-count
+#_(defn add-live-viewer-count
   [matches]
   (let [matches (add-twitch-usernames-and-url matches)
         views-lookup (views-per-twitch-stream matches)]

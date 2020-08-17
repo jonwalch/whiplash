@@ -8,7 +8,8 @@
     [whiplash.db.core :as db]
     [datomic.client.api :as d]
     [clj-uuid :as uuid]
-    [whiplash.time :as time]))
+    [whiplash.time :as time]
+    [whiplash.event-manager :as em]))
 
 (common/app-fixtures)
 (common/db-fixtures)
@@ -2318,7 +2319,9 @@
     (is (false? (-> user2-get-user :body :user/gated?)))
     (is (= []
            (-> user2-get-user-after-end :body :user/notifications)))
-    (testing "twitch ext user's cash is reset to 500"
+
+    ;; TODO: consider renabling this on a per event reset basis
+    #_(testing "twitch ext user's cash is reset to 500"
       (is (= 500 (-> user2-get-user-after-end :body :user/cash))))))
 
 (deftest twitch-not-logged-in-user-not-on-all-time
@@ -2594,10 +2597,19 @@
                         :text       "this is a propositon"
                         :status 403})))
 
+(def test-username "IYUJZORPCRAZWYSXDJVNSLITTEPWKXQS")
+(def test-password "VXFOGLGUSETVZPECHRGTGLPECPNOEAON")
+
 ;; TODO flesh tests out further, especially with more real data
+(deftest csgo-game-state-wrong-password
+  (let [response ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                        (mock/json-body {:auth {:token "WROOOOONG"}})))]
+    (is (= 401 (:status response)))))
+
 (deftest csgo-game-state-no-event
-  (let [response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                        (mock/json-body {:test "test"})))]
+  (let [response ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                        (mock/json-body {:test "test"
+                                                         :auth {:token test-password}})))]
     (is (= 204 (:status response)))))
 
 (deftest csgo-game-state-wrong-channel-id
@@ -2605,8 +2617,9 @@
         _ (admin-create-event {:auth-token auth-token
                                :title      "Dirty Dan's Delirious Dance Party"
                                :channel-id "drdisrespect"})
-        response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                        (mock/json-body {:round {:phase "freezetime"}})))]
+        response ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                        (mock/json-body {:round {:phase "freezetime"}
+                                                         :auth {:token test-password}})))]
     (is (= 204 (:status response)))))
 
 (deftest csgo-game-state-wrong-event-type
@@ -2615,8 +2628,9 @@
                                :source "none"
                                :title      "Dirty Dan's Delirious Dance Party"
                                :channel-id "birdfood"})
-        response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                        (mock/json-body {:round {:phase "freezetime"}})))]
+        response ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                        (mock/json-body {:round {:phase "freezetime"}
+                                                         :auth {:token test-password}})))]
     (is (= 204 (:status response)))))
 
 (deftest csgo-game-state-auto-run-off
@@ -2624,15 +2638,16 @@
         _ (admin-create-event {:auth-token auth-token
                                :title      "Dirty Dan's Delirious Dance Party"
                                :channel-id "birdfood"})
-        response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                        (mock/json-body {:round {:phase "freezetime"}})))]
+        response ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                        (mock/json-body {:round {:phase "freezetime"}
+                                                         :auth {:token test-password}})))]
     (is (= 204 (:status response)))))
 
 ;;TODO big refactor and generalize like other endpoint tests
 (deftest csgo-game-state-happy-path
   (testing "endpoint always return 2xx for csgo game client"
     (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
-          channel-id "birdfood"
+          channel-id test-username
           title "Dirty Dan's Delirious Dance Party"
           _ (admin-create-event {:auth-token auth-token
                                  :title title
@@ -2644,48 +2659,56 @@
                            :auto-run   "csgo"
                            :auth-token auth-token})
           get-event (get-event {:channel-id channel-id})
-          create-response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                                 (mock/json-body {:round {:phase "freezetime"}})))
-          create-response-fail ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                                      (mock/json-body {:round {:phase "freezetime"}})))
+          create-response ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                                 (mock/json-body {:round {:phase "freezetime"}
+                                                                  :auth {:token test-password}})))
+          create-response-fail ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                                      (mock/json-body {:round {:phase "freezetime"}
+                                                                       :auth {:token test-password}})))
 
           _ (user-place-prop-bet {:auth-token       auth-token
                                   :projected-result true
                                   :bet-amount       500
                                   :channel-id channel-id})
 
-          end-response ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                              (mock/json-body {:round {:phase "over" :win_team "T"}})))
+          end-response ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                              (mock/json-body {:round {:phase "over" :win_team "T"}
+                                                               :auth {:token test-password}})))
 
           get-user-resp (get-user {:auth-token auth-token})
 
-          end-response-fail ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                                   (mock/json-body {:round {:phase "over" :win_team "T"}})))
+          end-response-fail ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                                   (mock/json-body {:round {:phase "over" :win_team "T"}
+                                                                    :auth {:token test-password}})))
           ;; get prop, check prev prop outcome, assert they match
 
-          create-response2 ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                                  (mock/json-body {:round {:phase "freezetime"}})))
+          create-response2 ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                                  (mock/json-body {:round {:phase "freezetime"}
+                                                                   :auth {:token test-password}})))
 
           _ (user-place-prop-bet {:auth-token       auth-token
                                   :projected-result false
                                   :bet-amount       510
                                   :channel-id channel-id})
 
-          end-response2 ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                               (mock/json-body {:round {:phase "over" :win_team "CT"}})))
+          end-response2 ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                               (mock/json-body {:round {:phase "over" :win_team "CT"}
+                                                                :auth {:token test-password}})))
 
           get-user-resp2 (get-user {:auth-token auth-token})
 
-          create-response3 ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                                  (mock/json-body {:round {:phase "freezetime"}})))
+          create-response3 ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username))
+                                                  (mock/json-body {:round {:phase "freezetime"}
+                                                                   :auth {:token test-password} })))
 
           _ (user-place-prop-bet {:auth-token       auth-token
                                   :projected-result false
                                   :bet-amount       1530
                                   :channel-id channel-id})
 
-          end-response3 ((common/test-app) (-> (mock/request :post "/v1/gs/csgo/birdfood")
-                                               (mock/json-body {:round {:phase "over" :win_team "T"}})))
+          end-response3 ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" test-username) )
+                                               (mock/json-body {:round {:phase "over" :win_team "T"}
+                                                                :auth {:token test-password}})))
 
           get-user-resp3 (get-user {:auth-token auth-token})]
 
@@ -2693,7 +2716,7 @@
                      :running?      true
                      :title         title
                      :stream-source "event.stream-source/twitch"
-                     :channel-id    channel-id}
+                     :channel-id    (string/lower-case channel-id)}
              (dissoc (:body get-event) :event/start-time)))
       (is (= 201 (:status create-response)))
       (is (= 204 (:status create-response-fail)))
@@ -2742,3 +2765,20 @@
               "X-Frame-Options"              "SAMEORIGIN"
               "X-XSS-Protection"             "1; mode=block"}
              (:headers resp))))))
+
+;; TODO: make test to prove that em doesnt mess with other stream sources and doesnt mess with event.auto-run/none
+(deftest event-manager-happy-path
+  (em/maybe-start-or-stop-csgo-events)
+  (let [events-resp (get-events)
+        _ (em/maybe-start-or-stop-csgo-events)
+        events-resp-again (get-events)
+        _ (binding [common/*twitch-streams-live?* false]
+            (em/maybe-start-or-stop-csgo-events))
+        events-resp-over (get-events {:status 204})]
+    (is (= [#:event{:auto-run      "event.auto-run/csgo"
+                    :channel-id    "huddlesworth"
+                    :running?      true
+                    :stream-source "event.stream-source/twitch"
+                    :title         "STUCK IN SILVER 3 AAAAAAAAAAAAAA"}]
+           (->> events-resp :body (map #(dissoc % :event/start-time)))
+           (->> events-resp-again :body (map #(dissoc % :event/start-time)))))))

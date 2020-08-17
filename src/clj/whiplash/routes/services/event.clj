@@ -148,7 +148,8 @@
 
       :else
       (do (db/end-event (:db/id event))
-          (db/reset-twitch-user-cash)
+          ;; commented out because if one event ends and another is in progress, it'll reset their cash
+          #_(db/reset-twitch-user-cash)
           (ok {})))))
 
 #_(defn create-countdown

@@ -338,6 +338,16 @@
     m
     (keys m)))
 
+(defn async-pull-live-csgo-twitch-events
+  [{:keys [db attrs]}]
+  (let [db (or db (d/db (:conn datomic-cloud)))]
+    (d.async/q {:query '[:find (pull ?event attrs)
+                         :in $ attrs
+                         :where [?event :event/running? true]
+                         [?event :event/stream-source :event.stream-source/twitch]
+                         [?event :event/auto-run :event.auto-run/csgo]]
+                :args  [db attrs]})))
+
 (defn pull-all-ongoing-events
   [{:keys [db attrs]}]
   (let [db (or db (d/db (:conn datomic-cloud)))
@@ -345,10 +355,7 @@
                        :in $ attrs
                        :where [?event :event/running? true]]
               :args  [db attrs]})]
-    (map
-      (fn [result]
-        (update-ident-vals result))
-      (flatten results))))
+    (map update-ident-vals (flatten results))))
 
 (defn pull-ongoing-event
   [{:keys [db attrs event/channel-id]}]
@@ -419,20 +426,22 @@
                   suggestion))))))
 
 (defn create-event
-  [{:keys [title channel-id source]}]
+  [{:keys [title channel-id source event/auto-run]}]
   (assert (contains? #{:event.stream-source/twitch
                        :event.stream-source/youtube
                        :event.stream-source/cnn-unauth
                        :event.stream-source/none}
                      source))
   (d/transact (:conn datomic-cloud)
-              {:tx-data [{:db/id            "temp"
-                          :event/title      title
-                          :event/channel-id channel-id
+              {:tx-data [{:db/id               "temp"
+                          :event/title         title
+                          :event/channel-id    channel-id
                           :event/stream-source source
-                          :event/running?   true
-                          :event/start-time (time/to-date)
-                          :event/auto-run :event.auto-run/off}
+                          :event/running?      true
+                          :event/start-time    (time/to-date)
+                          :event/auto-run      (if auto-run
+                                                 auto-run
+                                                 :event.auto-run/off)}
                          {:whiplash/events ["temp"]}]}))
 
 (defn update-auto-run
@@ -443,6 +452,7 @@
 
 (defn end-event
   [event-id]
+  (assert event-id)
   (d/transact (:conn datomic-cloud)
               {:tx-data [{:db/id event-id
                           :event/running? false

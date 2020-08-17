@@ -51,13 +51,15 @@
       ;; since they're not compatible with this middleware
       ((if (:websocket? request) handler wrapped) request))))
 
-;; TODO: read this from env var and set in K8S config
+;; TODO: remove from source
 (def ^:private secret (hash/sha256 "HIILWUUQBSCCICRMTJSQXIRYUIJIJRRL"))
 
 (comment
   (defn rand-str [len]
-    (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
-  (rand-str 32))
+    (apply str (take len (repeatedly #(char (if (= 0 (rand-int 2))
+                                              (+ (rand 26) 65)
+                                              (+ (rand 26) 97)))))))
+  (map (fn [x] (rand-str 32)) (range 12)))
 
 (defn authfn
   [token]

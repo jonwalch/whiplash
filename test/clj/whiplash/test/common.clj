@@ -30,6 +30,17 @@
       slurp
       edn/read-string))
 
+(def ^:dynamic *twitch-streams-live?* true)
+
+(defn twitch-get-streams-fake
+  [token logins game-ids]
+  (let [resource (if *twitch-streams-live?*
+                   "fixtures/twitch/get-csgo-twitch-streamers-huddy.edn"
+                   "fixtures/twitch/get-csgo-twitch-streamers-none.edn")]
+    (-> (io/resource resource)
+        slurp
+        edn/read-string)))
+
 (defn app-fixtures
   []
   (use-fixtures
@@ -39,7 +50,8 @@
                    #'whiplash.handler/app-routes)
       (with-redefs [whiplash.integrations.amazon-ses/internal-send-email internal-send-email-fake
                     whiplash.integrations.twitch/get-token twitch-get-token-fake
-                    whiplash.integrations.twitch/get-user-by-id twitch-get-user-name-fake]
+                    whiplash.integrations.twitch/get-user-by-id twitch-get-user-name-fake
+                    whiplash.integrations.twitch/get-live-streams twitch-get-streams-fake]
         (f))
       (mount/stop #'whiplash.config/env
                   #'whiplash.handler/app-routes))))
