@@ -2620,7 +2620,7 @@
                          :channel-id "drdisrespect"})
     (post-csgo-game-state {:channel-id test-username
                            :token test-token
-                           :message-type :round/begin
+                           :phase :round/begin
                            :status 204})))
 
 (deftest csgo-game-state-wrong-event-type
@@ -2631,7 +2631,7 @@
                          :channel-id test-username})
     (post-csgo-game-state {:channel-id test-username
                            :token test-token
-                           :message-type :round/begin
+                           :phase :round/begin
                            :status 204})))
 
 (deftest csgo-game-state-auto-run-off
@@ -2641,127 +2641,574 @@
                          :channel-id test-username})
     (post-csgo-game-state {:channel-id test-username
                            :token test-token
-                           :message-type :round/begin
+                           :phase :round/begin
                            :status 204})))
 
-;; this test is a little wacky because props are chosen at random
 (deftest csgo-game-state-happy-path
   (testing "endpoint always return 2xx for csgo game client"
+    (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 0)] ;; 0 is Terrorists win this round
+      (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+            channel-id test-username
+            title "Dirty Dan's Delirious Dance Party"
+            _ (admin-create-event {:auth-token auth-token
+                                   :title      title
+                                   :channel-id channel-id})
+            _ (patch-event {:channel-id channel-id
+                            :auto-run   "csgo"
+                            :status     403})
+            _ (patch-event {:channel-id channel-id
+                            :auto-run   "csgo"
+                            :auth-token auth-token})
+            get-event (get-event {:channel-id channel-id})
+            create-response (post-csgo-game-state {:channel-id   channel-id
+                                                   :token        test-token
+                                                   :phase :round/begin
+                                                   :status       201})
+            create-response-fail (post-csgo-game-state {:channel-id   channel-id
+                                                        :token        test-token
+                                                        :phase :round/begin
+                                                        :status       204})
+
+            _ (user-place-prop-bet {:auth-token       auth-token
+                                    :projected-result true
+                                    :bet-amount       500
+                                    :channel-id       channel-id})
+
+            end-response (post-csgo-game-state {:channel-id   channel-id
+                                                :token        test-token
+                                                :phase :round/end-t})
+
+            get-user-resp (get-user {:auth-token auth-token})
+
+            end-response-fail (post-csgo-game-state {:channel-id   channel-id
+                                                     :token        test-token
+                                                     :phase :round/end-t
+                                                     :status       204})
+
+            ;; get prop, check prev prop outcome, assert they match
+
+            create-response2 (post-csgo-game-state {:channel-id   channel-id
+                                                    :token        test-token
+                                                    :phase :round/begin
+                                                    :status       201})
+
+            _ (user-place-prop-bet {:auth-token       auth-token
+                                    :projected-result false
+                                    :bet-amount       510
+                                    :channel-id       channel-id})
+
+            end-response2 (post-csgo-game-state {:channel-id   channel-id
+                                                 :token        test-token
+                                                 :phase :round/end-ct})
+
+            get-user-resp2 (get-user {:auth-token auth-token})
+
+            create-response3 (post-csgo-game-state {:channel-id   channel-id
+                                                    :token        test-token
+                                                    :phase :round/begin
+                                                    :status       201})
+
+            _ (user-place-prop-bet {:auth-token       auth-token
+                                    :projected-result false
+                                    :bet-amount       1530
+                                    :channel-id       channel-id})
+
+            end-response3 (post-csgo-game-state {:channel-id   channel-id
+                                                 :token        test-token
+                                                 :phase :round/end-t})
+
+            get-user-resp3 (get-user {:auth-token auth-token})]
+
+        (is (= #:event{:auto-run      "event.auto-run/csgo"
+                       :running?      true
+                       :title         title
+                       :stream-source "event.stream-source/twitch"
+                       :channel-id    (string/lower-case channel-id)}
+               (dissoc (:body get-event) :event/start-time)))
+        (is (= 1010 (-> get-user-resp :body :user/cash)))
+        (is (= [{:bet/payout         1010
+                 :notification/type  "notification.type/payout"
+                 :proposition/result "proposition.result/true"
+                 :proposition/text   csgo/terrorists-win}]
+               (-> get-user-resp :body :user/notifications)))
+
+        (is (= 1530 (-> get-user-resp2 :body :user/cash)))
+        (is (= [{:bet/payout         1030
+                 :notification/type  "notification.type/payout"
+                 :proposition/result "proposition.result/false"
+                 :proposition/text   csgo/terrorists-win}]
+               (-> get-user-resp2 :body :user/notifications)))
+
+        (is (= 100 (-> get-user-resp3 :body :user/cash)))
+        (is (= [#:notification{:type "notification.type/bailout"}]
+               (-> get-user-resp3 :body :user/notifications)))))))
+
+(deftest csgo-game-state-ct-wins
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 1)] ;; 1 is Counter-Terrorists win this round
     (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
           channel-id test-username
           title "Dirty Dan's Delirious Dance Party"
           _ (admin-create-event {:auth-token auth-token
-                                 :title title
+                                 :title      title
                                  :channel-id channel-id})
           _ (patch-event {:channel-id channel-id
-                           :auto-run  "csgo"
-                           :status    403})
-          _ (patch-event {:channel-id  channel-id
-                           :auto-run   "csgo"
-                           :auth-token auth-token})
+                          :auto-run   "csgo"
+                          :auth-token auth-token})
           get-event (get-event {:channel-id channel-id})
           create-response (post-csgo-game-state {:channel-id channel-id
-                                                 :token test-token
-                                                 :message-type :round/begin
-                                                 :status 201})
-          create-response-fail (post-csgo-game-state {:channel-id channel-id
-                                                      :token test-token
-                                                      :message-type :round/begin
-                                                      :status 204})
-          prop-text (-> (get-prop {:channel-id channel-id})
-                        :body
-                        :current-prop
-                        :proposition/text)
+                                                 :token      test-token
+                                                 :phase      :round/begin
+                                                 :status     201})
 
           _ (user-place-prop-bet {:auth-token       auth-token
-                                  :projected-result (= csgo/terrorists-win prop-text)
+                                  :projected-result false
                                   :bet-amount       500
                                   :channel-id       channel-id})
 
           end-response (post-csgo-game-state {:channel-id channel-id
-                                              :token test-token
-                                              :message-type :round/end-t})
+                                              :token      test-token
+                                              :phase      :round/end-t})
+
+          get-user-resp (get-user {:auth-token auth-token})]
+
+      (is (= 1010 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/false"
+               :proposition/text   csgo/counter-terrorists-win}]
+             (-> get-user-resp :body :user/notifications))))))
+
+(deftest csgo-game-state-two-kills
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 2) ;; 2 is kills
+                whiplash.routes.services.csgo-game-state/random-n-kills (fn [] 2)] ;; number of kills
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          channel-id test-username
+          title "Dirty Dan's Delirious Dance Party"
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      title
+                                 :channel-id channel-id})
+          _ (patch-event {:channel-id channel-id
+                          :auto-run   "csgo"
+                          :auth-token auth-token})
+          get-event (get-event {:channel-id channel-id})
+          create-response (post-csgo-game-state {:channel-id channel-id
+                                                 :token      test-token
+                                                 :phase      :round/begin
+                                                 :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response (post-csgo-game-state {:channel-id channel-id
+                                              :token      test-token
+                                              :phase      :round/end-t
+                                              :player     :state/two-kills})
 
           get-user-resp (get-user {:auth-token auth-token})
 
-          end-response-fail (post-csgo-game-state {:channel-id channel-id
-                                                   :token test-token
-                                                   :message-type :round/end-t
-                                                   :status 204})
-
-          ;; get prop, check prev prop outcome, assert they match
-
           create-response2 (post-csgo-game-state {:channel-id channel-id
-                                                  :token test-token
-                                                  :message-type :round/begin
-                                                  :status 201})
-
-          prop-text2 (-> (get-prop {:channel-id channel-id})
-                        :body
-                        :current-prop
-                        :proposition/text)
+                                                  :token      test-token
+                                                  :phase      :round/begin
+                                                  :status     201})
 
           _ (user-place-prop-bet {:auth-token       auth-token
-                                  :projected-result (= csgo/counter-terrorists-win prop-text2)
-                                  :bet-amount       510
-                                  :channel-id channel-id})
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
 
           end-response2 (post-csgo-game-state {:channel-id channel-id
-                                               :token test-token
-                                               :message-type :round/end-ct})
+                                               :token      test-token
+                                               :phase      :round/end-t
+                                               :player     :state/one-kill})
+          get-user-resp2 (get-user {:auth-token auth-token})]
 
+      (is (= 1010 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   (format csgo/kills (string/lower-case channel-id) 2)}]
+             (-> get-user-resp :body :user/notifications)))
+
+      (is (= 510 (-> get-user-resp2 :body :user/cash)))
+      (is (= []
+             (-> get-user-resp2 :body :user/notifications))))))
+
+(deftest csgo-game-state-three-hs-kills
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 3) ;; 3 is hs kills
+                whiplash.routes.services.csgo-game-state/random-n-kills (fn [] 3)] ;; number of kills
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          channel-id test-username
+          title "Dirty Dan's Delirious Dance Party"
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      title
+                                 :channel-id channel-id})
+          _ (patch-event {:channel-id channel-id
+                          :auto-run   "csgo"
+                          :auth-token auth-token})
+          get-event (get-event {:channel-id channel-id})
+          create-response (post-csgo-game-state {:channel-id channel-id
+                                                 :token      test-token
+                                                 :phase      :round/begin
+                                                 :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response (post-csgo-game-state {:channel-id channel-id
+                                              :token      test-token
+                                              :phase      :round/end-t
+                                              :player     :state/three-hs-kills})
+
+          get-user-resp (get-user {:auth-token auth-token})
+
+          create-response2 (post-csgo-game-state {:channel-id channel-id
+                                                  :token      test-token
+                                                  :phase      :round/begin
+                                                  :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response2 (post-csgo-game-state {:channel-id channel-id
+                                               :token      test-token
+                                               :phase      :round/end-t
+                                               :player     :state/two-hs-kills})
+          get-user-resp2 (get-user {:auth-token auth-token})]
+
+      (is (= 1010 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   (format csgo/hs-kills (string/lower-case channel-id) 3)}]
+             (-> get-user-resp :body :user/notifications)))
+
+      (is (= 510 (-> get-user-resp2 :body :user/cash)))
+      (is (= []
+             (-> get-user-resp2 :body :user/notifications))))))
+
+(deftest csgo-game-state-streamer-dies
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 4)] ;; 4 is streamer dies
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          channel-id test-username
+          title "Dirty Dan's Delirious Dance Party"
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      title
+                                 :channel-id channel-id})
+          _ (patch-event {:channel-id channel-id
+                          :auto-run   "csgo"
+                          :auth-token auth-token})
+          get-event (get-event {:channel-id channel-id})
+          create-response (post-csgo-game-state {:channel-id channel-id
+                                                 :token      test-token
+                                                 :phase      :round/begin
+                                                 :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response (post-csgo-game-state {:channel-id channel-id
+                                              :token      test-token
+                                              :phase      :round/end-t
+                                              :player     :state/dies})
+
+          get-user-resp (get-user {:auth-token auth-token})
+
+          create-response2 (post-csgo-game-state {:channel-id channel-id
+                                                  :token      test-token
+                                                  :phase      :round/begin
+                                                  :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response2 (post-csgo-game-state {:channel-id channel-id
+                                               :token      test-token
+                                               :phase      :round/end-t
+                                               :player     :state/survives})
+          get-user-resp2 (get-user {:auth-token auth-token})]
+
+      (is (= 1010 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   (format csgo/dies (string/lower-case channel-id))}]
+             (-> get-user-resp :body :user/notifications)))
+
+      (is (= 510 (-> get-user-resp2 :body :user/cash)))
+      (is (= []
+             (-> get-user-resp2 :body :user/notifications))))))
+
+(deftest csgo-game-state-streamer-survives
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 5)] ;; 5 is streamer survives
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          channel-id test-username
+          title "Dirty Dan's Delirious Dance Party"
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      title
+                                 :channel-id channel-id})
+          _ (patch-event {:channel-id channel-id
+                          :auto-run   "csgo"
+                          :auth-token auth-token})
+          get-event (get-event {:channel-id channel-id})
+          create-response (post-csgo-game-state {:channel-id channel-id
+                                                 :token      test-token
+                                                 :phase      :round/begin
+                                                 :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response (post-csgo-game-state {:channel-id channel-id
+                                              :token      test-token
+                                              :phase      :round/end-t
+                                              :player     :state/survives})
+
+          get-user-resp (get-user {:auth-token auth-token})
+
+          create-response2 (post-csgo-game-state {:channel-id channel-id
+                                                  :token      test-token
+                                                  :phase      :round/begin
+                                                  :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response2 (post-csgo-game-state {:channel-id channel-id
+                                               :token      test-token
+                                               :phase      :round/end-t
+                                               :player     :state/dies})
+          get-user-resp2 (get-user {:auth-token auth-token})]
+
+      (is (= 1010 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   (format csgo/survives (string/lower-case channel-id))}]
+             (-> get-user-resp :body :user/notifications)))
+
+      (is (= 510 (-> get-user-resp2 :body :user/cash)))
+      (is (= []
+             (-> get-user-resp2 :body :user/notifications))))))
+
+(deftest csgo-game-state-bomb-planted
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 6)] ;; 6 is bomb planted
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          channel-id test-username
+          title "Dirty Dan's Delirious Dance Party"
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      title
+                                 :channel-id channel-id})
+          _ (patch-event {:channel-id channel-id
+                          :auto-run   "csgo"
+                          :auth-token auth-token})
+          get-event (get-event {:channel-id channel-id})
+          create-response (post-csgo-game-state {:channel-id channel-id
+                                                 :token      test-token
+                                                 :phase      :round/begin
+                                                 :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response (post-csgo-game-state {:channel-id channel-id
+                                              :token      test-token
+                                              :phase      :round/planted})
+
+          get-user-resp (get-user {:auth-token auth-token})
+
+          create-response2 (post-csgo-game-state {:channel-id channel-id
+                                                  :token      test-token
+                                                  :phase      :round/begin
+                                                  :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response2 (post-csgo-game-state {:channel-id channel-id
+                                               :token      test-token
+                                               :phase      :round/defused})
           get-user-resp2 (get-user {:auth-token auth-token})
 
           create-response3 (post-csgo-game-state {:channel-id channel-id
-                                                  :token test-token
-                                                  :message-type :round/begin
-                                                  :status 201})
-
-          prop-text3 (-> (get-prop {:channel-id channel-id})
-                         :body
-                         :current-prop
-                         :proposition/text)
+                                                  :token      test-token
+                                                  :phase      :round/begin
+                                                  :status     201})
 
           _ (user-place-prop-bet {:auth-token       auth-token
-                                  :projected-result (not= csgo/terrorists-win prop-text3)
-                                  :bet-amount       1530
-                                  :channel-id channel-id})
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
 
           end-response3 (post-csgo-game-state {:channel-id channel-id
-                                               :token test-token
-                                               :message-type :round/end-t})
+                                               :token      test-token
+                                               :phase      :round/exploded})
+          get-user-resp3 (get-user {:auth-token auth-token})
 
-          get-user-resp3 (get-user {:auth-token auth-token})]
+          create-response4 (post-csgo-game-state {:channel-id channel-id
+                                                  :token      test-token
+                                                  :phase      :round/begin
+                                                  :status     201})
 
-      (is (= #:event{:auto-run      "event.auto-run/csgo"
-                     :running?      true
-                     :title         title
-                     :stream-source "event.stream-source/twitch"
-                     :channel-id    (string/lower-case channel-id)}
-             (dissoc (:body get-event) :event/start-time)))
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response4 (post-csgo-game-state {:channel-id channel-id
+                                               :token      test-token
+                                               :phase      :round/end-ct})
+          get-user-resp4 (get-user {:auth-token auth-token})]
+
       (is (= 1010 (-> get-user-resp :body :user/cash)))
-      (is (= [(merge {:bet/payout         1010
-                      :notification/type  "notification.type/payout"}
-                     (if (= prop-text csgo/terrorists-win)
-                       {:proposition/result "proposition.result/true"
-                        :proposition/text   csgo/terrorists-win}
-                       {:proposition/result "proposition.result/false"
-                        :proposition/text   csgo/counter-terrorists-win}))]
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   csgo/bomb-planted}]
              (-> get-user-resp :body :user/notifications)))
 
-      (is (= 1530 (-> get-user-resp2 :body :user/cash)))
-      (is (= [(merge {:bet/payout        1030
-                      :notification/type "notification.type/payout"}
-                     (if (= prop-text2 csgo/counter-terrorists-win)
-                       {:proposition/result "proposition.result/true"
-                        :proposition/text   csgo/counter-terrorists-win}
-                       {:proposition/result "proposition.result/false"
-                        :proposition/text   csgo/terrorists-win}))]
+      (is (= 1520 (-> get-user-resp2 :body :user/cash)))
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   csgo/bomb-planted}]
              (-> get-user-resp2 :body :user/notifications)))
 
-      (is (= 100 (-> get-user-resp3 :body :user/cash)))
-      (is (= [#:notification{:type "notification.type/bailout"}]
-             (-> get-user-resp3 :body :user/notifications))))))
+      (is (= 2030 (-> get-user-resp3 :body :user/cash)))
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   csgo/bomb-planted}]
+             (-> get-user-resp3 :body :user/notifications)))
+
+      (is (= 1530 (-> get-user-resp4 :body :user/cash)))
+      (is (= []
+             (-> get-user-resp4 :body :user/notifications))))))
+
+(deftest csgo-game-state-bomb-defused
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 7)] ;; 7 is bomb planted
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          channel-id test-username
+          title "Dirty Dan's Delirious Dance Party"
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      title
+                                 :channel-id channel-id})
+          _ (patch-event {:channel-id channel-id
+                          :auto-run   "csgo"
+                          :auth-token auth-token})
+          get-event (get-event {:channel-id channel-id})
+          create-response (post-csgo-game-state {:channel-id channel-id
+                                                 :token      test-token
+                                                 :phase      :round/begin
+                                                 :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response (post-csgo-game-state {:channel-id channel-id
+                                              :token      test-token
+                                              :phase      :round/defused})
+
+          get-user-resp (get-user {:auth-token auth-token})
+
+          create-response2 (post-csgo-game-state {:channel-id channel-id
+                                                  :token      test-token
+                                                  :phase      :round/begin
+                                                  :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response2 (post-csgo-game-state {:channel-id channel-id
+                                               :token      test-token
+                                               :phase      :round/planted})
+          get-user-resp2 (get-user {:auth-token auth-token})]
+
+      (is (= 1010 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   csgo/bomb-defused}]
+             (-> get-user-resp :body :user/notifications)))
+
+      (is (= 510 (-> get-user-resp2 :body :user/cash)))
+      (is (= []
+             (-> get-user-resp2 :body :user/notifications))))))
+
+(deftest csgo-game-state-bomb-exploded
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 8)] ;; 8 is bomb exploded
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          channel-id test-username
+          title "Dirty Dan's Delirious Dance Party"
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      title
+                                 :channel-id channel-id})
+          _ (patch-event {:channel-id channel-id
+                          :auto-run   "csgo"
+                          :auth-token auth-token})
+          get-event (get-event {:channel-id channel-id})
+          create-response (post-csgo-game-state {:channel-id channel-id
+                                                 :token      test-token
+                                                 :phase      :round/begin
+                                                 :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response (post-csgo-game-state {:channel-id channel-id
+                                              :token      test-token
+                                              :phase      :round/exploded})
+
+          get-user-resp (get-user {:auth-token auth-token})
+
+          create-response2 (post-csgo-game-state {:channel-id channel-id
+                                                  :token      test-token
+                                                  :phase      :round/begin
+                                                  :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result true
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          end-response2 (post-csgo-game-state {:channel-id channel-id
+                                               :token      test-token
+                                               :phase      :round/planted})
+          get-user-resp2 (get-user {:auth-token auth-token})]
+
+      (is (= 1010 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         1010
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/true"
+               :proposition/text   csgo/bomb-explodes}]
+             (-> get-user-resp :body :user/notifications)))
+
+      (is (= 510 (-> get-user-resp2 :body :user/cash)))
+      (is (= []
+             (-> get-user-resp2 :body :user/notifications))))))
 
 (deftest twitch-username-lookup
   (let [response ((common/test-app) (-> (mock/request :get "/twitch/user-id-lookup")
@@ -2787,43 +3234,44 @@
 
 ;; TODO: make test to prove that em doesnt mess with other stream sources and doesnt mess with event.auto-run/none
 (deftest event-manager-cancel-outstanding-prop
-  (em/maybe-start-or-stop-csgo-events)
-  (let [{:keys [auth-token]} (create-user-and-login dummy-user)
-        events-resp (get-events)
-        _ (em/maybe-start-or-stop-csgo-events)
-        events-resp-again (get-events)
-        create-prop-response (post-csgo-game-state {:channel-id test-username
-                                                    :token test-token
-                                                    :message-type :round/begin
-                                                    :status 201})
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 0)] ;; 0 is Terrorists win
+    (em/maybe-start-or-stop-csgo-events)
+    (let [{:keys [auth-token]} (create-user-and-login dummy-user)
+          events-resp (get-events)
+          _ (em/maybe-start-or-stop-csgo-events)
+          events-resp-again (get-events)
+          create-prop-response (post-csgo-game-state {:channel-id test-username
+                                                      :token      test-token
+                                                      :phase      :round/begin
+                                                      :status     201})
 
-        _ (user-place-prop-bet {:auth-token       auth-token
-                              :projected-result false
-                              :bet-amount       500
-                              :channel-id test-username})
-        user (get-user {:auth-token auth-token})
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result false
+                                  :bet-amount       500
+                                  :channel-id       test-username})
+          user (get-user {:auth-token auth-token})
 
-        _ (binding [common/*twitch-streams-live?* false]
-            (em/maybe-start-or-stop-csgo-events))
-        user2 (get-user {:auth-token auth-token})
-        events-resp-over (get-events {:status 204})]
-    (is (= [#:event{:auto-run      "event.auto-run/csgo"
-                    :channel-id    (string/lower-case test-username)
-                    :running?      true
-                    :stream-source "event.stream-source/twitch"
-                    :title         "STUCK IN SILVER 3 AAAAAAAAAAAAAA"}]
-           (->> events-resp :body (map #(dissoc % :event/start-time)))
-           (->> events-resp-again :body (map #(dissoc % :event/start-time)))))
+          _ (binding [common/*twitch-streams-live?* false]
+              (em/maybe-start-or-stop-csgo-events))
+          user2 (get-user {:auth-token auth-token})
+          events-resp-over (get-events {:status 204})]
+      (is (= [#:event{:auto-run      "event.auto-run/csgo"
+                      :channel-id    (string/lower-case test-username)
+                      :running?      true
+                      :stream-source "event.stream-source/twitch"
+                      :title         "STUCK IN SILVER 3 AAAAAAAAAAAAAA"}]
+             (->> events-resp :body (map #(dissoc % :event/start-time)))
+             (->> events-resp-again :body (map #(dissoc % :event/start-time)))))
 
-    (is (= 0 (-> user
-                 :body
-                 :user/cash)))
-    (is (= [] (-> user :body :user/notifications)))
-    (is (= 500 (-> user2
+      (is (= 0 (-> user
                    :body
                    :user/cash)))
-    (is (= [{:bet/payout         500
-             :notification/type  "notification.type/payout"
-             :proposition/result "proposition.result/cancelled"
-             :proposition/text   "Terrorists win this round"}]
-           (-> user2 :body :user/notifications)))))
+      (is (= [] (-> user :body :user/notifications)))
+      (is (= 500 (-> user2
+                     :body
+                     :user/cash)))
+      (is (= [{:bet/payout         500
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/cancelled"
+               :proposition/text   csgo/terrorists-win}]
+             (-> user2 :body :user/notifications))))))

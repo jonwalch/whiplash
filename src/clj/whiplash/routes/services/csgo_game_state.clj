@@ -28,51 +28,93 @@
       m
       (assoc m "iyujzorpcrazwysxdjvnslittepwkxqs" "VXFOGLGUSETVZPECHRGTGLPECPNOEAON"))))
 
-(comment
-  :player {:observer_slot 6,
-           :weapons {:weapon_1 {:ammo_reserve 32,
-                                :paintkit "am_bronze_sparkle",
-                                :name "weapon_deagle",
-                                :ammo_clip 7,
-                                :type "Pistol",
-                                :state "reloading",
-                                :ammo_clip_max 7},
-                     :weapon_0 {:paintkit "default", :name "weapon_knife_t", :type "Knife", :state "holstered"}},
-           :name "Bazooka | whiplash.gg",
-           :state {:money 650,
-                   :helmet true,
-                   :round_killhs 1,
-                   :round_kills 1,
-                   :smoked 0,
-                   :equip_value 1700,
-                   :health 100,
-                   :armor 100,
-                   :burning 0,
-                   :flashed 0},
-           :activity "playing",
-           :team "T",
-           :match_stats {:kills 1, :assists 0, :deaths 0, :mvps 0, :score 5},
-           :steamid 76561198000333939},
-  )
-
 (def ^:const terrorists-win "Terrorists win this round")
 (def ^:const counter-terrorists-win "Counter-Terrorists win this round")
-;(def ^:private ^:const two-kills "%s gets 2 or more kills this round")
+(def ^:const kills "%s gets %s or more kills this round")
+(def ^:const hs-kills "%s gets %s or more headshot kills this round")
+(def ^:const dies "%s dies this round")
+(def ^:const survives "%s survives this round")
+(def ^:const bomb-planted "Bomb is planted this round")
+(def ^:const bomb-defused "Bomb is defused this round")
+(def ^:const bomb-explodes "Bomb explodes this round")
 
 (def ^:private props
   [terrorists-win
-   counter-terrorists-win])
+   counter-terrorists-win
+   kills
+   hs-kills
+   dies
+   survives
+   bomb-planted
+   bomb-defused
+   bomb-explodes])
+
+;;TODO: throw on failure
+(defn parse-kills
+  [text]
+  (some->
+    ;; only works for a single digit. regex matches kills and hs-kills.
+    (re-find #" (\d) " text)
+    second
+    Integer/parseInt))
+
+(comment
+ (parse-kills counter-terrorists-win)
+ (parse-kills (format kills "donny" 5)))
 
 (defn proposition-result?
-  [{:keys [proposition winning-team]}]
-  (assert (contains? #{"T" "CT"} winning-team))
-  (let [{:proposition/keys [text]} proposition]
+  [{:keys [event/channel-id proposition winning-team round-kills round-hs-kills player-health bomb]}]
+  ;(assert (contains? #{"T" "CT"} winning-team))
+  (let [{:proposition/keys [text]} proposition
+        n-kills (parse-kills text)]
     (condp = text
       terrorists-win
       (= "T" winning-team)
 
       counter-terrorists-win
-      (= "CT" winning-team))))
+      (= "CT" winning-team)
+
+      (format kills channel-id n-kills)
+      (>= round-kills n-kills)
+
+      (format hs-kills channel-id n-kills)
+      (>= round-hs-kills n-kills)
+
+      (format dies channel-id)
+      (<= player-health 0)
+
+      (format survives channel-id)
+      (> player-health 0)
+
+      bomb-planted
+      (or (= "planted" bomb)
+          (= "defused" bomb)
+          (= "exploded" bomb))
+
+      bomb-defused
+      (= "defused" bomb)
+
+      bomb-explodes
+      (= "exploded" bomb))))
+
+(defn- random-index
+  "This exists mostly to redef it for tests"
+  [coll]
+  (rand-int (count coll)))
+
+(defn- random-n-kills
+  "Generate a random number between 1 inclusive and 5 inclusive"
+  []
+  (+ 1 (rand-int (- 6 1))))
+
+(comment
+  (->> (map (fn [x]
+              (random-n-kills))
+            (range 10000))
+       (group-by identity)
+       (map (fn [[k v]]
+              {k (count v)}))
+       (apply merge)))
 
 (defn receive-from-game-client
   [{:keys [path-params body-params]}]
@@ -102,16 +144,18 @@
           ;; TODO: cancel bet if round number (-> body :map :round) changes but we didnt see :phase "over" on :round
           ;; requires tracking the round number
           (some? current-prop)
-          (let [prop-text (:proposition/text current-prop)
-                phase (some-> body-params :round :phase)
-                winning-team (some-> body-params :round :win_team)
-                ;round-kills (some-> body-params :player :state :round_kills)
-                ]
+          (do
             (log/info (dissoc body-params :auth))
-            (if (= "over" phase)
+            (if (= "over" (some-> body-params :round :phase))
               (let [{:keys [db-after]} (db/end-betting-for-proposition current-prop)]
-                (db/payouts-for-proposition {:result? (proposition-result? {:proposition  current-prop
-                                                                            :winning-team winning-team})
+                (db/payouts-for-proposition {:result? (proposition-result?
+                                                        {:event/channel-id channel-id
+                                                         :proposition  current-prop
+                                                         :winning-team (some-> body-params :round :win_team)
+                                                         :round-kills (some-> body-params :player :state :round_kills)
+                                                         :round-hs-kills (some-> body-params :player :state :round_killshs)
+                                                         :player-health (some-> body-params :player :state :health)
+                                                         :bomb (some-> body-params :round :bomb)})
                                              :proposition current-prop
                                              :db          db-after})
                 (ok))
@@ -122,8 +166,17 @@
             (log/info (dissoc body-params :auth))
             (if (= "freezetime" (-> body-params :round :phase))
               (do
-                (db/create-proposition {:text             (rand-nth props)
-                                        :event-eid        (:db/id event)
+                (db/create-proposition {:text (let [chosen-prop (nth props (random-index props))]
+                                                (cond
+                                                  (string/includes? chosen-prop "kills this round")
+                                                  (format chosen-prop channel-id (random-n-kills))
+
+                                                  (string/includes? chosen-prop "%s")
+                                                  (format chosen-prop channel-id)
+
+                                                  :else
+                                                  chosen-prop))
+                                        :event-eid (:db/id event)
                                         :end-betting-secs 30})
                 {:status 201
                  :headers nil

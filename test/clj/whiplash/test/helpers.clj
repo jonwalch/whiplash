@@ -471,10 +471,8 @@
                      :channel-id channel-id})))
 
 (defn post-csgo-game-state
-  [{:keys [channel-id token message-type status]}]
-  (assert (some #(= % message-type) #{:round/begin :round/end-t :round/end-ct}))
-  (let [phase (case message-type
-
+  [{:keys [channel-id token phase player status]}]
+  (let [phase (case phase
                 :round/begin
                 {:phase "freezetime"}
 
@@ -482,10 +480,39 @@
                 {:phase "over" :win_team "T"}
 
                 :round/end-ct
-                {:phase "over" :win_team "CT"})
+                {:phase "over" :win_team "CT"}
+
+                :round/planted
+                {:phase "over" :bomb "planted"}
+
+                :round/defused
+                {:phase "over" :bomb "defused"}
+
+                :round/exploded
+                {:phase "over" :bomb "exploded"})
+        player (when player
+                 (case player
+                   :state/one-kill
+                   {:state {:round_kills 1}}
+
+                   :state/two-kills
+                   {:state {:round_kills 2}}
+
+                   :state/two-hs-kills
+                   {:state {:round_killshs 2}}
+
+                   :state/three-hs-kills
+                   {:state {:round_killshs 3}}
+
+                   :state/survives
+                   {:state {:health 1}}
+
+                   :state/dies
+                   {:state {:health 0}}))
         resp ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" channel-id))
                                     (mock/json-body {:round phase
-                                                     :auth  {:token token}})))]
+                                                     :auth  {:token token}
+                                                     :player player})))]
     (is (= (or status
                200)
            (:status resp)))
