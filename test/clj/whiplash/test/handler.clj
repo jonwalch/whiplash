@@ -9,7 +9,8 @@
     [datomic.client.api :as d]
     [clj-uuid :as uuid]
     [whiplash.time :as time]
-    [whiplash.event-manager :as em]))
+    [whiplash.event-manager :as em]
+    [whiplash.routes.services.csgo-game-state :as csgo]))
 
 (common/app-fixtures)
 (common/db-fixtures)
@@ -2643,6 +2644,7 @@
                            :message-type :round/begin
                            :status 204})))
 
+;; this test is a little wacky because props are chosen at random
 (deftest csgo-game-state-happy-path
   (testing "endpoint always return 2xx for csgo game client"
     (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
@@ -2666,11 +2668,15 @@
                                                       :token test-token
                                                       :message-type :round/begin
                                                       :status 204})
+          prop-text (-> (get-prop {:channel-id channel-id})
+                        :body
+                        :current-prop
+                        :proposition/text)
 
           _ (user-place-prop-bet {:auth-token       auth-token
-                                  :projected-result true
+                                  :projected-result (= csgo/terrorists-win prop-text)
                                   :bet-amount       500
-                                  :channel-id channel-id})
+                                  :channel-id       channel-id})
 
           end-response (post-csgo-game-state {:channel-id channel-id
                                               :token test-token
@@ -2690,8 +2696,13 @@
                                                   :message-type :round/begin
                                                   :status 201})
 
+          prop-text2 (-> (get-prop {:channel-id channel-id})
+                        :body
+                        :current-prop
+                        :proposition/text)
+
           _ (user-place-prop-bet {:auth-token       auth-token
-                                  :projected-result false
+                                  :projected-result (= csgo/counter-terrorists-win prop-text2)
                                   :bet-amount       510
                                   :channel-id channel-id})
 
@@ -2706,8 +2717,13 @@
                                                   :message-type :round/begin
                                                   :status 201})
 
+          prop-text3 (-> (get-prop {:channel-id channel-id})
+                         :body
+                         :current-prop
+                         :proposition/text)
+
           _ (user-place-prop-bet {:auth-token       auth-token
-                                  :projected-result false
+                                  :projected-result (not= csgo/terrorists-win prop-text3)
                                   :bet-amount       1530
                                   :channel-id channel-id})
 
@@ -2724,17 +2740,23 @@
                      :channel-id    (string/lower-case channel-id)}
              (dissoc (:body get-event) :event/start-time)))
       (is (= 1010 (-> get-user-resp :body :user/cash)))
-      (is (= [{:bet/payout         1010
-               :notification/type  "notification.type/payout"
-               :proposition/result "proposition.result/true"
-               :proposition/text   "Terrorists win this round"}]
+      (is (= [(merge {:bet/payout         1010
+                      :notification/type  "notification.type/payout"}
+                     (if (= prop-text csgo/terrorists-win)
+                       {:proposition/result "proposition.result/true"
+                        :proposition/text   csgo/terrorists-win}
+                       {:proposition/result "proposition.result/false"
+                        :proposition/text   csgo/counter-terrorists-win}))]
              (-> get-user-resp :body :user/notifications)))
 
       (is (= 1530 (-> get-user-resp2 :body :user/cash)))
-      (is (= [{:bet/payout         1030
-               :notification/type  "notification.type/payout"
-               :proposition/result "proposition.result/false"
-               :proposition/text   "Terrorists win this round"}]
+      (is (= [(merge {:bet/payout        1030
+                      :notification/type "notification.type/payout"}
+                     (if (= prop-text2 csgo/counter-terrorists-win)
+                       {:proposition/result "proposition.result/true"
+                        :proposition/text   csgo/counter-terrorists-win}
+                       {:proposition/result "proposition.result/false"
+                        :proposition/text   csgo/terrorists-win}))]
              (-> get-user-resp2 :body :user/notifications)))
 
       (is (= 100 (-> get-user-resp3 :body :user/cash)))

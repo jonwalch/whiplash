@@ -5,6 +5,7 @@
             [clojure.string :as string]
             [whiplash.config :refer [env]]))
 
+;; TODO: end bets earlier than round end if the thing happens
 ;; props can have a new subcomponent :prop/csgo which holds {:csgo/round-number int}
 
 ;; TODO remove from source
@@ -26,6 +27,52 @@
     (if (:prod env)
       m
       (assoc m "iyujzorpcrazwysxdjvnslittepwkxqs" "VXFOGLGUSETVZPECHRGTGLPECPNOEAON"))))
+
+(comment
+  :player {:observer_slot 6,
+           :weapons {:weapon_1 {:ammo_reserve 32,
+                                :paintkit "am_bronze_sparkle",
+                                :name "weapon_deagle",
+                                :ammo_clip 7,
+                                :type "Pistol",
+                                :state "reloading",
+                                :ammo_clip_max 7},
+                     :weapon_0 {:paintkit "default", :name "weapon_knife_t", :type "Knife", :state "holstered"}},
+           :name "Bazooka | whiplash.gg",
+           :state {:money 650,
+                   :helmet true,
+                   :round_killhs 1,
+                   :round_kills 1,
+                   :smoked 0,
+                   :equip_value 1700,
+                   :health 100,
+                   :armor 100,
+                   :burning 0,
+                   :flashed 0},
+           :activity "playing",
+           :team "T",
+           :match_stats {:kills 1, :assists 0, :deaths 0, :mvps 0, :score 5},
+           :steamid 76561198000333939},
+  )
+
+(def ^:const terrorists-win "Terrorists win this round")
+(def ^:const counter-terrorists-win "Counter-Terrorists win this round")
+;(def ^:private ^:const two-kills "%s gets 2 or more kills this round")
+
+(def ^:private props
+  [terrorists-win
+   counter-terrorists-win])
+
+(defn proposition-result?
+  [{:keys [proposition winning-team]}]
+  (assert (contains? #{"T" "CT"} winning-team))
+  (let [{:proposition/keys [text]} proposition]
+    (condp = text
+      terrorists-win
+      (= "T" winning-team)
+
+      counter-terrorists-win
+      (= "CT" winning-team))))
 
 (defn receive-from-game-client
   [{:keys [path-params body-params]}]
@@ -55,16 +102,18 @@
           ;; TODO: cancel bet if round number (-> body :map :round) changes but we didnt see :phase "over" on :round
           ;; requires tracking the round number
           (some? current-prop)
-          (let [phase (some-> body-params :round :phase)
-                winning-team (some-> body-params :round :win_team)]
+          (let [prop-text (:proposition/text current-prop)
+                phase (some-> body-params :round :phase)
+                winning-team (some-> body-params :round :win_team)
+                ;round-kills (some-> body-params :player :state :round_kills)
+                ]
             (log/info (dissoc body-params :auth))
             (if (= "over" phase)
-              (do
-                (assert (contains? #{"T" "CT"} winning-team))
-                (let [{:keys [db-after]} (db/end-betting-for-proposition current-prop)]
-                  (db/payouts-for-proposition {:result?     (= "T" winning-team)
-                                               :proposition current-prop
-                                               :db          db-after}))
+              (let [{:keys [db-after]} (db/end-betting-for-proposition current-prop)]
+                (db/payouts-for-proposition {:result? (proposition-result? {:proposition  current-prop
+                                                                            :winning-team winning-team})
+                                             :proposition current-prop
+                                             :db          db-after})
                 (ok))
               (no-content)))
 
@@ -73,7 +122,7 @@
             (log/info (dissoc body-params :auth))
             (if (= "freezetime" (-> body-params :round :phase))
               (do
-                (db/create-proposition {:text             "Terrorists win this round"
+                (db/create-proposition {:text             (rand-nth props)
                                         :event-eid        (:db/id event)
                                         :end-betting-secs 30})
                 {:status 201
