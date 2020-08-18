@@ -39,15 +39,17 @@
 (def ^:const bomb-explodes "Bomb explodes this round")
 
 (def ^:private props
-  [terrorists-win
-   counter-terrorists-win
-   kills
+  [
+   ;terrorists-win
+   ;counter-terrorists-win
+   ;kills
    hs-kills
    dies
    survives
    bomb-planted
    bomb-defused
-   bomb-explodes])
+   bomb-explodes
+   ])
 
 ;;TODO: throw on failure
 (defn parse-kills
@@ -63,10 +65,11 @@
  (parse-kills (format kills "donny" 5)))
 
 (defn proposition-result?
-  [{:keys [event/channel-id proposition winning-team round-kills round-hs-kills player-health bomb]}]
+  [{:keys [event/channel-id proposition winning-team round-kills round-hs-kills player-health bomb] :as args}]
   ;(assert (contains? #{"T" "CT"} winning-team))
   (let [{:proposition/keys [text]} proposition
         n-kills (parse-kills text)]
+    (log/info "proposition-result?" args n-kills)
     (condp = text
       terrorists-win
       (= "T" winning-team)
@@ -153,7 +156,7 @@
                                                          :proposition  current-prop
                                                          :winning-team (some-> body-params :round :win_team)
                                                          :round-kills (some-> body-params :player :state :round_kills)
-                                                         :round-hs-kills (some-> body-params :player :state :round_killshs)
+                                                         :round-hs-kills (some-> body-params :player :state :round_killhs)
                                                          :player-health (some-> body-params :player :state :health)
                                                          :bomb (some-> body-params :round :bomb)})
                                              :proposition current-prop

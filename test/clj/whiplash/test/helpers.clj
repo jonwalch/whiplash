@@ -499,10 +499,10 @@
                    {:state {:round_kills 2}}
 
                    :state/two-hs-kills
-                   {:state {:round_killshs 2}}
+                   {:state {:round_killhs 2}}
 
                    :state/three-hs-kills
-                   {:state {:round_killshs 3}}
+                   {:state {:round_killhs 3}}
 
                    :state/survives
                    {:state {:health 1}}
