@@ -28,18 +28,28 @@
       channel-ids-to-go-live)))
 
 (defn events-go-offline
-  [live-streamers live-whiplash-channels]
+  [db live-streamers live-whiplash-channels]
   (let [channel-ids-to-go-offline (set/difference
                                     (into #{} (map :event/channel-id live-whiplash-channels))
                                     (into #{} (map (comp string/lower-case :user_name) live-streamers)))]
     (mapv
       (fn [chan-id]
         (log/infof "attempting to end event for %s" chan-id)
-        (db/end-event (->> live-whiplash-channels
-                           (filter (fn [{:keys [event/channel-id]}]
-                                     (= chan-id channel-id)))
-                           first
-                           :db/id)))
+        (let [event-eid (->> live-whiplash-channels
+                             (filter (fn [{:keys [event/channel-id]}]
+                                       (= chan-id channel-id)))
+                             first
+                             :db/id)
+              ;; In case we never got a game state event to call a proposition but we're ending the event
+              props-to-cancel (db/find-running-prop-bets {:db db :db/id event-eid})]
+          ;;TODO: keep an eye out on this for its performance, makes a lot of blocking calls in a loop
+          (when-not (empty? props-to-cancel)
+            (mapv
+              (fn [prop-eid]
+                (db/cancel-proposition-and-return-cash {:proposition {:db/id prop-eid}
+                                                        :db          db}))
+              props-to-cancel))
+          (db/end-event event-eid)))
       channel-ids-to-go-offline)))
 
 (defn maybe-start-or-stop-csgo-events
@@ -61,7 +71,7 @@
     (when (and (some? live-whiplash-channels)
                (some? live-streamers))
       (events-go-live live-streamers live-whiplash-channels)
-      (events-go-offline live-streamers live-whiplash-channels))))
+      (events-go-offline db live-streamers live-whiplash-channels))))
 
 (defn set-interval
   [f time-in-ms]

@@ -469,3 +469,24 @@
     (admin-end-prop {:auth-token auth-token
                      :result     "false"
                      :channel-id channel-id})))
+
+(defn post-csgo-game-state
+  [{:keys [channel-id token message-type status]}]
+  (assert (some #(= % message-type) #{:round/begin :round/end-t :round/end-ct}))
+  (let [phase (case message-type
+
+                :round/begin
+                {:phase "freezetime"}
+
+                :round/end-t
+                {:phase "over" :win_team "T"}
+
+                :round/end-ct
+                {:phase "over" :win_team "CT"})
+        resp ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" channel-id))
+                                    (mock/json-body {:round phase
+                                                     :auth  {:token token}})))]
+    (is (= (or status
+               200)
+           (:status resp)))
+    resp))

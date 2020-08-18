@@ -71,8 +71,7 @@
                                [twitch-csgo-game-id])
              common/resp->body
              :data)
-    (catch Throwable t (do (log/error t)
-                           nil))))
+    (catch Throwable t (log/error t))))
 
 (comment
   ;; Huddlesworth

@@ -348,6 +348,17 @@
                          [?event :event/auto-run :event.auto-run/csgo]]
                 :args  [db attrs]})))
 
+(defn find-running-prop-bets
+  [{:keys [db db/id]}]
+  (assert id)
+  (let [db (or db (d/db (:conn datomic-cloud)))
+        results (d/q {:query '[:find ?prop
+                               :in $ ?id
+                               :where [?id :event/propositions ?prop]
+                               [?prop :proposition/running? true]]
+                      :args  [db id]})]
+    (flatten results)))
+
 (defn pull-all-ongoing-events
   [{:keys [db attrs]}]
   (let [db (or db (d/db (:conn datomic-cloud)))
@@ -471,16 +482,6 @@
                               {:db/id (first res)
                                :user/cash 500N})
                             users)})))
-
-;; TODO deprecate
-(defn find-ongoing-proposition
-  ([]
-   (find-ongoing-proposition (d/db (:conn datomic-cloud))))
-  ([db]
-   (ffirst
-     (d/q {:query '[:find ?prop
-                    :where [?prop :proposition/running? true]]
-           :args  [db]}))))
 
 (defn create-proposition
   [{:keys [text event-eid end-betting-secs]}]

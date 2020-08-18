@@ -59,6 +59,7 @@
     (apply str (take len (repeatedly #(char (if (= 0 (rand-int 2))
                                               (+ (rand 26) 65)
                                               (+ (rand 26) 97)))))))
+  (rand-str 32)
   (map (fn [x] (rand-str 32)) (range 12)))
 
 (defn authfn

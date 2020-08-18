@@ -32,5 +32,5 @@
  :orig-content-encoding nil,
  :status 200,
  :length 396,
- :body "{\"data\":[{\"id\":\"39315158494\",\"user_id\":\"207580146\",\"user_name\":\"Huddlesworth\",\"game_id\":\"32399\",\"type\":\"live\",\"title\":\"STUCK IN SILVER 3 AAAAAAAAAAAAAA\",\"viewer_count\":15,\"started_at\":\"2020-08-17T16:32:08Z\",\"language\":\"en\",\"thumbnail_url\":\"https://static-cdn.jtvnw.net/previews-ttv/live_user_huddlesworth-{width}x{height}.jpg\",\"tag_ids\":[\"6ea6bca4-4712-4ab9-a906-e3336a9d8039\"]}],\"pagination\":{}}",
+ :body "{\"data\":[{\"id\":\"39315158494\",\"user_id\":\"207580146\",\"user_name\":\"IYUJZORPCRAZWYSXDJVNSLITTEPWKXQS\",\"game_id\":\"32399\",\"type\":\"live\",\"title\":\"STUCK IN SILVER 3 AAAAAAAAAAAAAA\",\"viewer_count\":15,\"started_at\":\"2020-08-17T16:32:08Z\",\"language\":\"en\",\"thumbnail_url\":\"https://static-cdn.jtvnw.net/previews-ttv/live_user_huddlesworth-{width}x{height}.jpg\",\"tag_ids\":[\"6ea6bca4-4712-4ab9-a906-e3336a9d8039\"]}],\"pagination\":{}}",
  :trace-redirects []}
