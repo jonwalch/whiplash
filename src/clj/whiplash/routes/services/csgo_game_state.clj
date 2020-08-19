@@ -40,12 +40,12 @@
 
 (def ^:private props
   [
-   ;terrorists-win
-   ;counter-terrorists-win
+   terrorists-win
+   counter-terrorists-win
    ;kills
-   hs-kills
-   dies
-   survives
+   ;hs-kills
+   ;dies
+   ;survives
    bomb-planted
    bomb-defused
    bomb-explodes
