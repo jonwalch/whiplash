@@ -18,7 +18,7 @@
            ;"whiplash_gg"       "rZgNxwfwyEWmPTCwhNEaGHXSTxEroctZ"
            ;"birdfood"         "uHeyOMgIzPtouFlxZMBQmoasDZbKljbB"
            ;"rillo"            "ewzaBsSgilmffxiHjNQFjUNDvCfmCbuE"
-           ;"huddlesworth"     "YtWaLjgnOIQPZdGBjaIEOcoqoPioVwQZ"
+           "huddlesworth"     "YtWaLjgnOIQPZdGBjaIEOcoqoPioVwQZ"
            ;"trixxytrix"       "AkxCnYSscmkQHwOBIYURmWJPSwxkklJA"
            ;"fitnesswiberg"    "ZxIjPtAlVHQWoQPcmJqTiOdnKWYfwklY"
            ;"qizarjry"         "eeAyWUZmxbEGPKmedvZonBOXjbCSBMWq"
