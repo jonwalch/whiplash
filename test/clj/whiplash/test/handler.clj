@@ -3028,7 +3028,8 @@
 
           end-response (post-csgo-game-state {:channel-id channel-id
                                               :token      test-token
-                                              :phase      :round/planted})
+                                              :phase      :round/end-ct
+                                              :previously :previously/bomb-planted})
 
           get-user-resp (get-user {:auth-token auth-token})
 
@@ -3142,7 +3143,7 @@
 
           end-response2 (post-csgo-game-state {:channel-id channel-id
                                                :token      test-token
-                                               :phase      :round/planted})
+                                               :phase      :round/exploded})
           get-user-resp2 (get-user {:auth-token auth-token})]
 
       (is (= 1010 (-> get-user-resp :body :user/cash)))
@@ -3196,7 +3197,7 @@
 
           end-response2 (post-csgo-game-state {:channel-id channel-id
                                                :token      test-token
-                                               :phase      :round/planted})
+                                               :phase      :round/defused})
           get-user-resp2 (get-user {:auth-token auth-token})]
 
       (is (= 1010 (-> get-user-resp :body :user/cash)))

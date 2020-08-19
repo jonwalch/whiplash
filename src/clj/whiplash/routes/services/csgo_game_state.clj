@@ -65,7 +65,7 @@
  (parse-kills (format kills "donny" 5)))
 
 (defn proposition-result?
-  [{:keys [event/channel-id proposition winning-team round-kills round-hs-kills player-health bomb] :as args}]
+  [{:keys [event/channel-id proposition winning-team round-kills round-hs-kills player-health bomb previously] :as args}]
   ;(assert (contains? #{"T" "CT"} winning-team))
   (let [{:proposition/keys [text]} proposition
         n-kills (parse-kills text)]
@@ -90,7 +90,7 @@
       (> player-health 0)
 
       bomb-planted
-      (or (= "planted" bomb)
+      (or (= (some-> previously :round :bomb) "planted")
           (= "defused" bomb)
           (= "exploded" bomb))
 
@@ -158,7 +158,8 @@
                                                          :round-kills (some-> body-params :player :state :round_kills)
                                                          :round-hs-kills (some-> body-params :player :state :round_killhs)
                                                          :player-health (some-> body-params :player :state :health)
-                                                         :bomb (some-> body-params :round :bomb)})
+                                                         :bomb (some-> body-params :round :bomb)
+                                                         :previously (some-> body-params :previously)})
                                              :proposition current-prop
                                              :db          db-after})
                 (ok))

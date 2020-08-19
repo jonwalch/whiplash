@@ -471,7 +471,7 @@
                      :channel-id channel-id})))
 
 (defn post-csgo-game-state
-  [{:keys [channel-id token phase player status]}]
+  [{:keys [channel-id token phase player status previously]}]
   (let [phase (case phase
                 :round/begin
                 {:phase "freezetime"}
@@ -481,9 +481,6 @@
 
                 :round/end-ct
                 {:phase "over" :win_team "CT"}
-
-                :round/planted
-                {:phase "over" :bomb "planted"}
 
                 :round/defused
                 {:phase "over" :bomb "defused"}
@@ -509,10 +506,15 @@
 
                    :state/dies
                    {:state {:health 0}}))
+        previously (when previously
+                     (case previously
+                       :previously/bomb-planted
+                       {:round {:phase "live", :bomb "planted"}}))
         resp ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" channel-id))
                                     (mock/json-body {:round phase
                                                      :auth  {:token token}
-                                                     :player player})))]
+                                                     :player player
+                                                     :previously previously})))]
     (is (= (or status
                200)
            (:status resp)))
