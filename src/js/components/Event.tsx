@@ -25,6 +25,7 @@ export function Event(props: any) {
     const [proposition, setProposition] = useState<Object>({});
     const [prevProposition, setPrevProposition] = useState<Object>({});
     const [sfx, setSfx] = useState<boolean>(true);
+    const [autoRun, setAutoRun] = useState<string>("")
 
     // child state
     const [eventScoreLeaderboard, setEventScoreLeaderboard] = useState<EventScore[]>([]);
@@ -38,6 +39,7 @@ export function Event(props: any) {
         setChannelID(event["event/channel-id"] || failedToFetch);
         setMatchName(event["event/title"]);
         setStreamSource(event["event/stream-source"]);
+        setAutoRun(event["event/auto-run"]);
         if (event["event/stream-source"] !== "event.stream-source/twitch") {
             setChatIsOpen(false)
         }
@@ -156,10 +158,12 @@ export function Event(props: any) {
                     proposition={proposition}
                     noVideo={true}
                 />
-                <Suggestion
-                    channelID={channelID}
-                    noVideo={true}
-                />
+                {autoRun === "event.auto-run/none" &&
+                    <Suggestion
+                        channelID={channelID}
+                        noVideo={true}
+                        />
+                }
                 <Leaderboard
                     channelID={channelID}
                     eventScoreLeaderboard={eventScoreLeaderboard}
@@ -231,8 +235,10 @@ export function Event(props: any) {
                     channelID={channelID}
                     proposition={proposition}
                 />
-                <Suggestion
-                    channelID={channelID}/>
+                {autoRun === "event.auto-run/none" &&
+                    <Suggestion
+                        channelID={channelID}/>
+                }
                 <Leaderboard
                     channelID={channelID}
                     eventScoreLeaderboard={eventScoreLeaderboard}
