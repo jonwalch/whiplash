@@ -15,14 +15,18 @@
   []
   (let [m {"akoozabazooka"    "jydPmMjLgMsjqovquKqVQNQEPKInwuNx"
            "jawbreakerplease" "tIaoxTuffKBzwLvgYheGmljDMgYaYeDC"
-           ;"whiplash_gg"       "rZgNxwfwyEWmPTCwhNEaGHXSTxEroctZ"
+           "whiplash_gg"       "rZgNxwfwyEWmPTCwhNEaGHXSTxEroctZ"
            ;"birdfood"         "uHeyOMgIzPtouFlxZMBQmoasDZbKljbB"
-           ;"rillo"            "ewzaBsSgilmffxiHjNQFjUNDvCfmCbuE"
+           "rillo"            "ewzaBsSgilmffxiHjNQFjUNDvCfmCbuE"
            "huddlesworth"     "YtWaLjgnOIQPZdGBjaIEOcoqoPioVwQZ"
            ;"trixxytrix"       "AkxCnYSscmkQHwOBIYURmWJPSwxkklJA"
            ;"fitnesswiberg"    "ZxIjPtAlVHQWoQPcmJqTiOdnKWYfwklY"
-           ;"qizarjry"         "eeAyWUZmxbEGPKmedvZonBOXjbCSBMWq"
+           ;"wizarjry"         "eeAyWUZmxbEGPKmedvZonBOXjbCSBMWq"
            ;"mackenziey"       "pZCXYzqUAEohmwlLMBvgCmIPAonfHKMa"
+           "involuntarylag"    "mQYSvROuqvgfhVaQBvppqvhISJeAVskZ"
+           ;"xwordy"            "ybHNWyYkJPHSskxUmhxEcSykMscaXHVO"
+           ;"hooligun_tv"       "mXTYKSpooiuNytmBUWSKOVPdaeABHdvD"
+           ;"jojodj"            "FEbtbAcWVcLJmFtTamCyZISmFQxhfwJH"
            }]
     (if (:prod env)
       m
