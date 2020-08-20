@@ -741,8 +741,16 @@
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
   (let [db (d/db conn)
-        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "dfleur" :attrs [:db/id :user/cash :user/name]})]
-    (d/transact conn {:tx-data [{:db/id id
+        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "himself_j"
+                                                    :attrs [:db/id
+                                                            :user/email
+                                                            :user/cash
+                                                            :user/name
+                                                            :user/status
+                                                            :user/first-name
+                                                            :user/verify-token]})]
+    u
+    #_(d/transact conn {:tx-data [{:db/id id
                                  :user/status :user.status/mod}]}))
 
   (->>

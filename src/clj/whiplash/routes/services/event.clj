@@ -125,7 +125,6 @@
                                                "off" :event.auto-run/off)})
         (ok)))))
 
-;; TODO remove intensive query
 (defn end-current-event
   [{:keys [body-params path-params] :as req}]
   (let [channel-id (some-> path-params :channel-id string/lower-case)

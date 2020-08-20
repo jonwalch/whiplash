@@ -476,6 +476,9 @@
                 :round/begin
                 {:phase "freezetime"}
 
+                :round/live
+                {:phase "live"}
+
                 :round/end-t
                 {:phase "over" :win_team "T"}
 
@@ -509,7 +512,11 @@
         previously (when previously
                      (case previously
                        :previously/bomb-planted
-                       {:round {:phase "live", :bomb "planted"}}))
+                       {:round {:phase "live", :bomb "planted"}}
+
+                       :previously/died
+                       {:round {:phase "live"}
+                        :player {:state {:health 0}}}))
         resp ((common/test-app) (-> (mock/request :post (format "/v1/gs/csgo/%s" channel-id))
                                     (mock/json-body {:round phase
                                                      :auth  {:token token}

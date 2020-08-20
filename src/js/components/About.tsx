@@ -34,7 +34,7 @@ export function About() {
             <p>We're partnered with the streamers we cover. If you're interested, DM Bazooka or Jawbreaker on Discord.</p>
             <h3>Why can’t I see the embedded Twitch chat?</h3>
             <p>You need to allow third party cookies in your browser settings.</p>
-            <h3>How do I verify my email <address></address>?</h3>
+            <h3>How do I verify my email address?</h3>
             <p>Click the link in the email we sent you when you signed up.</p>
             <h3>Why didn’t I get a verification email?</h3>
             <p>Check your spam. If it’s not there, email us at <a href="mailto:support@whiplashesports.com">support@whiplashesports.com</a>.</p>

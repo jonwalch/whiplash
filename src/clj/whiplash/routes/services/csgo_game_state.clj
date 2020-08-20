@@ -5,9 +5,6 @@
             [clojure.string :as string]
             [whiplash.config :refer [env]]))
 
-;; TODO: end bets earlier than round end if the thing happens
-;; props can have a new subcomponent :prop/csgo which holds {:csgo/round-number int}
-
 ;; TODO remove from source
 ;; TODO: make multiple requests when 100 or more streamers
 (defn whiplash-streamers
@@ -47,13 +44,13 @@
   [
    terrorists-win
    counter-terrorists-win
-   ;kills
-   ;hs-kills
-   ;dies
-   ;survives
+   dies
+   survives
    bomb-planted
    bomb-defused
    bomb-explodes
+   ;kills
+   ;hs-kills
    ])
 
 ;;TODO: throw on failure
@@ -89,10 +86,20 @@
       (>= round-hs-kills n-kills)
 
       (format dies channel-id)
-      (<= player-health 0)
+      (let [prev-player-health (some-> previously :player :state :health)]
+        ;; player dead
+        (or (= 0 player-health)
+            ;;prev player is the streamer
+            (= 0 prev-player-health)))
 
       (format survives channel-id)
-      (> player-health 0)
+      (let [prev-player-health (some-> previously :player :state :health)]
+        ;; player survives and has more than 0 health
+        (and (< 0 player-health)
+             ;; prev player is streamer
+             (if (some? prev-player-health)
+               (< 0 prev-player-health)
+               true)))
 
       bomb-planted
       (or (= (some-> previously :round :bomb) "planted")
@@ -154,20 +161,35 @@
           (some? current-prop)
           (do
             (log/info (dissoc body-params :auth))
-            (if (= "over" (some-> body-params :round :phase))
+            (cond
+              (and (= "live" (some-> body-params :round :phase))
+                   (or (= (format dies channel-id) (:proposition/text current-prop))
+                       (= (format survives channel-id) (:proposition/text current-prop)))
+                   (or (= 0 (some-> body-params :previously :player :state :health))
+                       (= 0 (some-> body-params :player :state :health))))
               (let [{:keys [db-after]} (db/end-betting-for-proposition current-prop)]
-                (db/payouts-for-proposition {:result? (proposition-result?
-                                                        {:event/channel-id channel-id
-                                                         :proposition  current-prop
-                                                         :winning-team (some-> body-params :round :win_team)
-                                                         :round-kills (some-> body-params :player :state :round_kills)
-                                                         :round-hs-kills (some-> body-params :player :state :round_killhs)
-                                                         :player-health (some-> body-params :player :state :health)
-                                                         :bomb (some-> body-params :round :bomb)
-                                                         :previously (some-> body-params :previously)})
+                ;; if they die, resolve true, if they survive resolve false
+                (db/payouts-for-proposition {:result? (= (format dies channel-id) (:proposition/text current-prop))
+                                             :proposition current-prop
+                                             :db db-after})
+                (ok))
+
+              (= "over" (some-> body-params :round :phase))
+              (let [{:keys [db-after]} (db/end-betting-for-proposition current-prop)]
+                (db/payouts-for-proposition {:result?     (proposition-result?
+                                                            {:event/channel-id channel-id
+                                                             :proposition      current-prop
+                                                             :winning-team     (some-> body-params :round :win_team)
+                                                             :round-kills      (some-> body-params :player :state :round_kills)
+                                                             :round-hs-kills   (some-> body-params :player :state :round_killhs)
+                                                             :player-health    (some-> body-params :player :state :health)
+                                                             :bomb             (some-> body-params :round :bomb)
+                                                             :previously       (some-> body-params :previously)})
                                              :proposition current-prop
                                              :db          db-after})
                 (ok))
+
+              :else
               (no-content)))
 
           (nil? current-prop)
