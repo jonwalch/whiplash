@@ -24,7 +24,7 @@
            ;"wizarjry"         "eeAyWUZmxbEGPKmedvZonBOXjbCSBMWq"
            ;"mackenziey"       "pZCXYzqUAEohmwlLMBvgCmIPAonfHKMa"
            "involuntarylag"    "mQYSvROuqvgfhVaQBvppqvhISJeAVskZ"
-           "l00p__"             "UpWdvneFDxyHriCVzTANebkkQYgcDLXN"
+           "lo0p__"             "UpWdvneFDxyHriCVzTANebkkQYgcDLXN"
            ;"xwordy"            "ybHNWyYkJPHSskxUmhxEcSykMscaXHVO"
            ;"hooligun_tv"       "mXTYKSpooiuNytmBUWSKOVPdaeABHdvD"
            ;"jojodj"            "FEbtbAcWVcLJmFtTamCyZISmFQxhfwJH"
