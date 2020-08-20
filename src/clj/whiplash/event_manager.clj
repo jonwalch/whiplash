@@ -92,7 +92,7 @@
                 :start
                 (do
                   (log/info "starting event manager")
-                  #_(set-interval maybe-start-or-stop-csgo-events one-minute))
+                  (set-interval maybe-start-or-stop-csgo-events one-minute))
 
                 :stop
                 (when event-manager
