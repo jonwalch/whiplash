@@ -472,24 +472,25 @@
 
 (defn post-csgo-game-state
   [{:keys [channel-id token phase player status previously]}]
-  (let [phase (case phase
-                :round/begin
-                {:phase "freezetime"}
+  (let [phase (when phase
+                (case phase
+                  :round/begin
+                  {:phase "freezetime"}
 
-                :round/live
-                {:phase "live"}
+                  :round/live
+                  {:phase "live"}
 
-                :round/end-t
-                {:phase "over" :win_team "T"}
+                  :round/end-t
+                  {:phase "over" :win_team "T"}
 
-                :round/end-ct
-                {:phase "over" :win_team "CT"}
+                  :round/end-ct
+                  {:phase "over" :win_team "CT"}
 
-                :round/defused
-                {:phase "over" :bomb "defused"}
+                  :round/defused
+                  {:phase "over" :bomb "defused"}
 
-                :round/exploded
-                {:phase "over" :bomb "exploded"})
+                  :round/exploded
+                  {:phase "over" :bomb "exploded"}))
         player (when player
                  (case player
                    :state/one-kill
@@ -508,7 +509,10 @@
                    {:state {:health 1}}
 
                    :state/dies
-                   {:state {:health 0}}))
+                   {:state {:health 0}}
+
+                   :menu
+                   {:activity "menu"}))
         previously (when previously
                      (case previously
                        :previously/bomb-planted

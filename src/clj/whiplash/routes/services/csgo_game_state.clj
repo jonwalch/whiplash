@@ -3,7 +3,8 @@
             [ring.util.http-response :refer :all]
             [whiplash.db.core :as db]
             [clojure.string :as string]
-            [whiplash.config :refer [env]]))
+            [whiplash.config :refer [env]]
+            [datomic.client.api :as d]))
 
 ;; TODO remove from source
 ;; TODO: make multiple requests when 100 or more streamers
@@ -135,8 +136,10 @@
   [{:keys [path-params body-params]}]
   (let [channel-id (some-> path-params :channel-id string/lower-case)]
     (if (= (get (whiplash-streamers) channel-id) (some-> body-params :auth :token))
-      (let [{:keys [event current-prop]} (db/pull-event-info
-                                           {:attrs [:db/id
+      (let [db (d/db (:conn db/datomic-cloud))
+            {:keys [event current-prop]} (db/pull-event-info
+                                           {:db db
+                                            :attrs [:db/id
                                                     :event/stream-source
                                                     :event/channel-id
                                                     :event/auto-run
@@ -187,6 +190,12 @@
                                                              :previously       (some-> body-params :previously)})
                                              :proposition current-prop
                                              :db          db-after})
+                (ok))
+
+              (= "menu" (some-> body-params :player :activity))
+              (do
+                (db/cancel-proposition-and-return-cash {:proposition current-prop
+                                                        :db          db})
                 (ok))
 
               :else

@@ -3441,3 +3441,38 @@
                :proposition/result "proposition.result/cancelled"
                :proposition/text   csgo/terrorists-win}]
              (-> user2 :body :user/notifications))))))
+
+(deftest csgo-game-state-cancel-outstanding-bet-in-menu
+  (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 1)] ;; 1 is Counter-Terrorists win this round
+    (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
+          channel-id test-username
+          title "Dirty Dan's Delirious Dance Party"
+          _ (admin-create-event {:auth-token auth-token
+                                 :title      title
+                                 :channel-id channel-id})
+          _ (patch-event {:channel-id channel-id
+                          :auto-run   "csgo"
+                          :auth-token auth-token})
+          get-event (get-event {:channel-id channel-id})
+          create-response (post-csgo-game-state {:channel-id channel-id
+                                                 :token      test-token
+                                                 :phase      :round/begin
+                                                 :status     201})
+
+          _ (user-place-prop-bet {:auth-token       auth-token
+                                  :projected-result false
+                                  :bet-amount       500
+                                  :channel-id       channel-id})
+
+          cancel-response (post-csgo-game-state {:channel-id channel-id
+                                                 :token      test-token
+                                                 :player :menu})
+
+          get-user-resp (get-user {:auth-token auth-token})]
+
+      (is (= 500 (-> get-user-resp :body :user/cash)))
+      (is (= [{:bet/payout         500
+               :notification/type  "notification.type/payout"
+               :proposition/result "proposition.result/cancelled"
+               :proposition/text   csgo/counter-terrorists-win}]
+             (-> get-user-resp :body :user/notifications))))))
