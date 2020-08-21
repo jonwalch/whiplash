@@ -26,6 +26,7 @@
            ;"xwordy"            "ybHNWyYkJPHSskxUmhxEcSykMscaXHVO"
            ;"hooligun_tv"       "mXTYKSpooiuNytmBUWSKOVPdaeABHdvD"
            ;"jojodj"            "FEbtbAcWVcLJmFtTamCyZISmFQxhfwJH"
+           ;"2oldtogame"        "rpSppkZZLzvTPfDwGFujtvmQBFRHrOqU"
            }]
     (if (:prod env)
       m
