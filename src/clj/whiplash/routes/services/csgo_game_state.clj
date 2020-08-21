@@ -22,9 +22,9 @@
            ;"wizarjry"         "eeAyWUZmxbEGPKmedvZonBOXjbCSBMWq"
            ;"mackenziey"       "pZCXYzqUAEohmwlLMBvgCmIPAonfHKMa"
            "involuntarylag"    "mQYSvROuqvgfhVaQBvppqvhISJeAVskZ"
-           "lo0p__"             "UpWdvneFDxyHriCVzTANebkkQYgcDLXN"
+           ;"lo0p__"             "UpWdvneFDxyHriCVzTANebkkQYgcDLXN"
            ;"xwordy"            "ybHNWyYkJPHSskxUmhxEcSykMscaXHVO"
-           "hooligun_tv"       "mXTYKSpooiuNytmBUWSKOVPdaeABHdvD"
+           ;"hooligun_tv"       "mXTYKSpooiuNytmBUWSKOVPdaeABHdvD"
            ;"jojodj"            "FEbtbAcWVcLJmFtTamCyZISmFQxhfwJH"
            }]
     (if (:prod env)
