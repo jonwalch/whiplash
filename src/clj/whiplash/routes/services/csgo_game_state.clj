@@ -26,8 +26,8 @@
            ;"xwordy"            "ybHNWyYkJPHSskxUmhxEcSykMscaXHVO"
            ;"hooligun_tv"       "mXTYKSpooiuNytmBUWSKOVPdaeABHdvD"
            ;"jojodj"            "FEbtbAcWVcLJmFtTamCyZISmFQxhfwJH"
-           ;"2oldtogame"        "rpSppkZZLzvTPfDwGFujtvmQBFRHrOqU"
-           "swishercs"         "eFwZZnnmhDmFjMljyUvfKcqUjiPTqMTl"
+           "2oldtogame"        "rpSppkZZLzvTPfDwGFujtvmQBFRHrOqU"
+           ;"swishercs"         "eFwZZnnmhDmFjMljyUvfKcqUjiPTqMTl"
            }]
     (if (:prod env)
       m
