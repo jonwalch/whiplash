@@ -338,15 +338,19 @@
     m
     (keys m)))
 
-(defn async-pull-live-csgo-twitch-events
+(defn pull-live-csgo-twitch-events
   [{:keys [db attrs]}]
   (let [db (or db (d/db (:conn datomic-cloud)))]
-    (d.async/q {:query '[:find (pull ?event attrs)
-                         :in $ attrs
-                         :where [?event :event/running? true]
-                         [?event :event/stream-source :event.stream-source/twitch]
-                         [?event :event/auto-run :event.auto-run/csgo]]
-                :args  [db attrs]})))
+    (try
+      (mapv update-ident-vals
+            (flatten
+              (d/q {:query '[:find (pull ?event attrs)
+                             :in $ attrs
+                             :where [?event :event/running? true]
+                             [?event :event/stream-source :event.stream-source/twitch]
+                             [?event :event/auto-run :event.auto-run/csgo]]
+                    :args  [db attrs]})))
+      (catch Throwable t (log/error "pull-live-csgo-twitch-event failed" t)))))
 
 (defn find-running-prop-bets
   [{:keys [db db/id]}]

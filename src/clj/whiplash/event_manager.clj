@@ -3,7 +3,6 @@
             [mount.core :as mount]
             [whiplash.integrations.twitch :as twitch]
             [whiplash.db.core :as db]
-            [cognitect.anomalies :as anom]
             [clojure.set :as set]
             [datomic.client.api :as d]
             [clojure.string :as string]
@@ -54,19 +53,16 @@
 
 (defn maybe-start-or-stop-csgo-events
   []
-  (let [db (d/db (:conn db/datomic-cloud))
-        events-chan (db/async-pull-live-csgo-twitch-events {:db      db
-                                                            :attrs [:db/id
-                                                                    :event/start-time
-                                                                    :event/running?
-                                                                    :event/channel-id
-                                                                    :event/title
-                                                                    :event/auto-run
-                                                                    {:event/stream-source [:db/ident]}]})
-        live-streamers (twitch/live-whiplash-csgo-streamers)
-        result (async/<!! events-chan)
-        live-whiplash-channels (when-not (::anom/anomaly result)
-                                 (mapv db/update-ident-vals (flatten result)))]
+  (let [live-streamers (twitch/live-whiplash-csgo-streamers)
+        db (d/db (:conn db/datomic-cloud))
+        live-whiplash-channels (db/pull-live-csgo-twitch-events {:db      db
+                                                                 :attrs [:db/id
+                                                                         :event/start-time
+                                                                         :event/running?
+                                                                         :event/channel-id
+                                                                         :event/title
+                                                                         :event/auto-run
+                                                                         {:event/stream-source [:db/ident]}]})]
     ;; when both network calls succeed
     (when (and (some? live-whiplash-channels)
                (some? live-streamers))
