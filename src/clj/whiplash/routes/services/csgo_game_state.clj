@@ -47,8 +47,8 @@
   [
    terrorists-win
    counter-terrorists-win
-   dies
-   survives
+   ;dies
+   ;survives
    bomb-planted
    bomb-defused
    bomb-explodes

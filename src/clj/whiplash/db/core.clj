@@ -745,17 +745,19 @@
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
   (let [db (d/db conn)
-        {:keys [db/id user/cash] :as u} (pull-user {:db db :user/name "himself_j"
+        {:keys [db/id user/cash] :as u} (pull-user {:db    db :user/name ""
                                                     :attrs [:db/id
                                                             :user/email
                                                             :user/cash
+                                                            {:user/prop-bets [{:bet/proposition [:proposition/text
+                                                                                                 :proposition/start-time]}]}
                                                             :user/name
                                                             :user/status
                                                             :user/first-name
                                                             :user/verify-token]})]
     u
-    #_(d/transact conn {:tx-data [{:db/id id
-                                 :user/status :user.status/mod}]}))
+    #_(d/transact conn {:tx-data [{:db/id "poop"
+                                 :user/status 5750N}]}))
 
   (->>
     (d/q {:query '[:find (pull ?user [:user/email :user/verify-token :user/name :user/sign-up-time {:user/status [:db/ident]}])
