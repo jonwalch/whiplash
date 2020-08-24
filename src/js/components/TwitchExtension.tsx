@@ -4,6 +4,7 @@ import "../../../resources/public/css/App.css";
 import {defaultLoggedIn, LoginContext} from "../contexts/LoginContext";
 import {CORSGetUser, twitch, twitchBaseUrl, twitchOpaqueID} from "../TwitchExtApp";
 import UIfx from 'uifx';
+import {getUser} from "../common/getUser";
 
 const kc = new UIfx(
     (process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : "https://whiplashesports.com/") + "dist/sfx/ka-ching.mp3",
@@ -221,6 +222,10 @@ export function TwitchExtension() {
     useInterval(() => {
         if (channelID === failedToFetch && twitchOnAuthorized && twitchOnAuthorized.channelId) {
             getTwitchUsername(twitchOnAuthorized)
+        }
+
+        if (channelID !== failedToFetch) {
+            getUser(setLoggedInState);
         }
     }, 5000);
 

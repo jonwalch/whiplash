@@ -17,6 +17,7 @@ export const getUser = async (setLoggedInState: Function) => {
             notifications: resp["user/notifications"],
             "gated?": resp["user/gated?"]
         });
+        // TODO: revisit
     } else {
         setLoggedInState(defaultLoggedIn)
     }

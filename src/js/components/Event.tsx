@@ -88,6 +88,12 @@ export function Event(props: any) {
     }, 1000);
 
     useInterval(() => {
+        if (channelID !== failedToFetch) {
+            getUser(setLoggedInState);
+            }
+        }, 5000)
+
+    useInterval(() => {
         getEvent(channelIDFromPath()).then((event) => {
             getEventWrapper(event)
         });
