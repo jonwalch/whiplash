@@ -18,7 +18,7 @@
            "rillo"            "ewzaBsSgilmffxiHjNQFjUNDvCfmCbuE"
            "huddlesworth"     "YtWaLjgnOIQPZdGBjaIEOcoqoPioVwQZ"
            ;"trixxytrix"       "AkxCnYSscmkQHwOBIYURmWJPSwxkklJA"
-           ;"fitnesswiberg"    "ZxIjPtAlVHQWoQPcmJqTiOdnKWYfwklY"
+           "fitnesswiberg"    "ZxIjPtAlVHQWoQPcmJqTiOdnKWYfwklY"
            ;"wizarjry"         "eeAyWUZmxbEGPKmedvZonBOXjbCSBMWq"
            ;"mackenziey"       "pZCXYzqUAEohmwlLMBvgCmIPAonfHKMa"
            "involuntarylag"    "mQYSvROuqvgfhVaQBvppqvhISJeAVskZ"
@@ -27,7 +27,7 @@
            ;"hooligun_tv"       "mXTYKSpooiuNytmBUWSKOVPdaeABHdvD"
            ;"jojodj"            "FEbtbAcWVcLJmFtTamCyZISmFQxhfwJH"
            "2oldtogame"        "rpSppkZZLzvTPfDwGFujtvmQBFRHrOqU"
-           ;"swishercs"         "eFwZZnnmhDmFjMljyUvfKcqUjiPTqMTl"
+           "swishercs"         "eFwZZnnmhDmFjMljyUvfKcqUjiPTqMTl"
            }]
     (if (:prod env)
       m

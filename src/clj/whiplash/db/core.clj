@@ -749,7 +749,9 @@
                                                     :attrs [:db/id
                                                             :user/email
                                                             :user/cash
-                                                            {:user/prop-bets [{:bet/proposition [:proposition/text
+                                                            {:user/prop-bets [:bet/amount
+                                                                              :bet/payout
+                                                                              {:bet/proposition [:proposition/text
                                                                                                  :proposition/start-time]}]}
                                                             :user/name
                                                             :user/status
