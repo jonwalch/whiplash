@@ -49,7 +49,7 @@
    terrorists-win
    counter-terrorists-win
    ;dies
-   ;survives
+   survives
    bomb-planted
    bomb-defused
    bomb-explodes
@@ -126,15 +126,6 @@
   []
   (+ 1 (rand-int (- 6 1))))
 
-(comment
-  (->> (map (fn [x]
-              (random-n-kills))
-            (range 10000))
-       (group-by identity)
-       (map (fn [[k v]]
-              {k (count v)}))
-       (apply merge)))
-
 (defn receive-from-game-client
   [{:keys [path-params body-params]}]
   (let [channel-id (some-> path-params :channel-id string/lower-case)]
@@ -155,6 +146,9 @@
                                                        {:proposition/result [:db/ident]}]}]
                                             :event/channel-id channel-id})]
         (cond
+          (some? (:proposition/result current-prop))
+          (no-content)
+
           (or (not= channel-id (:event/channel-id event))
               (not= :event.stream-source/twitch (:event/stream-source event))
               (not= :event.auto-run/csgo (:event/auto-run event)))
@@ -165,48 +159,51 @@
           ;; TODO: cancel bet if round number (-> body :map :round) changes but we didnt see :phase "over" on :round
           ;; requires tracking the round number
           (some? current-prop)
-          (do
-            (log/info (dissoc body-params :auth))
-            (cond
-              (and (= "live" (some-> body-params :round :phase))
-                   (or (= (format dies channel-id) (:proposition/text current-prop))
-                       (= (format survives channel-id) (:proposition/text current-prop)))
-                   (or (= 0 (some-> body-params :previously :player :state :health))
-                       (= 0 (some-> body-params :player :state :health))))
-              (let [{:keys [db-after]} (db/end-betting-for-proposition current-prop)]
-                ;; if they die, resolve true, if they survive resolve false
-                (db/payouts-for-proposition {:result? (= (format dies channel-id) (:proposition/text current-prop))
-                                             :proposition current-prop
-                                             :db db-after})
-                (ok))
+          (cond
+            (and (= "live" (some-> body-params :round :phase))
+                 (or (= (format dies channel-id) (:proposition/text current-prop))
+                     (= (format survives channel-id) (:proposition/text current-prop)))
+                 (or (= 0 (some-> body-params :previously :player :state :health))
+                     (= 0 (some-> body-params :player :state :health))))
+            (let [_ (log/info "live-payout" current-prop (dissoc body-params :auth))
+                  {:keys [db-after]} (db/end-betting-for-proposition current-prop)]
+              ;; if they die, resolve true, if they survive resolve false
+              (db/payouts-for-proposition {:result?     (= (format dies channel-id) (:proposition/text current-prop))
+                                           :proposition current-prop
+                                           :db          db-after})
+              (ok))
 
-              (= "over" (some-> body-params :round :phase))
-              (let [{:keys [db-after]} (db/end-betting-for-proposition current-prop)]
-                (db/payouts-for-proposition {:result?     (proposition-result?
-                                                            {:event/channel-id channel-id
-                                                             :proposition      current-prop
-                                                             :winning-team     (some-> body-params :round :win_team)
-                                                             :round-kills      (some-> body-params :player :state :round_kills)
-                                                             :round-hs-kills   (some-> body-params :player :state :round_killhs)
-                                                             :player-health    (some-> body-params :player :state :health)
-                                                             :bomb             (some-> body-params :round :bomb)
-                                                             :previously       (some-> body-params :previously)})
-                                             :proposition current-prop
-                                             :db          db-after})
-                (ok))
+            (= "over" (some-> body-params :round :phase))
+            (let [{:keys [db-after]} (db/end-betting-for-proposition current-prop)]
+              (db/payouts-for-proposition {:result?     (proposition-result?
+                                                          {:event/channel-id channel-id
+                                                           :proposition      current-prop
+                                                           :winning-team     (some-> body-params :round :win_team)
+                                                           :round-kills      (some-> body-params :player :state :round_kills)
+                                                           :round-hs-kills   (some-> body-params :player :state :round_killhs)
+                                                           :player-health    (some-> body-params :player :state :health)
+                                                           :bomb             (some-> body-params :round :bomb)
+                                                           :previously       (some-> body-params :previously)})
+                                           :proposition current-prop
+                                           :db          db-after})
+              (ok))
 
-              (= "menu" (some-> body-params :player :activity))
-              (do
-                (db/cancel-proposition-and-return-cash {:proposition current-prop
-                                                        :db          db})
-                (ok))
+            (= "menu" (some-> body-params :player :activity))
+            (do
+              (db/cancel-proposition-and-return-cash {:proposition current-prop
+                                                      :db          db})
+              (ok))
 
-              :else
+            :else
+            (do
+              (log/info (dissoc body-params :auth))
+              ;(clojure.pprint/pprint (dissoc body-params :auth))
               (no-content)))
 
           (nil? current-prop)
           (do
             (log/info (dissoc body-params :auth))
+            ;(clojure.pprint/pprint (dissoc body-params :auth))
             (if (= "freezetime" (-> body-params :round :phase))
               (do
                 (db/create-proposition {:text (let [chosen-prop (nth props (random-index props))]

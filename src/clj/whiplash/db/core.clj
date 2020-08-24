@@ -411,7 +411,7 @@
      :current-prop ongoing-prop
      :previous-prop previous-prop}))
 
-(defn pull-next-event-time
+#_(defn pull-next-event-time
   "assumes only one of these exists in the db"
   [{:keys [db attrs]}]
   (let [db (or db (d/db (:conn datomic-cloud)))]
@@ -745,21 +745,43 @@
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
   (let [db (d/db conn)
-        {:keys [db/id user/cash] :as u} (pull-user {:db    db :user/name ""
-                                                    :attrs [:db/id
-                                                            :user/email
-                                                            :user/cash
-                                                            {:user/prop-bets [:bet/amount
-                                                                              :bet/payout
-                                                                              {:bet/proposition [:proposition/text
-                                                                                                 :proposition/start-time]}]}
-                                                            :user/name
-                                                            :user/status
-                                                            :user/first-name
-                                                            :user/verify-token]})]
-    u
-    #_(d/transact conn {:tx-data [{:db/id "poop"
-                                 :user/status 5750N}]}))
+        #_#_{:keys [db/id user/cash] :as u} (pull-user {:db    db :user/name ""
+                                                        :attrs [:db/id
+                                                                :user/email
+                                                                :user/cash
+                                                                {:user/prop-bets [:bet/amount
+                                                                                  :bet/payout
+                                                                                  {:bet/proposition [:proposition/text
+                                                                                                     :proposition/start-time]}]}
+                                                                :user/name
+                                                                :user/status
+                                                                :user/first-name
+                                                                :user/verify-token]})]
+    (->> (d/q {:query '[:find (pull ?event [:db/id
+                                            :event/start-time
+                                            :event/end-time
+                                            {:event/propositions
+                                             [:db/id
+                                              :proposition/text
+                                              :proposition/start-time
+                                              :proposition/end-time
+                                              :proposition/result]}])
+                        :in $
+                        :where
+                        [?event :event/running? false]
+                        [?event :event/channel-id "involuntarylag"]]
+               :args  [db]})
+         flatten
+         (map :event/propositions)
+         flatten
+         (map update-ident-vals)
+         (filter #(and (= (:proposition/text %)
+                          "involuntarylag survives this round")
+                       (= :proposition.result/false (:proposition/result %))))
+         (sort-by :proposition/start-time)))
+  ;u
+  #_(d/transact conn {:tx-data [{:db/id       "poop"
+                                 :user/status 5750N}]})
 
   (->>
     (d/q {:query '[:find (pull ?user [:user/email :user/verify-token :user/name :user/sign-up-time {:user/status [:db/ident]}])
@@ -773,7 +795,7 @@
     (apply concat)
     (sort-by :user/sign-up-time)
     #_(map (fn [{:user/keys [email name sign-up-time status]}]
-           (str email "," name "," sign-up-time "," (:db/ident status) "\n")))
+             (str email "," name "," sign-up-time "," (:db/ident status) "\n")))
     #_(apply str))
 
   (defn find-loser-by-email
