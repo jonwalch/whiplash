@@ -38,8 +38,8 @@
 (def ^:const counter-terrorists-win "Counter-Terrorists win this round")
 (def ^:const kills "%s gets %s or more kills this round")
 (def ^:const hs-kills "%s gets %s or more headshot kills this round")
-(def ^:const dies "%s dies this round")
-(def ^:const survives "%s survives this round")
+(def ^:const dies "%s dies before this round ends")
+(def ^:const survives "%s survives until this round ends")
 (def ^:const bomb-planted "Bomb is planted this round")
 (def ^:const bomb-defused "Bomb is defused this round")
 (def ^:const bomb-explodes "Bomb explodes this round")
@@ -48,7 +48,7 @@
   [
    terrorists-win
    counter-terrorists-win
-   ;dies
+   dies
    survives
    bomb-planted
    bomb-defused
@@ -146,6 +146,7 @@
                                                        {:proposition/result [:db/ident]}]}]
                                             :event/channel-id channel-id})]
         (cond
+          ;; TODO: test for this case
           (some? (:proposition/result current-prop))
           (no-content)
 

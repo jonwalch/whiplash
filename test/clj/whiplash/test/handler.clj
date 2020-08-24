@@ -2778,7 +2778,7 @@
                :proposition/text   csgo/counter-terrorists-win}]
              (-> get-user-resp :body :user/notifications))))))
 
-#_(deftest csgo-game-state-streamer-dies
+(deftest csgo-game-state-streamer-dies
   (with-redefs [whiplash.routes.services.csgo-game-state/random-index (constantly 2)] ;; 2 is streamer dies
     (let [{:keys [auth-token]} (create-user-and-login (assoc dummy-user :admin? true))
           channel-id test-username
