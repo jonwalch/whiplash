@@ -668,7 +668,9 @@
       (concat payout-txs
               user-cash-txs
               [{:db/id                (:db/id proposition)
-                :proposition/result   :proposition.result/cancelled}]))))
+                :proposition/result   :proposition.result/cancelled
+                :proposition/running? false
+                :proposition/end-time processed-time}]))))
 
 (defn cancel-proposition-and-return-cash
   [arg-map]
@@ -744,6 +746,24 @@
   (def test-client (d/client local-tunnel-cloud-config))
   (def conn (d/connect test-client {:db-name "whiplash"}))
 
+  (pull-ongoing-event)
+
+  (let [db (d/db conn)]
+    (pull-event-info
+      {:db               db
+       :attrs            [:db/id
+                          :event/stream-source
+                          :event/channel-id
+                          :event/auto-run
+                          {:event/propositions
+                           '[:db/id
+                             :proposition/start-time
+                             :proposition/text
+                             :proposition/running?
+                             :proposition/betting-end-time
+                             {:proposition/result [:db/ident]}]}]
+       :event/channel-id "involuntarylag"}))
+
   (let [db (d/db conn)
         #_#_{:keys [db/id user/cash] :as u} (pull-user {:db    db :user/name ""
                                                         :attrs [:db/id
@@ -765,7 +785,8 @@
                                               :proposition/text
                                               :proposition/start-time
                                               :proposition/end-time
-                                              :proposition/result]}])
+                                              :proposition/result
+                                              :proposition/running?]}])
                         :in $
                         :where
                         [?event :event/running? false]
@@ -774,8 +795,8 @@
          flatten
          (map :event/propositions)
          flatten
-         (map update-ident-vals)
-         (filter #(and (= (:proposition/text %)
+         #_(map update-ident-vals)
+         #_(filter #(and (= (:proposition/text %)
                           "involuntarylag survives this round")
                        (= :proposition.result/false (:proposition/result %))))
          (sort-by :proposition/start-time)))

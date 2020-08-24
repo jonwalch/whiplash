@@ -146,10 +146,6 @@
                                                        {:proposition/result [:db/ident]}]}]
                                             :event/channel-id channel-id})]
         (cond
-          ;; TODO: test for this case
-          (some? (:proposition/result current-prop))
-          (no-content)
-
           (or (not= channel-id (:event/channel-id event))
               (not= :event.stream-source/twitch (:event/stream-source event))
               (not= :event.auto-run/csgo (:event/auto-run event)))
@@ -191,6 +187,7 @@
 
             (= "menu" (some-> body-params :player :activity))
             (do
+              (log/info "cancelling prop because in menu" current-prop)
               (db/cancel-proposition-and-return-cash {:proposition current-prop
                                                       :db          db})
               (ok))

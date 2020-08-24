@@ -45,6 +45,7 @@
           (when-not (empty? props-to-cancel)
             (mapv
               (fn [prop-eid]
+                (log/infof "cancelling prop for %s because event about to be ended" chan-id)
                 (db/cancel-proposition-and-return-cash {:proposition {:db/id prop-eid}
                                                         :db          db}))
               props-to-cancel))
