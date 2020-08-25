@@ -14,7 +14,7 @@
   (let [m {"akoozabazooka"    "jydPmMjLgMsjqovquKqVQNQEPKInwuNx"
            "jawbreakerplease" "tIaoxTuffKBzwLvgYheGmljDMgYaYeDC"
            "whiplash_gg"       "rZgNxwfwyEWmPTCwhNEaGHXSTxEroctZ"
-           ;"birdfood"         "uHeyOMgIzPtouFlxZMBQmoasDZbKljbB"
+           "birdfood"         "uHeyOMgIzPtouFlxZMBQmoasDZbKljbB"
            "rillo"            "ewzaBsSgilmffxiHjNQFjUNDvCfmCbuE"
            "huddlesworth"     "YtWaLjgnOIQPZdGBjaIEOcoqoPioVwQZ"
            ;"trixxytrix"       "AkxCnYSscmkQHwOBIYURmWJPSwxkklJA"
