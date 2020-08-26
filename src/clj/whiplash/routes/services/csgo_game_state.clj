@@ -157,6 +157,9 @@
           ;; requires tracking the round number
           (some? current-prop)
           (cond
+            (some? (:proposition/result current-prop))
+            (no-content)
+
             (and (= "live" (some-> body-params :round :phase))
                  (or (= (format dies channel-id) (:proposition/text current-prop))
                      (= (format survives channel-id) (:proposition/text current-prop)))
