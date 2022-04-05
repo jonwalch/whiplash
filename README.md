@@ -1,5 +1,11 @@
 # whiplash
 
+Whiplash was my first startup. Whiplash let Twitch viewers bet monopoly money on what happens next on stream. New bets pop up for every round of Counter-Stike:GO played (every two minutes). We automated the bets and their outcomes, using the CS:GO API. We also built a Twitch plug-in to drive more traffic to our site.
+
+I built out our entire technical stack, closed our first 5 streamers, and discovered/delivered multiple growth channels that got us to 2000+ Monthly Active Users.
+
+Tech stack: Clojure, TypeScript, React, Datomic Cloud, AWS Fargate, AWS CloudFront, Docker
+
 generated using Luminus version "3.48"
 
 FIXME
