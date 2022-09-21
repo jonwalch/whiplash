@@ -80,8 +80,6 @@ Or run in the REPL from `env/dev/clj/user.clj`:
 > The biggest, easiest win for organization and maintainability is to have a set of conventions in place that you and your team all follow... The important thing is that all of your CSS follows the conventions: that way, new (or forgetful) developers don’t need to learn the entire CSS codebase, only the conventions, to be able to contribute.
 > --[Steve Grossi, How To Write CSS That Scales][css-scales]
 
-TODO (paulshryock): CSS from `/resources/public/css/App.css` gets inlined in `index.html`, which is fine for now. Before a v1 launch, we should instead link styles in a cacheable `.css` file that gets served separately. Crucial 'above the fold' styles can stay in `/resources/public/css/App.css`.
-
 ### JS
 
 JS files are located in `/resources/public/js`. React powers the front end views as an SPA.
